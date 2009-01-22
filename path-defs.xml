@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright 2009 MBARI
+	
+	Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+	(the "License"); you may not use this file except in compliance 
+	with the License. You may obtain a copy of the License at
+	
+	http://www.gnu.org/copyleft/lesser.html
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+<project name="path-defs" basedir=".">
+
+	<!-- Some properties that are custom to the developer/installers environment -->
+	<property file="./custom.properties" />
+
+	<!-- Some common build properties -->
+	<property file="./build.properties" />
+
+	<!-- Some properties that are related to the project -->
+	<property file="./project.properties" />
+
+	<!-- Define the fileset that includes the JBoss client lib jars that we need -->
+	<fileset id="publisher-client-jboss-libs"
+		dir="${jboss.client.jar.directory}">
+		<include name="${log4j.jar}" />
+		<include name="${concurrent.jar}" />
+		<include name="${jbossall-client.jar}" />
+		<include name="${jboss-common-client.jar}" />
+		<include name="${jbossmq-client.jar}" />
+		<include name="${jboss-system-client.jar}" />
+		<include name="${jnp-client.jar}" />
+	</fileset>
+
+	<!-- Define the fileset that contains the JBoss client jars -->
+	<fileset id="jboss-client-jar-fileset"
+		dir="${jboss.client.jar.directory}">
+		<include name="${log4j.jar}" />
+		<include name="${jboss-j2ee.jar}" />
+		<include name="${concurrent.jar}" />
+		<include name="${jbossall-client.jar}" />
+		<include name="${jboss-common-client.jar}" />
+		<include name="${jbossmq-client.jar}" />
+		<include name="${jboss-system-client.jar}" />
+		<include name="${jnp-client.jar}" />
+		<include name="${servlet.jar}" />
+		<include name="${jaxrpc.jar}" />
+		<include name="${commons.httpclient.jar}" />
+		<include name="${commons.codec.jar}" />
+		<include name="${activation.jar}" />
+		<include name="${hibernate.client.commons.logging.jar}" />
+		<include name="${javassist.jar}" />
+	</fileset>
+
+	<!-- Define the fileset that includes the JBoss server lib jars that we need -->
+	<fileset id="jboss-lib-jar-fileset"
+		dir="${jboss.home}/server/${jboss.server.type}/lib">
+		<include name="${hibernate.jar}" />
+		<include name="${hibernate.client.cglib.jar}" />
+		<include name="${hibernate.client.dom4j.jar}" />
+		<include name="${hibernate.client.commons-collections.jar}" />
+		<include name="${mail.jar}" />
+	</fileset>
+
+	<!-- Define the fileset that includes all the jars in the projects lib directory -->
+	<fileset id="all-project-lib-jar-fileset" dir="${project.dir}">
+		<include name="lib/${xom.jar}" />
+		<include name="lib/${jug.jar}" />
+		<include name="lib/${jfreechart.jar}" />
+		<include name="lib/${jcommon.jar}" />
+		<include
+			name="lib/${hibernate.client.hibernate.client.xml-apis.jar}" />
+		<include name="lib/${hibernate.client.asm.jar}" />
+		<include name="lib/${hibernate.client.asm-attrs.jar}" />
+		<include name="lib/${ogc.gml.jar}" />
+		<include name="lib/${ogc.swe.common.jar}" />
+		<include name="lib/${ogc.sensorml.jar}" />
+		<include name="lib/${ogc.om.jar}" />
+		<include name="lib/${jaxb.xjc.jar}" />
+		<include name="lib/${jaxb.impl.jar}" />
+		<include name="lib/${jaxb.api.jar}" />
+		<include name="lib/${jaxb1.impl.jar}}" />
+		<include name="lib/${jsr.173.jar}" />
+		<include name="lib/${netcdf.jar}" />
+		<include name="lib/${slf4j.jar}" />
+		<include name="lib/${grib.jar}" />
+		<include name="lib/${leddatastream.jar}" />
+		<include name="lib/${siam.jar}" />
+		<include name="lib/${xerces.jar}" />
+		<include name="lib/${dods.jar}" />
+		<include name="lib/${metadata.datasource.jdbc.jar}" />
+		<include name="lib/${backport.util.concurrent.jar}"/>
+		<include name="lib/${cfgatewayadapter.jar}"/>
+		<include name="lib/${flex.messaging.common.jar}"/>
+		<include name="lib/${flex.messaging.core.jar}"/>
+		<include name="lib/${flex.messaging.opt.jar}"/>
+		<include name="lib/${flex.messaging.proxy.jar}"/>
+		<include name="lib/${flex.messaging.remoting.jar}"/>
+	</fileset>
+	
+	<!-- I also need the fileset without the 'lib' dir -->
+	<fileset id="all-project-lib-flattened-jar-fileset"
+		dir="${project.lib}">
+		<include name="${xom.jar}" />
+		<include name="${jug.jar}" />
+		<include name="${jfreechart.jar}" />
+		<include name="${jcommon.jar}" />
+		<include
+			name="${hibernate.client.hibernate.client.xml-apis.jar}" />
+		<include name="${hibernate.client.asm.jar}" />
+		<include name="${hibernate.client.asm-attrs.jar}" />
+		<include name="${ogc.gml.jar}" />
+		<include name="${ogc.swe.common.jar}" />
+		<include name="${ogc.sensorml.jar}" />
+		<include name="${ogc.om.jar}" />
+		<include name="${jaxb.xjc.jar}" />
+		<include name="${jaxb.impl.jar}" />
+		<include name="${jaxb.api.jar}" />
+		<include name="${jaxb1.impl.jar}}" />
+		<include name="${jsr.173.jar}" />
+		<include name="${netcdf.jar}" />
+		<include name="${slf4j.jar}" />
+		<include name="${grib.jar}" />
+		<include name="${leddatastream.jar}" />
+		<include name="${siam.jar}" />
+		<include name="${xerces.jar}" />
+		<include name="${dods.jar}" />
+		<include name="${metadata.datasource.jdbc.jar}" />
+		<include name="${backport.util.concurrent.jar}}"/>
+		<include name="${cfgatewayadapter.jar}"/>
+		<include name="${flex.messaging.common.jar}"/>
+		<include name="${flex.messaging.core.jar}"/>
+		<include name="${flex.messaging.opt.jar}"/>
+		<include name="${flex.messaging.proxy.jar}"/>
+		<include name="${flex.messaging.remoting.jar}"/>
+	</fileset>
+
+	<!-- Define classpath for compiling the source code -->
+	<path id="compile-classpath">
+		<fileset refid="jboss-client-jar-fileset" />
+		<fileset refid="jboss-lib-jar-fileset" />
+		<fileset refid="all-project-lib-jar-fileset" />
+	</path>
+
+
+</project>
