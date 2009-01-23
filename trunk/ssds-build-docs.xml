@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<!--
+ Copyright 2009 MBARI
+ 
+ Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+ (the "License"); you may not use this file except in compliance 
+ with the License. You may obtain a copy of the License at
+ 
+ http://www.gnu.org/copyleft/lesser.html
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project name="ssds-build-docs" default="build" basedir=".">
+
+	<!-- Include various path definitions -->
+	<import file="path-defs.xml" />
+
+	<!-- Do stuff that you want everytime ant is run -->
+	<target name="init">
+		<!-- Initialize the date/time -->
+		<tstamp />
+	</target>
+
+	<!-- This target removes all the files (and directories if necessary) that -->
+	<!-- need to be removed when a clean build is to be done                   -->
+	<target name="remove-working-dirs" depends="init" description="Only a placeholder doesn't do anything" />
+
+	<!-- This target rebuilds the appropriate directories by using the project -->
+	<!-- directories that are set in the build.properties file.                -->
+	<target name="rebuild-project-dirs" depends="init" description="Only a placeholder doesn't do anything" />
+
+	<!-- The clean targets -->
+	<target name="clean" depends="remove-working-dirs,rebuild-project-dirs" description="Only a placeholder doesn't do anything" />
+
+	<!-- Convert the testing results to HTML report -->
+	<target name="doc-test" description="Takes all the test results and creates nice HTML formatted reports">
+		<junitreport todir="${gen.test}">
+			<fileset dir="${gen.test}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" todir="${gen.test}" styledir="${resources.build}/test" />
+		</junitreport>
+	</target>
+
+	<!-- A target to convert the java source code to html -->
+	<target name="doc-java2html" description="Takes the source code and creates nicely formatted HTML pages of the source">
+		<java classname="j2h" fork='yes'>
+			<arg line="-js '${src.java}'" />
+			<arg line="-js '${src.gen}'" />
+			<arg line="-d '${gen.java2html}'" />
+			<arg line="-m 4" />
+			<arg line="-n 'Project Source - Shore-Side Data System'" />
+			<classpath>
+				<path refid="compile-classpath" />
+				<pathelement location="${j2h.jar}" />
+			</classpath>
+		</java>
+	</target>
+
+	<!-- The target to generate the javadoc for the code. -->
+	<target name="doc-api" description="Creates the JavaDoc for all the Java source code">
+		<javadoc destdir="${gen.html}">
+			<packageset dir="${src.java}">
+				<include name="moos/ssds/clients/graphing/**" />
+				<include name="moos/ssds/dao/**" />
+				<include name="moos/ssds/data/**" />
+				<include name="moos/ssds/ingest/**" />
+				<include name="moos/ssds/io/**" />
+				<include name="moos/ssds/jms/**" />
+				<include name="moos/ssds/metadata/**" />
+				<include name="moos/ssds/ruminate/**" />
+				<include name="moos/ssds/services/**" />
+				<include name="moos/ssds/transmogrify/**" />
+				<include name="moos/ssds/util/**" />
+				<include name="moos/ssds/wrappergenerator/**" />
+			</packageset>
+			<packageset dir="${src.gen}" />
+			<classpath>
+				<path refid="compile-classpath" />
+				<pathelement location="${antlr.jar}" />
+			</classpath>
+		</javadoc>
+	</target>
+
+	<!-- Compile the necessary code source code -->
+	<target name="compile" depends="init" description="Only a placeholder doesn't do anything" />
+
+	<!-- The target to build -->
+	<target name="build" depends="clean,compile" description="" />
+
+	<!-- The distribution target -->
+	<target name="dist" depends="doc-test,doc-java2html,doc-api" description="Simply runs the three docs targets" />
+
+	<!-- Deploy the generated documentation -->
+	<target name="deploy" depends="dist">
+		<!-- Create the ssds-docs directory if it does not exist -->
+		<mkdir dir="${project.documentation.deploy.location}" />
+		<mkdir dir="${project.documentation.test.deploy.location}" />
+		<mkdir dir="${project.documentation.api.deploy.location}" />
+		<mkdir dir="${project.documentation.java2html.deploy.location}" />
+		<!-- Deploy the index page -->
+		<copy file="${src.resources}/build/doc/index.html" todir="${project.documentation.deploy.location}" overwrite="true" />
+		<!-- Deploy the test result pages -->
+		<copy todir="${project.documentation.test.deploy.location}">
+			<fileset dir="${project.build}/doc/test" />
+		</copy>
+		<!-- Deploy the API Pages -->
+		<copy todir="${project.documentation.api.deploy.location}">
+			<fileset dir="${project.build}/doc/api" />
+		</copy>
+		<!-- Deploy the Java2HTML Pages -->
+		<copy todir="${project.documentation.java2html.deploy.location}">
+			<fileset dir="${project.build}/doc/java2html" />
+		</copy>
+	</target>
+
+	<!-- The target to test the ingest component -->
+	<target name="test" depends="init" description="Only a placeholder doesn't do anything" />
+
+	<!-- Remove all the docs -->
+	<target name="undeploy" depends="init">
+		<delete dir="${project.documentation.deploy.location}" />
+		<delete dir="${project.documentation.test.deploy.location}" />
+		<delete dir="${project.documentation.api.deploy.location}" />
+		<delete dir="${project.documentation.java2html.deploy.location}" />
+	</target>
+</project>

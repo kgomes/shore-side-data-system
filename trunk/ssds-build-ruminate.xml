@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<!--
+ Copyright 2009 MBARI
+ 
+ Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+ (the "License"); you may not use this file except in compliance 
+ with the License. You may obtain a copy of the License at
+ 
+ http://www.gnu.org/copyleft/lesser.html
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project name="ssds-build-ruminate" default="build" basedir=".">
+
+	<!-- Import some path definitions -->
+	<import file="path-defs.xml" />
+
+	<!-- Define the ejb-doclet task -->
+	<taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
+		<classpath>
+			<pathelement location="${jboss.client.jar.directory}/${jboss-j2ee.jar}" />
+			<fileset dir="${xdoclet.path}">
+				<include name="*.jar" />
+			</fileset>
+		</classpath>
+	</taskdef>
+
+	<!-- Do stuff that you want everytime ant is run -->
+	<target name="init">
+		<!-- Initialize the date/time -->
+		<tstamp />
+	</target>
+
+	<!-- This target removes all the files (and directories if necessary) that -->
+	<!-- need to be removed when a clean build is to be done                   -->
+	<target name="remove-working-dirs" depends="init">
+		<!-- Delete directory where classes are compiled to -->
+		<delete dir="${project.build}/classes/moos/ssds/ruminate" />
+		<!-- Now delete the configuration directory -->
+		<delete dir="${project.build}/ruminate" />
+	</target>
+
+	<!-- This target rebuilds the appropriate directories by using the project -->
+	<!-- directories that are set in the build.properties file.                -->
+	<target name="rebuild-project-dirs" depends="init">
+		<!-- Base project directories -->
+		<mkdir dir="${project.build}" />
+		<mkdir dir="${project.build}/classes" />
+		<mkdir dir="${project.build}/ruminate/META-INF" />
+		<mkdir dir="${project.dist}" />
+	</target>
+
+	<!-- The clean targets -->
+	<target name="clean" depends="remove-working-dirs,rebuild-project-dirs" />
+
+	<!-- The target to run xdoclet on the ruminate specific classes -->
+	<target name="ejb-doclet" depends="init">
+		<!-- First, run ejbdoclet for the ruminate MDB -->
+		<ejbdoclet ejbspec="${ruminate.xdoclet.ejb.spec.version}" destDir="${src.gen}" verbose="true" force="false">
+			<!-- Run on any classes that are MDB's in ruminate -->
+			<fileset dir="${src.java}">
+				<include name="moos/ssds/ruminate/**/*MDB.java" />
+			</fileset>
+			<!-- Create the generic J2EE deployment descriptor -->
+			<deploymentdescriptor destdir="${project.build}/ruminate/META-INF" destinationFile="ejb-jar.xml" validatexml="true" />
+		</ejbdoclet>
+	</target>
+
+	<!-- Compile the necessary code source code -->
+	<target name="compile" depends="init">
+		<!-- Run the appropriate javac -->
+		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
+			<src path="${src.java}" />
+			<include name="moos/ssds/jms/**/*.java" />
+			<include name="moos/ssds/transmogrify/**/*.java" />
+			<include name="moos/ssds/ruminate/**/*.java" />
+			<classpath>
+				<pathelement location="${project.lib}/${siam.jar}" />
+				<pathelement location="${project.dist}/ssds-transmogrify-pub.jar" />
+				<pathelement location="${project.dist}/ssds-services-metadata-client.jar" />
+				<fileset refid="jboss-client-jar-fileset" />
+			</classpath>
+		</javac>
+	</target>
+
+	<!-- The target to build -->
+	<target name="build" depends="clean,compile" description="This will clean all the compiled
+		classes, run all the necessary XDoclet tasks, and compile the source code" />
+
+	<!-- The distribution target -->
+	<target name="dist" depends="build,ejb-doclet" description="This target runs the clean, compile
+		and then builds this distributions">
+		<!-- Delete old jar files -->
+		<delete file="${project.dist}/ssds-ruminate.jar" />
+		<!-- Now create the properties file that the RuminateMDB will use -->
+		<copy file="${resources.build}/moos/ssds/ruminate/ruminate_template.properties" tofile="${project.build}/ruminate/moos/ssds/ruminate/ruminate.properties" overwrite="true">
+			<filterset>
+				<filter token="RUMINATE_XML_STORAGE_DIRECTORY" value="${ruminate.xml.storage.directory}" />
+				<filter token="RUMINATE_XML_URL" value="${ruminate.xml.url}" />
+				<filter token="RUMINATE_TOPIC_NAME" value="${ruminate.topic.name}" />
+				<filter token="RUMINATE_MESSAGING_HOST_NAME_LONG" value="${ruminate.messaging.host.name.long}" />
+				<filter token="RUMINATE_REPUBLISH_HOST_NAME_LONG" value="${ruminate.republish.host.name.long}" />
+				<filter token="RUMINATE_REPUBLISH_TOPIC_NAME" value="${ruminate.republish.topic.name}" />
+				<filter token="RUMINATE_SSDS_DATASTREAM_SERVLET_BASE_URL" value="${ruminate.datastream.servlet.base.url}" />
+			</filterset>
+		</copy>
+		<!-- Copy over the custom jboss.xml file if the ingest/transmog instance is remote -->
+		<if>
+			<equals arg1="${ruminate.messaging.host.remote}" arg2="true" />
+			<then>
+				<copy file="${resources.build}/moos/ssds/ruminate/jboss.xml" todir="${project.build}/ruminate/META-INF" overwrite="true">
+					<filterset>
+						<filter token="RUMINATE_TOPIC_NAME" value="${ruminate.topic.name}" />
+						<filter token="JMS_PROVIDER_ADAPTER_JNDI" value="RuminateJMSProvider" />
+					</filterset>
+				</copy>
+			</then>
+			<else>
+				<copy file="${resources.build}/moos/ssds/ruminate/jboss.xml" todir="${project.build}/ruminate/META-INF" overwrite="true">
+					<filterset>
+						<filter token="RUMINATE_TOPIC_NAME" value="${ruminate.topic.name}" />
+						<filter token="JMS_PROVIDER_ADAPTER_JNDI" value="DefaultJMSProvider" />
+					</filterset>
+				</copy>
+			</else>
+		</if>
+		<!-- The Manifest file for ruminate -->
+		<copy file="${resources.build}/manifest/MANIFEST_TEMPLATE.MF" tofile="${project.build}/ruminate/META-INF/MANIFEST.MF" overwrite="true">
+			<filterset>
+				<filter token="CLASSPATH" value="${ruminate.classpath}" />
+				<filter token="MAIN_CLASS_STATEMENT" value="" />
+			</filterset>
+		</copy>
+		<!-- Create the ruminate jar  -->
+		<jar jarfile="${project.dist}/ssds-ruminate.jar" manifest="${project.build}/ruminate/META-INF/MANIFEST.MF">
+			<!-- Include the classes -->
+			<fileset dir="${build.classes}">
+				<include name="moos/ssds/ruminate/**/*.class" />
+				<include name="moos/ssds/metadata/**/*.class" />
+				<include name="moos/ssds/dao/util/**/*.class" />
+				<include name="moos/ssds/services/metadata/**/*.class" />
+			</fileset>
+			<!-- Include all necessary resources -->
+			<fileset dir="${project.build}/ruminate">
+				<include name="moos/ssds/ruminate/**/*.properties" />
+			</fileset>
+			<!-- Include the metadata for the generic deployment descriptor -->
+			<fileset dir="${project.build}/ruminate">
+				<include name="META-INF/*.xml" />
+			</fileset>
+			<fileset dir="${project.dir}" includes="lib/${siam.jar}" />
+		</jar>
+	</target>
+
+	<!-- The target to test the ingest component -->
+	<target name="test" depends="init">
+		<!-- Clean out the compiled test classes -->
+		<delete dir="${project.build}/classes/test/moos/ssds/ruminate" />
+		<!-- Copy the XML file over to put into a packet and send-->
+		<copy file="${test.ruminate.xml.file}" tofile="${project.build}/ruminate/TestRuminate.xml" overwrite="true">
+			<filterset>
+				<filter token="TEST_DEPLOYMENT_NAME" value="${test.ruminate.head.dataproducer.name}" />
+				<filter token="TEXT_TO_CHANGE" value="${DSTAMP} ${TSTAMP}" />
+			</filterset>
+		</copy>
+		<!-- Compile just the test classes -->
+		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
+			<src path="${src.java}" />
+			<include name="moos/ssds/transmogrify/**/*.java" />
+			<include name="test/moos/ssds/ruminate/TestRuminate.java" />
+			<classpath>
+				<pathelement location="${project.lib}/${junit.jar}" />
+				<pathelement location="${project.dist}/ssds-services-metadata-client.jar" />
+				<pathelement location="${project.dist}/ssds-transmogrify-pub.jar" />
+				<fileset refid="jboss-client-jar-fileset" />
+			</classpath>
+		</javac>
+		<junit printsummary="withOutAndErr" haltonfailure="no" errorProperty="test.failed" failureProperty="test.failed">
+			<jvmarg value="-Xms512m" />
+			<jvmarg value="-Xmx1024m" />
+			<classpath>
+				<!-- Include the publish client jar and the services client jar -->
+				<pathelement location="${project.lib}/${junit.jar}" />
+				<pathelement location="${project.build}/classes" />
+				<pathelement location="${project.build}/ruminate" />
+				<pathelement location="${project.dist}/ssds-services-metadata-client.jar" />
+				<pathelement location="${project.dist}/ssds-transmogrify-pub.jar" />
+				<fileset refid="jboss-client-jar-fileset" />
+				<fileset refid="jboss-lib-jar-fileset" />
+			</classpath>
+			<sysproperty key="test.ruminate.device.id" value="${test.ruminate.device.id}" />
+			<sysproperty key="test.ruminate.parent.id" value="${test.ruminate.parent.id}" />
+			<sysproperty key="test.ruminate.topic.name" value="${test.ruminate.topic.name}" />
+			<sysproperty key="test.ruminate.host.name.long" value="${test.ruminate.host.name.long}" />
+			<sysproperty key="test.ruminate.path.to.xml.file" value="${project.build}/ruminate/TestRuminate.xml" />
+			<sysproperty key="test.ruminate.head.dataproducer.name" value="${test.ruminate.head.dataproducer.name}" />
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${gen.test}">
+				<fileset dir="${src.java}">
+					<include name="test/moos/ssds/ruminate/TestRuminate.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+	<!-- Deploy the ingest component and configuration files -->
+	<target name="deploy" depends="dist">
+		<!-- Copy the remote JMS topic provider if needed -->
+		<if>
+			<equals arg1="${ruminate.messaging.host.remote}" arg2="true" />
+			<then>
+				<copy file="${resources.build}/moos/ssds/ruminate/ssds-ruminate-remote-jms-ds.xml" todir="${ruminate.deployment.location}" overwrite="true">
+					<filterset>
+						<filter token="RUMINATE_MESSAGING_HOST_NAME_LONG" value="${ruminate.messaging.host.name.long}" />
+					</filterset>
+				</copy>
+			</then>
+		</if>
+		<!-- Copy over the post ruminate JMS topic config file -->
+		<copy file="${resources.build}/jboss/ssds-jms-service_template.xml" tofile="${ruminate.republish.deployment.location}/ssds-ruminate-republish-service.xml" overwrite="true">
+			<filterset>
+				<filter token="TOPIC_NAME" value="${ruminate.republish.topic.name}" />
+			</filterset>
+		</copy>
+		<!-- Now deploy the jar -->
+		<copy file="${project.dist}/ssds-ruminate.jar" todir="${ruminate.deployment.location}" />
+	</target>
+
+	<!-- This target removes the ruminate application and config files -->
+	<target name="undeploy" depends="init">
+		<!-- Remove the JMS Remote Provider config -->
+		<if>
+			<equals arg1="${ruminate.messaging.host.remote}" arg2="true" />
+			<then>
+				<delete file="${ruminate.deployment.location}/ssds-ruminate-remote-jms-ds.xml" />
+			</then>
+		</if>
+		<!-- Remove the post ruminate topic config file -->
+		<delete file="${ruminate.deployment.location}/ssds-ruminate-republish-service.xml" />
+		<delete file="${ruminate.deployment.location}/ssds-ruminate.jar" />
+	</target>
+</project>

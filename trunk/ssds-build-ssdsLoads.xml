@@ -1,0 +1,111 @@
+<?xml version = '1.0' encoding = 'ISO-8859-1' ?>
+<!--
+ Copyright 2009 MBARI
+ 
+ Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+ (the "License"); you may not use this file except in compliance 
+ with the License. You may obtain a copy of the License at
+ 
+ http://www.gnu.org/copyleft/lesser.html
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project name="ssds-build-ssdsLoads" default="build">
+
+	<!-- Import path definitions -->
+	<import file="path-defs.xml" />
+
+	<!-- Do stuff that you want everytime ant is run -->
+	<target name="init">
+		<!-- Initialize the date/time -->
+		<tstamp />
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.classes}/moos/ssds/clients/ssdsLoads" />
+	</target>
+
+	<!-- Compile -->
+	<target name="compile" depends="clean">
+		<condition property="client.jar.available">
+			<available file="${project.dist}/ssds-services-metadata-client.jar" type="file" />
+		</condition>
+		<fail unless="client.jar.available" message="The client jar for metadata services is not built, please build it first" />
+		<mkdir dir="${build.classes}/moos/ssds/clients/ssdsLoads" />
+		<javac includejavaruntime="true" verbose="false" srcdir="${src.java}/moos/ssds/clients/ssdsLoads" destdir="${project.build}/classes" debug="${debug}" fork="yes">
+			<include name="**/*.*" />
+			<classpath>
+				<pathelement location="${project.dist}/ssds-services-metadata-client.jar" />
+				<path refid="compile-classpath" />
+			</classpath>
+		</javac>
+	</target>
+
+	<!-- The default target to build -->
+	<target name="build" depends="clean,compile" description="This target will clean up first, then compile." />
+
+	<!-- Test -->
+	<target name="test" depends="compile">
+	</target>
+
+	<!-- Build Man page -->
+	<target name="doc" depends="test">
+	</target>
+
+	<!-- Create an executable jar file -->
+	<target name="dist" depends="build">
+		<!-- Delete old ssdsLoads jar files -->
+		<delete file="${project.dist}/ssdsLoads.jar" />
+		<!-- Name the jars to be created -->
+		<property name="ssdsLoads.bin" value="${project.dist}/ssdsLoads.jar" />
+		<!-- Build the manifest file -->
+		<manifest file="${build.classes}/moos/ssds/clients/ssdsLoads/MANIFEST.MF">
+			<attribute name="Built-By" value="${user.name}" />
+			<attribute name="Main-Class" value="moos.ssds.clients.ssdsLoads.SubmitFiles" />
+			<attribute name="Class-Path" value="${client.ssdsLoads.classpath}" />
+		</manifest>
+
+		<!-- log4j properties -->
+		<copy file="${src.resources}/build/log4j/log4j_FileAppender_Template.properties" tofile="${project.build}/clients/logging/log4j.properties" overwrite="true">
+			<filterset>
+				<filter token="LOG4J_LEVEL" value="${client.ssdsLoads.log4j.level}" />
+				<filter token="LOG4J_FILE_NAME" value="${client.ssdsLoads.log4j.file.name}" />
+				<filter token="LOG4J_DATE_PATTERN" value="${client.ssdsLoads.log4j.date.pattern}" />
+				<filter token="LOG4J_PATTERN_LAYOUT" value="${client.ssdsLoads.log4j.pattern.layout}" />
+			</filterset>
+		</copy>
+		<!-- Build the binary jar file -->
+		<jar jarfile="${project.dist}/ssdsLoads.jar" manifest="${build.classes}/moos/ssds/clients/ssdsLoads/MANIFEST.MF">
+			<fileset dir="${build.classes}">
+				<include name="moos/ssds/clients/ssdsLoads/" />
+			</fileset>
+			<!-- The log4j properties file -->
+			<fileset dir="${project.build}/clients/logging" includes="log4j.properties" />
+		</jar>
+	</target>
+
+	<!-- Deploy the zip file -->
+	<target name="deploy" depends="dist">
+		<!-- Make sure the ssds-docs directory is there -->
+		<mkdir dir="${project.documentation.deploy.location}" />
+		<mkdir dir="${project.documentation.deploy.location}/client" />
+		<!-- Create the ZIP file -->
+		<zip destfile="${project.documentation.deploy.location}/client/ssds-loads.zip">
+			<fileset dir="${project.dist}" includes="ssdsLoads.jar" />
+			<zipfileset dir="${project.dist}" includes="ssds-services-metadata-client.jar" prefix="lib" />
+			<zipfileset refid="jboss-client-jar-fileset" prefix="lib" />
+			<zipfileset refid="jboss-lib-jar-fileset" prefix="lib" />
+			<zipfileset refid="all-project-lib-flattened-jar-fileset" prefix="lib" />
+		</zip>
+	</target>
+
+	<!-- This target removes zip file from the deployed configuration -->
+	<target name="undeploy" depends="init">
+		<delete file="${project.documentation.deploy.location}/client/ssds-loads.zip" />
+	</target>
+
+</project>

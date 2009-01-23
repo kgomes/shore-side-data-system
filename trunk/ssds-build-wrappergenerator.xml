@@ -1,0 +1,120 @@
+<?xml version = '1.0' encoding = 'ISO-8859-1' ?>
+<!--
+ Copyright 2009 MBARI
+ 
+ Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+ (the "License"); you may not use this file except in compliance 
+ with the License. You may obtain a copy of the License at
+ 
+ http://www.gnu.org/copyleft/lesser.html
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project name="ssds-build-wrappergenerator" default="build">
+
+	<!-- Import path definitions -->
+	<import file="path-defs.xml" />
+
+	<!-- Do stuff that you want everytime ant is run -->
+	<target name="init">
+		<!-- Initialize the date/time -->
+		<tstamp />
+	</target>
+
+	<target name="clean">
+		<delete file="${project.build}/perl/SSDS.pm" />
+		<delete dir="${build.classes}/moos/ssds/wrappergenerator" />
+	</target>
+
+	<target name="compile" depends="clean">
+		<mkdir dir="${project.build}/perl" />
+		<mkdir dir="${build.classes}/moos/ssds/wrappergenerator" />
+		<javac includejavaruntime="true" verbose="false" srcdir="${src.java}/moos/ssds/wrappergenerator" destdir="${build.classes}" debug="on" fork="false">
+			<include name="**/*.*" />
+			<classpath>
+				<pathelement location="${build.classes}" />
+				<pathelement location="${antlr.jar}" />
+			</classpath>
+		</javac>
+	</target>
+
+	<!-- The target to build -->
+	<target name="build" depends="clean,compile" description="This target will clean up first, then compile." />
+
+	<!-- The target to generate the Perl module -->
+	<target name="generate-ssds-pm" depends="compile">
+		<copy file="${project.src}/perl/original_SSDS_partial.pm" tofile="${project.build}/perl/SSDS.pm">
+			<filterset>
+				<filter token="CLIENT_TOOL_PERL_MODULE_HTTP_SERVER_BASE" value="${client.tool.perl.module.http.server.base}" />
+			</filterset>
+		</copy>
+		<java classname="moos.ssds.wrappergenerator.PerlGenerator" args="${project.build}/perl/SSDS.pm
+			${src.java}/moos/ssds/metadata/
+			${src.java}/moos/ssds/services/metadata/ ">
+			<classpath>
+				<pathelement location="${build.classes}" />
+				<pathelement location="${antlr.jar}" />
+			</classpath>
+		</java>
+	</target>
+
+
+	<!-- Test the generated perl module services, requires perl and pod2html executables in search path on local system -->
+	<target name="test" depends="generate-ssds-pm">
+		<copy file="${project.src}/perl/testSSDS.pl" tofile="${project.build}/perl/testSSDS.pl">
+			<filterset>
+				<filter token="CLIENT_TOOL_PERL_MODULE_HTTP_SERVER_BASE" value="${client.tool.perl.module.http.server.base}" />
+			</filterset>
+		</copy>
+		<exec dir="${project.build}/perl/" executable="perl" os="Windows 2000,Mac OS X" output="${gen.test}/perl_module_test_results.txt">
+			<arg line=" testSSDS.pl" />
+		</exec>
+	</target>
+
+	<target name="doc" depends="test">
+		<exec dir="${project.build}/perl/" executable="cmd" os="Windows 2000">
+			<arg line="/c pod2html -infile SSDS.pm -outfile perlSSDSmodule.html -title SSDS.pm" />
+		</exec>
+		<exec dir="${project.build}/perl/" executable="pod2html" os="Mac OS X">
+			<arg line=" -infile SSDS.pm -outfile perlSSDSmodule.html -title SSDS.pm" />
+		</exec>
+	</target>
+
+	<!-- Build the Plaion Old Documentation, requires Perl on local system -->
+	<target name="dist" depends="doc">
+		<copy file="${project.src}/perl/README" tofile="${project.build}/perl/README">
+			<filterset>
+				<filter token="CLIENT_TOOL_PERL_MODULE_HTTP_SERVER_BASE" value="${client.tool.perl.module.http.server.base}" />
+			</filterset>
+		</copy>
+		<copy file="${project.src}/perl/perlSSDSmodule.html" todir="${project.build}/perl" />
+
+		<zip destfile="${project.dist}/perlSSDS.zip" comment="Please see the example perl code in testSSDS.pl.">
+			<fileset dir="${project.build}/perl/">
+				<include name="README" />
+				<include name="SSDS.pm" />
+				<include name="perlSSDSmodule.html" />
+				<include name="testSSDS.pl" />
+			</fileset>
+		</zip>
+	</target>
+
+
+	<!-- Deploy the zip file -->
+	<target name="deploy" depends="dist">
+		<!-- Make sure the ssds-docs directory is there -->
+		<mkdir dir="${project.documentation.deploy.location}" />
+		<mkdir dir="${project.documentation.deploy.location}/client" />
+		<copy file="${project.dist}/perlSSDS.zip" todir="${project.documentation.deploy.location}/client" />
+	</target>
+
+	<!-- This target removes zip file from the deployed configuration -->
+	<target name="undeploy" depends="init">
+		<delete file="${project.documentation.deploy.location}/client/perlSSDS.zip" />
+	</target>
+
+</project>
