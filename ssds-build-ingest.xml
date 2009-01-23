@@ -1,0 +1,214 @@
+<?xml version="1.0"?>
+<!--
+ Copyright 2009 MBARI
+ 
+ Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+ (the "License"); you may not use this file except in compliance 
+ with the License. You may obtain a copy of the License at
+ 
+ http://www.gnu.org/copyleft/lesser.html
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project name="ssds-build-ingest" default="build" basedir=".">
+
+	<!-- Include various path definitions -->
+	<import file="path-defs.xml" />
+
+	<!-- Define the ejb-doclet task -->
+	<taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
+		<classpath>
+			<pathelement location="${jboss.client.jar.directory}/${jboss-j2ee.jar}" />
+			<fileset dir="${xdoclet.path}">
+				<include name="*.jar" />
+			</fileset>
+		</classpath>
+	</taskdef>
+
+	<!-- Do stuff that you want everytime ant is run -->
+	<target name="init">
+		<!-- Initialize the date/time -->
+		<tstamp />
+	</target>
+
+	<!-- This target removes all the files (and directories if necessary) that -->
+	<!-- need to be removed when a clean build is to be done                   -->
+	<target name="remove-working-dirs" depends="init">
+		<!-- Delete directory where classes are compiled to -->
+		<delete dir="${project.build}/classes/moos/ssds/ingest" />
+		<delete dir="${project.build}/classes/moos/ssds/io" />
+		<delete dir="${project.build}/classes/moos/ssds/transmogrify" />
+		<!-- Now delete the configuration directory -->
+		<delete dir="${project.build}/ingest" />
+	</target>
+
+	<!-- This target rebuilds the appropriate directories by using the project -->
+	<!-- directories that are set in the build.properties file.                -->
+	<target name="rebuild-project-dirs" depends="init">
+		<!-- Base project directories -->
+		<mkdir dir="${project.build}" />
+		<mkdir dir="${project.build}/classes" />
+		<mkdir dir="${project.build}/ingest/META-INF" />
+		<mkdir dir="${project.dist}" />
+	</target>
+
+	<!-- The clean targets -->
+	<target name="clean" depends="remove-working-dirs,rebuild-project-dirs" />
+
+	<!-- The target to run xdoclet on the ingest specific classes -->
+	<target name="ejb-doclet" depends="init">
+		<!-- First, run ejbdoclet for the ingest and SQL Ingest MDB -->
+		<ejbdoclet ejbspec="${ingest.xdoclet.ejb.spec.version}" destDir="${src.gen}" verbose="${ingest.xdoclet.verbose}" force="${ingest.xdoclet.force}">
+			<!-- Run on any classes that are MDB's in ingest -->
+			<fileset dir="${src.java}">
+				<include name="moos/ssds/ingest/**/*MDB.java" />
+			</fileset>
+			<!-- Create the generic J2EE deployment descriptor -->
+			<deploymentdescriptor destdir="${project.build}/ingest/META-INF" destinationFile="ejb-jar.xml" validatexml="true" />
+			<!-- Create the deployment file for jboss -->
+			<jboss version="${ingest.xdoclet.jboss.version}" destDir="${project.build}/ingest/META-INF" />
+		</ejbdoclet>
+	</target>
+
+	<!-- Compile the necessary code source code -->
+	<target name="compile" depends="init">
+		<!-- Run the appropriate javac -->
+		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
+			<src path="${src.java}" />
+			<include name="moos/ssds/ingest/**/*.java" />
+			<include name="moos/ssds/io/**/*.java" />
+			<include name="moos/ssds/transmogrify/SSDSDevicePacket.java" />
+			<include name="moos/ssds/transmogrify/SSDSGeoLocatedDevicePacket.java" />
+			<exclude name="moos/ssds/io/util/**/*.java" />
+			<classpath>
+				<pathelement location="${project.lib}/${siam.jar}" />
+				<fileset refid="jboss-client-jar-fileset" />
+			</classpath>
+		</javac>
+	</target>
+
+	<!-- The target to build -->
+	<target name="build" depends="clean,compile" description="This will clean all the compiled classes, run all the necessary XDoclet tasks, and compile the source code" />
+
+	<!-- The distribution target -->
+	<target name="dist" depends="build,ejb-doclet" description="This target runs the clean, compile and then builds this distributions">
+		<!-- Delete old jar files -->
+		<delete file="${project.dist}/ssds-ingest.jar" />
+
+		<!-- Now create the properties file that the IngestMDB and SQLIngestMDB will use -->
+		<copy file="${resources.build}/moos/ssds/ingest/ingest_template.properties" tofile="${project.build}/ingest/moos/ssds/ingest/ingest.properties" overwrite="true">
+			<filterset>
+				<filter token="RUMINATE_TOPIC_NAME" value="${ingest.ruminate.topic.name}" />
+				<filter token="SQL_TOPIC_NAME" value="${ingest.sql.topic.name}" />
+				<filter token="ARRIVAL_TOPIC_NAME" value="${ingest.arrival.topic.name}" />
+			</filterset>
+		</copy>
+		<copy file="${resources.build}/moos/ssds/io/io_template.properties" tofile="${project.build}/ingest/moos/ssds/io/io.properties" overwrite="true">
+			<filterset>
+				<filter token="IO_STORAGE_DIRECTORY" value="${ingest.io.storage.directory}" />
+				<filter token="IO_STORAGE_SQL_JNDI_NAME" value="${ingest.io.sql.datasource.jndi.name}" />
+				<filter token="IO_STORAGE_SQL_JNDI_SERVER_NAME" value="${ingest.io.sql.datasource.server.name}" />
+				<filter token="IO_STORAGE_SQL_USERNAME" value="${ingest.io.sql.datasource.user.name}" />
+				<filter token="IO_STORAGE_SQL_PASSWORD" value="${ingest.io.sql.datasource.password}" />
+				<filter token="IO_STORAGE_SQL_CREATE_DEVICE_TABLE" value="${io.storage.sql.create.device.table}" />
+				<filter token="IO_STORAGE_SQL_CREATE_DEVICE_TABLE_PRIMARY_KEY" value="${io.storage.sql.create.device.table.primary.key}" />
+				<filter token="IO_STORAGE_SQL_CREATE_DEVICE_TABLE_INDEX" value="${io.storage.sql.create.device.table.index}" />
+				<filter token="IO_STORAGE_SQL_TEMPLATE_COUNT_NUMBER_OF_ROWS" value="${io.storage.sql.template.count.number.of.rows}" />
+				<filter token="IO_STORAGE_SQL_TEMPLATE_LATEST_TIMESTAMP_SECONDS" value="${io.storage.sql.template.latest.timestamp.seconds}" />
+				<filter token="IO_STORAGE_SQL_TEMPLATE_LATEST_TIMESTAMP_NANOSECONDS" value="${io.storage.sql.template.latest.timestamp.nanoseconds}" />
+				<filter token="IO_STORAGE_SQL_TEMPLATE_LAST_NUMBER_PACKETS" value="${io.storage.sql.template.last.number.packets}" />
+				<filter token="IO_STORAGE_SQL_TABLE_DELIMITER" value="${io.storage.sql.table.delimiter}" />
+				<filter token="IO_STORAGE_SQL_LASTNUMBER_PREAMBLE" value="${io.storage.sql.lastnumber.preamble}" />
+				<filter token="IO_STORAGE_SQL_LASTNUMBER_POSTAMBLE" value="${io.storage.sql.lastnumber.postamble}" />
+			</filterset>
+		</copy>
+		<!-- The Manifest File for ingest -->
+		<copy file="${resources.build}/manifest/MANIFEST_TEMPLATE.MF" tofile="${project.build}/ingest/META-INF/MANIFEST.MF" overwrite="true">
+			<filterset>
+				<filter token="CLASSPATH" value="${ingest.classpath}" />
+				<filter token="MAIN_CLASS_STATEMENT" value="" />
+			</filterset>
+		</copy>
+		<!-- Create the ingest jar  -->
+		<jar jarfile="${project.dist}/ssds-ingest.jar" manifest="${project.build}/ingest/META-INF/MANIFEST.MF">
+			<!-- Include the classes -->
+			<fileset dir="${build.classes}">
+				<include name="moos/ssds/transmogrify/SSDSDevicePacket.class" />
+				<include name="moos/ssds/transmogrify/SSDSGeoLocatedDevicePacket.class" />
+				<include name="moos/ssds/ingest/**/*.class" />
+				<include name="moos/ssds/io/**/*.class" />
+				<exclude name="moos/ssds/io/util/**/*.class" />
+			</fileset>
+			<!-- Include all necessary resources -->
+			<fileset dir="${project.build}/ingest">
+				<include name="moos/ssds/ingest/**/*.properties" />
+				<include name="moos/ssds/io/**/*.properties" />
+			</fileset>
+			<!-- Include the metadata for the generic deployment descriptor -->
+			<fileset dir="${project.build}/ingest">
+				<include name="META-INF/*.xml" />
+			</fileset>
+			<fileset dir="${project.dir}" includes="lib/${siam.jar}" />
+		</jar>
+
+	</target>
+
+	<!-- The target to test the ingest component -->
+	<target name="test" depends="init">
+	</target>
+
+	<!-- Deploy the ingest component and configuration files -->
+	<target name="deploy" depends="dist">
+		<!-- Deploy the JDBC driver jar -->
+		<copy file="${project.lib}/${ingest.io.sql.datasource.jdbc.jar}" todir="${ingest.io.sql.datasource.jdbc.jar.deployment.location}" />
+		<!-- Copy Datasource xml configurations over -->
+		<copy file="${resources.build}/jboss/ssds-ds_template.xml" tofile="${ingest.deployment.location}/ssds-data-ds.xml" overwrite="true">
+			<filterset>
+				<filter token="DATASOURCE_JNDI_NAME" value="${ingest.io.sql.datasource.jndi.name}" />
+				<filter token="DATASOURCE_CONNECTION_URL" value="${ingest.io.sql.datasource.connection.url}" />
+				<filter token="DATASOURCE_DRIVER_CLASS" value="${ingest.io.sql.datasource.driver.class}" />
+				<filter token="DATASOURCE_USER_LOGIN_NAME" value="${ingest.io.sql.datasource.user.name}" />
+				<filter token="DATASOURCE_PASSWORD" value="${ingest.io.sql.datasource.password}" />
+				<filter token="DATASOURCE_TRANSACTION_ISOLATION" value="${ingest.io.sql.datasource.transaction.isolation}" />
+			</filterset>
+		</copy>
+		<!-- Copy over the JMS topic files that ingest needs -->
+		<copy file="${resources.build}/jboss/ssds-jms-service_template.xml" tofile="${ingest.deployment.location}/ssds-transmogrify-service.xml" overwrite="true">
+			<filterset>
+				<filter token="TOPIC_NAME" value="${ingest.topic.name}" />
+			</filterset>
+		</copy>
+		<copy file="${resources.build}/jboss/ssds-jms-service_template.xml" tofile="${ingest.deployment.location}/ssds-ruminate-service.xml" overwrite="true">
+			<filterset>
+				<filter token="TOPIC_NAME" value="${ingest.ruminate.topic.name}" />
+			</filterset>
+		</copy>
+		<copy file="${resources.build}/jboss/ssds-jms-service_template.xml" tofile="${ingest.deployment.location}/ssds-sql-ingest-service.xml" overwrite="true">
+			<filterset>
+				<filter token="TOPIC_NAME" value="${ingest.sql.topic.name}" />
+			</filterset>
+		</copy>
+		<copy file="${resources.build}/jboss/ssds-jms-service_template.xml" tofile="${ingest.deployment.location}/ssds-arrival-service.xml" overwrite="true">
+			<filterset>
+				<filter token="TOPIC_NAME" value="${ingest.arrival.topic.name}" />
+			</filterset>
+		</copy>
+		<!-- Now deploy the jar -->
+		<copy file="${project.dist}/ssds-ingest.jar" todir="${ingest.deployment.location}" />
+	</target>
+
+	<!-- This target removes the ingest application from the deployment location -->
+	<target name="undeploy" depends="init">
+		<delete file="${ingest.deployment.location}/ssds-ingest.jar" />
+		<delete file="${ingest.deployment.location}/ssds-transmogrify-service.xml" />
+		<delete file="${ingest.deployment.location}/ssds-ruminate-service.xml" />
+		<delete file="${ingest.deployment.location}/ssds-sql-ingest-service.xml" />
+		<delete file="${ingest.deployment.location}/ssds-arrival-service.xml" />
+		<delete file="${ingest.deployment.location}/ssds-data-ds.xml" />
+		<delete file="${ingest.io.sql.datasource.jdbc.jar.deployment.location}/${ingest.io.sql.datasource.jdbc.jar}" />
+	</target>
+</project>
