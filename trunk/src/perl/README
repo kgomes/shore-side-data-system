@@ -1,0 +1,173 @@
+############################################################################
+# Copyright 2009 MBARI                                                     #
+#                                                                          #
+# Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1        #
+# (the "License"); you may not use this file except in compliance          #
+# with the License. You may obtain a copy of the License at                #
+#                                                                          #
+# http://www.gnu.org/copyleft/lesser.html                                  #
+#                                                                          #
+# Unless required by applicable law or agreed to in writing, software      #
+# distributed under the License is distributed on an "AS IS" BASIS,        #
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. #
+# See the License for the specific language governing permissions and      #
+# limitations under the License.                                           #
+############################################################################
+The SSDS Perl module README.
+
+With SSDS.pm you may work with MBARI's Shore Side Data System metadata in 
+an object oriented fashion to access and update SSDS metadata.  The module 
+is built upon the MetadataAccessServlet web service and most methods and
+properties that are available through the java API are availble through 
+this Perl API.  
+
+Installation involves simply extracting the SSDS.pm file to a location where
+your Perl scripts may use it.  Here is a sample usage script that does
+something useful:
+
+# ------------------------------- Example Script -------------------------------------
+
+use SSDS;
+use POSIX;
+
+$ssds = new SSDS();
+$ssds->ssdsServer('@CLIENT_TOOL_PERL_MODULE_HTTP_SERVER_BASE@');
+
+my $dpAccess = new SSDS::DataProducerAccess();
+print "Using SSDS server " . $dpAccess->ssdsServer . "\n";
+
+#
+# Find top-level CIMT mooring deployment and print all its children
+#
+my $deplName = 'CIMT Mooring Deployment';
+print "Looking for DataProducer(s) named '$deplName'...\n";
+my $moorDepls = $dpAccess->findByName($deplName, 'true', 'name', 'false');
+
+processDeployments($moorDepls);
+
+exit 0;
+
+#----------------------------------------------------------------------
+# Recursively get child DataProducers from the passed DataProducers and
+# pass off Instrument role Deployments.
+
+sub processDeployments {
+
+        my $depls = $_[0];
+
+        $indent .= "  ";
+        
+        #
+        # findByName methods return a reference to a list, iterate through that list
+        #
+        foreach my $d ( @{$depls} ) {
+                $monYr = POSIX::strftime("%b %Y", POSIX::gmtime(($d->startDateAsEsecs)
+                        ? $d->startDateAsEsecs : 0) );
+                $betterDeplName = $d->getDevice->name . " - " . $monYr;
+                my $role = (defined $d->role) ? $d->role : '';
+                my $name = (defined $d->name) ? $d->name : "SSDS ID " . $d->getDevice->id;
+                
+                print $indent . "\"" . $name . "\" as $role ($betterDeplName)\n";
+                
+                my $childDepls = $dpAccess->findChildDataProducers($d, 'startDate', 'false');
+
+                #
+                # Call myself again until I run out of children
+                #
+                processDeployments($childDepls);
+        }
+        $indent =~ s/  $//;
+
+} # End processDeployments()
+
+# ------------------------------- End Example Script ---------------------------------
+
+The output of the above program (as produced on our test system on 1 Feb 2006):
+
+Using SSDS server http://scyphozoan:8080/
+Looking for DataProducer(s) named 'CIMT Mooring Deployment'...
+  "CIMT Mooring Deployment" as platform (CIMT Mooring - May 2004)
+    "MMC Node on CIMT" as instrument (CIMT MMC Node - May 2004)
+      "SOON Drifters" as instrument (MBARI pCO2 Power Switch - Jan 1970)
+      "ID 1321 deployed on id 1299" as instrument (Metsys - May 2004)
+      "ID 1313 deployed on id 1299" as instrument (GPS - May 2004)
+      "ID 1322 deployed on id 1299" as instrument (Power Can - May 2004)
+      "ID 1270 deployed on id 1299" as instrument (Satlantic Radiometer String - May 2004)
+        "SSDS ID 1312" as sensor (OCR-3000 - Jan 1970)
+        "SSDS ID 1320" as sensor (OCR-3000 - Jan 1970)
+        "SSDS ID 1324" as sensor (OCR-3000 - Jan 1970)
+        "SSDS ID 1325" as sensor (OCR-3000 - Jan 1970)
+        "SSDS ID 1326" as sensor (OCR-3000 - Jan 1970)
+      "ID 1267 deployed on id 1299" as instrument (RD Instruments Workhorse Sentinel 300KHz ADCP - May 2004)
+      "ID 1319 deployed on id 1299" as instrument (Inductive CTD Modem - May 2004)
+        "CTD at 55m" as sensor (Inductive CTD - Jan 1970)
+        "CTD at 40m" as sensor (Inductive CTD - Jan 1970)
+        "CTD at 20m" as sensor (Inductive CTD - Jan 1970)
+        "CTD at 10m" as sensor (Inductive CTD - Jan 1970)
+      "ID 1301 deployed on id 1299" as instrument (WETLabs Single-Angle Scattering Meter - May 2004)
+      "ID 1279 deployed on id 1299" as instrument (Wetlabs ECO Fluorometer - May 2004)
+      "ID 1314 deployed on id 1299" as instrument (Serial CTD - May 2004)
+        "SSDS ID 1329" as sensor (Pressure Sensor - Jan 1970)
+      "ID 1268 deployed on id 1299" as instrument (Satlantic ISUS - May 2004)
+      "ID 1300 deployed on id 1299" as instrument (SideARM415 MSP430 - May 2004)
+      "ID 1337 deployed on id 1299" as instrument (Serial CTD - Jul 2004)
+        "SSDS ID 1329" as sensor (Pressure Sensor - Jan 1970)
+      "ID 1338 deployed on id 1299" as instrument (Serial CTD - Jul 2004)
+        "SSDS ID 1329" as sensor (Pressure Sensor - Jan 1970)
+    "SOON Drifter Deployed on CIMT" as instrument (DFTR - GPS - May 2004)
+    "1327 Deployment" as instrument (CIMT Spare MMC Node - Oct 2004)
+      "ID 1338 deployed on id 1327" as instrument (Serial CTD - Oct 2004)
+        "SSDS ID 1329" as sensor (Pressure Sensor - Jan 1970)
+      "ID 1321 deployed on id 1327" as instrument (Metsys - Oct 2004)
+      "ID 1313 deployed on id 1327" as instrument (GPS - Oct 2004)
+      "ID 1322 deployed on id 1327" as instrument (Power Can - Oct 2004)
+      "ID 1270 deployed on id 1327" as instrument (Satlantic Radiometer String - Oct 2004)
+        "SSDS ID 1312" as sensor (OCR-3000 - Jan 1970)
+        "SSDS ID 1320" as sensor (OCR-3000 - Jan 1970)
+        "SSDS ID 1324" as sensor (OCR-3000 - Jan 1970)
+        "SSDS ID 1325" as sensor (OCR-3000 - Jan 1970)
+        "SSDS ID 1326" as sensor (OCR-3000 - Jan 1970)
+      "ID 1267 deployed on id 1327" as instrument (RD Instruments Workhorse Sentinel 300KHz ADCP - Oct 2004)
+      "ID 1319 deployed on id 1327" as instrument (Inductive CTD Modem - Oct 2004)
+        "CTD at 55m" as sensor (Inductive CTD - Jan 1970)
+        "CTD at 30m" as sensor (Inductive CTD - Jan 1970)
+        "CTD at 20m" as sensor (Inductive CTD - Jan 1970)
+        "CTD at 10m" as sensor (Inductive CTD - Jan 1970)
+      "ID 1301 deployed on id 1327" as instrument (WETLabs Single-Angle Scattering Meter - Oct 2004)
+      "ID 1279 deployed on id 1327" as instrument (Wetlabs ECO Fluorometer - Oct 2004)
+      "ID 1337 deployed on id 1327" as instrument (Serial CTD - Oct 2004)
+        "SSDS ID 1329" as sensor (Pressure Sensor - Jan 1970)
+      "ID 1330 deployed on id 1327" as instrument (SideARM416 MSP430 - Oct 2004)
+      "ID 1268 deployed on id 1327" as instrument (Satlantic ISUS - Dec 2004)
+      "ID 1351 deployed on id 1327" as instrument (Satlantic Radiometer String - Dec 2004)
+        "HyperOCR (id=1346) deployed on Satlantic Radiometer String(id=1351)" as sensor (HyperOCR - Dec 2004)
+        "HyperOCR (id=1347) deployed on Satlantic Radiometer String(id=1351)" as sensor (HyperOCR - Dec 2004)
+        "HyperOCR (id=1348) deployed on Satlantic Radiometer String(id=1351)" as sensor (HyperOCR - Dec 2004)
+        "HyperOCR (id=1349) deployed on Satlantic Radiometer String(id=1351)" as sensor (HyperOCR - Dec 2004)
+        "HyperOCR (id=1350) deployed on Satlantic Radiometer String(id=1351)" as sensor (HyperOCR - Dec 2004)
+      "ID 1314 deployed on id 1327" as instrument (Serial CTD - Apr 2005)
+      "ID 1323 deployed on id 1327" as instrument (MBARI pCO2 Power Switch - Apr 2005)
+      "ID 1406 deployed on id 1327" as instrument (RD Instruments Workhorse Sentinel 300KHz ADCP - Apr 2005)
+      "CIMT" as instrument (Serial CTD - Jul 2005)
+        "Inductive CTD Slave" as sensor (Inductive CTD - Jul 2005)
+        "Inductive CTD Slave" as sensor (Inductive CTD - Jul 2005)
+        "Inductive CTD Slave" as sensor (Inductive CTD - Jul 2005)
+        "Inductive CTD Slave" as sensor (Inductive CTD - Jul 2005)
+      "CIMT" as instrument (WETLabs Single-Angle Scattering Meter - Jul 2005)
+      "CIMT" as instrument (Wetlabs ECO Fluorometer - Jul 2005)
+      "CIMT" as instrument (Satlantic ISUS - Jul 2005)
+      "CIMT" as instrument (MBARI Metsys - Dec 2005)
+      
+
+Please see perlSSDSmodule.html and testSSDS.pl files for further documentation and examples.
+
+In particular testSSDS.pl contains a function named addProcessRunToSSDS() that you may
+want to copy into your script to facilitate submitting processed data back to SSDS.
+
+--
+Mike McCann 1 Feb 2006
+Software Engineer
+Monterey Bay Aquarium Research Institute
+7700 Sandholdt Road
+Moss Landing, CA 95039-9644
+Voice: 831.775.1769  Fax: 831.775.1736 http://www.mbari.org
