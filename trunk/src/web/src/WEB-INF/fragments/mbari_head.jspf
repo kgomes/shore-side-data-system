@@ -1,0 +1,37 @@
+<!--begin whole page table-->
+<table id="pagetable" border="0" cellspacing="0" cellpadding="0" align="center">
+	<tr>
+		<td colspan="3">
+			<div id="printheader">
+				<img src="http://www.mbari.org/art/global/header/auv.jpg" alt="Monterey Bay Aquarium Research Institute">
+			</div>
+			<div id="header">
+				<div id="header_search">
+					<!-- Google CSE Search Box Begins  -->
+					<form action="http://www.mbari.org/searchresults.htm" id="searchbox_009377919030860066144:lz7n0zkwrus">
+						<input id="header_search_button" type="submit" name="sa" value="Search" />
+						<br />
+						<input type="hidden" name="cx" value="009377919030860066144:lz7n0zkwrus" /> 
+						<input type="hidden" name="cof" value="FORID:11" />
+						<input id="header_search_box" type="text" name="q" size="25" maxlength="100" />
+					</form>
+					<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=searchbox_009377919030860066144%3Alz7n0zkwrus&lang=en">
+					</script>
+					<!-- Google CSE Search Box Ends -->
+				</div>
+			</div>
+			<div id="header_menu">
+				<ul type="disc">
+					<li><a href="http://www.mbari.org/default.htm">Home</a></li>
+					<li><a href="http://www.mbari.org/news/">News &amp; Information</a></li>
+					<li><a href="http://www.mbari.org/moos/">Ocean Observatories</a></li>
+					<li><a href="http://www.mbari.org/rd/">Research &amp; Development</a></li>
+					<li><a href="http://www.mbari.org/data/">Data &amp; Images</a></li>
+					<li><a href="http://www.mbari.org/dmo/">Marine Operations</a></li>
+				</ul>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td id="content_cell" valign="top" colspan="3" style="background-image: none; padding: 0px 0px 0px 0px;">
+			<div id="content">
