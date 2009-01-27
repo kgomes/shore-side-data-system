@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" height="100%" width="100%" xmlns:local="*" layout="horizontal" creationComplete="creationCompleteHandler();" xmlns:maps="com.google.maps.*">
+	<!-- Define the ActionScript to  handle various events -->
+	<mx:Script>
+		<![CDATA[
+			import com.google.maps.styles.FillStyle;
+			import com.google.maps.styles.StrokeStyle;
+			import com.google.maps.overlays.MarkerOptions;
+			import com.google.maps.LatLngBounds;
+			import com.google.maps.controls.ControlPosition;
+			import com.google.maps.controls.ZoomControl;
+			import com.google.maps.MapOptions;
+			import com.google.maps.overlays.Marker;
+			import com.google.maps.MapType;
+			import com.google.maps.LatLng;
+			import mx.events.CloseEvent;
+			import mx.messaging.Channel;
+			import mx.messaging.config.ServerConfig;
+			import mx.messaging.ChannelSet;
+			import mx.managers.PopUpManager;
+			import mx.containers.TitleWindow;
+			import moos.ssds.metadata.Device;
+			import mx.events.DataGridEventReason;
+			import mx.events.DataGridEvent;
+			import mx.collections.IList;
+			import mx.collections.ListCollectionView;
+			import mx.events.CollectionEvent;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.rpc.remoting.mxml.RemoteObject;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.events.FaultEvent;
+			import moos.ssds.metadata.DataProducer;
+			import moos.ssds.metadata.Device;
+			
+			// This is the Session Remote Object that holds server state things
+			public var ssdsSessionRO:RemoteObject = new RemoteObject();
+			
+			// This is the DataProducerAccessEJB RemoteObject
+			public var dataProducerAccessRO:RemoteObject = new RemoteObject();
+			
+			// This is the current username
+			[Bindable]
+			public var currentUsername:String;
+			
+			// A flag to indicate if user is in the role of 'SSDS_Admin'
+			public var isSSDSAdmin:Boolean;
+			 
+			// The login/logout window
+			private var loginLogoutWindow:LoginTitleWindow;
+			
+			// The method to be run after the component is created successfully
+			private function creationCompleteHandler():void {
+				// Connect up to the SSDS Session remote object and register the
+				// event handlers for the various methods
+				ssdsSessionRO.destination = "ssds-session";
+				ssdsSessionRO.endpoint = "../servlet/messagebroker/ssds";
+				ssdsSessionRO.getCurrentUsername.addEventListener("result", getCurrentUsernameResultHandler);
+				ssdsSessionRO.isUserInRole.addEventListener("result", isUserInRoleResultHandler);
+				
+				// Now grab the user and their role
+				getCurrentUsernameFromSSDS();
+				getIsSSDSAdmin();
+				
+				// Configure the DataProducerAccessRemoteObject
+				dataProducerAccessRO.destination = "data-producer-access-ejb";
+				dataProducerAccessRO.endpoint = "../servlet/messagebroker/ssds";
+				dataProducerAccessRO.findCurrentParentlessDeployments.addEventListener("result",dataProducerAccessFindCurrentParentlessDeploymentsEJBResultsHandler);
+			}
+
+			// This function reads the current username from SSDS			
+			private function getCurrentUsernameFromSSDS():void {
+				ssdsSessionRO.getCurrentUsername();
+			}
+			
+			// This function checks to see if the user is in the role of SSDS_Admin
+			private function getIsSSDSAdmin():void {
+				ssdsSessionRO.getCurrentUsername();
+			}
+			
+			// The function to handle the result of a call to SessionRO.isUserInRole			
+			private function isUserInRoleResultHandler(event:ResultEvent):void {
+				Alert.show("User in role returned " + event.result, "Role result");
+				isSSDSAdmin = event.result;
+			}
+			
+			// The function to handle the result of a call to SessionRO.getCurrentUsername
+			private function getCurrentUsernameResultHandler(event:ResultEvent):void {
+				currentUsername = event.result.toString();
+			}
+
+			// The function to show the login/logout window
+			private function showLoginLogoutWindow():void {
+				loginLogoutWindow = LoginTitleWindow(PopUpManager.createPopUp(this,LoginTitleWindow,true));
+				loginLogoutWindow.addEventListener(Event.REMOVED,loginLogoutWindowCloseHandler);
+				PopUpManager.centerPopUp(loginLogoutWindow);
+			}
+			
+			// The function that handles the event that the login window is closed
+			private function loginLogoutWindowCloseHandler(event:Event):void {
+				getCurrentUsernameFromSSDS();
+			}
+			
+			// The function to handle the preinitialization of the GoogleMap
+			private function onMapPreInit(event:Event):void {
+				// Create a new MapOptions
+				var ssdsMapOptions:MapOptions = new MapOptions();
+				ssdsMapOptions.zoom = 6;
+				ssdsMapOptions.mapType = MapType.PHYSICAL_MAP_TYPE;
+				ssdsMapOptions.center = new LatLng(36.505221,236.678467);
+				this.ssdsMap.setInitOptions(ssdsMapOptions);
+				
+				// Now, let's query SSDS for all current parentless deployments and handle the reply
+				dataProducerAccessRO.findCurrentParentlessDeployments('name','ASC',false);
+			}
+			
+			// The function to be called after the GoogleMap is ready
+			private function onMapReady(event:Event):void {
+				var zoomControl:ZoomControl = new ZoomControl();
+				var topLeftPosition:ControlPosition = new ControlPosition(ControlPosition.ANCHOR_TOP_LEFT,5,5);
+				zoomControl.setControlPosition(topLeftPosition);
+				this.ssdsMap.addControl(zoomControl);
+				// Enable scroll wheel zoom
+				this.ssdsMap.enableScrollWheelZoom();
+			}
+			
+			// The function to handle the response from a findCurrentParentlessDeployments call
+			public function dataProducerAccessFindCurrentParentlessDeploymentsEJBResultsHandler(event:ResultEvent):void {
+				// Grab all the parentless deployments that have no end date
+				var currentDeployments:ArrayCollection = event.result as ArrayCollection;
+				// Initialize the bounds of the map viewport
+				var lowerLeftLat:Number = 0;
+				var lowerLeftLon:Number = 0;
+				var upperRightLat:Number = 0;
+				var upperRightLon:Number = 0;
+				// Loop over the deployments and put markers where there are lat lon defined
+				for (var i:int = 0; i < currentDeployments.length; i++) {
+					// Grab the current deployment
+					var currentDeployment:DataProducer = currentDeployments[i] as DataProducer;
+					// Grab the latitude
+					var currentLat:Number = currentDeployment.nominalLatitude;
+					// Grab the longitude
+					var currentLon:Number = currentDeployment.nominalLongitude;
+					// Check against extents
+					if (currentLat != 0) {
+						if (currentLat < lowerLeftLat || lowerLeftLat == 0)
+							lowerLeftLat = currentLat;
+						if (currentLat > upperRightLat || upperRightLat == 0)
+							upperRightLat = currentLat;
+					}
+					// Check longitude against viewport longitudes
+					if (currentLon != 0) {
+						// First convert it to a positive number if negative
+						var tempLon:Number = currentLon;
+						if (currentLon < 0) {
+							tempLon = 360 + currentLon;
+						}
+						if (tempLon < lowerLeftLon || lowerLeftLon == 0)
+							lowerLeftLon = tempLon;
+						if (tempLon > upperRightLon || upperRightLon == 0)
+							upperRightLon = tempLon;
+					}
+					// If both lat and lon are not zero create marker and set view port extents
+					if (currentLat != 0 && currentLon != 0) {
+						// Create point and marker
+						var latLng:LatLng = new LatLng(currentDeployment.nominalLatitude,currentDeployment.nominalLongitude);
+						var newMarkerOptions:MarkerOptions = new MarkerOptions();
+						newMarkerOptions.strokeStyle = new StrokeStyle({color: 0x04549a});
+						newMarkerOptions.fillStyle = new FillStyle({color: 0x5ed0ff, alpha: 0.8});
+						newMarkerOptions.radius = 10;
+						newMarkerOptions.hasShadow = true;
+						newMarkerOptions.tooltip = currentDeployment.name;
+						this.ssdsMap.addOverlay(new Marker(latLng, newMarkerOptions));
+						// Set view port extents
+						var newLatLngBounds:LatLngBounds = new LatLngBounds(new LatLng(lowerLeftLat,lowerLeftLon), new LatLng(upperRightLat, upperRightLon));
+						this.ssdsMap.setCenter(newLatLngBounds.getCenter());
+						this.ssdsMap.setZoom(this.ssdsMap.getBoundsZoomLevel(newLatLngBounds) - 1);
+					}
+				}
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:Canvas width="100%" height="100%">
+		<mx:Text text="The Shore Side Data System (SSDS)" left="10"/>
+		<mx:LinkButton right="10" id="userInfoLink" label="{currentUsername}" click="showLoginLogoutWindow();"/>
+		<mx:TabNavigator width="100%" height="100%" top="20">
+			<mx:HBox label="Home">
+				<mx:VBox height="100%" width="100%">
+					<mx:Text width="100%" height="25%" text="Under Construction"/>
+					<mx:HBox width="100%" height="25%" borderStyle="solid">
+						<mx:Text width="50%" height="100%" text="Under Construction"/>
+						<mx:Text width="50%" height="100%" text="Under Construction"/>
+					</mx:HBox>
+					<maps:Map xmlns:maps="com.google.maps.*" id="ssdsMap" mapevent_mappreinitialize="onMapPreInit(event)" 
+						mapevent_mapready="onMapReady(event)" width="100%" height="50%" 
+						key="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAbpLh8fM7nHiIzQAWH2GowRT_DWIyulZ4MpcR0nASrHLf47xRSBSAQAca7XHGhdqDXb7uziq2fKEufg" />
+				</mx:VBox>
+			</mx:HBox>
+			<local:DeviceExplorer label="Devices"/>
+			<local:DataProducerExplorer label="Data Producers"/>
+			<mx:HBox label="Docs"/>
+			<mx:HBox label="Resources"/>
+			<mx:HBox label="About"/>
+		</mx:TabNavigator>
+	</mx:Canvas>
+</mx:Application>

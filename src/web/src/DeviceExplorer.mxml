@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" initialize="initializeHandler();">
+	<!-- Define the ActionScript to handle various events -->
+	<mx:Script>
+		<![CDATA[
+			import moos.ssds.web.UserInformation;
+			import moos.ssds.metadata.Device;
+			import mx.events.DataGridEventReason;
+			import mx.events.DataGridEvent;
+			import mx.collections.IList;
+			import mx.collections.ListCollectionView;
+			import mx.events.CollectionEvent;
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.rpc.remoting.mxml.RemoteObject;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.events.FaultEvent;
+			
+			// The shared object that will be used to store user information
+			[Bindable]
+			public var userInformationObject:UserInformation = UserInformation.getInstance();
+		
+			// This is the ArrayCollection of devices that were found
+			[Bindable]
+			private var selectedDevices:ArrayCollection = null;
+			
+			// This is the primary key of the edited item
+			[Bindable]
+			private var ssdsID:int;
+			
+			// This is the column that was edited
+			[Bindable]
+			private var column:String;
+			
+			// This is the new value in the field that was edited
+			[Bindable]
+			private var cellValue:String;
+			
+			// This is the old value of the field
+			private var previousCellValue:String;
+
+			public function initializeHandler():void {
+				// Register event handlers
+				userInformationObject.addEventListener(UserInformation.ISADMIN_CHANGED,userInformationEventHandler);
+			}
+			
+			// This method is for handling events when the userInformation shared object changes			
+			public function userInformationEventHandler(event:Event):void {
+				deviceDataGrid.editable = userInformationObject.getIsAdmin();
+				adminButtons.visible = userInformationObject.getIsAdmin();
+			}
+			
+			// This method simply takes the result of the call to the EJB and assigns
+			// the collection returned to the data provider for the DataGrid 
+			public function deviceAccessEJBResultsHandler(event:ResultEvent):void {
+				// Take the return of the call on the remote object and assign it 
+				// to the source array
+				selectedDevices = event.result as ArrayCollection;
+			}
+			
+			// This method is called when the user finishes editing a field
+			public function deviceFieldChangeHandler(event:DataGridEvent):void{
+				// Check to see if it was a cancel type event
+				if (event.reason == DataGridEventReason.CANCELLED) {
+					return;
+				}
+				// Grab the new value of the cell
+				cellValue = TextInput(event.currentTarget.itemEditorInstance).text;
+				
+				// Grab the column
+				column = event.dataField;
+				
+				// Grab the ssds id
+				ssdsID = deviceDataGrid.selectedItem.id;
+				
+				// Grab the previous value
+				previousCellValue = deviceDataGrid.selectedItem[event.dataField];
+				
+				// If they are the same, bail out
+				if (previousCellValue == cellValue) {
+					return;
+				} else {
+					deviceDataGrid.selectedItem[event.dataField] = cellValue;
+				}
+				// Convert it to a Device object
+				var updatedDevice:Device = new Device();
+				updatedDevice.id = deviceDataGrid.selectedItem.id;
+				updatedDevice.name = deviceDataGrid.selectedItem.name;
+				updatedDevice.description = deviceDataGrid.selectedItem.description;
+				updatedDevice.mfgName = deviceDataGrid.selectedItem.mfgName;
+				updatedDevice.mfgModel = deviceDataGrid.selectedItem.mfgModel;
+				updatedDevice.mfgSerialNumber = deviceDataGrid.selectedItem.mfgSerialNumber;
+				updatedDevice.uuid = deviceDataGrid.selectedItem.uuid;
+				updatedDevice.infoUrlList = deviceDataGrid.selectedItem.infoUrlList;
+				
+				deviceAccessRemoteObject.makePersistent(updatedDevice);
+			}
+			
+			public function deviceMakePersistentHandler(event:ResultEvent): void {
+			}
+			
+			public function ejbFaultHandler (event:FaultEvent):void {
+				Alert.show(event.fault.faultString, 'Error');
+			}
+			
+			public function isUserAdminResultHandler(event:ResultEvent):void {
+				if (event.result == true) {
+					Alert.show("User is admin!");
+				} else {
+					Alert.show("User is NOTHING!");
+				}
+			}
+			
+			public function getCurrentUsernameResultHandler(event:ResultEvent):void {
+				Alert.show("User is currently " + event.result, "Get Username");
+			}
+			
+			public function addDeviceButtonHandler(event:MouseEvent):void {
+				Alert.show("Add clicked!");
+			}
+			
+			public function deleteDeviceButtonHandler(event:MouseEvent):void {
+				Alert.show("Delete clicked!");
+			}
+		]]>
+	</mx:Script>
+	<!-- Define the remote object to use to query for devices -->
+	<mx:RemoteObject id="deviceAccessRemoteObject" endpoint="../servlet/messagebroker/ssds"
+		destination="device-access-ejb"
+		fault="ejbFaultHandler(event);" showBusyCursor="true">
+		<mx:method name="findBySearchingFields" result="deviceAccessEJBResultsHandler(event)"/>
+		<mx:method name="makePersistent" result="deviceMakePersistentHandler(event)"/>
+	</mx:RemoteObject>
+	<mx:RemoteObject id="ssdsSessionRemoteObject" endpoint="../servlet/messagebroker/ssds"
+		destination="ssds-session"
+		fault="ejbFaultHandler(event);" showBusyCursor="true">
+		<mx:method name="isUserInRole" result="isUserAdminResultHandler(event)"/>
+		<mx:method name="getCurrentUsername" result="getCurrentUsernameResultHandler(event)"/>
+	</mx:RemoteObject>
+	<mx:HDividedBox x="0" y="0" width="100%" height="100%" label="Devices" id="mainHDividedBox" verticalScrollPolicy="auto" visible="true" horizontalScrollPolicy="auto">
+		<mx:Form width="30%" height="100%">
+				<mx:FormHeading label="Query"/>
+				<mx:FormItem label="ID" toolTip="The ID assigned by the Shore-Side Data System">
+					<mx:TextInput id="idTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+				</mx:FormItem>
+				<mx:FormItem label="UUID" toolTip="The unique identifier that is assigned to the device">
+					<mx:TextInput id="uuidTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+				</mx:FormItem>
+				<mx:FormItem label="Name" toolTip="The name assigned to the device">
+					<mx:TextInput id="nameTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+				</mx:FormItem>
+				<mx:FormItem label="Description" toolTip="A description assigned to the device">
+					<mx:TextInput id="descriptionTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+				</mx:FormItem>
+				<mx:FormItem label="Mfg Name" toolTip="Name used by manfacturer">
+					<mx:TextInput id="mfgNameTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+				</mx:FormItem>
+				<mx:FormItem label="Mfg Model" toolTip="Manufacturer's Model Number">
+					<mx:TextInput id="mfgModelTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+				</mx:FormItem>
+				<mx:FormItem label="Mfg S/N" toolTip="Manufacturer's Serial Number">
+					<mx:TextInput id="mfgSerialNumberTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+				</mx:FormItem>
+				<mx:FormItem>
+					<mx:Button label="Search" click="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);"/>
+				</mx:FormItem>
+				<mx:FormItem id="adminButtons">
+						<mx:HBox width="100%">
+								<mx:Button id="addDeviceButton" click="addDeviceButtonHandler(event)" icon="@Embed(source='images/table/sort_add.gif')"/>
+								<mx:Button id="deleteDeviceButton" click="deleteDeviceButtonHandler(event)" icon="@Embed(source='images/table/empty_table_cell.gif')"/>
+						</mx:HBox>
+				</mx:FormItem>
+		</mx:Form>
+		<mx:DataGrid id="deviceDataGrid" height="100%" width="70%" editable="false" dataProvider="{selectedDevices}" itemEditEnd="deviceFieldChangeHandler(event);"  allowMultipleSelection="false">
+				<mx:columns>
+					<mx:DataGridColumn headerText="SSDS ID" dataField="id" dataTipField="description" editable="false"/>
+					<mx:DataGridColumn headerText="Name" dataField="name" dataTipField="description"/>
+					<mx:DataGridColumn headerText="Mfg Name" dataField="mfgName" dataTipField="description"/>
+					<mx:DataGridColumn headerText="Mfg Model" dataField="mfgModel" dataTipField="description"/>
+					<mx:DataGridColumn headerText="Mfg S/N" dataField="mfgSerialNumber" dataTipField="description"/>
+				</mx:columns>
+		</mx:DataGrid>
+	</mx:HDividedBox>
+
+</mx:Canvas>
