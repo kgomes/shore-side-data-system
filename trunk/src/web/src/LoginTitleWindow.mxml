@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" width="334" height="204" initialize="initializeHandler();" creationComplete="creationCompleteHandler();">
+<mx:Script>
+	<![CDATA[
+		import moos.ssds.web.UserInformation;
+		import mx.containers.TitleWindow;
+		import mx.rpc.remoting.mxml.RemoteObject;
+		import mx.managers.PopUpManager;
+		import mx.rpc.events.FaultEvent;
+		import mx.rpc.Fault;
+		import mx.controls.Alert;
+		import mx.rpc.AsyncToken;
+		import mx.rpc.events.ResultEvent;
+		import mx.rpc.AsyncResponder;
+		import mx.messaging.config.ServerConfig;
+		import mx.messaging.ChannelSet;
+
+		// The shared object that will be used to store user information
+		public var userInformationObject:UserInformation = UserInformation.getInstance();
+		
+		// This is the Session Remote Object that holds server state things
+		public var ssdsSessionRO:RemoteObject = new RemoteObject();
+
+		// The ChannelSet that represents the connection between the client
+		// and the destination that holds the Session Remote Object
+		public var ssdsSessionCS:ChannelSet;
+		
+		// The token for attaching handlers for the results of logins and logouts
+		public var token:AsyncToken;
+		
+		// This is the current username
+		[Bindable]
+		public var currentUsername:String;
+
+		// This is the method that handles the initialize event.  It basically
+		// acts like a constructor for the MXML component.
+		private function initializeHandler():void {
+			// Connect up to the SSDS Session remote object and register the
+			// event handlers for the various methods
+			ssdsSessionRO.destination = "ssds-session";
+			ssdsSessionRO.endpoint = "../servlet/messagebroker/ssds";
+			ssdsSessionRO.getCurrentUsername.addEventListener("result", getCurrentUsernameResultHandler);
+			ssdsSessionRO.isUserInRole.addEventListener("result", isUserInRoleResultHandler);
+			getCurrentUsernameFromSSDS();
+			usernameTextInput.text = currentUsername;
+
+			// If the channel set is null, create one for the remote object
+			// the page
+			if (ssdsSessionCS == null)
+				ssdsSessionCS = ServerConfig.getChannelSet(ssdsSessionRO.destination);
+			if (ssdsSessionCS.authenticated) {
+				formHeading.visible = false;
+				usernameFormItem.visible = false;
+				passwordFormItem.visible = false;
+				loginLogoutButton.label = "Logout";
+			} else {
+				formHeading.visible = true;
+				usernameFormItem.visible = true;
+				passwordFormItem.visible = true;
+				usernameTextInput.enabled = true;
+				passwordTextInput.enabled = true;
+				loginLogoutButton.label = "Login";
+			}
+		}
+		
+		// This function reads the current username from SSDS			
+		private function getCurrentUsernameFromSSDS():void {
+			ssdsSessionRO.getCurrentUsername();
+			ssdsSessionRO.isUserInRole('SSDS_Admin');
+		}
+			
+		// The function to handle the result of a call to SessionRO.getCurrentUsername
+		private function getCurrentUsernameResultHandler(event:ResultEvent):void {
+			currentUsername = event.result.toString();
+			userInformationObject.setUsername(currentUsername);
+		}
+
+		// The function to handle the result of a call to SessionRO.isUserInRole
+		private function isUserInRoleResultHandler(event:ResultEvent):void {
+			userInformationObject.setIsAdmin(event.result);
+		}
+
+		// A function that runs when the creation of this component is complete
+		private function creationCompleteHandler():void {
+		}
+
+		// The function to handle the event resulting from a successful login
+		private function LoginResultEventHandler(event:ResultEvent, token:Object=null):void {
+			switch(event.result) {
+				case "success":
+					Alert.show("Login Successful", "Success");
+					PopUpManager.removePopUp(this);	
+					getCurrentUsernameFromSSDS();
+					break;
+				default:
+			}	
+		}	
+			
+		// The function to handle the event resulting from a failed login
+		private function LoginFailureEventHandler(event:FaultEvent, token:Object=null):void {
+			Alert.show("Login failed: " + event.fault.faultString,"Failed");	
+			getCurrentUsernameFromSSDS();
+		}
+		
+		// The function to handle the event resulting from a successful logout
+		private function LogoutResultEventHandler(event:ResultEvent, token:Object=null):void {
+			switch(event.result) {
+				case "success":
+					Alert.show("Logout Successful", "Success");
+					PopUpManager.removePopUp(this);	
+					getCurrentUsernameFromSSDS();
+					break;
+				default:
+			}	
+		}	
+			
+		// The function to handle the event resulting from a failed logout
+		private function LogoutFailureEventHandler(event:FaultEvent, token:Object=null):void {
+			Alert.show("Logout failed: " + event.fault.faultString,"Failed");	
+			getCurrentUsernameFromSSDS();
+		}
+		
+		// The function that is executed when the login/logout button is clicked
+		private function loginLogout():void {
+			// If the user is not logged in, use the text fields to login, else logout
+			if (ssdsSessionCS.authenticated == false) {
+				token = ssdsSessionCS.login(usernameTextInput.text,passwordTextInput.text);
+				token.addResponder(new AsyncResponder(LoginResultEventHandler,LoginFailureEventHandler));
+			} else {
+				token = ssdsSessionCS.logout();
+				token.addResponder(new AsyncResponder(LogoutResultEventHandler,LogoutFailureEventHandler));
+			}
+		}
+		
+		// The function to cancel the login/logout and close the window
+		private function cancel():void {
+			PopUpManager.removePopUp(this);
+			getCurrentUsernameFromSSDS();
+		}
+		
+		// Handle message received from by SSDS Session Remote Object
+		private function resultHandler(event:ResultEvent):void {
+			Alert.show("Server responded: " + event.result,"Server Response");
+		}
+
+		// Handle fault message received from by SSDS Session Remote Object
+		private function faultHandler(event:FaultEvent):void {
+			Alert.show("Fault Received: " + event.fault ,"Fault Detected");
+		}
+
+	]]>
+</mx:Script>
+	<mx:VBox width="100%" height="100%">
+		<mx:Form width="100%" height="100%">
+			<mx:FormHeading id="formHeading" label="Enter Login Information"/>
+			<mx:FormItem id="usernameFormItem" label="Username">
+				<mx:TextInput id="usernameTextInput"/>
+			</mx:FormItem>
+			<mx:FormItem id="passwordFormItem" label="Password" x="0" y="0">
+				<mx:TextInput id="passwordTextInput" displayAsPassword="true" enter="loginLogout();"/>
+			</mx:FormItem>
+		</mx:Form>
+		<mx:Tile width="100%">
+			<mx:Button id="loginLogoutButton" label="Login/Logout" click="loginLogout();"/>
+			<mx:Button label="Cancel" click="cancel();"/>
+		</mx:Tile>
+	</mx:VBox>
+</mx:TitleWindow>
