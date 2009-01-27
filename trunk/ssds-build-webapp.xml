@@ -50,17 +50,26 @@
 
 	<!-- Compile the webapp source code -->
 	<target name="compile" depends="clean">
-		<!-- First compile the supporting ActionScript classes -->
+		<!-- First compile the supporting ActionScript classes
 		<compc output="${project.build}/webapp/ssds.swc" include-classes="moos.ssds.metadata.Device moos.ssds.metadata.DataProducer">
 			<source-path path-element="${src.web}/src" />
 			<compiler.include-libraries dir="${FLEX_HOME}/frameworks/libs" append="true" />
-		</compc>
+		</compc> -->
 
 		<!-- Run the flex compiler on the explorer MXML file -->
 		<mxmlc file="${src.web}/src/explorer.mxml" output="${project.build}/webapp/explorer.swf" context-root="/ssds" services="${resources.build}/flex/WEB-INF/flex/services-config.xml">
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
 			<source-path path-element="${FLEX_HOME}/frameworks" />
-			<source-path path-element="${project.build}/webapp" />
+            <!-- List of SWC files or directories that contain SWC files. -->
+			<compiler.library-path dir="${FLEX_HOME}/frameworks">
+			    <include name="**/*.swc" />
+			</compiler.library-path>
+			<compiler.library-path dir="${src.web}/libs">
+			    <include name="**/*.swc" />
+			</compiler.library-path>
+			<!-- <compiler.external-library-path dir="${project.build}/webapp">
+			    <include name="**/*.swc" />
+			</compiler.external-library-path> -->
 		</mxmlc>
 	</target>
 

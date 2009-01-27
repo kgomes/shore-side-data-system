@@ -54,6 +54,6 @@
 	</target>
 	
 	<!-- The default target -->
-	<target name="do-all" depends="do-core,do-transmogrify,do-ruminate,do-ingest,do-ssdsLoads,do-wrappergenerator,do-docs" />
+	<target name="do-all" depends="do-core,do-transmogrify,do-ruminate,do-ingest,do-ssdsLoads,do-wrappergenerator,do-webapp,do-docs" />
 
 </project>
