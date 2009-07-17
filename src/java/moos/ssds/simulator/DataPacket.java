@@ -15,9 +15,9 @@
  */
 package moos.ssds.simulator;
 
-import org.mbari.isi.interfaces.SensorDataPacket;
-import org.mbari.isi.interfaces.MetadataPacket;
-import org.mbari.isi.interfaces.DeviceMessagePacket;
+import org.mbari.siam.distributed.DeviceMessagePacket;
+import org.mbari.siam.distributed.MetadataPacket;
+import org.mbari.siam.distributed.SensorDataPacket;
 
 
 /**

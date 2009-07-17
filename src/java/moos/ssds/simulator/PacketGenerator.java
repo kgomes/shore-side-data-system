@@ -30,9 +30,9 @@ import moos.ssds.jms.PublisherComponent;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.mbari.isi.interfaces.DevicePacket;
-import org.mbari.isi.interfaces.MetadataPacket;
-import org.mbari.isi.interfaces.SensorDataPacket;
+import org.mbari.siam.distributed.DevicePacket;
+import org.mbari.siam.distributed.MetadataPacket;
+import org.mbari.siam.distributed.SensorDataPacket;
 
 /**
  * <p>This class is used as a simulator for sending serialized packets

@@ -16,20 +16,12 @@
 package test.moos.ssds.ruminate;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Date;
 import java.util.Properties;
-import java.util.Random;
 
 import junit.framework.TestCase;
-
 import moos.ssds.jms.PublisherComponent;
 
 import org.apache.log4j.Logger;
-import org.mbari.isi.interfaces.MetadataPacket;
-import org.mbari.isi.interfaces.SensorDataPacket;
-
-import ucar.nc2.NCdump;
 
 /**
  * This test is responsible for testing the watchdog class that is
