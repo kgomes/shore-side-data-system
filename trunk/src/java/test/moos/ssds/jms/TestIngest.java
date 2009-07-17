@@ -15,13 +15,10 @@
  */
 package test.moos.ssds.jms;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
 import junit.framework.TestCase;
-
 import moos.ssds.jms.PublisherComponent;
 import moos.ssds.transmogrify.SSDSDevicePacket;
 
@@ -30,7 +27,6 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
-import org.mbari.isi.interfaces.SensorDataPacket;
 
 /**
  * JUnit TestCase.

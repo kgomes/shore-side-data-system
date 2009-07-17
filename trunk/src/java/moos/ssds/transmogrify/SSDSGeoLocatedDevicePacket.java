@@ -15,7 +15,8 @@
  */
 package moos.ssds.transmogrify;
 
-import org.mbari.isi.interfaces.DevicePacket;
+import org.mbari.siam.distributed.DevicePacket;
+
 
 public class SSDSGeoLocatedDevicePacket extends SSDSDevicePacket
     implements

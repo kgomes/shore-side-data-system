@@ -37,7 +37,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.mbari.isi.interfaces.DevicePacket;
+import org.mbari.siam.distributed.DevicePacket;
 
 /**
  * <p>
