@@ -60,17 +60,18 @@
 		<mxmlc file="${src.web}/src/explorer.mxml" output="${project.build}/webapp/explorer.swf" context-root="/ssds" services="${resources.build}/flex/WEB-INF/flex/services-config.xml">
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
 			<source-path path-element="${FLEX_HOME}/frameworks" />
-            <!-- List of SWC files or directories that contain SWC files. -->
+			<!-- List of SWC files or directories that contain SWC files. -->
 			<compiler.library-path dir="${FLEX_HOME}/frameworks">
-			    <include name="**/*.swc" />
+				<include name="**/*.swc" />
 			</compiler.library-path>
 			<compiler.library-path dir="${src.web}/libs">
-			    <include name="**/*.swc" />
+				<include name="**/*.swc" />
 			</compiler.library-path>
 			<!-- <compiler.external-library-path dir="${project.build}/webapp">
 			    <include name="**/*.swc" />
 			</compiler.external-library-path> -->
 		</mxmlc>
+
 	</target>
 
 	<!-- The target to build -->
@@ -93,8 +94,12 @@
 
 	<!-- Deploy the metadata -->
 	<target name="deploy" depends="dist,undeploy" description="This deploys the compiled SWFs and various other assets and pages">
+
 		<!-- Remove and rebuild the web application deployment directory -->
 		<mkdir dir="${webapp.deployment.location}" />
+
+		<!-- Create the HTML wrapper assets -->
+		<html-wrapper title="SSDS Web Application" file="gen-index.html" swf="explorer" output="${webapp.deployment.location}" />
 
 		<!-- Copy over the Flex assets -->
 		<copy todir="${webapp.deployment.location}" overwrite="true">
