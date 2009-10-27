@@ -1255,7 +1255,7 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 					try {
 						StringBuffer uriStringBuffer = new StringBuffer();
 						uriStringBuffer.append(dataStreamBaseURL + "?deviceID="
-								+ deviceID + "&startTimeStampseconds="
+								+ deviceID + "&startTimestampSeconds="
 								+ (packetDate.getTime() / 1000));
 						if (tempDataContainer.getRecordDescription()
 								.getRecordType() != null)
