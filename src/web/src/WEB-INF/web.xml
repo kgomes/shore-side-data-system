@@ -1,36 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright 2009 MBARI
+	Copyright 2009 MBARI
 	
-  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
-  (the "License"); you may not use this file except in compliance 
-  with the License. You may obtain a copy of the License at
-
-  http://www.gnu.org/copyleft/lesser.html
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+	Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+	(the "License"); you may not use this file except in compliance 
+	with the License. You may obtain a copy of the License at
+	
+	http://www.gnu.org/copyleft/lesser.html
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
 -->
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns="http://java.sun.com/xml/ns/javaee"
 	xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	id="WebApp_ID" version="2.5">
+
+	<!-- The name that is displayed for the deployed SSDS application -->
 	<display-name>ssds</display-name>
+
+	<!-- List the index.jsp file and the preferred intro page -->
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>login result page</web-resource-name>
-			<url-pattern>/loginResult.jsp</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-		</auth-constraint>
-	</security-constraint>
+
+	<!-- The login configuration for the web application -->
 	<login-config>
 		<auth-method>FORM</auth-method>
 		<realm-name>ssds</realm-name>
@@ -39,4 +37,59 @@
 			<form-error-page>/loginError.jsp</form-error-page>
 		</form-login-config>
 	</login-config>
+
+	<!-- Define the SSDS Security Roles -->
+
+	<!-- Define a role for guests -->
+	<security-role>
+		<description>SSDS Guest User</description>
+		<role-name>SSDS_Guest</role-name>
+	</security-role>
+
+	<!-- Define a role that simply means the user is registered in the SSDS Security Realm -->
+	<security-role>
+		<description>SSDS Registered User</description>
+		<role-name>SSDS_RegisteredUser</role-name>
+	</security-role>
+
+	<!-- Define the Administrator Role for the SSDS Web Application -->
+	<security-role>
+		<description>SSDS Administrator Role</description>
+		<role-name>SSDS_Admin</role-name>
+	</security-role>
+
+	<!-- Define the security contstraint for the login result page to force logins -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>login result page</web-resource-name>
+			<url-pattern>/loginResult.jsp</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+		</auth-constraint>
+	</security-constraint>
+	
+	<!-- Define the security constraint for the newDevice page -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>New Device Page</web-resource-name>
+			<url-pattern>/newDevice.jsp</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<!-- SSDS Administrators -->
+			<role-name>SSDS_Admin</role-name>
+		</auth-constraint>
+	</security-constraint>
+
+	<!-- Define the security constraint for the addDevice page -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Add Device Page</web-resource-name>
+			<url-pattern>/addDevice.jsp</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<!-- SSDS Administrators -->
+			<role-name>SSDS_Admin</role-name>
+		</auth-constraint>
+	</security-constraint>
+
 </web-app>
