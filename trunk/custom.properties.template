@@ -96,6 +96,8 @@ roleNameAttributeID=cn
 roleRecursion=-1
 # This will probably not need to be changed
 searchScope=ONELEVEL_SCOPE
+# This need to be false for Active Directory
+allowEmptyPasswords=false
 
 ################################################################
 #             JBoss Mail Service Properties                    #
