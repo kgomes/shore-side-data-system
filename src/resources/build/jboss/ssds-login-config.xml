@@ -34,6 +34,7 @@
                 <module-option name="roleNameAttributeID">@ROLENAMEATTRIBUTEID@</module-option>
                 <module-option name="roleRecursion">@ROLERECURSION@</module-option>
                 <module-option name="searchScope">@SEARCHSCOPE@</module-option>
+                <module-option name="allowEmptyPasswords">@ALLOWEMPTYPASSWORDS@</module-option>
             </login-module>
         </authentication>
     </application-policy>
