@@ -17,7 +17,7 @@
 -->
 
 <server>
-    <mbean code="org.jboss.security.auth.login.DynamicLoginConfig" name="jboss:service=DynamicLoginConfig">
+    <mbean code="org.jboss.security.auth.login.DynamicLoginConfig" name="jboss:service=SSDSLoginConfig">
         <attribute name="AuthConfig">ssds-login-config.xml</attribute>
         <depends optional-attribute-name="LoginConfigService">jboss.security:service=XMLLoginConfig</depends>
         <depends optional-attribute-name="SecurityManagerService">jboss.security:service=JaasSecurityManager</depends>
