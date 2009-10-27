@@ -16,5 +16,4 @@
 -->
 <jboss-web>
   <security-domain>java:/jaas/ssds</security-domain>
-  <context-root>/ssds</context-root>
 </jboss-web>
