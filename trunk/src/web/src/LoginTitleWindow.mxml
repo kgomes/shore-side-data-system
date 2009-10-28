@@ -31,39 +31,14 @@
 		import mx.messaging.ChannelSet;
 
 		// The shared object that will be used to store user information
+		[Bindable]
 		public var userInformationObject:UserInformation = UserInformation.getInstance();
 		
-		// This is the Session Remote Object that holds server state things
-		public var ssdsSessionRO:RemoteObject = new RemoteObject();
-
-		// The ChannelSet that represents the connection between the client
-		// and the destination that holds the Session Remote Object
-		public var ssdsSessionCS:ChannelSet;
-		
-		// The token for attaching handlers for the results of logins and logouts
-		public var token:AsyncToken;
-		
-		// This is the current username
-		[Bindable]
-		public var currentUsername:String;
-
 		// This is the method that handles the initialize event.  It basically
 		// acts like a constructor for the MXML component.
 		private function initializeHandler():void {
-			// Connect up to the SSDS Session remote object and register the
-			// event handlers for the various methods
-			ssdsSessionRO.destination = "ssds-session";
-			ssdsSessionRO.endpoint = "../servlet/messagebroker/ssds";
-			ssdsSessionRO.getCurrentUsername.addEventListener("result", getCurrentUsernameResultHandler);
-			ssdsSessionRO.isUserInRole.addEventListener("result", isUserInRoleResultHandler);
-			getCurrentUsernameFromSSDS();
-			usernameTextInput.text = currentUsername;
-
-			// If the channel set is null, create one for the remote object
-			// the page
-			if (ssdsSessionCS == null)
-				ssdsSessionCS = ServerConfig.getChannelSet(ssdsSessionRO.destination);
-			if (ssdsSessionCS.authenticated) {
+			// Set things up depending on whether the user is logged in or not
+			if (userInformationObject.getUsername() != "Guest") {
 				formHeading.visible = false;
 				usernameFormItem.visible = false;
 				passwordFormItem.visible = false;
@@ -76,93 +51,60 @@
 				passwordTextInput.enabled = true;
 				loginLogoutButton.label = "Login";
 			}
+			
+			// Register an event handler on the UserInformation object
+			userInformationObject.addEventListener(UserInformation.LOGIN_SUCCEEDED,loginSucceededEventHandler);
+			userInformationObject.addEventListener(UserInformation.LOGIN_FAILED,loginFailedEventHandler);
+			userInformationObject.addEventListener(UserInformation.LOGOUT_SUCCEEDED,logoutSucceededEventHandler);
+			userInformationObject.addEventListener(UserInformation.LOGOUT_FAILED,logoutFailedEventHandler);
 		}
 		
-		// This function reads the current username from SSDS			
-		private function getCurrentUsernameFromSSDS():void {
-			ssdsSessionRO.getCurrentUsername();
-			ssdsSessionRO.isUserInRole('SSDS_Admin');
-		}
-			
-		// The function to handle the result of a call to SessionRO.getCurrentUsername
-		private function getCurrentUsernameResultHandler(event:ResultEvent):void {
-			currentUsername = event.result.toString();
-			userInformationObject.setUsername(currentUsername);
-		}
-
-		// The function to handle the result of a call to SessionRO.isUserInRole
-		private function isUserInRoleResultHandler(event:ResultEvent):void {
-			userInformationObject.setIsAdmin(event.result);
-		}
-
 		// A function that runs when the creation of this component is complete
 		private function creationCompleteHandler():void {
 		}
 
-		// The function to handle the event resulting from a successful login
-		private function LoginResultEventHandler(event:ResultEvent, token:Object=null):void {
-			switch(event.result) {
-				case "success":
-					Alert.show("Login Successful", "Success");
-					PopUpManager.removePopUp(this);	
-					getCurrentUsernameFromSSDS();
-					break;
-				default:
-			}	
-		}	
-			
-		// The function to handle the event resulting from a failed login
-		private function LoginFailureEventHandler(event:FaultEvent, token:Object=null):void {
-			Alert.show("Login failed: " + event.fault.faultString,"Failed");	
-			getCurrentUsernameFromSSDS();
+		// The event handler for successful logins
+		private function loginSucceededEventHandler(event:Event):void {
+			// Remove the window
+			PopUpManager.removePopUp(this);
 		}
-		
-		// The function to handle the event resulting from a successful logout
-		private function LogoutResultEventHandler(event:ResultEvent, token:Object=null):void {
-			switch(event.result) {
-				case "success":
-					Alert.show("Logout Successful", "Success");
-					PopUpManager.removePopUp(this);	
-					getCurrentUsernameFromSSDS();
-					break;
-				default:
-			}	
-		}	
-			
-		// The function to handle the event resulting from a failed logout
-		private function LogoutFailureEventHandler(event:FaultEvent, token:Object=null):void {
-			Alert.show("Logout failed: " + event.fault.faultString,"Failed");	
-			getCurrentUsernameFromSSDS();
+		 
+		// The event handler for failed logins
+		private function loginFailedEventHandler(event:Event):void {
+			Alert.show("Login Failed: " + event.toString());
+			// Remove the window
+			PopUpManager.removePopUp(this);
 		}
-		
+		 
+		// The event handler for successful logouts
+		private function logoutSucceededEventHandler(event:Event):void {
+			// Remove the window
+			PopUpManager.removePopUp(this);
+		}
+		 
+		// The event handler for failed logouts
+		private function logoutFailedEventHandler(event:Event):void {
+			Alert.show("Login Failed: " + event.toString());
+			// Remove the window
+			PopUpManager.removePopUp(this);
+		}
+		 
 		// The function that is executed when the login/logout button is clicked
 		private function loginLogout():void {
 			// If the user is not logged in, use the text fields to login, else logout
-			if (ssdsSessionCS.authenticated == false) {
-				token = ssdsSessionCS.login(usernameTextInput.text,passwordTextInput.text);
-				token.addResponder(new AsyncResponder(LoginResultEventHandler,LoginFailureEventHandler));
+			if (userInformationObject.getUsername() != "Guest") {
+				userInformationObject.logout();
 			} else {
-				token = ssdsSessionCS.logout();
-				token.addResponder(new AsyncResponder(LogoutResultEventHandler,LogoutFailureEventHandler));
+				userInformationObject.login(usernameTextInput.text,passwordTextInput.text);
 			}
 		}
 		
 		// The function to cancel the login/logout and close the window
 		private function cancel():void {
 			PopUpManager.removePopUp(this);
-			getCurrentUsernameFromSSDS();
+			userInformationObject.refresh();
 		}
 		
-		// Handle message received from by SSDS Session Remote Object
-		private function resultHandler(event:ResultEvent):void {
-			Alert.show("Server responded: " + event.result,"Server Response");
-		}
-
-		// Handle fault message received from by SSDS Session Remote Object
-		private function faultHandler(event:FaultEvent):void {
-			Alert.show("Fault Received: " + event.fault ,"Fault Detected");
-		}
-
 	]]>
 </mx:Script>
 	<mx:VBox width="100%" height="100%">
