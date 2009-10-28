@@ -47,73 +47,32 @@
 			import mx.rpc.events.FaultEvent;
 			import moos.ssds.metadata.DataProducer;
 			import moos.ssds.metadata.Device;
+			import moos.ssds.web.UserInformation;
+			import flash.utils.*;
 			
-			// This is the Session Remote Object that holds server state things
-			public var ssdsSessionRO:RemoteObject = new RemoteObject();
-			
+			// The shared object that will be used to store user information
+			[Bindable]
+			public var userInformationObject:UserInformation = UserInformation.getInstance();
+		
 			// This is the DataProducerAccessEJB RemoteObject
 			public var dataProducerAccessRO:RemoteObject = new RemoteObject();
 			
-			// This is the current username
-			[Bindable]
-			public var currentUsername:String;
-			
-			// A flag to indicate if user is in the role of 'SSDS_Admin'
-			public var isSSDSAdmin:Boolean;
-			 
-			// The login/logout window
-			private var loginLogoutWindow:LoginTitleWindow;
-			
 			// The method to be run after the component is created successfully
 			private function creationCompleteHandler():void {
-				// Connect up to the SSDS Session remote object and register the
-				// event handlers for the various methods
-				ssdsSessionRO.destination = "ssds-session";
-				ssdsSessionRO.endpoint = "../servlet/messagebroker/ssds";
-				ssdsSessionRO.getCurrentUsername.addEventListener("result", getCurrentUsernameResultHandler);
-				ssdsSessionRO.isUserInRole.addEventListener("result", isUserInRoleResultHandler);
-				
-				// Now grab the user and their role
-				getCurrentUsernameFromSSDS();
-				getIsSSDSAdmin();
-				
 				// Configure the DataProducerAccessRemoteObject
 				dataProducerAccessRO.destination = "data-producer-access-ejb";
-				dataProducerAccessRO.endpoint = "../servlet/messagebroker/ssds";
 				dataProducerAccessRO.findCurrentParentlessDeployments.addEventListener("result",dataProducerAccessFindCurrentParentlessDeploymentsEJBResultsHandler);
-			}
-
-			// This function reads the current username from SSDS			
-			private function getCurrentUsernameFromSSDS():void {
-				ssdsSessionRO.getCurrentUsername();
-			}
-			
-			// This function checks to see if the user is in the role of SSDS_Admin
-			private function getIsSSDSAdmin():void {
-				ssdsSessionRO.getCurrentUsername();
-			}
-			
-			// The function to handle the result of a call to SessionRO.isUserInRole			
-			private function isUserInRoleResultHandler(event:ResultEvent):void {
-				Alert.show("User in role returned " + event.result, "Role result");
-				isSSDSAdmin = event.result;
-			}
-			
-			// The function to handle the result of a call to SessionRO.getCurrentUsername
-			private function getCurrentUsernameResultHandler(event:ResultEvent):void {
-				currentUsername = event.result.toString();
 			}
 
 			// The function to show the login/logout window
 			private function showLoginLogoutWindow():void {
-				loginLogoutWindow = LoginTitleWindow(PopUpManager.createPopUp(this,LoginTitleWindow,true));
+				var loginLogoutWindow:LoginTitleWindow = LoginTitleWindow(PopUpManager.createPopUp(this,LoginTitleWindow,true));
 				loginLogoutWindow.addEventListener(Event.REMOVED,loginLogoutWindowCloseHandler);
 				PopUpManager.centerPopUp(loginLogoutWindow);
 			}
 			
 			// The function that handles the event that the login window is closed
 			private function loginLogoutWindowCloseHandler(event:Event):void {
-				getCurrentUsernameFromSSDS();
 			}
 			
 			// The function to handle the preinitialization of the GoogleMap
@@ -198,7 +157,7 @@
 	</mx:Script>
 	<mx:Canvas width="100%" height="100%">
 		<mx:Text text="The Shore Side Data System (SSDS)" left="10"/>
-		<mx:LinkButton right="10" id="userInfoLink" label="{currentUsername}" click="showLoginLogoutWindow();"/>
+		<mx:LinkButton right="10" id="userInfoLink" label="{userInformationObject.username}" click="showLoginLogoutWindow();"/>
 		<mx:TabNavigator width="100%" height="100%" top="20">
 			<mx:HBox label="Home">
 				<mx:VBox height="100%" width="100%">
