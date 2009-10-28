@@ -218,8 +218,6 @@
 	<!-- The distribution target -->
 	<target name="dist" depends="build,hibernate-doclet,web-doclet,web-services-doclet" description="This target runs the clean, compile and then builds this distributions">
 		<!-- Delete old server jar files -->
-		<delete file="${project.dist}/ssds-services-data.jar" />
-		<delete file="${project.dist}/ssds-services-data-client.jar" failonerror="false" />
 		<delete file="${project.dist}/ssds-metadata.har" />
 		<delete file="${project.dist}/ssds-services-metadata.jar" />
 		<delete file="${project.dist}/ssds-services-metadata-client.jar" failonerror="false" />
@@ -693,6 +691,7 @@
 				<filter token="ROLENAMEATTRIBUTEID" value="${roleNameAttributeID}" />
 				<filter token="ROLERECURSION" value="${roleRecursion}" />
 				<filter token="SEARCHSCOPE" value="${searchScope}" />
+				<filter token="ALLOWEMPTYPASSWORDS" value="${allowEmptyPasswords}" />
 			</filterset>
 		</copy>
 		<copy file="${resources.build}/jboss/ssds-login-config-service.xml" todir="${security.config.service.deployment.location}" overwrite="true" />
