@@ -15,46 +15,87 @@
  */
 package moos.ssds.services.blazeds;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.log4j.Logger;
 
 import flex.messaging.FlexContext;
 import flex.messaging.FlexSession;
 
+/**
+ * This is a class that contains information about the user in the current
+ * FlexContext
+ * 
+ * @author kgomes
+ * 
+ */
 public class SessionRO {
 
 	/**
 	 * The Log4J Logger
 	 */
 	static Logger logger = Logger.getLogger(SessionRO.class);
-	public HttpServletRequest request;
-	public FlexSession session;
 
+	/**
+	 * The FlexSession object
+	 */
+	private FlexSession session = null;
+
+	/**
+	 * The default constructor
+	 */
 	public SessionRO() {
-		logger.debug("SessionRO constructor called");
-		request = FlexContext.getHttpRequest();
+		logger.debug("Default constructor called and FlexContext: ");
+		logger.debug("FlexClient = " + FlexContext.getFlexClient());
+		logger.debug("FlexSession = " + FlexContext.getFlexSession());
+		logger.debug("UserPrincipal = " + FlexContext.getUserPrincipal());
+		// Grab the session
 		session = FlexContext.getFlexSession();
 	}
 
+	/**
+	 * This is the method that returns the ID of the FlexSession
+	 * 
+	 * @return
+	 */
 	public String getSessionId() {
-		return session.getId();
+		logger.debug("getSessionID called");
+		if (session != null) {
+			logger.debug("Session was not null will return ID of "
+					+ session.getId());
+			return session.getId();
+		} else {
+			logger.debug("Session was null, so null ID will be returned");
+			return null;
+		}
 	}
 
+	/**
+	 * This method returns the username that is associated with the FlexContext
+	 * 
+	 * @return
+	 */
 	public String getCurrentUsername() {
+		// Check for the principal in the FlexContext
 		if (FlexContext.getUserPrincipal() != null) {
 			logger.debug("getCurrentUsername called and will return "
 					+ FlexContext.getUserPrincipal().getName());
 			return FlexContext.getUserPrincipal().getName();
 		} else {
+			logger.debug("getCurrentUsername will return guest");
 			return "Guest";
 		}
 	}
 
-	public boolean isUserInRole(String role) {
-		logger.debug("getUserInRole called with role " + role
-				+ " and will return " + session.isUserInRole(role));
-		return session.isUserInRole(role);
+	/**
+	 * A method to check to see if the current user in the in role name that is
+	 * supplied
+	 * 
+	 * @param role
+	 * @return
+	 */
+	public Boolean isUserInRoleSSDSAdmin() {
+		logger.debug("isUserInRoleSSDSAdmin called " + " and will return "
+				+ session.isUserInRole("SSDS_Admin"));
+		return session.isUserInRole("SSDS_Admin");
 	}
 
 }
