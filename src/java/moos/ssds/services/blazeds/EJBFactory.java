@@ -23,85 +23,100 @@ import flex.messaging.FlexFactory;
 import flex.messaging.config.ConfigMap;
 import flex.messaging.services.ServiceException;
 
-public class EJBFactory implements FlexFactory
-{
-   private static final String SOURCE = "source";
-   private static final String ERROR_CODE = "EJB.Invocation";
+/**
+ * This class implements the <code>FlexFactory</code> interface and will serve
+ * as the factory for getting a handle to the EJB Local interfaces when service
+ * endpoints for EJBss are necessary
+ * 
+ * @author kgomes
+ * 
+ */
+public class EJBFactory implements FlexFactory {
 
-   final IResourceLocator resourceLocator = new LocalCachingJNDIResourceLocator();
+	// A couple of constants
+	private static final String SOURCE = "source";
+	private static final String ERROR_CODE = "EJB.Invocation";
 
-   /**
-    * Initializes the component with configuration information.
-    */
-   public void initialize(
-         final String id, final ConfigMap configMap )
-   {
-   }
+	// A class for looking up local resources by name (and caching them for
+	// performance reasons)
+	final IResourceLocator resourceLocator = new LocalCachingJNDIResourceLocator();
 
-   /**
-    * This method is called when the definition of an instance that this factory
-    * looks up is initialized.
-    */
-   public FactoryInstance createFactoryInstance(
-         final String id, final ConfigMap properties )
-   {
-      final FactoryInstance instance = new FactoryInstance( this, id,
-            properties );
-      instance.setSource( properties.getPropertyAsString(
-            SOURCE, instance.getId() ) );
+	/**
+	 * Initializes the component with configuration information.
+	 */
+	public void initialize(final String id, final ConfigMap configMap) {
+	}
 
-      return instance;
-   }
+	/**
+	 * This method is called when the definition of an instance that this
+	 * factory looks up is initialized.
+	 */
+	public FactoryInstance createFactoryInstance(final String id,
+			final ConfigMap properties) {
+		final FactoryInstance instance = new FactoryInstance(this, id,
+				properties);
+		instance.setSource(properties.getPropertyAsString(SOURCE, instance
+				.getId()));
 
-   /**
-    * Returns the instance specified by the source and properties arguments.
-    */
-   public Object lookup(
-         final FactoryInstance instanceInfo )
-   {
-      Object ejb;
+		return instance;
+	}
 
-      final String jndiName = instanceInfo.getSource();
+	/**
+	 * Returns the EJB instance specified by the source and properties
+	 * arguments.
+	 */
+	public Object lookup(final FactoryInstance instanceInfo) {
 
-      try
-      {
-         final Object ejbHome = resourceLocator.locate( jndiName );
+		// This is the EJB that will be returned
+		Object ejb;
 
-         final Method method = ejbHome.getClass().getMethod(
-               "create", new Class[]
-               {} );
+		// Grab the name that should be registered in the JNDI for lookup
+		final String jndiName = instanceInfo.getSource();
 
-         ejb = method.invoke(
-               ejbHome, new Object[]
-               {} );
-      }
-      catch ( ResourceException e )
-      {
-         throw createServiceException(
-               MessageFormat.format(
-                     "EJB not found {0}", new Object[]
-                     { jndiName } ), e );
-      }
-      catch ( Exception e )
-      {
-         throw createServiceException(
-               MessageFormat.format(
-                     "error creating EJB {0}", new Object[]
-                     { jndiName } ), e );
-      }
+		try {
+			// Use the resource locator to try and find it
+			final Object ejbHome = resourceLocator.locate(jndiName);
 
-      return ejb;
-   }
+			// Use reflection to get a hold of the create method on the EJB home
+			// interface
+			final Method method = ejbHome.getClass().getMethod("create",
+					new Class[] {});
 
-   private ServiceException createServiceException(
-         final String msg, final Throwable cause )
-   {
-      final ServiceException e = new ServiceException();
-      e.setMessage( msg );
-      e.setRootCause( cause );
-      e.setDetails( msg );
-      e.setCode( ERROR_CODE );
+			// Call it to create a home interface
+			ejb = method.invoke(ejbHome, new Object[] {});
+		} catch (ResourceException e) {
+			throw createServiceException(MessageFormat.format(
+					"EJB not found {0}", new Object[] { jndiName }), e);
+		} catch (Exception e) {
+			throw createServiceException(MessageFormat.format(
+					"Error creating EJB {0}", new Object[] { jndiName }), e);
+		}
 
-      return e;
-   }
+		// Return it
+		return ejb;
+	}
+
+	/**
+	 * This method creates a <code>ServiceException</code> when something goes
+	 * wrong
+	 * 
+	 * @param msg
+	 * @param cause
+	 * @return
+	 */
+	private ServiceException createServiceException(final String msg,
+			final Throwable cause) {
+
+		// Create the Exception
+		final ServiceException e = new ServiceException();
+
+		// Assign the information to the exception
+		e.setMessage(msg);
+		e.setRootCause(cause);
+		e.setDetails(msg);
+		e.setCode(ERROR_CODE);
+
+		// And return it.
+		return e;
+	}
 }
