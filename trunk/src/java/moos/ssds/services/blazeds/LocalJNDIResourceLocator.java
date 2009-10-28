@@ -24,26 +24,26 @@ import javax.naming.NamingException;
 /**
  * Resource locator that locates local resources using JNDI.
  */
-public class LocalJNDIResourceLocator implements IResourceLocator
-{
-   /**
-    * @see com.adobe.ac.ejb.IResourceLocator#locate( java.lang.String )
-    */
-   public Object locate(
-         final String name ) throws ResourceException
-   {
-      try
-      {
-         final Context ctx = new InitialContext();
-         final Object res = ctx.lookup( name );
-         return res;
-      }
-      catch ( NamingException e )
-      {
-         throw new ResourceException( MessageFormat.format(
-               "error locating local resource {0}", new Object[]
-               { name } ), e );
-      }
-   }
+public class LocalJNDIResourceLocator implements IResourceLocator {
+	/**
+	 * @see moos.ssds.services.blazeds.IResourceLocator#locate(String name)
+	 */
+	public Object locate(final String name) throws ResourceException {
+		try {
+			// Grab the local naming context from the container
+			final Context ctx = new InitialContext();
+			
+			// Try to lookup an Object that has the approriate name
+			final Object res = ctx.lookup(name);
+			
+			// Return the results
+			return res;
+		} catch (NamingException e) {
+			// If nothing was found, throw a ResourceException
+			throw new ResourceException(
+					MessageFormat.format("Error locating local resource {0}",
+							new Object[] { name }), e);
+		}
+	}
 
 }

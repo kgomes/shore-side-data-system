@@ -22,27 +22,29 @@ import java.util.Map;
  * Resource locator that locates local resources using JNDI then caches the
  * results.
  */
-public class LocalCachingJNDIResourceLocator
-      extends LocalJNDIResourceLocator
-{
-   private Map< String, Object > cache = new Hashtable< String, Object >();
+public class LocalCachingJNDIResourceLocator extends LocalJNDIResourceLocator {
 
-   /**
-    * @see com.adobe.ac.ejb.IResourceLocator#locate( java.lang.String )
-    */
-   public Object locate(
-         final String name, final Class type ) throws ResourceException
-   {
-      Object res = cache.get( name );
-      if ( res == null )
-      {
-         res = super.locate( name );
+	// A local map to hold the cache of names and resources
+	private Map<String, Object> cache = new Hashtable<String, Object>();
 
-         cache.put(
-               name, res );
-      }
+	/**
+	 * @see moos.ssds.services.blazeds.IResourceLocator#locate(String)
+	 */
+	public Object locate(final String name, final Class type)
+			throws ResourceException {
 
-      return res;
-   }
+		// Look in the local resource cache first
+		Object res = cache.get(name);
+
+		// If not found, then use the super class to find the resource
+		if (res == null) {
+			res = super.locate(name);
+			// Store it in the cache
+			cache.put(name, res);
+		}
+
+		// Now return the result
+		return res;
+	}
 
 }
