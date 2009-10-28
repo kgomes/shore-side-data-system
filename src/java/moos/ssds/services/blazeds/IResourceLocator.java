@@ -16,17 +16,17 @@
 package moos.ssds.services.blazeds;
 
 /**
- * Interface for locating resources, e.g. JDBC datasources.
+ * Interface for locating resources, e.g. JDBC datasources, etc.
  */
-public interface IResourceLocator
-{
-   /**
-    * Locate the resource with the supplied name and type.
-    * 
-    * @param name the resource name.
-    * @return the resource.
-    * @throws ResourceException if there is an error locating the resource.
-    */
-   Object locate(
-         String name ) throws ResourceException;
+public interface IResourceLocator {
+	/**
+	 * Locate the resource with the supplied name
+	 * 
+	 * @param name
+	 *            the resource name.
+	 * @return the resource.
+	 * @throws ResourceException
+	 *             if there is an error locating the resource.
+	 */
+	Object locate(String name) throws ResourceException;
 }
