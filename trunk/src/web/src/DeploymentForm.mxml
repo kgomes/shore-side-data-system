@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Form xmlns:mx="http://www.adobe.com/2006/mxml">
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import moos.ssds.web.UserInformation;
+			import moos.ssds.metadata.DataProducer;
+			// The shared object that will be used to store user information
+			[Bindable]
+			private var userInformationObject:UserInformation = UserInformation.getInstance();
+
+			// The Deployment being viewed
+			[Bindable]
+			private var currentDeployment:DataProducer;
+			
+			// The type options
+			[Bindable]
+			private var dataTypes:ArrayCollection = new ArrayCollection(["Deployment","ProcessRun"]);
+			
+			// The index of the combo box
+			[Bindable]
+			private var dataTypeComboBoxIndex:int = 0;
+			
+			// The method to set the Deployment
+			public function setDeployment(deployment:DataProducer):void {
+				// Make sure it is a DataProducer first
+				if (deployment is DataProducer) {
+					// Make sure it is of type Deployment
+					if (deployment.dataProducerType != null && 
+						deployment.dataProducerType == "Deployment" || 
+						deployment.dataProducerType == "deployment") {
+						// Assign to local instance
+						this.currentDeployment = deployment;
+						
+						// Set the proper index on the combo box
+						dataTypeComboBoxIndex = 0;
+					}
+					
+				}
+				
+			}
+		]]>
+	</mx:Script>
+	<mx:FormHeading label="Deployment"/>
+	<mx:FormItem label="ID" id="idFormItem" width="100%">
+		<mx:Label text="{currentDeployment.id}" id="idLabel" width="100%"/>
+	</mx:FormItem>
+	<mx:FormItem label="Name" id="nameFormItem" width="100%">
+		<mx:TextInput id="nameTextInput" editable="{userInformationObject.isAdmin}" width="100%" text="{currentDeployment.name}"/>
+	</mx:FormItem>
+	<mx:FormItem label="Description" id="descriptionFormItem" width="100%">
+		<mx:TextInput id="descriptionTextInput" editable="{userInformationObject.isAdmin}" width="100%" text="{currentDeployment.description}"/>
+	</mx:FormItem>
+	<mx:FormItem label="Type" id="dataProducerTypeFormItem" width="100%">
+		<mx:ComboBox id="dataProducerTypeComboBox" enabled="{userInformationObject.isAdmin}" width="100%" dataProvider="{dataTypes}" selectedIndex="{dataTypeComboBoxIndex}"></mx:ComboBox>
+	</mx:FormItem>
+	<mx:FormItem label="Start" id="startDateFormItem">
+		<mx:VBox width="100%" height="25%" id="startDateVBox">
+			<mx:DateField id="startDateChooser" width="100%" dataProvider="{currentDeployment.startDate.date}" enabled="{userInformationObject.isAdmin}"/>
+			<mx:HBox width="100%" id="startTimeHBox">
+				<mx:NumericStepper id="startHourNumericStepper" maximum="23" minimum="0" stepSize="1" value="{currentDeployment.startDate.hours}" enabled="{userInformationObject.isAdmin}"/>
+				<mx:NumericStepper id="startMinuteNumericStepper" minimum="0" maximum="59" stepSize="1" value="{currentDeployment.startDate.minutes}" enabled="{userInformationObject.isAdmin}"/>
+				<mx:NumericStepper id="startSecondsNumericStepper" minimum="0" maximum="59" stepSize="1" value="{currentDeployment.startDate.seconds}" enabled="{userInformationObject.isAdmin}"/>
+			</mx:HBox>
+		</mx:VBox>
+	</mx:FormItem>
+</mx:Form>
