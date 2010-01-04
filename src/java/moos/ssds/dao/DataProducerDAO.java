@@ -157,8 +157,8 @@ public class DataProducerDAO extends MetadataDAO {
 	/**
 	 * TODO kgomes Document the rest of this. This method allows the caller to
 	 * specify the properties that they want to try and find the
-	 * <code>DataProducer</code> by. In general if the parameters are left
-	 * null, they wil not be used in the query
+	 * <code>DataProducer</code> by. In general if the parameters are left null,
+	 * they wil not be used in the query
 	 * 
 	 * @param name
 	 * @param exactMatch
@@ -280,7 +280,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 *            is the name to search for
 	 * @param exactMatch
 	 *            determines whether or not the search should only find exact
-	 *            matches (<code>true</code>) or LIKE matches (<code>false</code>)
+	 *            matches (<code>true</code>) or LIKE matches (
+	 *            <code>false</code>)
 	 * @param orderByPropertyName
 	 *            this is a string that can be used to try and specify the
 	 *            property that the query should try to order the results by. It
@@ -289,9 +290,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 *            is a boolean that specifies if the caller wants the fully
 	 *            instantianted object graph (relationships) returned, or just
 	 *            the query object itself. If you want the full graph returned
-	 *            specify <code>true</code>, otherwise leave it false.
-	 *            <b>NOTE: By specifying true, you could be requesting a large
-	 *            object tree which will slow things down, so use sparingly</b>
+	 *            specify <code>true</code>, otherwise leave it false. <b>NOTE:
+	 *            By specifying true, you could be requesting a large object
+	 *            tree which will slow things down, so use sparingly</b>
 	 * @return a <code>Collection</code> of <code>DataProducer</code>s that
 	 *         match the given criteria
 	 * @throws MetadataAccessException
@@ -371,9 +372,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 *            one of the constants defined in the <code>DataProducer</code>
 	 *            class.
 	 * @param name
-	 *            is the name of the <code>DataProducer</code> to search for.
-	 *            If this parameter is <code>null</code> the search will only
-	 *            be done by the data producer type.
+	 *            is the name of the <code>DataProducer</code> to search for. If
+	 *            this parameter is <code>null</code> the search will only be
+	 *            done by the data producer type.
 	 * @param exactMatch
 	 *            is a boolean to indicate if the name search is to be an exact
 	 *            match of the name
@@ -385,11 +386,11 @@ public class DataProducerDAO extends MetadataDAO {
 	 *            is a boolean that specifies if the caller wants the fully
 	 *            instantianted object graph (relationships) returned, or just
 	 *            the query object itself. If you want the full graph returned
-	 *            specify <code>true</code>, otherwise leave it false.
-	 *            <b>NOTE: By specifying true, you could be requesting a large
-	 *            object tree which will slow things down, so use sparingly</b>
-	 * @return a <code>Collection</code> of <code>DataProducer</code>s that
-	 *         have the same type as the string given.
+	 *            specify <code>true</code>, otherwise leave it false. <b>NOTE:
+	 *            By specifying true, you could be requesting a large object
+	 *            tree which will slow things down, so use sparingly</b>
+	 * @return a <code>Collection</code> of <code>DataProducer</code>s that have
+	 *         the same type as the string given.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the search, or if the incoming
 	 *             dataProducerType does not match a constant defined in the
@@ -459,9 +460,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 *            is a boolean that specifies if the caller wants the fully
 	 *            instantianted object graph (relationships) returned, or just
 	 *            the query object itself. If you want the full graph returned
-	 *            specify <code>true</code>, otherwise leave it false.
-	 *            <b>NOTE: By specifying true, you could be requesting a large
-	 *            object tree which will slow things down, so use sparingly</b>
+	 *            specify <code>true</code>, otherwise leave it false. <b>NOTE:
+	 *            By specifying true, you could be requesting a large object
+	 *            tree which will slow things down, so use sparingly</b>
 	 * @return
 	 * @throws MetadataAccessException
 	 */
@@ -526,9 +527,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 *            is a boolean that specifies if the caller wants the fully
 	 *            instantianted object graph (relationships) returned, or just
 	 *            the query object itself. If you want the full graph returned
-	 *            specify <code>true</code>, otherwise leave it false.
-	 *            <b>NOTE: By specifying true, you could be requesting a large
-	 *            object tree which will slow things down, so use sparingly</b>
+	 *            specify <code>true</code>, otherwise leave it false. <b>NOTE:
+	 *            By specifying true, you could be requesting a large object
+	 *            tree which will slow things down, so use sparingly</b>
 	 * @return
 	 * @throws MetadataAccessException
 	 */
@@ -582,8 +583,8 @@ public class DataProducerDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This methods allows you to query for <code>DataProducer</code>s by a
-	 * date range and also by a name (if you choose).
+	 * This methods allows you to query for <code>DataProducer</code>s by a date
+	 * range and also by a name (if you choose).
 	 * 
 	 * @param startDate
 	 *            is the <code>Date</code> that is the start of the date range
@@ -592,13 +593,13 @@ public class DataProducerDAO extends MetadataDAO {
 	 *            null, an exception will be thrown).
 	 * @param boundedByStartDate
 	 *            is a <code>boolean</code> to indicate if the
-	 *            <code>DataProducer</code>'s startDate must be after the
-	 *            start date specified
+	 *            <code>DataProducer</code>'s startDate must be after the start
+	 *            date specified
 	 * @param endDate
-	 *            is the <code>Date</code> that is the end of the date range
-	 *            to search for. If it is null, the end date will be infinity
-	 *            (note that if both start and end dates are null, an exception
-	 *            will be thrown)
+	 *            is the <code>Date</code> that is the end of the date range to
+	 *            search for. If it is null, the end date will be infinity (note
+	 *            that if both start and end dates are null, an exception will
+	 *            be thrown)
 	 * @param boundedByEndDate
 	 *            is a <code>boolean</code> to indicate if the
 	 *            <code>DataProducer</code>'s end date must be before the end
@@ -619,9 +620,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 *            is a boolean that specifies if the caller wants the fully
 	 *            instantianted object graph (relationships) returned, or just
 	 *            the query object itself. If you want the full graph returned
-	 *            specify <code>true</code>, otherwise leave it false.
-	 *            <b>NOTE: By specifying true, you could be requesting a large
-	 *            object tree which will slow things down, so use sparingly</b>
+	 *            specify <code>true</code>, otherwise leave it false. <b>NOTE:
+	 *            By specifying true, you could be requesting a large object
+	 *            tree which will slow things down, so use sparingly</b>
 	 * @return a <code>Collection</code> of <code>DataProducer</code>s that
 	 *         match the given criteria
 	 * @throws MetadataAccessException
@@ -1256,13 +1257,12 @@ public class DataProducerDAO extends MetadataDAO {
 
 	/**
 	 * This method returns a <code>Collection</code> of all the
-	 * <code>DataProducer</code>s associated (directly) with the given
-	 * device.
+	 * <code>DataProducer</code>s associated (directly) with the given device.
 	 * 
 	 * @param device
 	 *            is the <code>Device</code> used to search for
-	 * @return the <code>Collection</code> of <code>DataProducer</code>s
-	 *         that are directly associated with that device
+	 * @return the <code>Collection</code> of <code>DataProducer</code>s that
+	 *         are directly associated with that device
 	 * @throws MetadataAccessException
 	 */
 	public Collection findByDevice(Device device, String orderByPropertyName,
@@ -1395,9 +1395,9 @@ public class DataProducerDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method finds all the deployments of a <code>Device</code> that
-	 * fall within a certain time window. This is usually done when searching
-	 * for data from that device.
+	 * This method finds all the deployments of a <code>Device</code> that fall
+	 * within a certain time window. This is usually done when searching for
+	 * data from that device.
 	 * 
 	 * @param device
 	 * @param startDate
@@ -1544,7 +1544,7 @@ public class DataProducerDAO extends MetadataDAO {
 	public Collection findCurrentDeployments(String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
-		
+
 		// The collection to return
 		Collection dataProducersToReturn = new ArrayList();
 
@@ -1814,8 +1814,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @param returnFullObjectGraph
 	 *            TODO kgomes document this
 	 * @return the <code>DataProducer</code> who is the parent of the given
-	 *         <code>DataProducer</code>. This will return null if not parent
-	 *         is found
+	 *         <code>DataProducer</code>. This will return null if not parent is
+	 *         found
 	 * @throws MetadataAccessException
 	 *             if something goes wrong
 	 */
@@ -1849,6 +1849,50 @@ public class DataProducerDAO extends MetadataDAO {
 	}
 
 	/**
+	 * This method finds the closest latitude up the parent chain for a given
+	 * <code>DataProducer</code>.
+	 * 
+	 * @param dataProducer
+	 *            the <code>DataProducer</code> whose ancestor chain we are
+	 *            interested in searching
+	 * @return the <code>Double</code> that represents the first latitude that
+	 *         was found up the ancestor chain. It will return null if nothing
+	 *         was found.
+	 * @throws MetadataAccessException
+	 *             if something goes wrong
+	 */
+	public Double findClosestParentDataProducerLatitude(
+			DataProducer dataProducer) throws MetadataAccessException {
+
+		// The latitude to return
+		Double latitudeToReturn = null;
+
+		// Find the peristent equivalent of the incoming DataProducer
+		DataProducer childDataProducer = (DataProducer) this
+				.findEquivalentPersistentObject(dataProducer, false);
+
+		// Make sure the equivalent was found
+		if (childDataProducer != null) {
+			// Check to see if the parent exists
+			if (childDataProducer.getParentDataProducer() != null) {
+				// Check to see if the latitude exists
+				if (childDataProducer.getParentDataProducer()
+						.getNominalLatitude() != null) {
+					latitudeToReturn = childDataProducer
+							.getParentDataProducer().getNominalLatitude();
+				} else {
+					// Try to go up the chain again
+					latitudeToReturn = findClosestParentDataProducerLatitude(childDataProducer
+							.getParentDataProducer());
+				}
+			}
+		}
+
+		// Now return it
+		return latitudeToReturn;
+	}
+
+	/**
 	 * This method returns a <code>Collection</code> of
 	 * <code>DataProducer</code>s that are direct children of the given
 	 * <code>DataProducer</code>. TODO kgomes add an orderByProperty and
@@ -1862,8 +1906,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 *            must match a property name of <code>DataProducer</code>.
 	 * @param returnFullObjectGraphs
 	 *            If true then return populated object graphs
-	 * @return the <code>Collection</code> of <code>DataProducer</code>s
-	 *         that are direct children of the given parent
+	 * @return the <code>Collection</code> of <code>DataProducer</code>s that
+	 *         are direct children of the given parent
 	 * @throws MetadataAccessException
 	 *             if something goes wrong
 	 */
@@ -1908,8 +1952,8 @@ public class DataProducerDAO extends MetadataDAO {
 	}
 
 	/**
-	 * Return a count of <code>DataProducer</code>s that are direct children
-	 * of the given <code>DataProducer</code>.
+	 * Return a count of <code>DataProducer</code>s that are direct children of
+	 * the given <code>DataProducer</code>.
 	 * 
 	 * @param dataProducer
 	 *            the parent <code>DataProducer</code>
@@ -2033,12 +2077,11 @@ public class DataProducerDAO extends MetadataDAO {
 	 *            is a boolean that specifies if the caller wants the fully
 	 *            instantianted object graph (relationships) returned, or just
 	 *            the query object itself. If you want the full graph returned
-	 *            specify <code>true</code>, otherwise leave it false.
-	 *            <b>NOTE: By specifying true, you could be requesting a large
-	 *            object tree which will slow things down, so use sparingly</b>
-	 * @return a <code>Collection</code> of <code>DataProducer</code>s that
-	 *         are linked to the <code>DataProducerGroup</code> with the given
-	 *         name
+	 *            specify <code>true</code>, otherwise leave it false. <b>NOTE:
+	 *            By specifying true, you could be requesting a large object
+	 *            tree which will slow things down, so use sparingly</b>
+	 * @return a <code>Collection</code> of <code>DataProducer</code>s that are
+	 *         linked to the <code>DataProducerGroup</code> with the given name
 	 * @throws MetadataAccessException
 	 *             if something goes wrong
 	 */
@@ -2481,19 +2524,19 @@ public class DataProducerDAO extends MetadataDAO {
 	/**
 	 * TODO kgomes implement and document this. This method takes in a deviceID,
 	 * a DeviceType name, and some nominal location coordinates and then tries
-	 * to return a <code>Collection</code> of <code>IDeployment</code>s the
-	 * have a similar device type name, that were deployed on (or under) the
-	 * given deployment (parent-child relationship). It will do a
-	 * &quot;deep&quot; search for devices. In other words, it will check all
-	 * deployments of the parent as well as of any sub-deployments under that
-	 * parent (i.e. it will &quot;Walk the chain&quot;).
+	 * to return a <code>Collection</code> of <code>IDeployment</code>s the have
+	 * a similar device type name, that were deployed on (or under) the given
+	 * deployment (parent-child relationship). It will do a &quot;deep&quot;
+	 * search for devices. In other words, it will check all deployments of the
+	 * parent as well as of any sub-deployments under that parent (i.e. it will
+	 * &quot;Walk the chain&quot;).
 	 * 
 	 * @param parentDeployment
-	 *            This is a parent <code>IDeployment</code> to start the
-	 *            search from. It is the &quot;Root&quot; of the search tree.
+	 *            This is a parent <code>IDeployment</code> to start the search
+	 *            from. It is the &quot;Root&quot; of the search tree.
 	 * @param deviceTypeName
-	 *            This is a <code>String</code> that will be used to search
-	 *            for devices that have a similar device type to that named with
+	 *            This is a <code>String</code> that will be used to search for
+	 *            devices that have a similar device type to that named with
 	 *            this string.
 	 * @param nominalLongitude
 	 *            This is the longitude that the device should be deployed at.
@@ -2518,8 +2561,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @param depthTolerance
 	 *            This is the +/- that will be added to the
 	 *            <code>nominalDepth</code> parameter for window searches.
-	 * @return a <code>Collection</code> of <code>IDeployment</code>s that
-	 *         meet the search criteria defined by the incoming parameters. No
+	 * @return a <code>Collection</code> of <code>IDeployment</code>s that meet
+	 *         the search criteria defined by the incoming parameters. No
 	 *         duplicates are removed and if no deployments were found, an empty
 	 *         collection is returned.
 	 */
@@ -2590,12 +2633,12 @@ public class DataProducerDAO extends MetadataDAO {
 
 	/**
 	 * TODO kgomes implement and document this. This method takes in the ID of a
-	 * parent <code>IDevice</code>, the name of a <code>IDeviceType</code>,
-	 * and some nominal location coordinates and then tries to return a
-	 * <code>Collection</code> of <code>IDevice</code>s with the given
-	 * type, that were deployed on the given device (parent-child) relationship.
-	 * This will only look for direct child deployments, it won't walk any of
-	 * the sub deployments.
+	 * parent <code>IDevice</code>, the name of a <code>IDeviceType</code>, and
+	 * some nominal location coordinates and then tries to return a
+	 * <code>Collection</code> of <code>IDevice</code>s with the given type,
+	 * that were deployed on the given device (parent-child) relationship. This
+	 * will only look for direct child deployments, it won't walk any of the sub
+	 * deployments.
 	 * 
 	 * @param parentID
 	 * @param deviceTypeName
@@ -2700,8 +2743,8 @@ public class DataProducerDAO extends MetadataDAO {
 
 	/**
 	 * TODO kgomes implement and document this. This method takes in the name of
-	 * a <code>IDevice</code>, the name of a <code>IDeviceType</code>, and
-	 * some nominal location coordinates and then tries to return a
+	 * a <code>IDevice</code>, the name of a <code>IDeviceType</code>, and some
+	 * nominal location coordinates and then tries to return a
 	 * <code>Collection</code> of <code>IDevices</code> with the given type,
 	 * that were deployed on the given device (parent-child) relationship. This
 	 * will only look for direct child deployments, it won't walk any of the sub
@@ -2778,11 +2821,11 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Supports"
 	 * @param parentDeployment
-	 *            This is a parent <code>IDeployment</code> to start the
-	 *            search from. It is the &quot;Root&quot; of the search tree.
+	 *            This is a parent <code>IDeployment</code> to start the search
+	 *            from. It is the &quot;Root&quot; of the search tree.
 	 * @param deviceTypeName
-	 *            This is a <code>String</code> that will be used to search
-	 *            for devices that have a similar device type to that named with
+	 *            This is a <code>String</code> that will be used to search for
+	 *            devices that have a similar device type to that named with
 	 *            this string.
 	 * @param nominalLongitude
 	 *            This is the longitude that the device should be deployed at.
@@ -2807,11 +2850,11 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @param depthTolerance
 	 *            This is the +/- that will be added to the
 	 *            <code>nominalDepth</code> parameter for window searches.
-	 * @return a <code>Collection</code> of <code>IDevice</code>s that meet
-	 *         the search criteria defined by the incoming parameters. The
-	 *         devices are listed from the most recent deployment first (index
-	 *         0) to the oldest deployment. Each device is listed only once in
-	 *         the return collection
+	 * @return a <code>Collection</code> of <code>IDevice</code>s that meet the
+	 *         search criteria defined by the incoming parameters. The devices
+	 *         are listed from the most recent deployment first (index 0) to the
+	 *         oldest deployment. Each device is listed only once in the return
+	 *         collection
 	 */
 	public Collection findAllDevicesByParentDeploymentByTypeAndByLocation(
 			DataProducer parentDeployment, String deviceTypeName,
@@ -3175,8 +3218,25 @@ public class DataProducerDAO extends MetadataDAO {
 			String newHeadDeploymentName, String baseDataStreamUri)
 			throws MetadataAccessException {
 
+		// Print some debug information
+		logger
+				.debug("createDuplicateDeepDeployment called with the following:");
+		if (deploymentToCopy != null) {
+			logger.debug("Deployment to copy: "
+					+ deploymentToCopy.toStringRepresentation("|"));
+		} else {
+			logger.debug("Deployment to copy was NULL! "
+					+ "Will do nothing and return null.");
+		}
+		logger.debug("New start date: " + newStartDate);
+		logger.debug("Close Old? " + closeOld);
+		logger.debug("Old end date: " + oldEndDate);
+		logger.debug("New head deployment name: " + newHeadDeploymentName);
+		logger.debug("Base data stream URI:" + baseDataStreamUri);
+
 		// Grab the current date in case we need it
 		Date currentDate = new Date();
+		logger.debug("Current date is " + currentDate);
 
 		// The Long to return
 		Long duplicateDeploymentID = null;
@@ -3198,6 +3258,8 @@ public class DataProducerDAO extends MetadataDAO {
 		if (persistentOneToCopy == null)
 			throw new MetadataAccessException(
 					"No matching deployment could be found to copy");
+		logger.debug("The matching persistent deployment was found and is:");
+		logger.debug(persistentOneToCopy.toStringRepresentation("|"));
 
 		// OK, so first create the clone
 		DataProducer deepClone = null;
@@ -3211,6 +3273,9 @@ public class DataProducerDAO extends MetadataDAO {
 		if (deepClone == null)
 			throw new MetadataAccessException(
 					"Could not create a copy of the incoming deployment");
+		logger.debug("OK, a deep copy was finished and "
+				+ "the top level of the copy is:");
+		logger.debug(deepClone.toStringRepresentation("|"));
 
 		// First update the old deployment if it is to be closed
 		if (closeOld) {
@@ -3221,6 +3286,8 @@ public class DataProducerDAO extends MetadataDAO {
 			// Now recursively close out deployments and outputs
 			deepUpdateDeploymentAndOutputs(persistentOneToCopy, null, endDate,
 					false, null, null, null);
+			logger.debug("OK, used a end date of " + endDate
+					+ " to close the old deployment");
 		}
 
 		// Now let's walk the new clone's tree and change what we need to in
@@ -3239,6 +3306,7 @@ public class DataProducerDAO extends MetadataDAO {
 								+ "an exception to be thrown: "
 								+ e.getMessage());
 			}
+			logger.debug("Set the name of the copied deployment to");
 		}
 
 		// Now set the start date if specified
@@ -3247,21 +3315,35 @@ public class DataProducerDAO extends MetadataDAO {
 		} else {
 			deepClone.setStartDate(currentDate);
 		}
+		logger.debug("New deployment's start date set to "
+				+ deepClone.getStartDate());
 
 		// Now call the method to update all the deployment's children and
 		// outputs
 		this.deepUpdateDeploymentAndOutputs(deepClone,
 				deepClone.getStartDate(), null, true, null, null,
 				baseDataStreamUri);
+		logger.debug("Performed deepUpdateDeploymentAndOutputs "
+				+ "with start date of " + deepClone.getStartDate()
+				+ " and baseDataStreamUri of " + baseDataStreamUri);
 
 		// Now persist it
 		duplicateDeploymentID = makePersistent(deepClone);
+		logger.debug("OK, persisted the clone and got ID of "
+				+ duplicateDeploymentID);
 
 		// Check to see if old deployment has parent
 		DataProducer parentDataProducer = findParentDataProducer(
 				persistentOneToCopy, false);
-		if (parentDataProducer != null)
+		if (parentDataProducer != null) {
 			parentDataProducer.addChildDataProducer(deepClone);
+			logger.debug("The old data producer had a parent, so "
+					+ "the new one will be connected to parent:");
+			logger.debug(parentDataProducer.toStringRepresentation("|"));
+		} else {
+			logger.debug("There was not parent of the old data "
+					+ "sproducer so none will be set on the new one");
+		}
 
 		// Return the new ID
 		return duplicateDeploymentID;
@@ -4297,9 +4379,9 @@ public class DataProducerDAO extends MetadataDAO {
 
 	/**
 	 * This method does a &quot;Deep&quot; transient. This effectively removes
-	 * all the dependent entitites along with the <code>DataProducer</code>
-	 * that is passed in. The dependent entities that will also be made
-	 * transient are:
+	 * all the dependent entitites along with the <code>DataProducer</code> that
+	 * is passed in. The dependent entities that will also be made transient
+	 * are:
 	 * <ol>
 	 * <li>Outputs (DataContainers)</li>
 	 * <li>Resources</li>
