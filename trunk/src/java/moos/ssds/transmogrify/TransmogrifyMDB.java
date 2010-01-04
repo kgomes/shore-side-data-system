@@ -779,7 +779,7 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 			logger.error("IOException trying to write packet in our format"
 					+ e1.getMessage());
 		}
-		// Now rebuplish that to SSDS ingest
+		// Now republish that to SSDS ingest
 		BytesMessage newBytesMessage = null;
 		try {
 			newBytesMessage = topicSession.createBytesMessage();
