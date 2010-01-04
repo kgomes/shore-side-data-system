@@ -1,0 +1,760 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
+	<mx:Style>
+		.solidBorder { border-style: solid; }
+        
+        .solidBorderPaddedVertically 
+        {
+            padding-top: 12; 
+            padding-bottom: 12;
+            border-style: solid;
+        }
+
+	</mx:Style>
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.TextArea;
+			import mx.containers.VBox;
+			import mx.controls.NumericStepper;
+			import mx.controls.DateField;
+			import mx.controls.DateChooser;
+			import mx.collections.ArrayCollection;
+			import mx.controls.ComboBox;
+			import mx.events.FlexEvent;
+			import mx.containers.FormHeading;
+			import mx.controls.Label;
+			import mx.containers.FormItem;
+			import mx.controls.Alert;
+			import mx.controls.TextInput;
+			import mx.events.DataGridEventReason;
+			import mx.events.DataGridEvent;
+			import moos.ssds.web.UserInformation;
+			import moos.ssds.web.MetadataHelper;
+			import moos.ssds.metadata.DataProducer;
+			// The shared object that will be used to store user information
+			[Bindable]
+			public var userInformationObject:UserInformation = UserInformation.getInstance();
+
+			// The metadata object being edited
+			[Bindable]
+			private var metadataObject:Object;
+			
+			// This method sets the metadata object
+			public function setMetadataObject(metadataObject:Object):void {
+				
+				// Set the local metadata object
+				this.metadataObject = metadataObject;
+				
+				// Clear the form children
+				this.metadataObjectForm.removeAllChildren();
+
+				// Create the form heading
+				var newFormHeading:FormHeading = new FormHeading();
+				this.metadataObjectForm.addChild(newFormHeading);
+				
+				// Create a Label object and set to the ID of the metadata object
+				var idFormValue:Label = new Label();
+				idFormValue.name = "idFormValue";
+				idFormValue.text = this.metadataObject.id;
+				
+				// Add (or set) in the form
+				this.addOrSetFormItem("idFormItem", "ID", idFormValue);
+				
+				// If it is a DataProducer
+				if (metadataObject is DataProducer) {
+					
+					
+					// Cast it to a DataProducer
+					var tempDataProducer:DataProducer = metadataObject as DataProducer;
+					
+					// Add the correct form heading
+					if (tempDataProducer.dataProducerType == "Deployment") {
+						newFormHeading.label = "Deployment";
+					} else {
+						newFormHeading.label = "Process Run";
+					}
+					
+					// *****************************************************
+					// Name
+					// *****************************************************
+					// Create a Text field for the name of the data producer
+					var nameTextInput:TextInput = new TextInput();
+					nameTextInput.percentWidth=100;
+					nameTextInput.name = "nameFormValue";
+					nameTextInput.text = tempDataProducer.name;
+					nameTextInput.toolTip = tempDataProducer.name;
+					if (userInformationObject.isAdmin) {
+						nameTextInput.enabled = true;
+					} else {
+						nameTextInput.enabled = false;
+					}
+					
+					// Add it to the form
+					this.addOrSetFormItem("nameFormItem", "Name", nameTextInput);
+					 
+					// *****************************************************
+					// Description
+					// *****************************************************
+					// Create a Text field for the description of the data producer
+					var descriptionTextInput:TextInput = new TextInput();
+					descriptionTextInput.width=150;
+					descriptionTextInput.name = "descriptionFormValue";
+					descriptionTextInput.text = tempDataProducer.description;
+					descriptionTextInput.toolTip = tempDataProducer.description;
+					if (userInformationObject.isAdmin) {
+						descriptionTextInput.enabled = true;
+					} else {
+						descriptionTextInput.enabled = false;
+					}
+					
+					// Add it to the form
+					this.addOrSetFormItem("descriptionFormItem", "Desc.", descriptionTextInput);
+					 
+					// *****************************************************
+					// DataProducerType
+					// *****************************************************
+					var dataProducerTypeComboBox:ComboBox = new ComboBox();
+					dataProducerTypeComboBox.width = 150;
+					dataProducerTypeComboBox.name = "dataProducerTypeFormValue";
+					
+					// Create the data provider
+					var dataProducerTypes:ArrayCollection = new ArrayCollection(new Array());
+					dataProducerTypes.addItem("Deployment");
+					dataProducerTypes.addItem("Process Run");
+					dataProducerTypeComboBox.dataProvider = dataProducerTypes;
+					// Make sure data producer type is specified
+					if (tempDataProducer.dataProducerType != null) {
+						// Check for Deployment	
+					 	if (tempDataProducer.dataProducerType == "Deployment") {
+							dataProducerTypeComboBox.selectedIndex = 0;
+						} else if (tempDataProducer.dataProducerType == "Process Run") {
+							dataProducerTypeComboBox.selectedIndex = 1;
+						}
+					}
+					// Enable or disable it
+					if (userInformationObject.isAdmin) {
+						dataProducerTypeComboBox.enabled = true;
+					} else {
+						dataProducerTypeComboBox.enabled = false;
+					}
+					
+					// Add it to the form
+					this.addOrSetFormItem("dataProducerTypeFormItem", "Type", dataProducerTypeComboBox);
+					
+					// *****************************************************
+					// StartDate
+					// *****************************************************
+					// Create a VBox first
+					var startDateVBox:VBox = new VBox();
+					
+					// Create an HBox first
+					var startDateHBox:HBox = new HBox();
+					
+					// Hour stepper
+					var startDateHourStepper:NumericStepper = new NumericStepper();
+					startDateHourStepper.name = "startDateHourStepperFormValue";
+					startDateHourStepper.width = 40;
+					startDateHourStepper.maximum = 24;
+					startDateHourStepper.minimum = 0;
+					startDateHBox.addChild(startDateHourStepper);
+
+					// Minute stepper
+					var startDateMinuteStepper:NumericStepper = new NumericStepper();
+					startDateMinuteStepper.name = "startDateMinuteStepperFormValue";
+					startDateMinuteStepper.width = 40;
+					startDateMinuteStepper.maximum = 59;
+					startDateMinuteStepper.minimum = 0;
+					startDateHBox.addChild(startDateMinuteStepper);
+
+					// Second stepper
+					var startDateSecondStepper:NumericStepper = new NumericStepper();
+					startDateSecondStepper.name = "startDateSecondStepperFormValue";
+					startDateSecondStepper.width = 40;
+					startDateSecondStepper.maximum = 59;
+					startDateSecondStepper.minimum = 0;
+					startDateHBox.addChild(startDateSecondStepper);
+
+					// Add the whole thing to the VBox
+					startDateVBox.addChild(startDateHBox);
+
+					// The date field chooser
+					var startDateDateField:DateField = new DateField();
+					startDateDateField.name = "startDateFormValue";
+					startDateDateField.width = 90;
+					
+					// Add to the VBox
+					startDateVBox.addChild(startDateDateField);
+					
+					// Makes sure the start date exists before assigning values
+					if (tempDataProducer.startDate != null) { 
+						startDateHourStepper.value = tempDataProducer.startDate.hours;
+						startDateMinuteStepper.value = tempDataProducer.startDate.minutes;
+						startDateSecondStepper.value = tempDataProducer.startDate.seconds;
+						startDateDateField.selectedDate = tempDataProducer.startDate;
+					}
+					
+					// Enable or disable it
+					if (userInformationObject.isAdmin) {
+						startDateHourStepper.enabled = true;
+						startDateMinuteStepper.enabled = true;
+						startDateSecondStepper.enabled = true;
+						startDateDateField.enabled = true;
+					} else {
+						startDateHourStepper.enabled = false;
+						startDateMinuteStepper.enabled = false;
+						startDateSecondStepper.enabled = false;
+						startDateDateField.enabled = false;
+					}
+					
+					// Add it to the form
+					this.addOrSetFormItem("startDateFormItem", "Start", startDateVBox);
+					
+					// *****************************************************
+					// EndDate
+					// *****************************************************
+					// Create a VBox first
+					var endDateVBox:VBox = new VBox();
+					
+					// Create an HBox first
+					var endDateHBox:HBox = new HBox();
+					
+					// Hour stepper
+					var endDateHourStepper:NumericStepper = new NumericStepper();
+					endDateHourStepper.name = "endDateHourStepperFormValue";
+					endDateHourStepper.width = 40;
+					endDateHourStepper.maximum = 24;
+					endDateHourStepper.minimum = 0;
+					endDateHBox.addChild(endDateHourStepper);
+					
+					// Minute stepper
+					var endDateMinuteStepper:NumericStepper = new NumericStepper();
+					endDateMinuteStepper.name = "endDateMinuteStepperFormValue";
+					endDateMinuteStepper.width = 40;
+					endDateMinuteStepper.maximum = 59;
+					endDateMinuteStepper.minimum = 0;
+					endDateHBox.addChild(endDateMinuteStepper);
+					
+					// Second stepper
+					var endDateSecondStepper:NumericStepper = new NumericStepper();
+					endDateSecondStepper.name = "endDateSecondStepperFormValue";
+					endDateSecondStepper.width = 40;
+					endDateSecondStepper.maximum = 59;
+					endDateSecondStepper.minimum = 0;
+					endDateHBox.addChild(endDateSecondStepper);
+					
+					// Add the whole thing to the VBox
+					endDateVBox.addChild(endDateHBox);
+
+					// The date field chooser
+					var endDateDateField:DateField = new DateField();
+					endDateDateField.name = "endDateFormValue";
+					endDateDateField.width = 90;
+					
+					// Add to the VBox
+					endDateVBox.addChild(endDateDateField);
+					
+					// Make sure end date exists
+					if (tempDataProducer.endDate != null) {
+						endDateHourStepper.value = tempDataProducer.endDate.hours;
+						endDateMinuteStepper.value = tempDataProducer.endDate.minutes;
+						endDateSecondStepper.value = tempDataProducer.endDate.seconds;
+						endDateDateField.selectedDate = tempDataProducer.endDate;
+					}
+
+					// Enable or disable it
+					if (userInformationObject.isAdmin) {
+						endDateHourStepper.enabled = true;
+						endDateMinuteStepper.enabled = true;
+						endDateSecondStepper.enabled = true;
+						endDateDateField.enabled = true;
+					} else {
+						endDateHourStepper.enabled = false;
+						endDateMinuteStepper.enabled = false;
+						endDateSecondStepper.enabled = false;
+						endDateDateField.enabled = false;
+					}
+					
+					// Add it to the form
+					this.addOrSetFormItem("endDateFormItem", "End", endDateVBox);
+					
+					// *****************************************************
+					// Role
+					// *****************************************************
+					var roleComboBox:ComboBox = new ComboBox();
+					roleComboBox.width = 150;
+					roleComboBox.name = "roleFormValue";
+					
+					// Create the data provider
+					var roles:ArrayCollection = new ArrayCollection(new Array());
+					roles.addItem("Instrument");
+					roles.addItem("Sensor");
+					roles.addItem("Platform");
+					roles.addItem("Observatory");
+					roleComboBox.dataProvider = roles;
+					
+					// Make sure role is specified
+					if (tempDataProducer.role != null) {
+						// Check for the role to select in the list	
+					 	if (tempDataProducer.role == "Instrument") {
+							roleComboBox.selectedIndex = 0;
+						} else if (tempDataProducer.role == "Sensor") {
+							roleComboBox.selectedIndex = 1;
+						} else if (tempDataProducer.role == "Platform") {
+							roleComboBox.selectedIndex = 2;
+						} else if (tempDataProducer.role == "Observatory") {
+							roleComboBox.selectedIndex = 3;
+						}
+					}
+					
+					// Enable or disable it
+					if (userInformationObject.isAdmin) {
+						roleComboBox.enabled = true;
+					} else {
+						roleComboBox.enabled = false;
+					}
+					
+					// Add it to the form
+					this.addOrSetFormItem("roleFormItem", "Role", roleComboBox);
+					
+					// *****************************************************
+					// Latitude
+					// *****************************************************
+					// Create an HBox for the form items
+					var latFieldsHBox:HBox = new HBox();
+					latFieldsHBox.styleName = "solidBorder";
+					
+					// Create a VBox for the nominal fields
+					var nomLatFieldsVBox:VBox = new VBox();
+					
+					// The nominal Label
+					var nomLatLabel:Label = new Label();
+					nomLatLabel.text = "Nominal";
+					nomLatLabel.width = 90;
+					nomLatLabel.setStyle("textAlign", "center");
+					nomLatFieldsVBox.addChild(nomLatLabel);
+					
+					// Add to the HBox
+					latFieldsHBox.addChild(nomLatFieldsVBox);
+
+					// The text field
+					var nomLatTextInput:TextInput = new TextInput();
+					nomLatTextInput.width = 90;
+					nomLatTextInput.name = "nominalLatitudeFormValue";
+					nomLatFieldsVBox.addChild(nomLatTextInput);
+
+					// Create a VBox for the accuracy
+					var accLatFieldsVBox:VBox = new VBox();
+					// The accuracy Label
+					var accLatLabel:Label = new Label();
+					accLatLabel.text = "Acc.";
+					accLatLabel.width = 50;
+					accLatLabel.setStyle("textAlign", "center");
+					accLatFieldsVBox.addChild(accLatLabel);
+										
+					// The text field
+					var accLatTextInput:TextInput = new TextInput();
+					accLatTextInput.width = 50;
+					accLatTextInput.name = "nominalLatitudeAccuracyFormValue";
+					accLatFieldsVBox.addChild(accLatTextInput);
+					
+					// Add to the HBox
+					latFieldsHBox.addChild(accLatFieldsVBox);
+					
+					// Try and set the values
+					if (!isNaN(tempDataProducer.nominalLatitude)) {
+						nomLatTextInput.text = tempDataProducer.nominalLatitude.toString();
+					}
+					if (!isNaN(tempDataProducer.nominalLatitudeAccuracy)) {
+						accLatTextInput.text = tempDataProducer.nominalLatitudeAccuracy.toString();	
+					}
+					
+					// Check to see if editable
+					if (userInformationObject.isAdmin) {
+						nomLatTextInput.enabled = true;
+						accLatTextInput.enabled = true;
+					} else {
+						nomLatTextInput.enabled = false;
+						accLatTextInput.enabled = false;
+					}
+					// Add it to the form
+					this.addOrSetFormItem("latFormItem", "Lat", latFieldsHBox);
+
+					// *****************************************************
+					// Longitude
+					// *****************************************************
+					// Create an HBox for the form items
+					var lonFieldsHBox:HBox = new HBox();
+					lonFieldsHBox.styleName = "solidBorder";
+					
+					// Create a VBox for the nominal fields
+					var nomLonFieldsVBox:VBox = new VBox();
+					
+					// The nominal Label
+					var nomLonLabel:Label = new Label();
+					nomLonLabel.text = "Nominal";
+					nomLonLabel.width = 90;
+					nomLonLabel.setStyle("textAlign", "center");
+					nomLonFieldsVBox.addChild(nomLonLabel);
+					
+					// Add to the HBox
+					lonFieldsHBox.addChild(nomLonFieldsVBox);
+
+					// The text field
+					var nomLonTextInput:TextInput = new TextInput();
+					nomLonTextInput.width = 90;
+					nomLonTextInput.name = "nominalLongitudeFormValue";
+					nomLonFieldsVBox.addChild(nomLonTextInput);
+
+					// Create a VBox for the accuracy
+					var accLonFieldsVBox:VBox = new VBox();
+					// The accuracy Label
+					var accLonLabel:Label = new Label();
+					accLonLabel.text = "Acc.";
+					accLonLabel.width = 50;
+					accLonLabel.setStyle("textAlign", "center");
+					accLonFieldsVBox.addChild(accLonLabel);
+										
+					// The text field
+					var accLonTextInput:TextInput = new TextInput();
+					accLonTextInput.width = 50;
+					accLonTextInput.name = "nominalLongitudeAccuracyFormValue";
+					accLonFieldsVBox.addChild(accLonTextInput);
+					
+					// Add to the HBox
+					lonFieldsHBox.addChild(accLonFieldsVBox);
+					
+					// Try and set the values
+					if (!isNaN(tempDataProducer.nominalLongitude)) {
+						nomLonTextInput.text = tempDataProducer.nominalLongitude.toString();
+					}
+					if (!isNaN(tempDataProducer.nominalLongitudeAccuracy)) {
+						accLonTextInput.text = tempDataProducer.nominalLongitudeAccuracy.toString();	
+					}
+					
+					// Check to see if editable
+					if (userInformationObject.isAdmin) {
+						nomLonTextInput.enabled = true;
+						accLonTextInput.enabled = true;
+					} else {
+						nomLonTextInput.enabled = false;
+						accLonTextInput.enabled = false;
+					}
+					// Add it to the form
+					this.addOrSetFormItem("lonFormItem", "Lon", lonFieldsHBox);
+					
+					// *****************************************************
+					// Depth
+					// *****************************************************
+					// Create an HBox for the form items
+					var depthFieldsHBox:HBox = new HBox();
+					depthFieldsHBox.styleName = "solidBorder";
+					
+					// Create a VBox for the nominal fields
+					var nomDepthFieldsVBox:VBox = new VBox();
+					
+					// The nominal Label
+					var nomDepthLabel:Label = new Label();
+					nomDepthLabel.text = "Depth";
+					nomDepthLabel.width = 90;
+					nomDepthLabel.setStyle("textAlign", "center");
+					nomDepthFieldsVBox.addChild(nomDepthLabel);
+					
+					// Add to the HBox
+					depthFieldsHBox.addChild(nomDepthFieldsVBox);
+
+					// The text field
+					var nomDepthTextInput:TextInput = new TextInput();
+					nomDepthTextInput.width = 90;
+					nomDepthTextInput.name = "nominalDepthFormValue";
+					nomDepthFieldsVBox.addChild(nomDepthTextInput);
+
+					// Create a VBox for the accuracy
+					var accDepthFieldsVBox:VBox = new VBox();
+					// The accuracy Label
+					var accDepthLabel:Label = new Label();
+					accDepthLabel.text = "Acc.";
+					accDepthLabel.width = 50;
+					accDepthLabel.setStyle("textAlign", "center");
+					accDepthFieldsVBox.addChild(accDepthLabel);
+										
+					// The text field
+					var accDepthTextInput:TextInput = new TextInput();
+					accDepthTextInput.width = 50;
+					accDepthTextInput.name = "nominalDepthAccuracyFormValue";
+					accDepthFieldsVBox.addChild(accDepthTextInput);
+					
+					// Add to the HBox
+					depthFieldsHBox.addChild(accDepthFieldsVBox);
+					
+					// Try and set the values
+					if (!isNaN(tempDataProducer.nominalDepth)) {
+						nomDepthTextInput.text = tempDataProducer.nominalDepth.toString();
+					}
+					if (!isNaN(tempDataProducer.nominalDepthAccuracy)) {
+						accDepthTextInput.text = tempDataProducer.nominalDepthAccuracy.toString();	
+					}
+					
+					// Check to see if editable
+					if (userInformationObject.isAdmin) {
+						nomDepthTextInput.enabled = true;
+						accDepthTextInput.enabled = true;
+					} else {
+						nomDepthTextInput.enabled = false;
+						accDepthTextInput.enabled = false;
+					}
+					// Add it to the form
+					this.addOrSetFormItem("depthFormItem", "Depth", depthFieldsHBox);
+					
+					// *****************************************************
+					// Benthic Altitude
+					// *****************************************************
+					// Create an HBox for the form items
+					var benthicAltitudeFieldsHBox:HBox = new HBox();
+					benthicAltitudeFieldsHBox.styleName = "solidBorder";
+					
+					// Create a VBox for the nominal fields
+					var nomBenthicAltitudeFieldsVBox:VBox = new VBox();
+					
+					// The nominal Label
+					var nomBenthicAltitudeLabel:Label = new Label();
+					nomBenthicAltitudeLabel.text = "Nominal";
+					nomBenthicAltitudeLabel.width = 90;
+					nomBenthicAltitudeLabel.setStyle("textAlign", "center");
+					nomBenthicAltitudeFieldsVBox.addChild(nomBenthicAltitudeLabel);
+					
+					// Add to the HBox
+					benthicAltitudeFieldsHBox.addChild(nomBenthicAltitudeFieldsVBox);
+
+					// The text field
+					var nomBenthicAltitudeTextInput:TextInput = new TextInput();
+					nomBenthicAltitudeTextInput.width = 90;
+					nomBenthicAltitudeTextInput.name = "nominalBenthicAltitudeFormValue";
+					nomBenthicAltitudeFieldsVBox.addChild(nomBenthicAltitudeTextInput);
+
+					// Create a VBox for the accuracy
+					var accBenthicAltitudeFieldsVBox:VBox = new VBox();
+					// The accuracy Label
+					var accBenthicAltitudeLabel:Label = new Label();
+					accBenthicAltitudeLabel.text = "Acc.";
+					accBenthicAltitudeLabel.width = 50;
+					accBenthicAltitudeLabel.setStyle("textAlign", "center");
+					accBenthicAltitudeFieldsVBox.addChild(accBenthicAltitudeLabel);
+										
+					// The text field
+					var accBenthicAltitudeTextInput:TextInput = new TextInput();
+					accBenthicAltitudeTextInput.width = 50;
+					accBenthicAltitudeTextInput.name = "nominalBenthicAltitudeAccuracyFormValue";
+					accBenthicAltitudeFieldsVBox.addChild(accBenthicAltitudeTextInput);
+					
+					// Add to the HBox
+					benthicAltitudeFieldsHBox.addChild(accBenthicAltitudeFieldsVBox);
+					
+					// Try and set the values
+					if (!isNaN(tempDataProducer.nominalBenthicAltitude)) {
+						nomBenthicAltitudeTextInput.text = tempDataProducer.nominalBenthicAltitude.toString();
+					}
+					if (!isNaN(tempDataProducer.nominalBenthicAltitudeAccuracy)) {
+						accBenthicAltitudeTextInput.text = tempDataProducer.nominalBenthicAltitudeAccuracy.toString();	
+					}
+					
+					// Check to see if editable
+					if (userInformationObject.isAdmin) {
+						nomBenthicAltitudeTextInput.enabled = true;
+						accBenthicAltitudeTextInput.enabled = true;
+					} else {
+						nomBenthicAltitudeTextInput.enabled = false;
+						accBenthicAltitudeTextInput.enabled = false;
+					}
+					// Add it to the form
+					this.addOrSetFormItem("benthicAltitudeFormItem", "Altitude", benthicAltitudeFieldsHBox);
+					
+					// *****************************************************
+					// Location Offsets
+					// *****************************************************
+					// The HBox for the various offsets
+					var offsetsHBox:HBox = new HBox();
+					offsetsHBox.styleName = "solidBorder";
+
+					// The VBoxs for X, Y, Z
+					var xOffsetVBox:VBox = new VBox();
+					var yOffsetVBox:VBox = new VBox();
+					var zOffsetVBox:VBox = new VBox();
+					
+					// The labels for X, Y, Z
+					var xOffsetLabel:Label = new Label();
+					var yOffsetLabel:Label = new Label();
+					var zOffsetLabel:Label = new Label();
+					
+					// Set the text
+					xOffsetLabel.text = "X";
+					yOffsetLabel.text = "Y";
+					zOffsetLabel.text = "Z";
+					
+					// Set the widths
+					xOffsetLabel.width = 44;
+					yOffsetLabel.width = 44;
+					zOffsetLabel.width = 44;
+
+					// Center them
+					xOffsetLabel.setStyle("textAlign", "center");
+					yOffsetLabel.setStyle("textAlign", "center");
+					zOffsetLabel.setStyle("textAlign", "center");
+					
+					// Add labels
+					xOffsetVBox.addChild(xOffsetLabel);
+					yOffsetVBox.addChild(yOffsetLabel);
+					zOffsetVBox.addChild(zOffsetLabel);
+
+					// Now the text fields
+					var xOffsetTextInput:TextInput = new TextInput();
+					var yOffsetTextInput:TextInput = new TextInput();
+					var zOffsetTextInput:TextInput = new TextInput();
+
+					// Set the width
+					xOffsetTextInput.width = 44;
+					yOffsetTextInput.width = 44;
+					zOffsetTextInput.width = 44;
+					
+					// Name the text inputs
+					xOffsetTextInput.name = "xOffsetFormValue";
+					yOffsetTextInput.name = "yOffsetFormValue";
+					zOffsetTextInput.name = "zOffsetFormValue";
+
+					// Add them to the VBoxs
+					xOffsetVBox.addChild(xOffsetTextInput);
+					yOffsetVBox.addChild(yOffsetTextInput);
+					zOffsetVBox.addChild(zOffsetTextInput);
+
+					// Add all to the HBox
+					offsetsHBox.addChild(xOffsetVBox);
+					offsetsHBox.addChild(yOffsetVBox);
+					offsetsHBox.addChild(zOffsetVBox);
+					
+					// Try to set the values
+					if (!isNaN(tempDataProducer.xoffset)) {
+						xOffsetTextInput.text = tempDataProducer.xoffset.toString();
+					}
+					if (!isNaN(tempDataProducer.yoffset)) {
+						yOffsetTextInput.text = tempDataProducer.yoffset.toString();
+					}
+					if (!isNaN(tempDataProducer.zoffset)) {
+						zOffsetTextInput.text = tempDataProducer.zoffset.toString();
+					}
+					
+					// Enable of disable
+					if (userInformationObject.isAdmin) {
+						xOffsetTextInput.enabled = true;
+						yOffsetTextInput.enabled = true;
+						zOffsetTextInput.enabled = true;
+					} else {
+						xOffsetTextInput.enabled = false;
+						yOffsetTextInput.enabled = false;
+						zOffsetTextInput.enabled = false;
+					}
+
+					// Add it to the form
+					this.addOrSetFormItem("offsetsFormItem", "Offsets", offsetsHBox);
+
+					// *****************************************************
+					// Orientation Description
+					// *****************************************************
+					// Create a Text field for the orientation description of the data producer
+					var orientationDescriptionTextInput:TextInput = new TextInput();
+					orientationDescriptionTextInput.width=150;
+					orientationDescriptionTextInput.name = "orientationDescriptionFormValue";
+					orientationDescriptionTextInput.text = tempDataProducer.orientationDescription;
+					orientationDescriptionTextInput.toolTip = tempDataProducer.orientationDescription;
+					if (userInformationObject.isAdmin) {
+						orientationDescriptionTextInput.enabled = true;
+					} else {
+						orientationDescriptionTextInput.enabled = false;
+					}
+					
+					// Add it to the form
+					this.addOrSetFormItem("orientationDescriptionFormItem", "Orientation", orientationDescriptionTextInput);
+					
+					// *****************************************************
+					// X3D Model Text
+					// *****************************************************
+					// Create a TextArea for the X3D Model of the data producer
+					var x3DOrientationTextTextArea:TextArea = new TextArea();
+					x3DOrientationTextTextArea.width=150;
+					x3DOrientationTextTextArea.height=150;
+					x3DOrientationTextTextArea.name = "x3DOrientationTextFormValue";
+					x3DOrientationTextTextArea.text = tempDataProducer.x3DOrientationText;
+					x3DOrientationTextTextArea.toolTip = tempDataProducer.x3DOrientationText;
+					if (userInformationObject.isAdmin) {
+						x3DOrientationTextTextArea.enabled = true;
+					} else {
+						x3DOrientationTextTextArea.enabled = false;
+					}
+					
+					// Add it to the form
+					this.addOrSetFormItem("x3DOrientationTextFormItem", "X3D", x3DOrientationTextTextArea);
+					
+					
+					// *****************************************************
+					// Hostname
+					// *****************************************************
+					// Create a Text field for the hostname of the data producer
+					var hostnameTextInput:TextInput = new TextInput();
+					hostnameTextInput.width=150;
+					hostnameTextInput.name = "hostnameFormValue";
+					hostnameTextInput.text = tempDataProducer.hostname;
+					hostnameTextInput.toolTip = tempDataProducer.hostname;
+					if (userInformationObject.isAdmin) {
+						hostnameTextInput.enabled = true;
+					} else {
+						hostnameTextInput.enabled = false;
+					}
+					
+					// Add it to the form
+					this.addOrSetFormItem("hostnameFormItem", "Hostname", hostnameTextInput);
+					
+				}
+				
+			}
+			
+			// This function will search the existing for for a FormItem by name and if not found
+			// create a new one and configure it with the DisplayObject provided
+			private function addOrSetFormItem(formItemName:String, label:String, formField:DisplayObject):void {
+				
+				// Try to find one in the existing form
+				var formItem:FormItem = this.metadataObjectForm.getChildByName(formItemName) as FormItem;
+				
+				// If none was found
+				if (formItem == null) {
+					
+					// Create a new one
+					formItem = new FormItem();
+					
+					// Set the name
+					formItem.name = formItemName;
+					
+					// Set the label
+					formItem.label = label;
+					
+					// Add it to the form
+					metadataObjectForm.addChild(formItem);
+				}
+				
+				// Now clear any existing children
+				formItem.removeAllChildren();
+				
+				// And add the incoming display object
+				formItem.addChild(formField);
+			}
+			
+			// This method 
+			private function updateClickedHandler(event:MouseEvent):void {
+				Alert.show("Update clicked");
+			}
+		]]>
+	</mx:Script>
+	<mx:VBox width="100%" height="100%">
+		<mx:Form width="100%" height="90%" id="metadataObjectForm" />
+		<mx:HBox width="100%" height="10%" id="buttonBox">
+			<mx:Button label="Update" enabled="{userInformationObject.isAdmin}" click="updateClickedHandler(event)"/>
+		</mx:HBox>
+	</mx:VBox>
+</mx:Canvas>
