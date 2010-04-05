@@ -19,6 +19,9 @@
 	<!-- Some properties that are custom to the developer/installers environment -->
 	<property file="./custom.properties" />
 
+	<!-- Read in database specific properties based on the database.server.type property set in custom.properties -->
+	<property file="./${database.server.type}.properties" />
+
 	<!-- Some common build properties -->
 	<property file="./build.properties" />
 
