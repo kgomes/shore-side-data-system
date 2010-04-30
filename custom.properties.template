@@ -138,6 +138,15 @@ debug=on
 ################################################################
 #                SSDS Location Properties                      #
 ################################################################
+# This is a property the defines whether or not you want 
+# incoming data that is published to SSDS stored as serialized 
+# packets to disk.  SSDS does not use these packet files for 
+# much and depends entirely on the data stored in a database.
+# You can have them serialized for backup purposes if you like.
+# This should "on" for disk serialization to occur and "off" for
+# database only storage.
+content.directory.store.serialized.packets=off
+
 # This is the base directory where all of the content will be
 # written to.  Content are things like instrument data files, 
 # metadata XML files, transmogrify component files, quick look
@@ -172,32 +181,32 @@ database.server.type=mysql
 database.server.login.username=
 database.server.login.password=
 # Database driver file
-database.driver.jar.file=mysql-connector-java-5.1.5-bin.jar
-#database.driver.jar.file=postgresql-8.3-603.jdbc3.jar
+database.driver.jar.file=jtds-1.2.2.jar
+#database.driver.jar.file=mysql-connector-java-5.1.5-bin.jar
 # Database driver class
-database.driver.class=com.mysql.jdbc.Driver
-#database.driver.class=org.postgresql.Driver
+database.driver.class=net.sourceforge.jtds.jdbcx.JtdsDataSource
+#database.driver.class=com.mysql.jdbc.Driver
 # Database schema that might be used for some drivers.  For
 # example, for MSSQL, you might set it to the username that
 # is creating the database (${database.server.login.username})
 # and for MySQL, you would leave it blank
 database.schema=
 # Database source type mapping (tested options are 'MS SQLSERVER2000'|'mySQL')
-database.driver.type.mapping=mySQL
-#database.driver.type.mapping=PostgreSQL
+database.driver.type.mapping=MS SQLSERVER2000
+#database.driver.type.mapping=mySQL
 # Database connection URL for data storage
-data.database.driver.url=jdbc:mysql://${jboss.host.name}:3306/ssds_data
-#data.database.driver.url=jdbc:postgresql://localhost/SSDS_Data
+data.database.driver.url=jdbc:jtds:sqlserver://[database_hostname]:1433/SSDS_Data
+#data.database.driver.url=jdbc:mysql://${jboss.host.name}:3306/ssds_data
 # Database connection URL for metadata storage
-metadata.database.driver.url=jdbc:mysql://${jboss.host.name}:3306/SSDS_Metadata
-#metadata.database.driver.url=jdbc:postgresql://localhost/SSDS_Metadata
+metadata.database.driver.url=jdbc:jtds:sqlserver://[database_hostname]:1433/SSDS_Metadata
+#metadata.database.driver.url=jdbc:mysql://${jboss.host.name}:3306/SSDS_Metadata
 
 # This is the property that tells Hibernate what sql server you
 # are using for the metadata persistence.  Some examples are:
 # For MS SQL Server = org.hibernate.dialect.SQLServerDialect
 # For MySQL = org.hibernate.dialect.MySQLDialect
-metadata.hibernate.dialect=org.hibernate.dialect.MySQLDialect
-#metadata.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+metadata.hibernate.dialect=org.hibernate.dialect.SQLServerDialect
+#metadata.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
 ################################################################
 #                  Other SSDS Properties                       #
