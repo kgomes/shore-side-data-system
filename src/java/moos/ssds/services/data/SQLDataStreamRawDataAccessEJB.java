@@ -42,7 +42,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import moos.ssds.io.PacketSQLInput;
-import moos.ssds.transmogrify.SSDSGeoLocatedDevicePacket;
+import moos.ssds.io.SSDSGeoLocatedDevicePacket;
 import moos.ssds.util.XmlDateFormat;
 
 import org.apache.log4j.Logger;
@@ -51,14 +51,17 @@ import org.apache.log4j.Logger;
  * @author kgomes
  * @ejb.bean name="SQLDataStreamRawDataAccess" type="Stateless"
  *           jndi-name="moos/ssds/services/data/SQLDataStreamRawDataAccess"
- *           local-jndi-name="moos/ssds/services/data/SQLDataStreamRawDataAccessLocal"
+ *           local-jndi-name=
+ *           "moos/ssds/services/data/SQLDataStreamRawDataAccessLocal"
  *           view-type="both"
  * @ejb.home create="true"
  *           local-class="moos.ssds.services.data.SQLDataStreamRawDataAccessLocalHome"
- *           remote-class="moos.ssds.services.data.SQLDataStreamRawDataAccessHome"
+ *           remote
+ *           -class="moos.ssds.services.data.SQLDataStreamRawDataAccessHome"
  * @ejb.interface create="true"
  *                local-class="moos.ssds.services.data.SQLDataStreamRawDataAccessLocal"
- *                remote-class="moos.ssds.services.data.SQLDataStreamRawDataAccess"
+ *                remote
+ *                -class="moos.ssds.services.data.SQLDataStreamRawDataAccess"
  */
 public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 
@@ -275,64 +278,56 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 	public TreeMap getParentChildDataProducerTrees() throws SQLException {
 
 		logger.debug("getParentChildDataProducerTrees called");
+		// The collection to return
+		TreeMap parentChildMap = new TreeMap();
+
 		// Get a connection to the data source
 		Connection connection = null;
 		try {
 			connection = dataSource.getConnection();
-		} catch (SQLException e) {
-			logger.error("Could not get connection to data source:"
-					+ e.getMessage());
-			throw e;
-		} catch (Exception e) {
-			logger.error("Exception caught: " + e.getClass().getName() + ": "
-					+ e.getMessage());
-		}
 
-		// The collection to return
-		TreeMap parentChildMap = new TreeMap();
-		// Grab all the device IDs
-		Collection dataProducingIDs = this.getDataProducingDeviceIDs();
-		if (dataProducingIDs != null) {
-			logger.debug("Got " + dataProducingIDs.size()
-					+ " devices that produce data");
-			Iterator deviceIDIter = dataProducingIDs.iterator();
-			while (deviceIDIter.hasNext()) {
-				Long deviceID = (Long) deviceIDIter.next();
-				logger.debug("Working with device " + deviceID);
-				// Now query for all parents
-				String sqlString = "SELECT ParentID_FK FROM DeviceParent WHERE DeviceID_FK = "
-						+ deviceID + " ORDER BY ParentID_FK";
-				Statement stmt = connection.createStatement();
-				ResultSet rs = stmt.executeQuery(sqlString);
-				while (rs.next()) {
-					String parentID = rs.getString("ParentID_FK");
-					logger.debug("parentID found and is " + parentID);
-					Long parentIDLong = null;
-					try {
-						parentIDLong = new Long(parentID);
-					} catch (NumberFormatException e) {
-					}
-					if (parentIDLong != null) {
-						TreeSet childTreeSet = null;
-						if (parentChildMap.containsKey(parentIDLong)) {
-							childTreeSet = (TreeSet) parentChildMap
-									.get(parentIDLong);
-						} else {
-							childTreeSet = new TreeSet();
-							parentChildMap.put(parentIDLong, childTreeSet);
-							logger.debug("New child treeset added");
+			// Grab all the device IDs
+			Collection dataProducingIDs = this.getDataProducingDeviceIDs();
+			if (dataProducingIDs != null) {
+				logger.debug("Got " + dataProducingIDs.size()
+						+ " devices that produce data");
+				Iterator deviceIDIter = dataProducingIDs.iterator();
+				while (deviceIDIter.hasNext()) {
+					Long deviceID = (Long) deviceIDIter.next();
+					logger.debug("Working with device " + deviceID);
+					// Now query for all parents
+					String sqlString = "SELECT ParentID_FK FROM DeviceParent WHERE DeviceID_FK = "
+							+ deviceID + " ORDER BY ParentID_FK";
+					Statement stmt = connection.createStatement();
+					ResultSet rs = stmt.executeQuery(sqlString);
+					while (rs.next()) {
+						String parentID = rs.getString("ParentID_FK");
+						logger.debug("parentID found and is " + parentID);
+						Long parentIDLong = null;
+						try {
+							parentIDLong = new Long(parentID);
+						} catch (NumberFormatException e) {
 						}
-						childTreeSet.add(deviceID);
+						if (parentIDLong != null) {
+							TreeSet childTreeSet = null;
+							if (parentChildMap.containsKey(parentIDLong)) {
+								childTreeSet = (TreeSet) parentChildMap
+										.get(parentIDLong);
+							} else {
+								childTreeSet = new TreeSet();
+								parentChildMap.put(parentIDLong, childTreeSet);
+								logger.debug("New child treeset added");
+							}
+							childTreeSet.add(deviceID);
+						}
 					}
 				}
 			}
-		}
-
-		// Close the connection
-		try {
 			connection.close();
-		} catch (SQLException e) {
-			logger.error("SQLException caught trying to close connection: "
+		} catch (SQLException se) {
+			logger.error("SQLException caught: " + se.getMessage());
+		} catch (Exception e) {
+			logger.error("Exception caught: " + e.getClass().getName() + ": "
 					+ e.getMessage());
 		}
 		// Return the list
@@ -435,8 +430,8 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 	 * 
 	 * @param deviceID
 	 *            The device to check for a data table
-	 * @return <code>false</code> if there is no table <code>true</code> if
-	 *         the table exists
+	 * @return <code>false</code> if there is no table <code>true</code> if the
+	 *         table exists
 	 */
 	private boolean doesDataTableExist(Long deviceID) throws SQLException {
 

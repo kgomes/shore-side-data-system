@@ -32,8 +32,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import moos.ssds.transmogrify.SSDSDevicePacket;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -44,6 +42,72 @@ import org.apache.log4j.Logger;
  * @author kgomes
  */
 public class PacketOutputManager {
+
+	/**
+	 * This is the collection of active <code>PacketOutput</code> s that can be
+	 * returned to calling clients.
+	 * 
+	 * @associates PacketOutput
+	 */
+	private static Map<String, PacketOutput> packetOutputs = Collections
+			.synchronizedMap(new HashMap<String, PacketOutput>());
+
+	/**
+	 * This is the string that is the base of the directory where the raw
+	 * serialized packets are stored
+	 */
+	private static String packetStorageBase = null;
+
+	/**
+	 * This is the Map that contains a map of device ID to the PacketSQLOutput
+	 * objects
+	 * 
+	 * @associates PacketSQLOutput
+	 */
+	private static Map<Long, PacketSQLOutput> packetSQLOutputs = Collections
+			.synchronizedMap(new HashMap<Long, PacketSQLOutput>());
+
+	/**
+	 * This is the <code>DataSource</code> that the PacketSQLOutputs will use.
+	 * 
+	 * @associates DataSource
+	 */
+	private static DataSource dataSource = null;
+
+	/**
+	 * This is the host where the DataSource will be looked up
+	 */
+	private String jndiHostName = null;
+
+	/**
+	 * This is the JNDI name of the data source that will be used
+	 */
+	private String dataSourceJndiName = null;
+
+	/**
+	 * These are strings that will be used as templates to form SQL statements
+	 * for the sql table creation
+	 */
+	private static String createTableSQLTemplate = null;
+	private static String createPrimaryKeySQLTemplate = null;
+	private static String createTimestampIndexSQLTemplate = null;
+	private static String sqlTableDelimiter = null;
+
+	/**
+	 * This is the static <code>PacketOutputManager</code> that enforces the
+	 * singelton pattern.
+	 */
+	private static PacketOutputManager instance = null;
+
+	/**
+	 * The IO Properties for the PacketInput/Output
+	 */
+	private static Properties ioProperties = null;
+
+	/**
+	 * A log4j logger
+	 */
+	static Logger logger = Logger.getLogger(PacketOutputManager.class);
 
 	/**
 	 * This constructor is private because no client should be able to construct
@@ -118,10 +182,9 @@ public class PacketOutputManager {
 
 	/**
 	 * This is the method that returns the active instance of the
-	 * <code>PacketOutputManager</code> for clients to use. This is what
-	 * should be called by any client that is interested in getting
-	 * <code>PacketOutput</code> s to write <code>SSDSDevicePacket</code> s
-	 * to.
+	 * <code>PacketOutputManager</code> for clients to use. This is what should
+	 * be called by any client that is interested in getting
+	 * <code>PacketOutput</code> s to write <code>SSDSDevicePacket</code> s to.
 	 * 
 	 * @return the one instance of <code>PacketOutputManager</code> that
 	 *         everybody uses
@@ -139,13 +202,12 @@ public class PacketOutputManager {
 	/**
 	 * This method takes in an <code>SSDSDevicePacket</code> and returns the
 	 * appropriate <code>PacketOutput</code> for that
-	 * <code>SSDSDevicePacket</code>. The client can then serialize the
-	 * packet to that PacketOutput. This is to prevent unsynchronized writes to
+	 * <code>SSDSDevicePacket</code>. The client can then serialize the packet
+	 * to that PacketOutput. This is to prevent unsynchronized writes to
 	 * serialization files
 	 */
 	public static synchronized PacketOutput getPacketOutput(
 			SSDSDevicePacket ssdsDevicePacket) {
-
 		// Call the other method using the keys from the packet
 		return PacketOutputManager.getPacketOutput(ssdsDevicePacket.sourceID(),
 				ssdsDevicePacket.getMetadataSequenceNumber(), ssdsDevicePacket
@@ -167,6 +229,10 @@ public class PacketOutputManager {
 		logger.debug("getPacketOutput called with keys: sourceID=" + sourceID
 				+ ", metadataRevisionNumber=" + metadataRevisionNumber
 				+ ", recordType=" + recordType + ", platformID=" + platformID);
+
+		// Make sure the Singleton exists
+		getInstance();
+
 		// Create the key that is the name of the file
 		String packetKey = new String(sourceID + "_" + metadataRevisionNumber
 				+ "_" + recordType + "_" + platformID);
@@ -220,6 +286,9 @@ public class PacketOutputManager {
 	 * @return
 	 */
 	public static synchronized PacketSQLOutput getPacketSQLOutput(long deviceID) {
+		// Make sure instance exits
+		getInstance();
+
 		PacketSQLOutput toReturn = null;
 		toReturn = (PacketSQLOutput) packetSQLOutputs.get(new Long(deviceID));
 		if (toReturn == null) {
@@ -349,69 +418,4 @@ public class PacketOutputManager {
 		return tableOK;
 	}
 
-	/**
-	 * This is the collection of active <code>PacketOutput</code> s that can
-	 * be returned to calling clients.
-	 * 
-	 * @associates PacketOutput
-	 */
-	private static Map packetOutputs = Collections
-			.synchronizedMap(new HashMap());
-
-	/**
-	 * This is the string that is the base of the directory where the raw
-	 * serialized packets are stored
-	 */
-	private static String packetStorageBase = null;
-
-	/**
-	 * This is the Map that contains a map of device ID to the PacketSQLOutput
-	 * objects
-	 * 
-	 * @associates PacketSQLOutput
-	 */
-	private static Map packetSQLOutputs = Collections
-			.synchronizedMap(new HashMap());
-
-	/**
-	 * This is the <code>DataSource</code> that the PacketSQLOutputs will use.
-	 * 
-	 * @associates DataSource
-	 */
-	private static DataSource dataSource = null;
-
-	/**
-	 * This is the host where the DataSource will be looked up
-	 */
-	private String jndiHostName = null;
-
-	/**
-	 * This is the JNDI name of the data source that will be used
-	 */
-	private String dataSourceJndiName = null;
-
-	/**
-	 * These are strings that will be used as templates to form SQL statements
-	 * for the sql table creation
-	 */
-	private static String createTableSQLTemplate = null;
-	private static String createPrimaryKeySQLTemplate = null;
-	private static String createTimestampIndexSQLTemplate = null;
-	private static String sqlTableDelimiter = null;
-
-	/**
-	 * This is the static <code>PacketOutputManager</code> that enforces the
-	 * singelton pattern.
-	 */
-	private static PacketOutputManager instance = null;
-
-	/**
-	 * The IO Properties for the PacketInput/Output
-	 */
-	private static Properties ioProperties = null;
-
-	/**
-	 * A log4j logger
-	 */
-	static Logger logger = Logger.getLogger(PacketOutputManager.class);
 }

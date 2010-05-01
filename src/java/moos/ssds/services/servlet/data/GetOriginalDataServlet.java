@@ -54,11 +54,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import moos.ssds.io.PacketInput;
 import moos.ssds.io.PacketSQLInput;
+import moos.ssds.io.SSDSDevicePacket;
+import moos.ssds.io.SSDSGeoLocatedDevicePacket;
 import moos.ssds.services.data.SQLDataStreamRawDataAccessLocal;
 import moos.ssds.services.data.SQLDataStreamRawDataAccessLocalHome;
 import moos.ssds.services.data.SQLDataStreamRawDataAccessUtil;
-import moos.ssds.transmogrify.SSDSDevicePacket;
-import moos.ssds.transmogrify.SSDSGeoLocatedDevicePacket;
 import moos.ssds.util.XmlDateFormat;
 
 import org.apache.log4j.Logger;

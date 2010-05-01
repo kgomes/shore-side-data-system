@@ -291,7 +291,10 @@ public class CommentTag implements IMetadataObject {
 	 * <code>clone()</code> operation.
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
-		return (CommentTag) this.clone();
+		CommentTag clonedCommentTag = (CommentTag) this.clone();
+		logger.debug("deepCopy called and will return clone:");
+		logger.debug(clonedCommentTag.toStringRepresentation("|"));
+		return clonedCommentTag;
 	}
 
 	/**

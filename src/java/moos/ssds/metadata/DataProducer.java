@@ -387,8 +387,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * its parent) in the X direction
 	 * 
 	 * @hibernate.property access="field"
-	 * @return the <code>Float</code> that is the offset in meters in the
-	 *         local X direction
+	 * @return the <code>Float</code> that is the offset in meters in the local
+	 *         X direction
 	 */
 	public Float getXoffset() {
 		return xoffset;
@@ -407,8 +407,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * its parent) in the Y direction
 	 * 
 	 * @hibernate.property access="field"
-	 * @return the <code>Float</code> that is the offset in meters in the
-	 *         local Y direction
+	 * @return the <code>Float</code> that is the offset in meters in the local
+	 *         Y direction
 	 */
 	public Float getYoffset() {
 		return yoffset;
@@ -427,8 +427,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * its parent) in the Z direction
 	 * 
 	 * @hibernate.property access="field"
-	 * @return the <code>Float</code> that is the offset in meters in the
-	 *         local Z direction
+	 * @return the <code>Float</code> that is the offset in meters in the local
+	 *         Z direction
 	 */
 	public Float getZoffset() {
 		return zoffset;
@@ -464,17 +464,17 @@ public class DataProducer implements IMetadataObject, IDescription,
 
 	/**
 	 * These methods get/set the X3D formatted text that describes the
-	 * orientation of the <code>DataProducer</code> when it was producing
-	 * data. The format of this text is a 4 number string with the first three
-	 * numbers representing a unit axis about which the device is rotated. The
-	 * fourth number is the angle in radians about which the device is rotated
-	 * for this deployment. The right-hand rule is followed and the orientation
-	 * of the x3DModelText of the Device affects the final appearance of the
+	 * orientation of the <code>DataProducer</code> when it was producing data.
+	 * The format of this text is a 4 number string with the first three numbers
+	 * representing a unit axis about which the device is rotated. The fourth
+	 * number is the angle in radians about which the device is rotated for this
+	 * deployment. The right-hand rule is followed and the orientation of the
+	 * x3DModelText of the Device affects the final appearance of the
 	 * deployment.
 	 * 
 	 * @hibernate.property access="field"
-	 * @return is the <code>String</code> that is the description in X3D of
-	 *         the orientation of the <code>DataProducer</code> while it was
+	 * @return is the <code>String</code> that is the description in X3D of the
+	 *         orientation of the <code>DataProducer</code> while it was
 	 *         producing data
 	 */
 	public String getX3DOrientationText() {
@@ -509,8 +509,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * These methods get/set the <code>Person</code> that is usually seen as
-	 * the owner of the <code>DataProducer</code> (or point of contact).
+	 * These methods get/set the <code>Person</code> that is usually seen as the
+	 * owner of the <code>DataProducer</code> (or point of contact).
 	 * 
 	 * @hibernate.many-to-one class="moos.ssds.metadata.Person"
 	 *                        column="PersonID_FK"
@@ -532,8 +532,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * These methods get/set the <code>Device</code> that is associated with
-	 * the <code>DataProducer</code>.
+	 * These methods get/set the <code>Device</code> that is associated with the
+	 * <code>DataProducer</code>.
 	 * 
 	 * @hibernate.many-to-one class="moos.ssds.metadata.Device"
 	 *                        column="DeviceID_FK"
@@ -601,15 +601,15 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * This methods gets/sets the collection of <code>DataProducer</code>s
-	 * that are considered children of another <code>DataProducer</code>.
+	 * This methods gets/sets the collection of <code>DataProducer</code>s that
+	 * are considered children of another <code>DataProducer</code>.
 	 * 
 	 * @hibernate.set cascade="none" inverse="true" lazy="true" batch-size="5"
 	 * @hibernate.collection-key column="ParentID_FK"
 	 * @hibernate.collection-one-to-many class="moos.ssds.metadata.DataProducer"
-	 * @return the <code>Collection</code> of <code>DataProducer</code>s
-	 *         that are considered children of the <code>DataProducer</code>
-	 *         this method is called on.
+	 * @return the <code>Collection</code> of <code>DataProducer</code>s that
+	 *         are considered children of the <code>DataProducer</code> this
+	 *         method is called on.
 	 */
 	public Collection getChildDataProducers() {
 		return childDataProducers;
@@ -649,8 +649,7 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * collection of child <code>DataProducer</code>s
 	 * 
 	 * @param keyword
-	 *            is the <code>DataProducer</code> to remove from the
-	 *            collection
+	 *            is the <code>DataProducer</code> to remove from the collection
 	 */
 	public void removeChildDataProducer(DataProducer childDataProducer) {
 		if (childDataProducer == null)
@@ -752,8 +751,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * @hibernate.collection-key column="DataProducerID_FK"
 	 * @hibernate.collection-many-to-many column="DataContainerID_FK"
 	 *                                    class="moos.ssds.metadata.DataContainer"
-	 * @return the <code>Collection</code> of <code>DataContainer</code>s
-	 *         that are used for inputs
+	 * @return the <code>Collection</code> of <code>DataContainer</code>s that
+	 *         are used for inputs
 	 */
 	public Collection getInputs() {
 		return inputs;
@@ -768,8 +767,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * inputs that are used by this <code>DataProducer</code>
 	 * 
 	 * @param dataContainer
-	 *            is the <code>DataContainer</code> to add to the collection
-	 *            of inputs
+	 *            is the <code>DataContainer</code> to add to the collection of
+	 *            inputs
 	 */
 	public void addInput(DataContainer dataContainer) {
 		// If null was passed in, just return
@@ -788,8 +787,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * This method removes the <code>DataContainer</code> from the collection
-	 * of <code>DataContainer</code>s that are listed as inputs to the
+	 * This method removes the <code>DataContainer</code> from the collection of
+	 * <code>DataContainer</code>s that are listed as inputs to the
 	 * <code>DataProducer</code>
 	 * 
 	 * @param dataContainer
@@ -807,8 +806,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * This method clears the collection of <code>DataContainer</code>s that
-	 * are used as inputs to the <code>DataProducer</code> and keeps all
+	 * This method clears the collection of <code>DataContainer</code>s that are
+	 * used as inputs to the <code>DataProducer</code> and keeps all
 	 * relationships intact
 	 */
 	public void clearInputs() {
@@ -828,9 +827,10 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * @hibernate.set cascade="none" inverse="true" lazy="false"
 	 *                outer-join="true"
 	 * @hibernate.collection-key column="DataProducerID_FK"
-	 * @hibernate.collection-one-to-many class="moos.ssds.metadata.DataContainer"
-	 * @return the <code>Collection</code> of <code>DataContainer</code>
-	 *         that were created by the <code>DataProducer</code>
+	 * @hibernate.collection-one-to-many 
+	 *                                   class="moos.ssds.metadata.DataContainer"
+	 * @return the <code>Collection</code> of <code>DataContainer</code> that
+	 *         were created by the <code>DataProducer</code>
 	 */
 	public Collection getOutputs() {
 		return outputs;
@@ -841,8 +841,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * This method add a <code>DataContainer</code> to the collection of
-	 * outputs created by the <code>DataProducer</code>
+	 * This method add a <code>DataContainer</code> to the collection of outputs
+	 * created by the <code>DataProducer</code>
 	 * 
 	 * @param dataContainer
 	 *            the <code>DataContainer</code> to add to the
@@ -913,8 +913,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * @hibernate.collection-key column="DataProducerID_FK"
 	 * @hibernate.collection-many-to-many column="ResourceID_FK"
 	 *                                    class="moos.ssds.metadata.Resource"
-	 * @return the <code>Collection</code> of <code>Resource</code>s that
-	 *         are associated with the <code>DataProducer</code>
+	 * @return the <code>Collection</code> of <code>Resource</code>s that are
+	 *         associated with the <code>DataProducer</code>
 	 */
 	public Collection getResources() {
 		return resources;
@@ -957,8 +957,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * This method will clear out the collection of <code>Resource</code>s
-	 * and keep the integrity of the relationships intact.
+	 * This method will clear out the collection of <code>Resource</code>s and
+	 * keep the integrity of the relationships intact.
 	 */
 	public void clearResources() {
 		this.resources.clear();
@@ -1078,8 +1078,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * This method will clear out the collection of <code>Event</code>s and
-	 * keep the integrity of the relationships intact.
+	 * This method will clear out the collection of <code>Event</code>s and keep
+	 * the integrity of the relationships intact.
 	 */
 	public void clearEvents() {
 		this.events.clear();
@@ -1090,8 +1090,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * dirty objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -1367,10 +1367,10 @@ public class DataProducer implements IMetadataObject, IDescription,
 	/**
 	 * This equals method is more complex than most of the others due to the
 	 * complexity of the business key. The business key for
-	 * <code>DataProducer</code> is based on the data producer type being
-	 * equal as well as having an output in common. If both
-	 * <code>DataProducer</code>s are of the same type and have one output
-	 * that they share, they are considered equal.
+	 * <code>DataProducer</code> is based on the data producer type being equal
+	 * as well as having an output in common. If both <code>DataProducer</code>s
+	 * are of the same type and have one output that they share, they are
+	 * considered equal.
 	 * 
 	 * @see IMetadataObject#equals(Object)
 	 */
@@ -1564,79 +1564,138 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * It does NOT make deep copies of ParentDataProducers
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
+		logger.debug("deepCopy called");
+
 		// Grab the clone
 		DataProducer deepClone = (DataProducer) this.clone();
+		if (deepClone != null) {
+			logger.debug("A clone was created and is: ");
+			logger.debug(deepClone.toStringRepresentation("|"));
+		} else {
+			logger.debug("Clone could not be created.");
+		}
 
 		// Set the relationships
 		if (this.getPerson() != null) {
+			logger.debug("Going to clone person:");
+			logger.debug(this.getPerson().toStringRepresentation("|"));
 			deepClone.setPerson((Person) this.getPerson().deepCopy());
+			logger.debug("OK, cloned person is:");
+			logger.debug(deepClone.getPerson().toStringRepresentation("|"));
 		} else {
+			logger.debug("No person to clone");
 			deepClone.setPerson(null);
 		}
 		if (this.getDevice() != null) {
+			logger.debug("Going to clone device:");
+			logger.debug(this.getDevice().toStringRepresentation("|"));
 			deepClone.setDevice((Device) this.getDevice().deepCopy());
+			logger.debug("OK, cloned device is:");
+			logger.debug(deepClone.getDevice().toStringRepresentation("|"));
 		}
 		if (this.getSoftware() != null) {
+			logger.debug("Going to clone software:");
+			logger.debug(this.getSoftware().toStringRepresentation("|"));
 			deepClone.setSoftware((Software) this.getSoftware().deepCopy());
+			logger.debug("OK, cloned software is:");
+			logger.debug(deepClone.getSoftware().toStringRepresentation("|"));
 		}
 		if ((this.getChildDataProducers() != null)
 				&& (this.getChildDataProducers().size() > 0)) {
+			logger.debug("There are " + this.getChildDataProducers().size()
+					+ " child DataProducers to clone and attach");
 			Collection childDataProducersToCopy = this.getChildDataProducers();
 			Iterator childDPITer = childDataProducersToCopy.iterator();
 			while (childDPITer.hasNext()) {
-				deepClone
-						.addChildDataProducer((DataProducer) ((DataProducer) childDPITer
-								.next()).deepCopy());
+				DataProducer clonedChildDataProducer = (DataProducer) ((DataProducer) childDPITer
+						.next()).deepCopy();
+				logger.debug("Adding cloned child data producer:");
+				logger.debug(clonedChildDataProducer
+						.toStringRepresentation("|"));
+				logger.debug("to cloned parent DataProducer:");
+				logger.debug(deepClone.toStringRepresentation("|"));
+				deepClone.addChildDataProducer(clonedChildDataProducer);
 			}
 		}
 		if ((this.getDataProducerGroups() != null)
 				&& (this.getDataProducerGroups().size() > 0)) {
+			logger.debug("There are " + this.getDataProducerGroups().size()
+					+ " DataProducerGroups to clone and attach");
 			Collection dataProducerGroupToCopy = this.getDataProducerGroups();
 			Iterator dpgIter = dataProducerGroupToCopy.iterator();
 			while (dpgIter.hasNext()) {
-				deepClone
-						.addDataProducerGroup((DataProducerGroup) ((DataProducerGroup) dpgIter
-								.next()).deepCopy());
+				DataProducerGroup clonedDataProducerGroup = (DataProducerGroup) ((DataProducerGroup) dpgIter
+						.next()).deepCopy();
+				logger
+						.debug("Will add the following cloned DataProducerGroup:");
+				logger.debug(clonedDataProducerGroup
+						.toStringRepresentation("|"));
+				deepClone.addDataProducerGroup(clonedDataProducerGroup);
 			}
 		}
 		if ((this.getInputs() != null) && (this.getInputs().size() > 0)) {
+			logger.debug("There are " + this.getInputs().size()
+					+ " Inputs to clone and attach");
 			Collection inputs = this.getInputs();
 			Iterator inputIter = inputs.iterator();
 			while (inputIter.hasNext()) {
-				deepClone.addInput((DataContainer) ((DataContainer) inputIter
-						.next()).deepCopy());
+				DataContainer clonedDataContainer = (DataContainer) ((DataContainer) inputIter
+						.next()).deepCopy();
+				logger.debug("Will add the following cloned input:");
+				logger.debug(clonedDataContainer.toStringRepresentation("|"));
+				deepClone.addInput(clonedDataContainer);
 			}
 		}
 		if ((this.getOutputs() != null) && (this.getOutputs().size() > 0)) {
+			logger.debug("There are " + this.getOutputs().size()
+					+ " Outputs to clone and attach");
 			Collection outputs = this.getOutputs();
 			Iterator outputIter = outputs.iterator();
 			while (outputIter.hasNext()) {
-				deepClone.addOutput((DataContainer) ((DataContainer) outputIter
-						.next()).deepCopy());
+				DataContainer clonedOutput = (DataContainer) ((DataContainer) outputIter
+						.next()).deepCopy();
+				logger.debug("Will add the following cloned output:");
+				logger.debug(clonedOutput.toStringRepresentation("|"));
+				deepClone.addOutput(clonedOutput);
 			}
 		}
 		if ((this.getResources() != null) && (this.getResources().size() > 0)) {
+			logger.debug("There are " + this.getResources().size()
+					+ " Resources to clone and attach");
 			Collection resourcesToCopy = this.getResources();
 			Iterator resourceIter = resourcesToCopy.iterator();
 			while (resourceIter.hasNext()) {
-				deepClone.addResource((Resource) ((Resource) resourceIter
-						.next()).deepCopy());
+				Resource clonedResource = (Resource) ((Resource) resourceIter
+						.next()).deepCopy();
+				logger.debug("Will add the following cloned Resource:");
+				logger.debug(clonedResource.toStringRepresentation("|"));
+				deepClone.addResource(clonedResource);
 			}
 		}
 		if ((this.getKeywords() != null) && (this.getKeywords().size() > 0)) {
+			logger.debug("There are " + this.getKeywords().size()
+					+ " Keywords to clone and attach");
 			Collection keywordsToCopy = this.getKeywords();
 			Iterator keywordIter = keywordsToCopy.iterator();
 			while (keywordIter.hasNext()) {
-				deepClone.addKeyword((Keyword) ((Keyword) keywordIter.next())
-						.deepCopy());
+				Keyword clonedKeyword = (Keyword) ((Keyword) keywordIter.next())
+						.deepCopy();
+				logger.debug("Will add the following cloned Keyword:");
+				logger.debug(clonedKeyword.toStringRepresentation("|"));
+				deepClone.addKeyword(clonedKeyword);
 			}
 		}
 		if ((this.getEvents() != null) && (this.getEvents().size() > 0)) {
+			logger.debug("There are " + this.getEvents().size()
+					+ " Events to clone and attach");
 			Collection events = this.getEvents();
 			Iterator eventsIter = events.iterator();
 			while (eventsIter.hasNext()) {
-				deepClone.addEvent((Event) ((Event) eventsIter.next())
-						.deepCopy());
+				Event clonedEvent = (Event) ((Event) eventsIter.next())
+						.deepCopy();
+				logger.debug("Will add the following cloned event:");
+				logger.debug(clonedEvent.toStringRepresentation("|"));
+				deepClone.addEvent(clonedEvent);
 			}
 		}
 
@@ -1677,8 +1736,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	private Date startDate;
 
 	/**
-	 * This is the <code>Date</code> when the data producer stopped sending
-	 * data (or it is the date of the last time it sent data). If this is not
+	 * This is the <code>Date</code> when the data producer stopped sending data
+	 * (or it is the date of the last time it sent data). If this is not
 	 * defined, it usually means the data producer is still producing data
 	 */
 	private Date endDate;
@@ -1803,8 +1862,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	private Device device;
 
 	/**
-	 * This is a <code>Software</code> that is associated with the production
-	 * of the data.
+	 * This is a <code>Software</code> that is associated with the production of
+	 * the data.
 	 * 
 	 * @directed true
 	 * @label lazy
@@ -1821,8 +1880,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	private DataProducer parentDataProducer;
 
 	/**
-	 * These are <code>DataProducer</code>s that are considered children of
-	 * this <code>DataProducer</code> (supports nested data producers).
+	 * These are <code>DataProducer</code>s that are considered children of this
+	 * <code>DataProducer</code> (supports nested data producers).
 	 * 
 	 * @associates DataProducer
 	 * @directed true
@@ -1831,8 +1890,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	private Collection childDataProducers = new HashSet();
 
 	/**
-	 * This is a <code>Collection</code> of <code>DataProducerGroup</code>s
-	 * that this <code>DataProducer</code> belongs to
+	 * This is a <code>Collection</code> of <code>DataProducerGroup</code>s that
+	 * this <code>DataProducer</code> belongs to
 	 * 
 	 * @associates DataProducerGroup
 	 * @directed true
@@ -1879,8 +1938,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 	private Collection resources = new HashSet();
 
 	/**
-	 * This is a collection of <code>Keyword</code> objects that can be used
-	 * to search for <code>DataContainer</code>s.
+	 * This is a collection of <code>Keyword</code> objects that can be used to
+	 * search for <code>DataContainer</code>s.
 	 * 
 	 * @associates Keyword
 	 * @directed true

@@ -15,12 +15,8 @@
  */
 package moos.ssds.transmogrify;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import javax.jms.BytesMessage;
@@ -35,6 +31,9 @@ import javax.jms.TopicSession;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
+import moos.ssds.io.SSDSDevicePacket;
+import moos.ssds.io.util.PacketUtility;
 
 import org.apache.log4j.Logger;
 import org.mbari.siam.distributed.DevicePacket;
@@ -68,9 +67,10 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 		javax.jms.MessageListener {
 
 	/**
-	 * This is the MessageDrivenContext that is from the container
+	 * This is just a default serial version ID for this class (java best
+	 * practice)
 	 */
-	private javax.ejb.MessageDrivenContext ctx;
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * A log4j logger
@@ -122,41 +122,6 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 	private TopicPublisher topicPublisher = null;
 
 	/**
-	 * This is a boolean to indicated if the publishing is setup and working
-	 * correctly
-	 */
-	private boolean publishingSetup = false;
-
-	/**
-	 * These are the versions of the incoming byte streams from SIAM
-	 */
-	public final static short DEVICE_PACKET_STREAM_ID_VERSION_ONE = 0x0100;
-	public final static long DEVICE_PACKET_VERSION_VERSION_ONE = 0;
-	public final static short SENSOR_DATA_PACKET_STREAM_ID_VERSION_ONE = 0x0102;
-	public final static long SENSOR_DATA_PACKET_VERSION_VERSION_ONE = 0;
-	public final static short DEVICE_MESSAGE_PACKET_STREAM_ID_VERSION_ONE = 0x0103;
-	public final static long DEVICE_MESSAGE_PACKET_VERSION_VERSION_ONE = 0;
-	public final static short METADATA_PACKET_STREAM_ID_VERSION_ONE = 0x0101;
-	public final static long METADATA_PACKET_VERSION_VERSION_ONE = 0;
-	// From the SIAM guys
-	public static final short EX_BASE = 0x0000;
-	public static final short EX_STATE = 0x0001;
-	public static final short EX_STATEATTRIBUTE = 0x0002;
-	public static final short EX_BOOLEANOBJATT = 0x0003;
-	public static final short EX_INTEGEROBJATT = 0x0004;
-	public static final short EX_LONGOBJATT = 0x0005;
-	public static final short EX_MNEMONICINTEGEROBJATT = 0x0006;
-	public static final short EX_SCHEDULESPECIFIEROBJATT = 0x0007;
-	public static final short EX_BYTEARRAYOBJATT = 0x0008;
-	public static final short EX_FLOATOBJATT = 0x0009;
-	public static final short EX_DOUBLEOBJATT = 0x000a;
-	public static final short EX_DEVICEPACKET = 0x0100;
-	public static final short EX_METADATAPACKET = 0x0101;
-	public static final short EX_SENSORDATAPACKET = 0x0102;
-	public static final short EX_DEVICEMESSAGEPACKET = 0x0103;
-	public static final short EX_MAX = 0x0103;
-
-	/**
 	 * This is the default constructor
 	 */
 	public TransmogrifyMDB() {
@@ -167,19 +132,17 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 	 * MessageDrivenContext
 	 */
 	public void setMessageDrivenContext(javax.ejb.MessageDrivenContext context) {
-		// Set the context
-		ctx = context;
 	} // End setMessageDrivenContext
 
 	/**
 	 * This is the callback that the container uses to create this bean
 	 */
+	@SuppressWarnings("unchecked")
 	public void ejbCreate() {
 		// Grab the transmogrifier properties for the file
 		transmogProps = new Properties();
-		// logger.debug(
-		// "Constructor called ... going to try and read the properties file in
-		// ...");
+		logger.debug("Constructor called ... going to "
+				+ "try and read the properties file in ...");
 		try {
 			transmogProps.load(this.getClass().getResourceAsStream(
 					"/moos/ssds/transmogrify/transmogrify.properties"));
@@ -187,11 +150,18 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 			logger.error("Exception trying to read in properties file: "
 					+ e.getMessage());
 		}
+		// If they are not null, write them to a debug log
 		if (transmogProps != null) {
-			// logger.debug("Loaded props OK");
+			logger.debug("Loaded props OK and they are:");
+			Enumeration keys = transmogProps.keys();
+			while (keys.hasMoreElements()) {
+				String key = (String) keys.nextElement();
+				String value = (String) transmogProps.get(key);
+				logger.debug(key + ": " + value);
+			}
 		} else {
-			logger
-					.error("Could not seem to load the properties for transmogrifier.");
+			logger.error("Could not seem to load the "
+					+ "properties for transmogrifier.");
 		}
 
 		// Grab the topic name to republish to
@@ -199,8 +169,7 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 				.getProperty("transmogrify.republish.topic");
 
 		// Instead of using the publisher component, let's manage our own so
-		// that
-		// we can use a different InvocationLayer
+		// that we can use a different InvocationLayer
 		this.setupPublishing();
 
 	} // End ejbCreate
@@ -213,24 +182,20 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 	 */
 	private boolean setupPublishing() {
 		// First tear down any existing connections
-		boolean tearDownOK = this.tearDownPublishing();
-		this.publishingSetup = false;
+		this.tearDownPublishing();
 
-		boolean setupOK = true;
 		// First get the naming context from the container
 		try {
 			this.jndiContext = new InitialContext();
 		} catch (NamingException e) {
-			logger
-					.error("NamingException caught from the container "
-							+ "while trying to setup the publishing: "
-							+ e.getMessage());
+			logger.error("NamingException caught from the container "
+					+ "while trying to setup the " + "publishing: "
+					+ e.getMessage());
 			return false;
 		} catch (Exception e) {
-			logger
-					.error("Exception caught from the container "
-							+ "while trying to setup the publishing: "
-							+ e.getMessage());
+			logger.error("Exception caught from the container "
+					+ "while trying to setup the " + "publishing: "
+					+ e.getMessage());
 			return false;
 		}
 
@@ -241,16 +206,14 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 			topicConnectionFactory = (TopicConnectionFactory) jndiContext
 					.lookup("java:/ConnectionFactory");
 		} catch (NamingException e) {
-			logger
-					.error("NamingException caught from the container "
-							+ "while trying to get the JVM Invocation layer the publishing: "
-							+ e.getMessage());
+			logger.error("NamingException caught from the container "
+					+ "while trying to get the JVM Invocation "
+					+ "layer the publishing: " + e.getMessage());
 			return false;
 		} catch (Exception e) {
-			logger
-					.error("Exception caught from the container "
-							+ "while trying to get the JVM Invocation layer the publishing: "
-							+ e.getMessage());
+			logger.error("Exception caught from the container "
+					+ "while trying to get the JVM Invocation "
+					+ "layer the publishing: " + e.getMessage());
 			return false;
 		}
 
@@ -269,6 +232,7 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 					+ e1.getMessage());
 			return false;
 		}
+
 		// Grab the topic from the container
 		try {
 			this.topic = (Topic) jndiContext.lookup(this.republishTopicName);
@@ -327,8 +291,7 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 					+ e2.getMessage());
 			return false;
 		}
-		this.publishingSetup = true;
-		return setupOK;
+		return true;
 	}
 
 	/**
@@ -337,8 +300,6 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 	 * @return
 	 */
 	private boolean tearDownPublishing() {
-		this.publishingSetup = false;
-		boolean tearDownOK = true;
 		// First close the topic publisher
 		if (this.topicPublisher != null) {
 			try {
@@ -346,9 +307,11 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 			} catch (JMSException e) {
 				logger.error("JMSException caught while trying to "
 						+ "close the topic publisher: " + e.getMessage());
+				return false;
 			} catch (Exception e) {
 				logger.error("Exception caught while trying to "
 						+ "close the topic publisher: " + e.getMessage());
+				return false;
 			}
 			this.topicPublisher = null;
 		}
@@ -359,9 +322,11 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 			} catch (JMSException e) {
 				logger.error("JMSException caught while trying to "
 						+ "stop the topic connection: " + e.getMessage());
+				return false;
 			} catch (Exception e) {
 				logger.error("Exception caught while trying to "
 						+ "stop the topic connection: " + e.getMessage());
+				return false;
 			}
 		}
 		// Now close the session
@@ -371,9 +336,11 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 			} catch (JMSException e) {
 				logger.error("JMSException caught while trying to "
 						+ "close the topic session: " + e.getMessage());
+				return false;
 			} catch (Exception e) {
 				logger.error("Exception caught while trying to "
 						+ "close the topic session: " + e.getMessage());
+				return false;
 			}
 			this.topicSession = null;
 		}
@@ -384,9 +351,11 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 			} catch (JMSException e) {
 				logger.error("JMSException caught while trying to "
 						+ "close the topic connection: " + e.getMessage());
+				return false;
 			} catch (Exception e) {
 				logger.error("Exception caught while trying to "
 						+ "close the topic connection: " + e.getMessage());
+				return false;
 			}
 			this.topicConnection = null;
 		}
@@ -397,16 +366,18 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 			} catch (NamingException e) {
 				logger.error("Naming Exception caught while trying to "
 						+ "close the JNDI context: " + e.getMessage());
+				return false;
 			} catch (Exception e) {
 				logger.error("Exception caught while trying to "
 						+ "close the JNDI context: " + e.getMessage());
+				return false;
 			}
 			this.jndiContext = null;
 		}
 		// Null out the topic connection factory
 		this.topicConnectionFactory = null;
 
-		return tearDownOK;
+		return true;
 	}
 
 	/**
@@ -421,13 +392,18 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 	 * received on the topic that this bean is subscribed to.
 	 * 
 	 * @param msg
-	 *            Is the message object that the topic recieved.
+	 *            Is the message object that the topic received.
 	 */
 	public void onMessage(javax.jms.Message msg) {
 		// Check to see if it a JMS message object
 		if (msg instanceof ObjectMessage) {
 			// Grab the ObjectMessage
 			ObjectMessage om = (ObjectMessage) msg;
+			logger.debug("ObjectMessage recieved");
+			logger.error("An ObjectMessage was received, "
+					+ "this was deprecated and clients should be notified.");
+
+			// Try to cast to a DevicePacket
 			DevicePacket dp = null;
 			try {
 				dp = (DevicePacket) om.getObject();
@@ -440,20 +416,14 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 						+ "DevicePacket from the object message: "
 						+ e.getMessage());
 			}
-			logger.debug("ObjectMessage recieved");
-			// Now check to see if the object it is carrying is a DevicePacket
+
+			// Make sure we have a DevicePacket to work with
 			if (dp != null) {
-				logger
-						.debug("ObjectMessage was a DevicePacket with the following info: "
-								+ "deviceID="
-								+ dp.sourceID()
-								+ ","
-								+ "timestamp="
-								+ dp.systemTime()
-								+ "("
-								+ new Date(dp.systemTime())
-								+ "),"
-								+ "sequenceNo=" + dp.sequenceNo());
+				logger.debug("DevicePacket received with the following info: "
+						+ "deviceID=" + dp.sourceID() + "," + "timestamp="
+						+ dp.systemTime() + "(" + new Date(dp.systemTime())
+						+ ")," + "sequenceNo=" + dp.sequenceNo());
+
 				// Since a DevicePacket was found, convert it to a
 				// SSDSDevicePacket
 				SSDSDevicePacket ssdsDevicePacket = new SSDSDevicePacket(dp);
@@ -467,345 +437,103 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 				// it does, there is not much we can do about it, but print out
 				// a log statement to that effect
 				if (ssdsDevicePacket.getPacketType() == -1) {
-					logger
-							.error("The transmogrified packet has a packet type of -1.  "
-									+ "This should not happen and needs to be investigated");
+					logger.error("The following transmogrified packet has a "
+							+ "packet type of -1.  "
+							+ "This should not happen and needs to be "
+							+ "investigated: deviceID=" + dp.sourceID()
+							+ ", timestamp=" + dp.systemTime() + "("
+							+ new Date(dp.systemTime()) + "), sequenceNo="
+							+ dp.sequenceNo());
 				}
 
 				// Now convert it to a BytesMessage and publish it
-				try {
-					this.checkAndPublishBytes(SSDSDevicePacket
-							.convertToPublishableByteArray(ssdsDevicePacket));
-				} catch (IOException e) {
-					logger
-							.error("Could not convert SSDSDevicePacket to a publishable byte array and send: "
-									+ e.getMessage());
-				}
+				this
+						.publishSSDSFormattedBytes(PacketUtility
+								.convertSSDSDevicePacketToSSDSByteArray(ssdsDevicePacket));
 			} else {
-				logger
-						.error("The incoming ObjectMessage did not contain a DevicePacket.");
+				logger.error("The incoming ObjectMessage did not "
+						+ "contain a DevicePacket.");
 			}
 		} else if (msg instanceof BytesMessage) {
+			// TODO kgomes, if the payload of the message is larger than 2GB, I
+			// should send a rejection message to the sender! We cannot handle
+			// messages larger than 2GB.
+
+			logger.debug("BytesMessage received.");
+
+			// Cast it to a BytesMessage that should contain the SIAM formatted
+			// byte array
 			BytesMessage bytesMessage = (BytesMessage) msg;
-			// Create a output stream to write to
-			ByteArrayOutputStream byteOS = new ByteArrayOutputStream();
-			DataOutputStream dataOS = new DataOutputStream(byteOS);
-			// Now read in all the information from the SIAM byte array
-			try {
-				StringBuffer loggerMessage = new StringBuffer();
-				loggerMessage.append("BytesMessage contains:");
-				// Read in the StreamID
-				short streamID = bytesMessage.readShort();
-				loggerMessage.append("StreamID=" + streamID + ",");
-				dataOS.writeShort(streamID);
 
-				// Read in the devicePacketVersion
-				long devicePacketVersion = bytesMessage.readLong();
-				loggerMessage.append("DevicePacketVersion="
-						+ devicePacketVersion + ",");
-				dataOS.writeLong(devicePacketVersion);
+			// Let's extract the byte array from the message
+			byte[] siamBytes = PacketUtility
+					.extractByteArrayFromBytesMessage(bytesMessage);
 
-				// Read in the sourceID
-				long sourceID = bytesMessage.readLong();
-				loggerMessage.append("SourceID=" + sourceID + ",");
-				dataOS.writeLong(sourceID);
+			// Let's log it (controlled by log4j settings)
+			PacketUtility.logSIAMMessageByteArray(siamBytes, false);
 
-				// Read in the in timestamp
-				long timestamp = bytesMessage.readLong();
-				loggerMessage.append("timestamp=" + timestamp + "("
-						+ new Date(timestamp) + "),");
-				dataOS.writeLong(timestamp);
-
-				// Read in the sequence number
-				long sequenceNumber = bytesMessage.readLong();
-				loggerMessage.append("sequenceNumber=" + sequenceNumber + ",");
-				dataOS.writeLong(sequenceNumber);
-
-				// Read in the metadataref number
-				long metadataRef = bytesMessage.readLong();
-				loggerMessage.append("metadataRef=" + metadataRef + ",");
-				dataOS.writeLong(metadataRef);
-
-				// Read in the parentID
-				long parentID = bytesMessage.readLong();
-				loggerMessage.append("parentID=" + parentID + ",");
-				dataOS.writeLong(parentID);
-
-				// Read in the recordType
-				long recordType = bytesMessage.readLong();
-				loggerMessage.append("recordType=" + recordType + ",");
-				dataOS.writeLong(recordType);
-
-				// Read in the streamID
-				short secondStreamID = bytesMessage.readShort();
-				loggerMessage.append("secondStreamID=" + secondStreamID + ",");
-				dataOS.writeShort(secondStreamID);
-
-				// Read packet Version
-				long secondPacketVersion = bytesMessage.readLong();
-				loggerMessage.append("secondPacketVersion="
-						+ secondPacketVersion + ",");
-				dataOS.writeLong(secondPacketVersion);
-
-				// Read in the first data buffer length
-				int firstBufferLength = 0;
-				try {
-					firstBufferLength = bytesMessage.readInt();
-				} catch (Exception e) {
-				}
-				if (firstBufferLength > 0) {
-					loggerMessage.append("firstBufferLength="
-							+ firstBufferLength + ",");
-					dataOS.writeInt(firstBufferLength);
-					byte[] firstBufferBytes = new byte[firstBufferLength];
-					bytesMessage.readBytes(firstBufferBytes);
-					StringBuffer hexData = new StringBuffer();
-					ByteArrayInputStream byteArrayIS = new ByteArrayInputStream(
-							firstBufferBytes);
-					while (byteArrayIS.available() > 0) {
-						hexData.append(Integer.toHexString(
-								(0xFF & byteArrayIS.read()) | 0x100).substring(
-								1));
-					}
-					loggerMessage.append("firstBuffer(in hex)="
-							+ hexData.toString() + ",");
-					dataOS.write(firstBufferBytes);
-					int secondBufferLength = 0;
-					try {
-						secondBufferLength = bytesMessage.readInt();
-					} catch (Exception e) {
-					}
-					if (secondBufferLength > 0) {
-						loggerMessage.append("secondBufferLength="
-								+ secondBufferLength + ",");
-						dataOS.writeInt(secondBufferLength);
-						byte[] secondBufferBytes = new byte[secondBufferLength];
-						bytesMessage.readBytes(secondBufferBytes);
-						StringBuffer hexTwoData = new StringBuffer();
-						ByteArrayInputStream byteTwoArrayIS = new ByteArrayInputStream(
-								secondBufferBytes);
-						while (byteTwoArrayIS.available() > 0) {
-							hexTwoData.append(Integer.toHexString(
-									(0xFF & byteTwoArrayIS.read()) | 0x100)
-									.substring(1));
-						}
-						loggerMessage.append("secondBuffer(in hex)="
-								+ hexTwoData.toString() + ",");
-						dataOS.write(secondBufferBytes);
-					}
-				}
-				logger.debug(loggerMessage.toString());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JMSException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (Exception e) {
-			}
-			// Grab the byte array out and call the check and publish
-			checkAndPublishBytes(byteOS.toByteArray());
+			// Pass the SIAM formatted array to the next convert to SSDS format
+			// and publish stage
+			convertFromSIAMToSSDSAndPublishBytes(siamBytes);
 		}
 
 	}
 
-	private void checkAndPublishBytes(byte[] bytes) {
-		// So the incoming byte array should be in the SIAM format so we need
-		// to extract the information we need from it
-		ByteArrayInputStream byteIS = new ByteArrayInputStream(bytes);
-		DataInputStream dataIS = new DataInputStream(byteIS);
+	/**
+	 * This method takes in a SIAM formatted byte array, converts it to an SSDS
+	 * format and then sends it on to the next JMS topic
+	 * 
+	 * @param siamBytes
+	 */
+	private void convertFromSIAMToSSDSAndPublishBytes(byte[] siamBytes) {
+		// TODO kgomes might be nice to put some check in here to make sure
+		// incoming byte array looks like a SIAM formatted byte array
 
-		// Create the output byte array (streams)
-		ByteArrayOutputStream byteOS = new ByteArrayOutputStream();
-		DataOutputStream dataOS = new DataOutputStream(byteOS);
+		// Convert it to SSDS format
+		byte[] ssdsBytes = PacketUtility.convertSIAMByteArrayToSSDSByteArray(
+				siamBytes, false, false, false, false);
+		PacketUtility.logSSDSMessageByteArray(ssdsBytes, false);
 
-		// Now read in all the information from the SIAM byte array
-		short devicePacketStreamID = -99;
-		long devicePacketVersion = -999999;
-		long sourceID = -999999;
-		long timestamp = -999999;
-		long sequenceNumber = -999999;
-		long metadataRef = -999999;
-		long parentID = -999999;
-		int packetType = -999999;
-		long recordType = -999999;
-		short subclassStreamID = -99;
-		long subclassPacketVersion = -999999;
-		int firstBufferLength = 1;
-		byte[] firstBufferBytes = new byte[firstBufferLength];
-		int secondBufferLength = 1;
-		byte[] secondBufferBytes = new byte[secondBufferLength];
-		try {
-			devicePacketStreamID = dataIS.readShort();
-			devicePacketVersion = dataIS.readLong();
-			sourceID = dataIS.readLong();
-			timestamp = dataIS.readLong();
-			sequenceNumber = dataIS.readLong();
-			metadataRef = dataIS.readLong();
-			parentID = dataIS.readLong();
-			recordType = dataIS.readLong();
-			subclassStreamID = dataIS.readShort();
-			subclassPacketVersion = dataIS.readLong();
-			// OK, so we now know the core components, we need to
-			// do some specific processing depending on these values
-			if (devicePacketVersion == TransmogrifyMDB.DEVICE_PACKET_VERSION_VERSION_ONE) {
-				if (subclassStreamID == TransmogrifyMDB.METADATA_PACKET_STREAM_ID_VERSION_ONE) {
-					if (subclassPacketVersion == TransmogrifyMDB.METADATA_PACKET_VERSION_VERSION_ONE) {
-						packetType = 0;
-						secondBufferLength = dataIS.readInt();
-						secondBufferBytes = new byte[secondBufferLength];
-						dataIS.read(secondBufferBytes);
-						firstBufferLength = dataIS.readInt();
-						firstBufferBytes = new byte[firstBufferLength];
-						dataIS.read(firstBufferBytes);
-					}
-				} else if (subclassStreamID == TransmogrifyMDB.SENSOR_DATA_PACKET_STREAM_ID_VERSION_ONE) {
-					if (subclassPacketVersion == TransmogrifyMDB.SENSOR_DATA_PACKET_VERSION_VERSION_ONE) {
-						packetType = 1;
-						firstBufferLength = dataIS.readInt();
-						firstBufferBytes = new byte[firstBufferLength];
-						dataIS.read(firstBufferBytes);
-					}
-				} else if (subclassStreamID == TransmogrifyMDB.DEVICE_MESSAGE_PACKET_STREAM_ID_VERSION_ONE) {
-					if (subclassPacketVersion == TransmogrifyMDB.DEVICE_MESSAGE_PACKET_VERSION_VERSION_ONE) {
-						packetType = 2;
-						firstBufferLength = dataIS.readInt();
-						firstBufferBytes = new byte[firstBufferLength];
-						dataIS.read(firstBufferBytes);
-					}
-				}
-			}
-			try {
-				StringBuffer tempMessage = new StringBuffer();
-				tempMessage.append("StreamID=" + devicePacketStreamID + ",");
-				tempMessage.append("DevicePacketVersion=" + devicePacketVersion
-						+ ",");
-				tempMessage.append("SourceID=" + sourceID + ",");
-				tempMessage.append("timestamp=" + timestamp + "("
-						+ new Date(timestamp) + "),");
-				tempMessage.append("sequenceNumber=" + sequenceNumber + ",");
-				tempMessage.append("metadataRef=" + metadataRef + ",");
-				tempMessage.append("parentID=" + parentID + ",");
-				tempMessage.append("recordType=" + recordType + ",");
-				tempMessage.append("packetType=" + packetType + ",");
-				tempMessage.append("secondStreamID=" + subclassStreamID + ",");
-				tempMessage.append("secondPacketVersion="
-						+ subclassPacketVersion + ",");
-				tempMessage.append("firstBufferLength=" + firstBufferLength
-						+ ",");
-				StringBuffer hexData = new StringBuffer();
-				ByteArrayInputStream byteArrayIS = new ByteArrayInputStream(
-						firstBufferBytes);
-				while (byteArrayIS.available() > 0) {
-					hexData.append(Integer.toHexString(
-							(0xFF & byteArrayIS.read()) | 0x100).substring(1));
-				}
-				tempMessage.append("firstBuffer(in hex)=" + hexData.toString()
-						+ ",");
-				tempMessage.append("secondBufferLength=" + secondBufferLength);
-				hexData = new StringBuffer();
-				byteArrayIS = new ByteArrayInputStream(secondBufferBytes);
-				while (byteArrayIS.available() > 0) {
-					hexData.append(Integer.toHexString(
-							(0xFF & byteArrayIS.read()) | 0x100).substring(1));
-				}
-				tempMessage
-						.append("secondBuffer(in hex)=" + hexData.toString());
-				logger.debug("checkAndPublishBytes:" + tempMessage.toString());
-			} catch (Exception e) {
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// Write out the data in our format
-		try {
-			// Write the device ID
-			dataOS.writeLong(sourceID);
-			// Write the parent ID
-			dataOS.writeLong(parentID);
-			// Convert the packet type to the ones we are expecting
-			if (packetType == 0) {
-				dataOS.writeInt(1);
-			} else if (packetType == 1) {
-				dataOS.writeInt(0);
-			} else if (packetType == 2) {
-				dataOS.writeInt(4);
-			}
-			if (packetType == 0) {
-				// Update the siam metadata tracker with the metadata
-				SIAMMetadataTracker.checkMetadataForChange(sourceID, parentID,
-						timestamp, firstBufferBytes);
-			}
-			// Write the packet sub type (which is their record type)
-			if (packetType == 0) {
-				dataOS.writeLong(0);
-			} else {
-				dataOS.writeLong(recordType);
-			}
-			// Write the correct metadata sequence number
-			if (packetType == 0) {
-				// TODO KJG: I think this will need to match the revision number
-				// that the SIAMMetadataTracker utilizes? So I commented out the
-				// zero and added a lookup. If that works, I should just
-				// collapse
-				// all these to one statement
-				// dataOS.writeLong(0);
-				dataOS.writeLong(SIAMMetadataTracker.findDataDescriptionID(
-						sourceID, parentID, timestamp));
-			} else if (packetType == 1) {
-				dataOS.writeLong(SIAMMetadataTracker.findDataDescriptionID(
-						sourceID, parentID, timestamp));
-			} else if (packetType == 2) {
-				dataOS.writeLong(SIAMMetadataTracker.findDataDescriptionID(
-						sourceID, parentID, timestamp));
-			}
-			// Write the DataDescription version
-			dataOS.writeLong(metadataRef);
-			// Now for time stamp, I have to convert it from
-			// milliseconds since 1/1/70 to seconds/nanoseconds
-			// since 1/1/70
-			long timestampSeconds = timestamp / 1000;
-			long timestampNanoseconds = (timestamp % 1000 * 1000);
-			dataOS.writeLong(timestampSeconds);
-			dataOS.writeLong(timestampNanoseconds);
-			// Write the sequence number
-			dataOS.writeLong(sequenceNumber);
-			dataOS.writeInt(firstBufferLength);
-			dataOS.write(firstBufferBytes);
-			dataOS.writeInt(secondBufferLength);
-			dataOS.write(secondBufferBytes);
-		} catch (IOException e1) {
-			logger.error("IOException trying to write packet in our format"
-					+ e1.getMessage());
-		}
-		// Now republish that to SSDS ingest
+		// Now publish those
+		publishSSDSFormattedBytes(ssdsBytes);
+	}
+
+	/**
+	 * This method takes in SSDS formatted bytes and sends them on to the next
+	 * topic
+	 * 
+	 * @param ssdsBytes
+	 */
+	private void publishSSDSFormattedBytes(byte[] ssdsBytes) {
+		// TODO kgomes might be nice to put some check in here to make sure
+		// incoming byte array looks like a SSDS formatted byte array
+
+		// Republish that to SSDS ingest
 		BytesMessage newBytesMessage = null;
 		try {
 			newBytesMessage = topicSession.createBytesMessage();
 		} catch (JMSException e1) {
 			logger.error("JMSException caught while trying to create a "
 					+ "new bytes message: " + e1.getMessage());
-			this.publishingSetup = false;
+			// TODO kgomes while setupPublishing helps for the next message,
+			// this message will be lost
 			this.setupPublishing();
 		}
 		if (newBytesMessage != null) {
 			try {
-				newBytesMessage.writeBytes(byteOS.toByteArray());
+				newBytesMessage.writeBytes(ssdsBytes);
 			} catch (JMSException e2) {
-				logger
-						.error("JMSException caught while trying to set the byte array in the message"
-								+ e2.getMessage());
-				this.publishingSetup = false;
+				logger.error("JMSException caught while " + "trying to "
+						+ "set the byte array in the " + "message"
+						+ e2.getMessage());
 			}
 		}
 		try {
 			topicPublisher.publish(newBytesMessage);
 		} catch (JMSException e2) {
-			logger
-					.error("JMSException caught while trying to publish the bytes message"
-							+ e2.getMessage());
-			this.publishingSetup = false;
+			logger.error("JMSException caught while trying to publish "
+					+ "the bytes message" + e2.getMessage());
 		}
+
 	}
-} // End IngestMDB
+}

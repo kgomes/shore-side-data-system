@@ -26,9 +26,9 @@ import junit.framework.TestCase;
 import moos.ssds.data.parsers.Nmea21PacketParser;
 import moos.ssds.data.parsers.Nmea21RecordParser;
 import moos.ssds.data.parsers.ParsingException;
+import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.metadata.RecordDescription;
 import moos.ssds.metadata.RecordVariable;
-import moos.ssds.transmogrify.SSDSDevicePacket;
 
 import org.apache.log4j.Logger;
 

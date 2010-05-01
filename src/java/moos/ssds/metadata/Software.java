@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
 
@@ -116,8 +118,8 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	}
 
 	/**
-	 * This method returns a <code>URI</code> that is the object form of the
-	 * URI reference specified by the uriString.
+	 * This method returns a <code>URI</code> that is the object form of the URI
+	 * reference specified by the uriString.
 	 * 
 	 * @return a <code>URI</code> reference that is a unique resource locator
 	 *         for the <code>Software</code>
@@ -133,8 +135,8 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	 * locator for this <code>Resource</code> to the <code>URI</code>.
 	 * 
 	 * @param uri
-	 *            a <code>URI</code> reference that is a unique resource
-	 *            locator for the <code>Software</code>
+	 *            a <code>URI</code> reference that is a unique resource locator
+	 *            for the <code>Software</code>
 	 */
 	public void setUri(URI uri) throws MetadataException {
 		this.setUriString(uri.toASCIIString());
@@ -165,8 +167,8 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	 * <code>Software</code>
 	 * 
 	 * @param url
-	 *            is the <code>URL</code> to use as the unique resource
-	 *            locator for this <code>Software</code>
+	 *            is the <code>URL</code> to use as the unique resource locator
+	 *            for this <code>Software</code>
 	 */
 	public void setUrl(URL url) throws MetadataException {
 		this.setUriString(url.toExternalForm());
@@ -176,8 +178,7 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	 * These methods get and set the version of the software object
 	 * 
 	 * @hibernate.property not-null="true"
-	 * @return a <code>String</code> that identifies the version of the
-	 *         software
+	 * @return a <code>String</code> that identifies the version of the software
 	 */
 	public String getSoftwareVersion() {
 		return softwareVersion;
@@ -190,16 +191,15 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	}
 
 	/**
-	 * These methods get and set the <code>Person</code> that is usually seen
-	 * as the owner of the <code>Software</code> (or point of contact).
+	 * These methods get and set the <code>Person</code> that is usually seen as
+	 * the owner of the <code>Software</code> (or point of contact).
 	 * 
 	 * @hibernate.many-to-one class="moos.ssds.metadata.Person"
 	 *                        column="PersonID_FK"
 	 *                        foreign-key="Software_Owned_By_Person"
 	 *                        cascade="none" lazy="true"
 	 * @return the <code>Person</code> that is the owner of the
-	 *         <code>Software</code>. Returns null if no owner has been
-	 *         defined.
+	 *         <code>Software</code>. Returns null if no owner has been defined.
 	 */
 	public Person getPerson() {
 		return this.person;
@@ -211,15 +211,14 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 
 	/**
 	 * These methods get and set the <code>Collection</code> of
-	 * <code>Resource</code>s that are associated with the
-	 * <code>Software</code>
+	 * <code>Resource</code>s that are associated with the <code>Software</code>
 	 * 
 	 * @hibernate.set table="SoftwareAssocResource" cascade="none" lazy="true"
 	 * @hibernate.collection-key column="SoftwareID_FK"
 	 * @hibernate.collection-many-to-many column="ResourceID_FK"
 	 *                                    class="moos.ssds.metadata.Resource"
-	 * @return the <code>Collection</code> of <code>Resource</code>s that
-	 *         are associated with the <code>Software</code>
+	 * @return the <code>Collection</code> of <code>Resource</code>s that are
+	 *         associated with the <code>Software</code>
 	 */
 	public Collection getResources() {
 		return resources;
@@ -266,8 +265,8 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	}
 
 	/**
-	 * This method will clear out the collection of <code>Resource</code>s
-	 * and keep the integrity of the relationships intact.
+	 * This method will clear out the collection of <code>Resource</code>s and
+	 * keep the integrity of the relationships intact.
 	 */
 	public void clearResources() {
 		this.resources.clear();
@@ -278,8 +277,8 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	 * dirty objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -507,21 +506,32 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	 * <code>Resources</code> filled out
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
+		logger.debug("deepCopy called");
 		// Grab the clone
 		Software deepClone = (Software) this.clone();
+		logger.debug("The following clone was created:");
+		logger.debug(deepClone.toStringRepresentation("|"));
 
 		// Set the relationships
 		if (this.getPerson() != null) {
-			deepClone.setPerson((Person) this.getPerson().deepCopy());
+			Person clonedPerson = (Person) this.getPerson().deepCopy();
+			logger.debug("The following cloned Person will be added:");
+			logger.debug(clonedPerson.toStringRepresentation("|"));
+			deepClone.setPerson(clonedPerson);
 		} else {
 			deepClone.setPerson(null);
 		}
 		if ((this.getResources() != null) && (this.getResources().size() > 0)) {
+			logger.debug("There are " + this.getResources().size()
+					+ " Resources that will be cloned.");
 			Collection resourcesToCopy = this.getResources();
 			Iterator resourceIter = resourcesToCopy.iterator();
 			while (resourceIter.hasNext()) {
-				deepClone.addResource((Resource) ((Resource) resourceIter
-						.next()).deepCopy());
+				Resource clonedResource = (Resource) ((Resource) resourceIter
+						.next()).deepCopy();
+				logger.debug("The following cloned Resource will be added:");
+				logger.debug(clonedResource.toStringRepresentation("|"));
+				deepClone.addResource(clonedResource);
 			}
 		}
 		// Now return the deep copy
@@ -564,8 +574,8 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	private long version = -1;
 
 	/**
-	 * This is the <code>Person</code> that is normally thought of as the
-	 * owner of the software
+	 * This is the <code>Person</code> that is normally thought of as the owner
+	 * of the software
 	 * 
 	 * @directed true
 	 * @label lazy
@@ -581,4 +591,9 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	 * @label lazy
 	 */
 	private Collection resources = new HashSet();
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(Software.class);
 }

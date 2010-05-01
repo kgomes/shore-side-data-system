@@ -140,8 +140,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * 
 	 * @see IDateRange#getEndDate()
 	 * @hibernate.property
-	 * @return a <code>Date</code> that is the latest timestamp of the data
-	 *         that is covered by this <code>DataContainer</code>
+	 * @return a <code>Date</code> that is the latest timestamp of the data that
+	 *         is covered by this <code>DataContainer</code>
 	 */
 	public Date getEndDate() {
 		return endDate;
@@ -166,8 +166,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * 
 	 * @hibernate.property
 	 * @return a <code>boolean</code> that indicates if the
-	 *         <code>DataContainer</code> is considered original (<code>true</code>)
-	 *         or not (<code>false</code>)
+	 *         <code>DataContainer</code> is considered original (
+	 *         <code>true</code>) or not (<code>false</code>)
 	 */
 	public Boolean isOriginal() {
 		return original;
@@ -226,9 +226,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * 
 	 * @return a <code>URL</code> which is simply a <code>URL</code>
 	 *         representation of the <code>URI</code> specified for the
-	 *         <code>DataContainer</code>. If the URIString cannot be
-	 *         converted to a URL (or the URIString is null), the return will be
-	 *         null
+	 *         <code>DataContainer</code>. If the URIString cannot be converted
+	 *         to a URL (or the URIString is null), the return will be null
 	 */
 	public URL getUrl() {
 
@@ -314,8 +313,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 
 	/**
 	 * These methods get and set a <code>String</code> that is the string
-	 * representation of a URL where the <code>DataContainer</code> can be
-	 * read through an DODS (OPeNDAP) server
+	 * representation of a URL where the <code>DataContainer</code> can be read
+	 * through an DODS (OPeNDAP) server
 	 * 
 	 * @hibernate.property length="2048"
 	 * @return a <code>String</code> a URL that can be used to read the
@@ -339,8 +338,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * <code>DataContainer</code> can be read from a DODS (OPeNDAP) server (if
 	 * applicable)
 	 * 
-	 * @return a <code>URL</code> where the <code>DataContainer</code> can
-	 *         be read through a DODS (OPeNDAP) server
+	 * @return a <code>URL</code> where the <code>DataContainer</code> can be
+	 *         read through a DODS (OPeNDAP) server
 	 */
 	public URL getDodsUrl() {
 
@@ -367,13 +366,13 @@ public class DataContainer implements IMetadataObject, IDescription,
 
 	/**
 	 * These methods get and set a flag that is a check to see if the
-	 * <code>DataContainer</code> has been flagged NOT to have a parallel
-	 * NetCDF file created by the data system
+	 * <code>DataContainer</code> has been flagged NOT to have a parallel NetCDF
+	 * file created by the data system
 	 * 
 	 * @hibernate.property
 	 * @return a <code>boolean</code> that indicates if the data systems is
-	 *         supposed to try and keep (<code>true</code>) a parallel
-	 *         NetCDF for the data in this <code>DataContainer</code>
+	 *         supposed to try and keep (<code>true</code>) a parallel NetCDF
+	 *         for the data in this <code>DataContainer</code>
 	 */
 	public Boolean isNoNetCDF() {
 		return noNetCDF;
@@ -389,8 +388,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * The range for latitudes is -90 to 90.
 	 * 
 	 * @hibernate.property
-	 * @return a <code>Double</code> that is the minimum latitude. If it has
-	 *         not been defined, null is returned
+	 * @return a <code>Double</code> that is the minimum latitude. If it has not
+	 *         been defined, null is returned
 	 * @throws MetadataException
 	 *             if the supplied latitude is not between -90 and 90
 	 */
@@ -410,8 +409,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * latitude of the data that is contained in the <code>DataContainer</code>.
 	 * 
 	 * @hibernate.property
-	 * @return a <code>Double</code> that is the maximum latitude. If it has
-	 *         not been defined, null is returned
+	 * @return a <code>Double</code> that is the maximum latitude. If it has not
+	 *         been defined, null is returned
 	 * @throws MetadataException
 	 *             if the supplied latitude is not between -90 and 90
 	 */
@@ -427,7 +426,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 
 	/**
 	 * These methods get and set the <code>Double</code> that is the minimum
-	 * longitude of the data that is contained in the <code>DataContainer</code>.
+	 * longitude of the data that is contained in the <code>DataContainer</code>
+	 * .
 	 * 
 	 * @hibernate.property
 	 * @return a <code>Double</code> that is the minimum longitude. If it has
@@ -448,11 +448,12 @@ public class DataContainer implements IMetadataObject, IDescription,
 
 	/**
 	 * These methods get and set the <code>Double</code> that is the maximum
-	 * longitude of the data that is contained in the <code>DataContainer</code>.
+	 * longitude of the data that is contained in the <code>DataContainer</code>
+	 * .
 	 * 
 	 * @hibernate.property
-	 * @return a <code>Double</code> that is the minimum latitude. If it has
-	 *         not been defined, null is returned
+	 * @return a <code>Double</code> that is the minimum latitude. If it has not
+	 *         been defined, null is returned
 	 * @throws MetadataException
 	 *             if the supplied longitude is not between -360 and 360
 	 */
@@ -474,8 +475,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * down. So 0 is the surface and +100 is 100 meters down.
 	 * 
 	 * @hibernate.property
-	 * @return a <code>Float</code> that is the minimum vertical coordinate.
-	 *         If it has not been defined, null is returned
+	 * @return a <code>Float</code> that is the minimum vertical coordinate. If
+	 *         it has not been defined, null is returned
 	 * @throws MetadataException
 	 *             if the supplied depth is negative.
 	 */
@@ -495,8 +496,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * <code>DataContainer</code>.
 	 * 
 	 * @hibernate.property
-	 * @return a <code>Float</code> that is the maximum vertical coordinate.
-	 *         If it has not been defined, null is returned
+	 * @return a <code>Float</code> that is the maximum vertical coordinate. If
+	 *         it has not been defined, null is returned
 	 * @throws MetadataException
 	 *             if the supplied depth is negative.
 	 */
@@ -511,8 +512,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * These methods get and set the <code>Person</code> that is usually seen
-	 * as the owner of the <code>DataContainer</code> (or point of contact).
+	 * These methods get and set the <code>Person</code> that is usually seen as
+	 * the owner of the <code>DataContainer</code> (or point of contact).
 	 * 
 	 * @hibernate.many-to-one class="moos.ssds.metadata.Person"
 	 *                        column="PersonID_FK"
@@ -559,8 +560,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 *                        column="RecordDescriptionID_FK"
 	 *                        foreign-key="DataContainer_Has_Records_Described_By_RecordDescription"
 	 *                        cascade="all" lazy="true"
-	 * @return the <code>RecordDescription</code> that describes all the
-	 *         records in this <code>DataContainer</code>
+	 * @return the <code>RecordDescription</code> that describes all the records
+	 *         in this <code>DataContainer</code>
 	 */
 	public RecordDescription getRecordDescription() {
 		return recordDescription;
@@ -571,13 +572,13 @@ public class DataContainer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * This method returns the <code>RecordVariable</code>s that are
-	 * associated with the <code>DataContainer</code>. It simply grabs the
+	 * This method returns the <code>RecordVariable</code>s that are associated
+	 * with the <code>DataContainer</code>. It simply grabs the
 	 * <code>RecordDescription</code> and then grabs the
 	 * <code>RecordVariable</code>s and returns those.
 	 * 
-	 * @return a <code>Collection</code> of <code>RecordVariable</code>
-	 *         (will return an empty collection if there are none).
+	 * @return a <code>Collection</code> of <code>RecordVariable</code> (will
+	 *         return an empty collection if there are none).
 	 */
 	public Collection getRecordVariables() {
 		// Create and empty one so a null is not returned
@@ -593,18 +594,17 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * This method will add a <code>RecordVariable</code> to the collection of
 	 * <code>RecordVariable</code>s that are associated with a
 	 * <code>DataContainer</code>. The actual relationship between
-	 * <code>RecordVariable</code> and <code>DataContainer</code> goes
-	 * through a <code>RecordDescription</code>. This is a convenience method
-	 * to add <code>RecordVariable</code> directly to a
-	 * <code>DataContainer</code> and it actually adds them to the
-	 * <code>RecordDescription</code> that is associated with the
-	 * <code>DataContainer</code>. If there is no
+	 * <code>RecordVariable</code> and <code>DataContainer</code> goes through a
+	 * <code>RecordDescription</code>. This is a convenience method to add
+	 * <code>RecordVariable</code> directly to a <code>DataContainer</code> and
+	 * it actually adds them to the <code>RecordDescription</code> that is
+	 * associated with the <code>DataContainer</code>. If there is no
 	 * <code>RecordDescription</code> associated with the
 	 * <code>DataContainer</code>, a new one (blank) will be created.
 	 * 
 	 * @param recordVariable
-	 *            is the <code>RecordVariable</code> to add to the collection
-	 *            of <code>RecordVariable</code>s associated with the
+	 *            is the <code>RecordVariable</code> to add to the collection of
+	 *            <code>RecordVariable</code>s associated with the
 	 *            <code>DataContainer</code> through the
 	 *            <code>RecordDescription</code>.
 	 */
@@ -635,7 +635,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 *                cascade="none" lazy="true"
 	 * @hibernate.collection-key column="DataContainerID_FK"
 	 * @hibernate.collection-many-to-many column="DataContainerGroupID_FK"
-	 *                                    class="moos.ssds.metadata.DataContainerGroup"
+	 *                                    class=
+	 *                                    "moos.ssds.metadata.DataContainerGroup"
 	 * @return the <code>Collection</code> of <code>DataContainerGroup</code>s
 	 *         that have been associated to the <code>DataContainer</code>
 	 */
@@ -770,8 +771,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * @hibernate.collection-key column="DataContainerID_FK"
 	 * @hibernate.collection-many-to-many column="ResourceID_FK"
 	 *                                    class="moos.ssds.metadata.Resource"
-	 * @return the <code>Collection</code> of <code>Resource</code>s that
-	 *         are associated with the <code>DataContainer</code>
+	 * @return the <code>Collection</code> of <code>Resource</code>s that are
+	 *         associated with the <code>DataContainer</code>
 	 */
 	public Collection getResources() {
 		return resources;
@@ -818,8 +819,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * This method will clear out the collection of <code>Resource</code>s
-	 * and keep the integrity of the relationships intact.
+	 * This method will clear out the collection of <code>Resource</code>s and
+	 * keep the integrity of the relationships intact.
 	 */
 	public void clearResources() {
 		this.resources.clear();
@@ -847,17 +848,16 @@ public class DataContainer implements IMetadataObject, IDescription,
 
 	/**
 	 * These methods get and set a <code>Collection</code> of
-	 * <code>DataProducer</code>s that use this <code>DataContainer</code>
-	 * as input to their processing
+	 * <code>DataProducer</code>s that use this <code>DataContainer</code> as
+	 * input to their processing
 	 * 
 	 * @hibernate.set table="DataProducerInput" cascade="none" inverse="true"
 	 *                lazy="true"
 	 * @hibernate.collection-key column="DataContainerID_FK"
 	 * @hibernate.collection-many-to-many column="DataProducerID_FK"
 	 *                                    class="moos.ssds.metadata.DataProducer"
-	 * @return a <code>Collection</code> of <code>DataProducer</code>s that
-	 *         use this <code>DataContainer</code> as input to their
-	 *         processing
+	 * @return a <code>Collection</code> of <code>DataProducer</code>s that use
+	 *         this <code>DataContainer</code> as input to their processing
 	 */
 	public Collection getConsumers() {
 		return consumers;
@@ -899,8 +899,7 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * collection
 	 * 
 	 * @param consumer
-	 *            is the <code>DataProducer</code> to remove from the
-	 *            collection
+	 *            is the <code>DataProducer</code> to remove from the collection
 	 */
 	public void removeConsumer(DataProducer consumer) {
 		if (consumer == null)
@@ -930,8 +929,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * dirty objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -1358,51 +1357,83 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * It does NOT copy the relationships of Creator or Consumers
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
+		logger.debug("deepCopy called");
 		// Grab the clone
 		DataContainer deepClone = (DataContainer) this.clone();
+		if (deepClone != null) {
+			logger.debug("Clone created and is:");
+			logger.debug(deepClone.toStringRepresentation("|"));
+		} else {
+			logger.debug("Clone operation returned null!");
+		}
 
 		// Now walk the relationships
 		if (this.getPerson() != null) {
-			deepClone.setPerson((Person) this.getPerson().deepCopy());
+			Person clonedPerson = (Person) this.getPerson().deepCopy();
+			logger.debug("Will add the following cloned person:");
+			logger.debug(clonedPerson.toStringRepresentation("|"));
+			deepClone.setPerson(clonedPerson);
 		} else {
 			deepClone.setPerson(null);
 		}
 		if (this.getHeaderDescription() != null) {
-			deepClone.setHeaderDescription((HeaderDescription) this
-					.getHeaderDescription().deepCopy());
+			HeaderDescription clonedHeaderDescription = (HeaderDescription) this
+					.getHeaderDescription().deepCopy();
+			logger.debug("Will add the following cloned HeaderDescription:");
+			logger.debug(clonedHeaderDescription.toStringRepresentation("|"));
+			deepClone.setHeaderDescription(clonedHeaderDescription);
 		} else {
 			deepClone.setHeaderDescription(null);
 		}
 		if (this.getRecordDescription() != null) {
-			deepClone.setRecordDescription((RecordDescription) this
-					.getRecordDescription().deepCopy());
+			RecordDescription clonedRecordDescription = (RecordDescription) this
+					.getRecordDescription().deepCopy();
+			logger.debug("Will attach the following cloned RecordDescription:");
+			logger.debug(clonedRecordDescription.toStringRepresentation("|"));
+			deepClone.setRecordDescription(clonedRecordDescription);
 		} else {
 			deepClone.setRecordDescription(null);
 		}
 		if ((this.getDataContainerGroups() != null)
 				&& (this.getDataContainerGroups().size() > 0)) {
+			logger.debug("There are " + this.getDataContainerGroups().size()
+					+ " DataContainerGroups to clone and attach.");
 			Collection dcgsToCopy = this.getDataContainerGroups();
 			Iterator dcgsIter = dcgsToCopy.iterator();
 			while (dcgsIter.hasNext()) {
-				deepClone
-						.addDataContainerGroup((DataContainerGroup) ((DataContainerGroup) dcgsIter
-								.next()).deepCopy());
+				DataContainerGroup clonedDataContainerGroup = (DataContainerGroup) ((DataContainerGroup) dcgsIter
+						.next()).deepCopy();
+				logger
+						.debug("Will add the following clone DataContainerGroup:");
+				logger.debug(clonedDataContainerGroup
+						.toStringRepresentation("|"));
+				deepClone.addDataContainerGroup(clonedDataContainerGroup);
 			}
 		}
 		if ((this.getKeywords() != null) && (this.getKeywords().size() > 0)) {
+			logger.debug("There are " + this.getKeywords().size()
+					+ " Keywords to clone and attach");
 			Collection keywordsToCopy = this.getKeywords();
 			Iterator keywordIter = keywordsToCopy.iterator();
 			while (keywordIter.hasNext()) {
-				deepClone.addKeyword((Keyword) ((Keyword) keywordIter.next())
-						.deepCopy());
+				Keyword clonedKeyword = (Keyword) ((Keyword) keywordIter.next())
+						.deepCopy();
+				logger.debug("Will add the following cloned Keyword:");
+				logger.debug(clonedKeyword.toStringRepresentation("|"));
+				deepClone.addKeyword(clonedKeyword);
 			}
 		}
 		if ((this.getResources() != null) && (this.getResources().size() > 0)) {
+			logger.debug("There are " + this.getResources().size()
+					+ " Resources to clone and add.");
 			Collection resourcesToCopy = this.getResources();
 			Iterator resourceIter = resourcesToCopy.iterator();
 			while (resourceIter.hasNext()) {
-				deepClone.addResource((Resource) ((Resource) resourceIter
-						.next()).deepCopy());
+				Resource clonedResource = (Resource) ((Resource) resourceIter
+						.next()).deepCopy();
+				logger.debug("Will add the following cloned Resource:");
+				logger.debug(clonedResource.toStringRepresentation("|"));
+				deepClone.addResource(clonedResource);
 			}
 		}
 		return deepClone;
@@ -1468,8 +1499,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	private Long contentLength;
 
 	/**
-	 * This is the MIME type that applies to this <code>DataContainer</code>
-	 * (if one applies).
+	 * This is the MIME type that applies to this <code>DataContainer</code> (if
+	 * one applies).
 	 */
 	private String mimeType;
 
@@ -1487,9 +1518,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	private Boolean dodsAccessible = new Boolean(false);
 
 	/**
-	 * This is a <code>String</code> that represents the <code>URL</code>
-	 * where the <code>DataContainer</code> can be read from an DODS (OPeNDAP)
-	 * server.
+	 * This is a <code>String</code> that represents the <code>URL</code> where
+	 * the <code>DataContainer</code> can be read from an DODS (OPeNDAP) server.
 	 */
 	private String dodsUrlString;
 
@@ -1512,8 +1542,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	private Float maxDepth;
 
 	/**
-	 * This is the <code>Person</code> that is normally thought of as the
-	 * owner of the <code>DataContainer</code> (or the point of contact)
+	 * This is the <code>Person</code> that is normally thought of as the owner
+	 * of the <code>DataContainer</code> (or the point of contact)
 	 * 
 	 * @directed true
 	 * @label lazy
@@ -1551,8 +1581,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	private Collection dataContainerGroups = new HashSet();
 
 	/**
-	 * This is a collection of <code>Keyword</code> objects that can be used
-	 * to search for <code>DataContainer</code>s.
+	 * This is a collection of <code>Keyword</code> objects that can be used to
+	 * search for <code>DataContainer</code>s.
 	 * 
 	 * @associates Keyword
 	 * @directed true
@@ -1561,8 +1591,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 	private Collection keywords = new HashSet();
 
 	/**
-	 * This is the <code>Collection</code> of <code>Resource</code>s that
-	 * are associated with the <code>DataContainer</code>
+	 * This is the <code>Collection</code> of <code>Resource</code>s that are
+	 * associated with the <code>DataContainer</code>
 	 * 
 	 * @associates Resource
 	 * @directed true
@@ -1586,6 +1616,7 @@ public class DataContainer implements IMetadataObject, IDescription,
 	/**
 	 * A collection of <code>DataProducer</code>s that use this
 	 * <code>DataContainer<code> to create other <code>DataContainer</code>s.
+	 * 
 	 * @associates DataProducer
 	 * @directed true
 	 * @clientRole data for input

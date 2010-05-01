@@ -25,8 +25,9 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import javax.jms.BytesMessage;
-import javax.jms.JMSException;
 import javax.sql.DataSource;
+
+import moos.ssds.io.util.PacketUtility;
 
 import org.apache.log4j.Logger;
 
@@ -42,7 +43,29 @@ import org.apache.log4j.Logger;
 public class PacketSQLOutput {
 
 	/**
-	 * No argument costructor. If created with this you will need to call the
+	 * This is the <code>DataSource</code> that the connections will be pulled
+	 * from to serialize the data to the DB
+	 */
+	private DataSource dataSource;
+
+	/**
+	 * This is the actual connection that is used by the PacketSQLOutput to send
+	 * data to the DB.
+	 */
+	private Connection connection;
+
+	/**
+	 * The string that is used as a delimiter for table queries
+	 */
+	private String sqlTableDelimiter = null;
+
+	/**
+	 * A log4j logger
+	 */
+	static Logger logger = Logger.getLogger(PacketSQLOutput.class);
+
+	/**
+	 * No argument constructor. If created with this you will need to call the
 	 * <code>setDataSource(DataSource dataSource)</code> method before calling
 	 * <code>writeObject</code>
 	 */
@@ -63,8 +86,8 @@ public class PacketSQLOutput {
 	}
 
 	/**
-	 * Specifies the <code>DataSource</code> that will be used to grab
-	 * database connections from .
+	 * Specifies the <code>DataSource</code> that will be used to grab database
+	 * connections from .
 	 * 
 	 * @param dataSource
 	 *            is the <code>DataSource</code> that will be used to obtain
@@ -93,6 +116,8 @@ public class PacketSQLOutput {
 		try {
 			connection.close();
 		} catch (Throwable e) {
+			logger.error("Throwable caught trying to close the connection:"
+					+ e.getMessage());
 		}
 	}
 
@@ -108,165 +133,42 @@ public class PacketSQLOutput {
 	}
 
 	/**
-	 * The method to write the various information from ta bytes message to the
-	 * database
+	 * This method extracts the byte array from the BytesMessage and the records
+	 * it in the database.
 	 * 
 	 * @param bytesMessage
 	 * @throws SQLException
 	 */
 	private void writeBytesMessageVersion3(BytesMessage bytesMessage)
 			throws SQLException {
-		// Reset the message
-		try {
-			bytesMessage.reset();
-		} catch (JMSException e2) {
-			logger
-					.error("JMSException caught trying to reset the BytesMessage: "
-							+ e2.getMessage());
-		}
-		// This assumes that this byte array is in the form of the SSDS
-		// specification
-		long deviceID = -999999;
-		long parentID = -999999;
-		int packetType = -999999;
-		long packetSubType = -999999;
-		long dataDescriptionID = -999999;
-		long dataDescriptionVersion = -999999;
-		long timestampSeconds = -999999;
-		long timestampNanoseconds = -999999;
-		long sequenceNumber = -999999;
-		int bufferLen = 1;
-		byte[] bufferBytes = new byte[bufferLen];
-		int bufferTwoLen = 1;
-		byte[] bufferTwoBytes = new byte[bufferTwoLen];
-		try {
-			deviceID = bytesMessage.readLong();
-			parentID = bytesMessage.readLong();
-			packetType = bytesMessage.readInt();
-			packetSubType = bytesMessage.readLong();
-			dataDescriptionID = bytesMessage.readLong();
-			dataDescriptionVersion = bytesMessage.readLong();
-			timestampSeconds = bytesMessage.readLong();
-			timestampNanoseconds = bytesMessage.readLong();
-			sequenceNumber = bytesMessage.readLong();
-			bufferLen = bytesMessage.readInt();
-			bufferBytes = new byte[bufferLen];
-			bytesMessage.readBytes(bufferBytes);
-			bufferTwoLen = bytesMessage.readInt();
-			bufferTwoBytes = new byte[bufferTwoLen];
-			bytesMessage.readBytes(bufferTwoBytes);
-
-			// Debugging stuff
-			StringBuffer hexData = new StringBuffer();
-			ByteArrayInputStream byteArrayIS = new ByteArrayInputStream(
-					bufferBytes);
-			while (byteArrayIS.available() > 0) {
-				hexData.append(Integer.toHexString(
-						(0xFF & byteArrayIS.read()) | 0x100).substring(1));
-			}
-			StringBuffer hexTwoData = new StringBuffer();
-			ByteArrayInputStream byteTwoArrayIS = new ByteArrayInputStream(
-					bufferTwoBytes);
-			while (byteTwoArrayIS.available() > 0) {
-				hexData.append(Integer.toHexString(
-						(0xFF & byteTwoArrayIS.read()) | 0x100).substring(1));
-			}
-			logger.debug("Got bytesMessage and will write to database:"
-					+ "deviceID="
-					+ deviceID
-					+ ","
-					+ "parentID="
-					+ parentID
-					+ ","
-					+ "packetType="
-					+ packetType
-					+ ","
-					+ "packetSubType="
-					+ packetSubType
-					+ ","
-					+ "dataDescriptionID="
-					+ dataDescriptionID
-					+ ","
-					+ "timestampSeconds="
-					+ timestampSeconds
-					+ ","
-					+ "timestampNanoseconds="
-					+ timestampNanoseconds
-					+ ","
-					+ "sequenceNumber="
-					+ sequenceNumber
-					+ ","
-					+ "bufferLen="
-					+ bufferLen
-					+ ","
-					+ "bufferBytes(in hex)="
-					+ hexData.toString()
-					+ "bufferTwoLen="
-					+ bufferTwoLen
-					+ ","
-					+ "bufferTwoBytes(in hex)=" + hexTwoData.toString());
-		} catch (JMSException e) {
-			logger.error("JMSException caught: " + e.getMessage());
-		}
-		// Grab a connection
-		try {
-			this.connection = dataSource.getConnection();
-		} catch (SQLException e) {
-			logger.error("Could not get a connection to the database: "
-					+ e.getMessage());
-		}
-		// Try the write
-		try {
-			// Grab the prepared statement text and substitute the device ID
-			String pstmtText = "INSERT INTO " + this.sqlTableDelimiter
-					+ deviceID + this.sqlTableDelimiter
-					+ " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			// Prepare the statment to insert the data
-			PreparedStatement pstmt = this.connection
-					.prepareStatement(pstmtText);
-			pstmt.clearParameters();
-			pstmt.setInt(1, 3);
-			pstmt.setLong(2, parentID);
-			pstmt.setInt(3, packetType);
-			pstmt.setLong(4, packetSubType);
-			pstmt.setLong(5, dataDescriptionID);
-			pstmt.setLong(6, dataDescriptionVersion);
-			pstmt.setLong(7, timestampSeconds);
-			pstmt.setLong(8, timestampNanoseconds);
-			pstmt.setLong(9, sequenceNumber);
-			pstmt.setInt(10, bufferLen);
-
-			InputStream in = new ByteArrayInputStream(bufferBytes);
-			pstmt.setBinaryStream(11, in, bufferLen);
-			pstmt.setInt(12, bufferTwoLen);
-			in = new ByteArrayInputStream(bufferTwoBytes);
-			pstmt.setBinaryStream(13, in, bufferTwoLen);
-			pstmt.setNull(14, Types.DOUBLE);
-			pstmt.setNull(15, Types.DOUBLE);
-			pstmt.setNull(16, Types.FLOAT);
-			pstmt.execute();
-		} catch (SQLException e1) {
-			logger.error("SQLException while trying to insert data: "
-					+ e1.getMessage());
-		}
-		// Flush the output
-		this.flush();
-		// Close the output
-		this.close();
+		// Convert the bytes and then perist
+		writeBytesVersion3(PacketUtility
+				.extractByteArrayFromBytesMessage(bytesMessage));
 	}
 
+	/**
+	 * This method simply calls the correct version method that writes the bytes
+	 * to the database
+	 * 
+	 * @param bytes
+	 * @throws SQLException
+	 */
 	public void writeBytes(byte[] bytes) throws SQLException {
 		this.writeBytesVersion3(bytes);
 	}
 
 	/**
-	 * TODO KJG This and the writeBytesMessage need to be refactored to work in
-	 * the same manner
+	 * This method takes in a byte array that must be in SSDS format and then
+	 * records the entry in the database
 	 * 
 	 * @param bytes
 	 * @throws SQLException
 	 */
 	public void writeBytesVersion3(byte[] bytes) throws SQLException {
+
+		// Log the message
+		logger.debug("writeBytesVersion3 called.");
+		PacketUtility.logSSDSMessageByteArray(bytes, false);
 
 		// Setup the streams to read the bytes
 		ByteArrayInputStream byteIS = new ByteArrayInputStream(bytes);
@@ -303,56 +205,6 @@ public class PacketSQLOutput {
 			bufferTwoLen = dataIS.readInt();
 			bufferTwoBytes = new byte[bufferTwoLen];
 			dataIS.read(bufferTwoBytes);
-
-			// Debugging stuff
-			StringBuffer hexData = new StringBuffer();
-			ByteArrayInputStream byteArrayIS = new ByteArrayInputStream(
-					bufferBytes);
-			while (byteArrayIS.available() > 0) {
-				hexData.append(Integer.toHexString(
-						(0xFF & byteArrayIS.read()) | 0x100).substring(1));
-			}
-			StringBuffer hexTwoData = new StringBuffer();
-			ByteArrayInputStream byteTwoArrayIS = new ByteArrayInputStream(
-					bufferTwoBytes);
-			while (byteTwoArrayIS.available() > 0) {
-				hexData.append(Integer.toHexString(
-						(0xFF & byteTwoArrayIS.read()) | 0x100).substring(1));
-			}
-			logger.debug("Got bytesMessage and will write to database:"
-					+ "deviceID="
-					+ deviceID
-					+ ","
-					+ "parentID="
-					+ parentID
-					+ ","
-					+ "packetType="
-					+ packetType
-					+ ","
-					+ "packetSubType="
-					+ packetSubType
-					+ ","
-					+ "dataDescriptionID="
-					+ dataDescriptionID
-					+ ","
-					+ "timestampSeconds="
-					+ timestampSeconds
-					+ ","
-					+ "timestampNanoseconds="
-					+ timestampNanoseconds
-					+ ","
-					+ "sequenceNumber="
-					+ sequenceNumber
-					+ ","
-					+ "bufferLen="
-					+ bufferLen
-					+ ","
-					+ "bufferBytes(in hex)="
-					+ hexData.toString()
-					+ "bufferTwoLen="
-					+ bufferTwoLen
-					+ ","
-					+ "bufferTwoBytes(in hex)=" + hexTwoData.toString());
 		} catch (IOException e) {
 			logger.error("IOException caught: " + e.getMessage());
 		}
@@ -365,10 +217,10 @@ public class PacketSQLOutput {
 		}
 		// Try the write
 		try {
-			// Prepare the statment to insert the data
+			// Prepare the statement to insert the data
 			PreparedStatement pstmt = this.connection
-					.prepareStatement("INSERT INTO " + this.sqlTableDelimiter + deviceID
-							+ this.sqlTableDelimiter + " VALUES "
+					.prepareStatement("INSERT INTO " + this.sqlTableDelimiter
+							+ deviceID + this.sqlTableDelimiter + " VALUES "
 							+ "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			pstmt.clearParameters();
 			pstmt.setInt(1, 3);
@@ -397,7 +249,8 @@ public class PacketSQLOutput {
 		}
 		// Flush the output
 		this.flush();
-		// Close the output
+
+		// Close the connection
 		this.close();
 	}
 
@@ -410,7 +263,8 @@ public class PacketSQLOutput {
 			super.finalize();
 			connection.close();
 		} catch (Throwable t) {
-			t.printStackTrace();
+			logger.error("Throwable caught trying to "
+					+ "finalize and close connections" + t.getMessage());
 		}
 	}
 
@@ -420,22 +274,4 @@ public class PacketSQLOutput {
 	public void flush() {
 	}
 
-	/**
-	 * This is the <code>DataSource</code> that the connections will be pulled
-	 * from to serialize the data to the DB
-	 */
-	private DataSource dataSource;
-
-	/**
-	 * This is the actual connection that is used by the PacketSQLOutput to send
-	 * data to the DB.
-	 */
-	private Connection connection;
-
-	private String sqlTableDelimiter = null;
-
-	/**
-	 * A log4j logger
-	 */
-	static Logger logger = Logger.getLogger(PacketSQLOutput.class);
 }

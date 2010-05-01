@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
 
@@ -181,11 +183,12 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	}
 
 	/**
-	 * This method sets the reference scale of the <code>StandardVariable</code>.
+	 * This method sets the reference scale of the <code>StandardVariable</code>
+	 * .
 	 * 
 	 * @param referenceScale
-	 *            is the <code>String</code> that will be used as the
-	 *            reference scale.
+	 *            is the <code>String</code> that will be used as the reference
+	 *            scale.
 	 */
 	public void setReferenceScale(String referenceScale)
 			throws MetadataException {
@@ -203,8 +206,8 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	 * @hibernate.collection-key column="StandardVariableID_FK"
 	 * @hibernate.collection-many-to-many column="StandardUnitID_FK"
 	 *                                    class="moos.ssds.metadata.StandardUnit"
-	 * @return the <code>Collection</code> of <code>StandardUnit</code>s
-	 *         that are associated with the <code>StandardVariable</code>
+	 * @return the <code>Collection</code> of <code>StandardUnit</code>s that
+	 *         are associated with the <code>StandardVariable</code>
 	 */
 	public Collection getStandardUnits() {
 		return standardUnits;
@@ -248,8 +251,7 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	 * collection
 	 * 
 	 * @param standardUnit
-	 *            is the <code>StandardUnit</code> to remove from the
-	 *            collection
+	 *            is the <code>StandardUnit</code> to remove from the collection
 	 */
 	public void removeStandardUnit(StandardUnit standardUnit) {
 		if (standardUnit == null)
@@ -273,8 +275,8 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	 * objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -504,17 +506,26 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	 * This simply returns the clone
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
+		logger.debug("deepCopy called");
 		// Grab the clone
 		StandardVariable deepClone = (StandardVariable) this.clone();
+		logger.debug("A clone was created and is:");
+		logger.debug(deepClone.toStringRepresentation("|"));
 
 		// Set the relationships
 		if ((this.getStandardUnits() != null)
 				&& (this.getStandardUnits().size() > 0)) {
+			logger.debug("There are " + this.getStandardUnits().size()
+					+ " StandardUnits to clone and attach");
 			Collection standardUnits = this.getStandardUnits();
 			Iterator suIter = standardUnits.iterator();
 			while (suIter.hasNext()) {
-				deepClone.addStandardUnit((StandardUnit) ((StandardUnit) suIter
-						.next()).deepCopy());
+				StandardUnit clonedStandardUnit = (StandardUnit) ((StandardUnit) suIter
+						.next()).deepCopy();
+				logger
+						.debug("The following cloned StandardUnit will be added:");
+				logger.debug(clonedStandardUnit.toStringRepresentation("|"));
+				deepClone.addStandardUnit(clonedStandardUnit);
 			}
 		}
 
@@ -556,8 +567,8 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	private String referenceScale;
 
 	/**
-	 * The <code>Collection</code> of <code>StandardUnit</code>s linked to
-	 * the <code>StandardVariable</code>
+	 * The <code>Collection</code> of <code>StandardUnit</code>s linked to the
+	 * <code>StandardVariable</code>
 	 * 
 	 * @associates StandardUnit
 	 * @directed true
@@ -569,4 +580,9 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	 * This is the hibernate version that is used to check for dirty objects
 	 */
 	private long version = -1;
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(StandardVariable.class);
 }

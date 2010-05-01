@@ -60,12 +60,12 @@ public class RecordDescription implements IMetadataObject {
 
 	/**
 	 * These methods get and set the type of record this refers to. This is due
-	 * to the fact that a <code>DataProducer</code> can put out records of
-	 * more than one type
+	 * to the fact that a <code>DataProducer</code> can put out records of more
+	 * than one type
 	 * 
 	 * @hibernate.property not-null="true"
-	 * @return the <code>Long</code> that indicates the type of record that
-	 *         this description applies to
+	 * @return the <code>Long</code> that indicates the type of record that this
+	 *         description applies to
 	 */
 	public Long getRecordType() {
 		return recordType;
@@ -87,8 +87,8 @@ public class RecordDescription implements IMetadataObject {
 	 * constants defined in the class (ASCII_BUFFER or BINARY_BUFFER)
 	 * 
 	 * @hibernate.property
-	 * @return a <code>String</code> that indicates what style of buffer is
-	 *         used in the record that this describes
+	 * @return a <code>String</code> that indicates what style of buffer is used
+	 *         in the record that this describes
 	 */
 	public String getBufferStyle() {
 		return bufferStyle;
@@ -192,8 +192,7 @@ public class RecordDescription implements IMetadataObject {
 	 * a record
 	 * 
 	 * @hibernate.property
-	 * @return the <code>String</code> that is the terminating record
-	 *         indicator
+	 * @return the <code>String</code> that is the terminating record indicator
 	 */
 	public String getRecordTerminator() {
 		return recordTerminator;
@@ -282,7 +281,8 @@ public class RecordDescription implements IMetadataObject {
 	 * @hibernate.set cascade="all" lazy="false" outer-join="true"
 	 *                order-by="columnIndex asc"
 	 * @hibernate.collection-key column="RecordDescriptionID_FK"
-	 * @hibernate.collection-one-to-many class="moos.ssds.metadata.RecordVariable"
+	 * @hibernate.collection-one-to-many 
+	 *                                   class="moos.ssds.metadata.RecordVariable"
 	 * @return A collection of the <code>RecordVariable<code>s
 	 */
 	public Collection getRecordVariables() {
@@ -294,8 +294,8 @@ public class RecordDescription implements IMetadataObject {
 	}
 
 	/**
-	 * This method adds the given <code>RecordVariable</code> to the
-	 * collection associated with the <code>RecordDescription</code>.
+	 * This method adds the given <code>RecordVariable</code> to the collection
+	 * associated with the <code>RecordDescription</code>.
 	 * 
 	 * @param recordVariable
 	 *            the <code>RecordVariable</code> to add
@@ -341,8 +341,8 @@ public class RecordDescription implements IMetadataObject {
 	 * dirty objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -604,18 +604,26 @@ public class RecordDescription implements IMetadataObject {
 	 * copies all of its <code>RecordVariables</code>
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
+		logger.debug("deepCopy called.");
 		// Grab the clone
 		RecordDescription deepClone = (RecordDescription) this.clone();
+		logger.debug("The following clone was created:");
+		logger.debug(deepClone.toStringRepresentation("|"));
 
 		// Set the record variables
 		if ((this.getRecordVariables() != null)
 				&& (this.getRecordVariables().size() > 0)) {
+			logger.debug("There are " + this.getRecordVariables().size()
+					+ " RecordVariables to clone and attach");
 			Collection rvs = this.getRecordVariables();
 			Iterator rvIter = rvs.iterator();
 			while (rvIter.hasNext()) {
-				deepClone
-						.addRecordVariable((RecordVariable) ((RecordVariable) rvIter
-								.next()).deepCopy());
+				RecordVariable clonedRecordVariable = (RecordVariable) ((RecordVariable) rvIter
+						.next()).deepCopy();
+				logger
+						.debug("The following cloned RecordVariable will be added:");
+				logger.debug(clonedRecordVariable.toStringRepresentation("|"));
+				deepClone.addRecordVariable(clonedRecordVariable);
 			}
 		}
 
@@ -659,8 +667,8 @@ public class RecordDescription implements IMetadataObject {
 	 * For ASCII buffers, the entity that separates each buffer item from the
 	 * next. Strings can take the form of a single character separator (for
 	 * example, a comma or a space), or a symbolic name. Supported symbols
-	 * include 'space', 'tab', and 'whitespace' (all transformed to '\s+', as is ''
-	 * and ' ') and 'comma'.
+	 * include 'space', 'tab', and 'whitespace' (all transformed to '\s+', as is
+	 * '' and ' ') and 'comma'.
 	 */
 	private String bufferItemSeparator;
 
@@ -693,8 +701,8 @@ public class RecordDescription implements IMetadataObject {
 	private String endian = ENDIAN_LITTLE;
 
 	/**
-	 * This <code>String</code> allows a regular expression to be defined for
-	 * an entire record. This will allow parsers to use regular expressions to
+	 * This <code>String</code> allows a regular expression to be defined for an
+	 * entire record. This will allow parsers to use regular expressions to
 	 * parse out the variables from a data record. It will have precedence over
 	 * delimiters that may be defined.
 	 */
@@ -706,8 +714,8 @@ public class RecordDescription implements IMetadataObject {
 	private long version = -1;
 
 	/**
-	 * This is the <code>Collection</code> of <code>RecordVariable</code>s
-	 * that make up this <code>RecordDescription</code>
+	 * This is the <code>Collection</code> of <code>RecordVariable</code>s that
+	 * make up this <code>RecordDescription</code>
 	 * 
 	 * @associates RecordVariable
 	 * @directed true

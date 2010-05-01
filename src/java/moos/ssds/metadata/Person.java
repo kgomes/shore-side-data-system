@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
 
@@ -86,9 +88,9 @@ public class Person implements IMetadataObject {
 	}
 
 	/**
-	 * These methods get and set a <code>java.lang.String</code> that
-	 * represents the organization that the person is affiliated with in respect
-	 * to the system. Often this is the name of the organization.
+	 * These methods get and set a <code>java.lang.String</code> that represents
+	 * the organization that the person is affiliated with in respect to the
+	 * system. Often this is the name of the organization.
 	 * 
 	 * @hibernate.property length="50"
 	 * @return a <code>java.lang.String</code> that is the identifier of the
@@ -110,8 +112,8 @@ public class Person implements IMetadataObject {
 	 * @hibernate.property
 	 * @hibernate.column name="username" unique="true" not-null="true"
 	 *                   length="50" index="username_index"
-	 * @return a <code>java.lang.String</code> that is the person's username
-	 *         in the system.
+	 * @return a <code>java.lang.String</code> that is the person's username in
+	 *         the system.
 	 */
 	public String getUsername() {
 		return username;
@@ -149,8 +151,8 @@ public class Person implements IMetadataObject {
 	 * 
 	 * @hibernate.property
 	 * @hibernate.column name="email" length="50" index="email_index"
-	 * @return a <code>java.lang.String</code> that is the email address of
-	 *         the person
+	 * @return a <code>java.lang.String</code> that is the email address of the
+	 *         person
 	 */
 	public String getEmail() {
 		return email;
@@ -196,8 +198,8 @@ public class Person implements IMetadataObject {
 	 * These methods get and set the second line of the person's address
 	 * 
 	 * @hibernate.property length="255"
-	 * @return is a <code>String</code> that is the second line of the
-	 *         person's address
+	 * @return is a <code>String</code> that is the second line of the person's
+	 *         address
 	 */
 	public String getAddress2() {
 		return address2;
@@ -228,8 +230,8 @@ public class Person implements IMetadataObject {
 	 * These methods get and set the state the user is located in
 	 * 
 	 * @hibernate.property length="50"
-	 * @return is a <code>String</code> that is the state the person is
-	 *         located in
+	 * @return is a <code>String</code> that is the state the person is located
+	 *         in
 	 */
 	public String getState() {
 		return state;
@@ -261,8 +263,8 @@ public class Person implements IMetadataObject {
 	 * relative to the system. It is often something like "active" or "inactive"
 	 * 
 	 * @hibernate.property length="50"
-	 * @return a <code>java.lang.String</code> that is status of the person
-	 *         with respect to the system
+	 * @return a <code>java.lang.String</code> that is status of the person with
+	 *         respect to the system
 	 */
 	public String getStatus() {
 		return status;
@@ -303,15 +305,14 @@ public class Person implements IMetadataObject {
 
 	/**
 	 * These methods get and set the <code>Collection</code> of
-	 * <code>UserGroup</code>s that are associated with the
-	 * <code>Person</code>
+	 * <code>UserGroup</code>s that are associated with the <code>Person</code>
 	 * 
 	 * @hibernate.set table="PersonAssocUserGroup" cascade="none" lazy="true"
 	 * @hibernate.collection-key column="PersonID_FK"
 	 * @hibernate.collection-many-to-many column="UserGroupID_FK"
 	 *                                    class="moos.ssds.metadata.UserGroup"
-	 * @return the <code>Collection</code> of <code>UserGroup</code>s that
-	 *         are associated with the <code>Person</code>
+	 * @return the <code>Collection</code> of <code>UserGroup</code>s that are
+	 *         associated with the <code>Person</code>
 	 */
 	public Collection getUserGroups() {
 		return userGroups;
@@ -340,8 +341,7 @@ public class Person implements IMetadataObject {
 	}
 
 	/**
-	 * This method removes the given <code>UserGroup</code> from the
-	 * collection
+	 * This method removes the given <code>UserGroup</code> from the collection
 	 * 
 	 * @param userGroup
 	 *            is the <code>UserGroup</code> to remove from the collection
@@ -355,8 +355,8 @@ public class Person implements IMetadataObject {
 	}
 
 	/**
-	 * This method will clear out the collection of <code>UserGroup</code>s
-	 * and keep the integrity of the relationships intact.
+	 * This method will clear out the collection of <code>UserGroup</code>s and
+	 * keep the integrity of the relationships intact.
 	 */
 	public void clearUserGroups() {
 		this.userGroups.clear();
@@ -367,8 +367,8 @@ public class Person implements IMetadataObject {
 	 * dirty objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -825,15 +825,22 @@ public class Person implements IMetadataObject {
 	 * of the <code>UserGroups</code> filled out
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
+		logger.debug("deepCopy called");
 		// Grab the clone
 		Person deepClone = (Person) this.clone();
+		logger.debug("clone created:");
+		logger.debug(deepClone.toStringRepresentation("|"));
 
 		if ((this.getUserGroups() != null) && (this.getUserGroups().size() > 0)) {
 			Collection userGroups = this.getUserGroups();
 			Iterator userGroupsIter = userGroups.iterator();
 			while (userGroupsIter.hasNext()) {
-				deepClone.addUserGroup((UserGroup) ((UserGroup) userGroupsIter
-						.next()).deepCopy());
+				UserGroup groupToClone = (UserGroup) userGroupsIter.next();
+				if (groupToClone != null) {
+					logger.debug("Will clone UserGroup:");
+					logger.debug(groupToClone.toStringRepresentation("|"));
+				}
+				deepClone.addUserGroup((UserGroup) groupToClone.deepCopy());
 			}
 		}
 
@@ -926,8 +933,8 @@ public class Person implements IMetadataObject {
 	private String status = Person.STATUS_ACTIVE;
 
 	/**
-	 * This is the <code>Collection</code> of <code>UserGroup</code>s that
-	 * are associated with the <code>Person</code>
+	 * This is the <code>Collection</code> of <code>UserGroup</code>s that are
+	 * associated with the <code>Person</code>
 	 * 
 	 * @associates UserGroup
 	 * @directed true
@@ -945,5 +952,10 @@ public class Person implements IMetadataObject {
 	 * This is the hibernate version that is used to check for dirty objects
 	 */
 	private long version = -1;
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(Person.class);
 
 }

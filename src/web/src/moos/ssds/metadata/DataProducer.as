@@ -18,6 +18,8 @@ package moos.ssds.metadata
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
 	import flash.utils.IExternalizable;
+	
+	import mx.collections.ArrayCollection;
 
 	[RemoteClass(alias="moos.ssds.metadata.DataProducer")]
 	public class DataProducer implements IExternalizable
@@ -50,6 +52,8 @@ package moos.ssds.metadata
 		public var x3DOrientationText:String;
 		public var hostname:String;
 		public var icon:Class;
+		public var parentDataProducer:DataProducer;
+		public var childDataProducers:ArrayCollection;
 		
 		[Embed(source="/images/tree/tree_CurrentDeployment.gif")]
 		private var openDeploymentIcon:Class;
@@ -85,7 +89,6 @@ package moos.ssds.metadata
 			orientationDescription = input.readObject() as String;
 			x3DOrientationText = input.readObject() as String;
 			hostname = input.readObject() as String;
-			
 		}
 
 		public function writeExternal(output:IDataOutput):void

@@ -18,9 +18,9 @@ package moos.ssds.data.parsers;
 import java.util.Collection;
 import java.util.Iterator;
 
+import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.metadata.DataContainer;
 import moos.ssds.metadata.RecordDescription;
-import moos.ssds.transmogrify.SSDSDevicePacket;
 
 import org.apache.log4j.Logger;
 

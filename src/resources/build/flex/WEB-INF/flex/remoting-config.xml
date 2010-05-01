@@ -49,6 +49,10 @@
 			<include-methods>
 				<method name="findByName" />
 				<method name="findCurrentParentlessDeployments" />
+				<method name="findByDevice" />
+				<method name="findByDeviceId" />
+				<method name="findParentDataProducer" />
+				<method name="findClosestParentDataProducerLatitude" />
 			</include-methods>
 		</properties>
 	</destination>

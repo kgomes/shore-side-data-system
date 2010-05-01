@@ -54,11 +54,13 @@
 				<includeLevel>true</includeLevel>
 				<includeCategory>true</includeCategory>
 			</properties>
-			<filters>
+<!--
+  			<filters>
 				<pattern>Endpoint.*</pattern>
 				<pattern>Service.*</pattern>
 				<pattern>Configuration</pattern>
 			</filters>
+-->
 		</target>
 	</logging>
 

@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
 
+import org.apache.log4j.Logger;
 import org.doomdark.uuid.UUID;
 import org.doomdark.uuid.UUIDGenerator;
 
@@ -58,8 +59,8 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	 * @param uuid
 	 *            the <code>String</code> to use for the UUID
 	 * @throws MetadataException
-	 *             if the incoming <code>String</code> is null or is not a
-	 *             valid UUID.
+	 *             if the incoming <code>String</code> is null or is not a valid
+	 *             UUID.
 	 */
 	public Device(String uuid) throws MetadataException {
 		this.setUuid(uuid);
@@ -122,8 +123,8 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	/**
 	 * This is a helper method to return the UUID in it's byte array form
 	 * 
-	 * @return a <code>byte</code> array that contains the UUID in byte form.
-	 *         If the UUID has not been defined, null is returned
+	 * @return a <code>byte</code> array that contains the UUID in byte form. If
+	 *         the UUID has not been defined, null is returned
 	 */
 	public byte[] getUuidAsBytes() {
 		byte[] bytesToReturn = null;
@@ -138,8 +139,8 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	}
 
 	/**
-	 * This is a helper method to set <code>Device</code> UUID by passing in
-	 * an array of bytes
+	 * This is a helper method to set <code>Device</code> UUID by passing in an
+	 * array of bytes
 	 * 
 	 * @param uuidBytes
 	 *            the byte array form of the UUID
@@ -158,8 +159,8 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	 * This method allows the device to generate its own valid UUID. If the UUID
 	 * is already defined, nothing happens.
 	 * 
-	 * @return <code>true</code> if a UUID was created, <code>false</code>
-	 *         if not
+	 * @return <code>true</code> if a UUID was created, <code>false</code> if
+	 *         not
 	 */
 	public boolean generateOwnUuid() {
 		// A flag to indicate if one was generated or not
@@ -242,8 +243,7 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	 * <code>Device</code> by the manfucturer
 	 * 
 	 * @hibernate.property
-	 * @return the model assigned to the <code>Device</code> by the
-	 *         manufacturer
+	 * @return the model assigned to the <code>Device</code> by the manufacturer
 	 */
 	public String getMfgModel() {
 		return mfgModel;
@@ -273,8 +273,8 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	 * information about this <code>Device</code> can be found
 	 * 
 	 * @hibernate.property length="2048"
-	 * @return a <code>String</code> that is a listing of URLs where
-	 *         information about this device can be found.
+	 * @return a <code>String</code> that is a listing of URLs where information
+	 *         about this device can be found.
 	 */
 	public String getInfoUrlList() {
 		return infoUrlList;
@@ -286,16 +286,15 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	}
 
 	/**
-	 * These methods get and set the <code>Person</code> that is usually seen
-	 * as the owner of the <code>Device</code> (or point of contact).
+	 * These methods get and set the <code>Person</code> that is usually seen as
+	 * the owner of the <code>Device</code> (or point of contact).
 	 * 
 	 * @hibernate.many-to-one class="moos.ssds.metadata.Person"
 	 *                        column="PersonID_FK"
 	 *                        foreign-key="Device_Owned_By_Person"
 	 *                        cascade="none" lazy="true"
 	 * @return the <code>Person</code> that is the owner of the
-	 *         <code>Device</code>. Returns null if no owner has been
-	 *         defined.
+	 *         <code>Device</code>. Returns null if no owner has been defined.
 	 */
 	public Person getPerson() {
 		return this.person;
@@ -306,15 +305,15 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	}
 
 	/**
-	 * These methods get and set the <code>DeviceType</code> that is
-	 * associated with a <code>Device</code>.
+	 * These methods get and set the <code>DeviceType</code> that is associated
+	 * with a <code>Device</code>.
 	 * 
 	 * @hibernate.many-to-one class="moos.ssds.metadata.DeviceType"
 	 *                        column="DeviceTypeID_FK"
 	 *                        foreign-key="Device_Is_Of_DeviceType"
 	 *                        cascade="none" lazy="false" outer-join="true"
-	 * @return the <code>DeviceType</code> that is associated with this
-	 *         device. Returns null if no type has been defined.
+	 * @return the <code>DeviceType</code> that is associated with this device.
+	 *         Returns null if no type has been defined.
 	 */
 	public DeviceType getDeviceType() {
 		return this.deviceType;
@@ -326,15 +325,14 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 
 	/**
 	 * These methods get and set the <code>Collection</code> of
-	 * <code>Resource</code>s that are associated with the
-	 * <code>Device</code>
+	 * <code>Resource</code>s that are associated with the <code>Device</code>
 	 * 
 	 * @hibernate.set table="DeviceAssocResource" cascade="none" lazy="true"
 	 * @hibernate.collection-key column="DeviceID_FK"
 	 * @hibernate.collection-many-to-many column="ResourceID_FK"
 	 *                                    class="moos.ssds.metadata.Resource"
-	 * @return the <code>Collection</code> of <code>Resource</code>s that
-	 *         are associated with the <code>Device</code>
+	 * @return the <code>Collection</code> of <code>Resource</code>s that are
+	 *         associated with the <code>Device</code>
 	 */
 	public Collection getResources() {
 		return resources;
@@ -377,8 +375,8 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	}
 
 	/**
-	 * This method will clear out the collection of <code>Resource</code>s
-	 * and keep the integrity of the relationships intact.
+	 * This method will clear out the collection of <code>Resource</code>s and
+	 * keep the integrity of the relationships intact.
 	 */
 	public void clearResources() {
 		this.resources.clear();
@@ -389,8 +387,8 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	 * dirty objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -749,25 +747,52 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	 * </ol>
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
+		logger.debug("deepCopy called.");
 		// Grab the clone
 		Device deepClone = (Device) this.clone();
+		if (deepClone != null) {
+			logger.debug("Device clone is:");
+			logger.debug(deepClone.toStringRepresentation("|"));
+		}
 
 		// Set the relationships
 		if (this.getPerson() != null) {
+			logger.debug("Will deep copy person");
+			logger.debug(this.getPerson().toStringRepresentation("|"));
 			deepClone.setPerson((Person) this.getPerson().deepCopy());
+			if (deepClone.getPerson() != null) {
+				logger.debug("OK, clone is:");
+				logger.debug(deepClone.getPerson().toStringRepresentation("|"));
+			} else {
+				logger.debug("No clone was set!");
+			}
 		} else {
 			deepClone.setPerson(null);
 		}
 		if (this.getDeviceType() != null) {
+			logger.debug("DeviceType will be copied:");
+			logger.debug(this.getDeviceType().toStringRepresentation("|"));
 			deepClone.setDeviceType((DeviceType) this.getDeviceType()
 					.deepCopy());
+			if (deepClone.getDeviceType() != null) {
+				logger.debug("Cloned DeviceType is: ");
+				logger.debug(deepClone.getDeviceType().toStringRepresentation(
+						"|"));
+			} else {
+				logger.debug("Looks like deep copy of the "
+						+ "DeviceType did not take");
+			}
 		}
 		if ((this.getResources() != null) && (this.getResources().size() > 0)) {
+			logger.debug("Look like there are " + this.getResources().size()
+					+ " resource to clone as well.");
 			Collection resourcesToCopy = this.getResources();
 			Iterator resourceIter = resourcesToCopy.iterator();
 			while (resourceIter.hasNext()) {
-				deepClone.addResource((Resource) ((Resource) resourceIter
-						.next()).deepCopy());
+				Resource resourceToClone = (Resource) resourceIter.next();
+				logger.debug("Will clone resource:");
+				logger.debug(resourceToClone.toStringRepresentation("|"));
+				deepClone.addResource((Resource) resourceToClone.deepCopy());
 			}
 		}
 
@@ -827,8 +852,8 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	private long version = -1;
 
 	/**
-	 * This is the <code>Person</code> that is normally thought of as the
-	 * owner of the device
+	 * This is the <code>Person</code> that is normally thought of as the owner
+	 * of the device
 	 * 
 	 * @directed true
 	 * @label lazy
@@ -845,13 +870,18 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	private DeviceType deviceType;
 
 	/**
-	 * This is the <code>Collection</code> of <code>Resource</code>s that
-	 * are associated with the <code>Device</code>
+	 * This is the <code>Collection</code> of <code>Resource</code>s that are
+	 * associated with the <code>Device</code>
 	 * 
 	 * @associates Resource
 	 * @directed true
 	 * @label lazy
 	 */
 	private Collection resources = new HashSet();
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(Device.class);
 
 }

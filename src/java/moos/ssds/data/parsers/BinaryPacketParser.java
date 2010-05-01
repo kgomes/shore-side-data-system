@@ -18,8 +18,8 @@ package moos.ssds.data.parsers;
 import java.util.Date;
 import java.util.Map;
 
+import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.metadata.RecordDescription;
-import moos.ssds.transmogrify.SSDSDevicePacket;
 
 /**
  * <p>

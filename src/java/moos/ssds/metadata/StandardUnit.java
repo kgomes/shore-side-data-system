@@ -21,6 +21,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
 
@@ -172,8 +174,8 @@ public class StandardUnit implements IMetadataObject, IDescription {
 	 * objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -397,7 +399,10 @@ public class StandardUnit implements IMetadataObject, IDescription {
 	 * This simply returns the clone
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
-		return (StandardUnit) this.clone();
+		StandardUnit clonedStandardUnit = (StandardUnit) this.clone();
+		logger.debug("deepCopy called and will return:");
+		logger.debug(clonedStandardUnit.toStringRepresentation("|"));
+		return clonedStandardUnit;
 	}
 
 	/**
@@ -439,4 +444,10 @@ public class StandardUnit implements IMetadataObject, IDescription {
 	 * This is the hibernate version that is used to check for dirty objects
 	 */
 	private long version = -1;
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(StandardUnit.class);
+
 }
