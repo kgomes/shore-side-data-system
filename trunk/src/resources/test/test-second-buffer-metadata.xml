@@ -1,0 +1,931 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Metadata>
+    <DataProducer name="2009.272.00" dataProducerType="Deployment" role="platform">
+        <DataProducer name="dvl" dataProducerType="Deployment" role="instrument">
+            <description>Deployment information for dvl.log</description>
+            <output>
+                <DataContainer name="dvl.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/dvl.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="1581" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="dvlBeam4" format="double"
+                            longName="Range of Dvl Beam 4" units="meters" columnIndex="21"/>
+                        <RecordVariable name="dvlWatVelz" format="double"
+                            longName="Velocity component along z-axis with respect to a water layer"
+                            units="meters/second" columnIndex="10"/>
+                        <RecordVariable name="dvlRoll" format="double" longName="DVL Roll"
+                            units="Degrees" columnIndex="15"/>
+                        <RecordVariable name="dvlBotVelStat" format="short"
+                            longName="Status code for velocity with respect to the bottom"
+                            units="Unitless" columnIndex="7"/>
+                        <RecordVariable name="dvlBeam1" format="double"
+                            longName="Range of Dvl Beam 1" units="meters" columnIndex="18"/>
+                        <RecordVariable name="dvlPingTime" format="double"
+                            longName="Time of First Ping" units="Seconds" columnIndex="2"/>
+                        <RecordVariable name="dvlBeam3" format="double"
+                            longName="Range of Dvl Beam 3" units="meters" columnIndex="20"/>
+                        <RecordVariable name="dvlBotVely" format="double"
+                            longName="Velocity component along y-axis with respect to the bottom"
+                            units="meters/second" columnIndex="4"/>
+                        <RecordVariable name="dvlPitch" format="double" longName="DVL Pitch"
+                            units="Degrees" columnIndex="14"/>
+                        <RecordVariable name="dvlWatVelx" format="double"
+                            longName="Velocity component along x-axis with respect to a water layer"
+                            units="meters/second" columnIndex="8"/>
+                        <RecordVariable name="dvlBeam2" format="double"
+                            longName="Range of Dvl Beam 2" units="meters" columnIndex="19"/>
+                        <RecordVariable name="dvlWatVely" format="double"
+                            longName="Velocity component along y-axis with respect to a water layer"
+                            units="meters/second" columnIndex="9"/>
+                        <RecordVariable name="dvlWatVele" format="double"
+                            longName="Velocity error component with respect to a water layer"
+                            units="meters/second" columnIndex="11"/>
+                        <RecordVariable name="dvlBotVelx" format="double"
+                            longName="Velocity component along x-axis with respect to the bottom"
+                            units="meters/second" columnIndex="3"/>
+                        <RecordVariable name="dvlWatVelStat" format="short"
+                            longName="Status code for velocity with respect to the water"
+                            units="Unitless" columnIndex="12"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="dvlTemp" format="double"
+                            longName="DVL internal temperature" units="Celsius" columnIndex="13"/>
+                        <RecordVariable name="dvlRange" format="double"
+                            longName="DVL altitude above bottom" units="meters" columnIndex="17"/>
+                        <RecordVariable name="dvlBotVelz" format="double"
+                            longName="Velocity component along z-axis with respect to the bottom"
+                            units="meters/second" columnIndex="5"/>
+                        <RecordVariable name="dvlHeading" format="double" longName="DVL Heading"
+                            units="Degrees" columnIndex="16"/>
+                        <RecordVariable name="dvlBotVele" format="double"
+                            longName="Velocity error component with respect to the bottom"
+                            units="meters/second" columnIndex="6"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+            <Device name="dvl" id="1220" uuid="b14ec4cc-adec-11de-8249-fe8fd1ebf09e"/>
+            <Resource name="dvl.cfg"
+                uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/dvl.cfg"
+                webAccessible="true"/>
+        </DataProducer>
+        <DataProducer name="hydroscatlog" dataProducerType="Deployment" role="instrument">
+            <description>Deployment information for hydroscatlog.log</description>
+            <Device name="hydroscatlog" id="1222" uuid="b1507281-adec-11de-8249-fe8fd1ebf09e"/>
+            <output>
+                <DataContainer name="hydroscatlog.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/hydroscatlog.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="1030" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="Gain_Status_2" format="integer"
+                            longName="Gain and status code for channel 1" units="Unitless"
+                            columnIndex="8"/>
+                        <RecordVariable name="Temperature" format="double"
+                            longName="Hydroscat Internal Instrument Temperature" units="Celsius"
+                            columnIndex="12"/>
+                        <RecordVariable name="bb676" format="double" longName="bb676"
+                            units="UNKNOWN" columnIndex="15"/>
+                        <RecordVariable name="Snorm1" format="integer"
+                            longName="Signal to noise ratio for channel 1" units="Unitless"
+                            columnIndex="4"/>
+                        <RecordVariable name="Snorm2" format="integer"
+                            longName="Signal to noise ratio for channel 2" units="Unitless"
+                            columnIndex="5"/>
+                        <RecordVariable name="RawDepthValue" format="integer"
+                            longName="Raw depth sensor value" units="counts" columnIndex="10"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="Gain_Status_3" format="integer"
+                            longName="Gain and status code for channel 1" units="Unitless"
+                            columnIndex="9"/>
+                        <RecordVariable name="ErrorValue" format="integer"
+                            longName="Error value code" units="Unitless" columnIndex="13"/>
+                        <RecordVariable name="fl676u" format="double" longName="fl676u"
+                            units="UNKNOWN" columnIndex="16"/>
+                        <RecordVariable name="bb470" format="double" longName="bb470"
+                            units="UNKNOWN" columnIndex="14"/>
+                        <RecordVariable name="Seconds" format="integer"
+                            longName="Hydroscat system integer time"
+                            units="Seconds since 01-01-1970" columnIndex="2"/>
+                        <RecordVariable name="RawTempValue" format="integer"
+                            longName="Raw temperature sensor value" units="counts" columnIndex="11"/>
+                        <RecordVariable name="Gain_Status_1" format="integer"
+                            longName="Gain and status code for channel 1" units="Unitless"
+                            columnIndex="7"/>
+                        <RecordVariable name="HundrethsOfSeconds" format="integer"
+                            longName="Hydroscat system fractional time" units="1x10^-2 Seconds"
+                            columnIndex="3"/>
+                        <RecordVariable name="Snorm3" format="integer"
+                            longName="Signal to noise ratio for channel 3" units="Unitless"
+                            columnIndex="6"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducer name="isuslog" dataProducerType="Deployment" role="instrument">
+            <description>Deployment information for isuslog.log</description>
+            <Device name="isuslog" id="1235" uuid="b150c0a2-adec-11de-8249-fe8fd1ebf09e"/>
+            <output>
+                <DataContainer name="isuslog.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/isuslog.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="245" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="isusTemp" format="double"
+                            longName="Isus Internal Temperature" units="Celsius" columnIndex="3"/>
+                        <RecordVariable name="isusQuality" format="double" longName="Fit Residuals"
+                            units="Unitless" columnIndex="4"/>
+                        <RecordVariable name="isusNitrate" format="double"
+                            longName="Nitrate Concentration" units="microMoles/liter"
+                            columnIndex="2"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducer name="ctdDriver2" dataProducerType="Deployment" role="instrument">
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1266" uuid="b14e288a-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1260" uuid="b14e2889-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1258" uuid="b14e2888-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <Device name="ctdDriver2" id="1256" uuid="b14e2887-adec-11de-8249-fe8fd1ebf09e"/>
+            <description>Deployment information for ctdDriver2.log</description>
+            <output>
+                <DataContainer name="ctdDriver2.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/ctdDriver2.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="671" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="salinity" format="double" longName="PSU"
+                            units="UNKNOWN" columnIndex="12"/>
+                        <RecordVariable name="temperature" format="double" longName="Temperature"
+                            units="Celsius" columnIndex="3"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="flow2" format="double"
+                            longName="Analog Voltage Channel 4" units="Volts" columnIndex="9"/>
+                        <RecordVariable name="spare" format="double"
+                            longName="Analog Voltage Channel 6" units="Volts" columnIndex="11"/>
+                        <RecordVariable name="spare" format="double"
+                            longName="Analog Voltage Channel 5" units="Volts" columnIndex="10"/>
+                        <RecordVariable name="spare" format="double"
+                            longName="Analog Voltage Channel 1" units="Volts" columnIndex="6"/>
+                        <RecordVariable name="spare" format="double"
+                            longName="Analog Voltage Channel 3" units="Volts" columnIndex="8"/>
+                        <RecordVariable name="temp_frequency" format="double"
+                            longName="Temperature frequency" units="Hertz" columnIndex="5"/>
+                        <RecordVariable name="spare" format="double"
+                            longName="Analog Voltage Channel 2" units="Volts" columnIndex="7"/>
+                        <RecordVariable name="conductivity" format="double" longName="Conductivity"
+                            units="Siemens/meter" columnIndex="2"/>
+                        <RecordVariable name="cond_frequency" format="double"
+                            longName="Conductivity frequency" units="Hertz" columnIndex="4"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducer name="parosci" dataProducerType="Deployment" role="instrument">
+            <description>Deployment information for parosci.log</description>
+            <Device name="parosci" id="1223" uuid="b1524749-adec-11de-8249-fe8fd1ebf09e"/>
+            <output>
+                <DataContainer name="parosci.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/parosci.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="326" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="pres_period" format="double"
+                            longName="Pressure Period" units="Microseconds" columnIndex="6"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="temp" format="double"
+                            longName="Pressure Sensor Internal Temp" units="Celsius" columnIndex="3"/>
+                        <RecordVariable name="temp_period" format="double"
+                            longName="Temperature Period" units="Microseconds" columnIndex="5"/>
+                        <RecordVariable name="pressure" format="double" longName="Pressure"
+                            units="Bars" columnIndex="4"/>
+                        <RecordVariable name="depth" format="double" longName="Depth" units="Meters"
+                            columnIndex="2"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducer name="dynamicControl" dataProducerType="Deployment" role="instrument">
+            <description>Deployment information for dynamicControl.log</description>
+            <Device name="dynamicControl" id="1439" uuid="b14f610d-adec-11de-8249-fe8fd1ebf09e"/>
+            <output>
+                <DataContainer name="dynamicControl.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/dynamicControl.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="1436" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="cDeltaR" format="double" longName="cDeltaR"
+                            units="UNKNOWN" columnIndex="5"/>
+                        <RecordVariable name="cDeltaEBL" format="double" longName="cDeltaEBL"
+                            units="UNKNOWN" columnIndex="25"/>
+                        <RecordVariable name="first" format="short" longName="first" units="UNKNOWN"
+                            columnIndex="32"/>
+                        <RecordVariable name="mDepthRateTerm" format="double"
+                            longName="mDepthRateTerm" units="UNKNOWN" columnIndex="19"/>
+                        <RecordVariable name="DepthError" format="double" longName="DepthError"
+                            units="UNKNOWN" columnIndex="17"/>
+                        <RecordVariable name="pitchIntInp" format="double" longName="pitchIntInp"
+                            units="UNKNOWN" columnIndex="24"/>
+                        <RecordVariable name="xteIntegral" format="double" longName="xteIntegral"
+                            units="UNKNOWN" columnIndex="10"/>
+                        <RecordVariable name="dIntegral" format="double" longName="dIntegral"
+                            units="UNKNOWN" columnIndex="18"/>
+                        <RecordVariable name="xTrackError" format="double" longName="xTrackError"
+                            units="UNKNOWN" columnIndex="3"/>
+                        <RecordVariable name="tDepth" format="double" longName="tDepth"
+                            units="UNKNOWN" columnIndex="16"/>
+                        <RecordVariable name="targetNorthing" format="double"
+                            longName="targetNorthing" units="UNKNOWN" columnIndex="27"/>
+                        <RecordVariable name="cDepth" format="double" longName="cDepth"
+                            units="UNKNOWN" columnIndex="15"/>
+                        <RecordVariable name="pitchInt" format="double" longName="pitchInt"
+                            units="UNKNOWN" columnIndex="22"/>
+                        <RecordVariable name="newEasting" format="double" longName="newEasting"
+                            units="UNKNOWN" columnIndex="31"/>
+                        <RecordVariable name="psiProp" format="double" longName="psiProp"
+                            units="UNKNOWN" columnIndex="7"/>
+                        <RecordVariable name="pitchProp" format="double" longName="pitchProp"
+                            units="UNKNOWN" columnIndex="21"/>
+                        <RecordVariable name="speedCmd" format="double" longName="speedCmd"
+                            units="UNKNOWN" columnIndex="13"/>
+                        <RecordVariable name="psiInt" format="double" longName="psiInt"
+                            units="UNKNOWN" columnIndex="8"/>
+                        <RecordVariable name="newNorthing" format="double" longName="newNorthing"
+                            units="UNKNOWN" columnIndex="30"/>
+                        <RecordVariable name="myTime" format="double" longName="myTime"
+                            units="UNKNOWN" columnIndex="2"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="newBearing" format="double" longName="newBearing"
+                            units="UNKNOWN" columnIndex="29"/>
+                        <RecordVariable name="cPsi" format="double" longName="cPsi" units="UNKNOWN"
+                            columnIndex="4"/>
+                        <RecordVariable name="omegaCmd" format="double" longName="omegaCmd"
+                            units="UNKNOWN" columnIndex="14"/>
+                        <RecordVariable name="dPsi" format="double" longName="dPsi" units="UNKNOWN"
+                            columnIndex="12"/>
+                        <RecordVariable name="cTheta" format="double" longName="cTheta"
+                            units="UNKNOWN" columnIndex="20"/>
+                        <RecordVariable name="psiRate" format="double" longName="psiRate"
+                            units="UNKNOWN" columnIndex="9"/>
+                        <RecordVariable name="tPsi" format="double" longName="tPsi" units="UNKNOWN"
+                            columnIndex="6"/>
+                        <RecordVariable name="cDeltaE" format="double" longName="cDeltaE"
+                            units="UNKNOWN" columnIndex="26"/>
+                        <RecordVariable name="kxte" format="double" longName="kxte" units="UNKNOWN"
+                            columnIndex="11"/>
+                        <RecordVariable name="targetEasting" format="double"
+                            longName="targetEasting" units="UNKNOWN" columnIndex="28"/>
+                        <RecordVariable name="pitchRate" format="double" longName="pitchRate"
+                            units="UNKNOWN" columnIndex="23"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducer name="gps" dataProducerType="Deployment" role="instrument">
+            <description>Deployment information for gps.log</description>
+            <Device name="gps" id="1280" uuid="b14ffd4f-adec-11de-8249-fe8fd1ebf09e"/>
+            <output>
+                <DataContainer name="gps.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/gps.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="788" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="geoHeight" format="double"
+                            longName="Geoidal separation" units="meters" columnIndex="12"/>
+                        <RecordVariable name="numberOfSatellites" format="short"
+                            longName="Number of satellites visible" units="Unitless" columnIndex="9"/>
+                        <RecordVariable name="centiSeconds" format="integer" longName="CentiSeconds"
+                            units="CentiSeconds" columnIndex="5"/>
+                        <RecordVariable name="latitude" format="double" longName="Vehicle latitude"
+                            units="Degrees" columnIndex="6"/>
+                        <RecordVariable name="seconds" format="integer" longName="Seconds"
+                            units="Seconds" columnIndex="4"/>
+                        <RecordVariable name="minutes" format="integer" longName="Minutes"
+                            units="Minutes" columnIndex="3"/>
+                        <RecordVariable name="dgpsRSID" format="short"
+                            longName="Differential reference station ID" units="Unitless"
+                            columnIndex="14"/>
+                        <RecordVariable name="antennaHeight" format="double"
+                            longName="Altitude of GPS antenna above mean sea level" units="meters"
+                            columnIndex="11"/>
+                        <RecordVariable name="longitude" format="double"
+                            longName="Vehicle longitude" units="Degrees" columnIndex="7"/>
+                        <RecordVariable name="quality" format="short" longName="GPS quality code"
+                            units="Unitless" columnIndex="8"/>
+                        <RecordVariable name="hdop" format="double"
+                            longName="Horizontal dilution of precision" units="Unitless"
+                            columnIndex="10"/>
+                        <RecordVariable name="dgpsDataAge" format="short"
+                            longName="Age of differential GPS correction" units="seconds"
+                            columnIndex="13"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="hours" format="integer" longName="Hours" units="Hours"
+                            columnIndex="2"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducer name="tailCone" dataProducerType="Deployment" role="instrument">
+            <description>Deployment information for tailCone.log</description>
+            <Device name="tailCone" id="1282" uuid="b152bc7b-adec-11de-8249-fe8fd1ebf09e"/>
+            <output>
+                <DataContainer name="tailCone.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/tailCone.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="523" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="elevatorAngle" format="float" longName="elevatorAngle"
+                            units="UNKNOWN" columnIndex="8"/>
+                        <RecordVariable name="propRpm" format="integer" longName="propRpm"
+                            units="UNKNOWN" columnIndex="7"/>
+                        <RecordVariable name="rudderCurrent" format="integer"
+                            longName="rudderCurrent" units="UNKNOWN" columnIndex="4"/>
+                        <RecordVariable name="propCurrent2" format="integer" longName="propCurrent2"
+                            units="UNKNOWN" columnIndex="6"/>
+                        <RecordVariable name="propCurrent1" format="float" longName="propCurrent1"
+                            units="UNKNOWN" columnIndex="5"/>
+                        <RecordVariable name="propPwm" format="integer" longName="propPwm"
+                            units="UNKNOWN" columnIndex="10"/>
+                        <RecordVariable name="elevatorCurrent" format="integer"
+                            longName="elevatorCurrent" units="UNKNOWN" columnIndex="3"/>
+                        <RecordVariable name="status" format="integer" longName="status"
+                            units="UNKNOWN" columnIndex="2"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="propTemp" format="integer" longName="propTemp"
+                            units="UNKNOWN" columnIndex="11"/>
+                        <RecordVariable name="rudderAngle" format="float" longName="rudderAngle"
+                            units="UNKNOWN" columnIndex="9"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducer name="ctdDriver" dataProducerType="Deployment" role="instrument">
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1254" uuid="b14dda66-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1622" uuid="b14dda65-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1265" uuid="b14dda64-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1259" uuid="b14dda63-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1257" uuid="b14dda62-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <output>
+                <DataContainer name="ctdDriver.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/ctdDriver.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="678" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="conductivity" format="double" longName="Conductivity"
+                            units="Siemens/meter" columnIndex="2"/>
+                        <RecordVariable name="humidity" format="double"
+                            longName="Analog Voltage Channel 3" units="Volts" columnIndex="8"/>
+                        <RecordVariable name="salinity" format="double" longName="PSU"
+                            units="UNKNOWN" columnIndex="12"/>
+                        <RecordVariable name="dissolvedO2" format="double"
+                            longName="Analog Voltage Channel 6" units="Volts" columnIndex="11"/>
+                        <RecordVariable name="temperature" format="double" longName="Temperature"
+                            units="Celsius" columnIndex="3"/>
+                        <RecordVariable name="CDOM" format="double"
+                            longName="Analog Voltage Channel 5" units="Volts" columnIndex="10"/>
+                        <RecordVariable name="flow1" format="double"
+                            longName="Analog Voltage Channel 4" units="Volts" columnIndex="9"/>
+                        <RecordVariable name="spare" format="double"
+                            longName="Analog Voltage Channel 1" units="Volts" columnIndex="6"/>
+                        <RecordVariable name="temp_frequency" format="double"
+                            longName="Temperature frequency" units="Hertz" columnIndex="5"/>
+                        <RecordVariable name="spare" format="double"
+                            longName="Analog Voltage Channel 2" units="Volts" columnIndex="7"/>
+                        <RecordVariable name="cond_frequency" format="double"
+                            longName="Conductivity frequency" units="Hertz" columnIndex="4"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+            <Resource name="ctdDriver2.cfg"
+                uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/ctdDriver2.cfg"
+                webAccessible="true"/>
+            <Device name="ctdDriver" id="1225" uuid="b14dda61-adec-11de-8249-fe8fd1ebf09e"/>
+            <description>Deployment information for ctdDriver.log</description>
+            <Resource name="ctdDriver.cfg"
+                uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/ctdDriver.cfg"
+                webAccessible="true"/>
+        </DataProducer>
+        <DataProducer name="navigation" dataProducerType="Deployment" role="instrument">
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1226" uuid="b151d218-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1221" uuid="b151d217-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1220" uuid="b151d216-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <Device name="navigation" id="1236" uuid="b151d215-adec-11de-8249-fe8fd1ebf09e"/>
+            <description>Deployment information for navigation.log</description>
+            <output>
+                <DataContainer name="navigation.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/navigation.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="2014" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="mOmega_z" format="double" longName="Vehicle yaw rate"
+                            units="Degrees/second" columnIndex="13"/>
+                        <RecordVariable name="longitude" format="double" longName="longitude"
+                            units="UNKNOWN" columnIndex="31"/>
+                        <RecordVariable name="mGpsValid" format="integer"
+                            longName="GPS fix Status code" units="Unitless" columnIndex="7"/>
+                        <RecordVariable name="filter_east" format="double"
+                            longName="Kalman filter easting (WGS 84 Zone 10S)" units="Meters"
+                            columnIndex="24"/>
+                        <RecordVariable name="latitude" format="double" longName="latitude"
+                            units="UNKNOWN" columnIndex="30"/>
+                        <RecordVariable name="mAltitude" format="double"
+                            longName="Vehicle altitude above bottom" units="Meters" columnIndex="15"/>
+                        <RecordVariable name="mDvlAltitude" format="double" longName="mDvlAltitude"
+                            units="UNKNOWN" columnIndex="16"/>
+                        <RecordVariable name="mGpsEast" format="double"
+                            longName="Easting (WGS 84 Zone 10S) based upon GPS fix" units="Meters"
+                            columnIndex="6"/>
+                        <RecordVariable name="efix" format="double"
+                            longName="Easting (WGS 84 Zone 10S) based upon baseline fix"
+                            units="Meters" columnIndex="22"/>
+                        <RecordVariable name="east_current" format="double"
+                            longName="Eastward flowing current estimate" units="Meters/second"
+                            columnIndex="27"/>
+                        <RecordVariable name="mPos_y" format="double"
+                            longName="Vehicle Easting (WGS 84 Zone 10S)" units="Meters"
+                            columnIndex="3"/>
+                        <RecordVariable name="mPos_x" format="double"
+                            longName="Vehicle Northing (WGS 84 Zone 10S)" units="Meters"
+                            columnIndex="2"/>
+                        <RecordVariable name="mDvlNewData" format="integer"
+                            longName="Navigation thinks the Dvl has new data" units="UNKNOWN"
+                            columnIndex="19"/>
+                        <RecordVariable name="mDepth" format="double" longName="Vehicle Depth"
+                            units="Meters" columnIndex="4"/>
+                        <RecordVariable name="mDvlValid" format="integer"
+                            longName="Dvl valid flag in Navigation" units="UNKNOWN" columnIndex="18"/>
+                        <RecordVariable name="mDeltaT" format="double"
+                            longName="Time between Dvl updates" units="Seconds" columnIndex="20"/>
+                        <RecordVariable name="north_current" format="double"
+                            longName="Northward flowing current estimate" units="Meters/second"
+                            columnIndex="26"/>
+                        <RecordVariable name="mPsi" format="double" longName="Vehicle yaw"
+                            units="Degrees" columnIndex="10"/>
+                        <RecordVariable name="filter_depth" format="double"
+                            longName="Kalman filter depth" units="Meters" columnIndex="25"/>
+                        <RecordVariable name="mTheta" format="double" longName="Vehicle pitch"
+                            units="Degrees" columnIndex="9"/>
+                        <RecordVariable name="mWaterSpeed" format="double"
+                            longName="Current speed based upon DVL data" units="Meters/second"
+                            columnIndex="17"/>
+                        <RecordVariable name="mOmega_x" format="double" longName="Vehicle roll rate"
+                            units="Degrees/second" columnIndex="11"/>
+                        <RecordVariable name="mGpsNorth" format="double"
+                            longName="Northing (WGS 84 Zone 10S) based upon GPS fix" units="Meters"
+                            columnIndex="5"/>
+                        <RecordVariable name="mPhi" format="double" longName="Vehicle roll"
+                            units="Degrees" columnIndex="8"/>
+                        <RecordVariable name="speed_bias" format="double"
+                            longName="Speed bias based upon long baseline fixes"
+                            units="Meters/second" columnIndex="28"/>
+                        <RecordVariable name="mOmega_y" format="double"
+                            longName="Vehicle pitch rate" units="Degrees/second" columnIndex="12"/>
+                        <RecordVariable name="heading_bias" format="double"
+                            longName="Heading bias based upon long baseline fixes" units="Degrees"
+                            columnIndex="29"/>
+                        <RecordVariable name="nfix" format="double"
+                            longName="Northing (WGS 84 Zone 10S) based upon baseline fix"
+                            units="Meters" columnIndex="21"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="mPsaRange" format="double" longName="Altimeter range"
+                            units="Meters" columnIndex="14"/>
+                        <RecordVariable name="filter_north" format="double"
+                            longName="Kalman filter northing (WGS 84 Zone 10S)" units="Meters"
+                            columnIndex="23"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducer name="biolume" dataProducerType="Deployment" role="instrument">
+            <description>Deployment information for biolume.log</description>
+            <Device name="biolume" id="1269" uuid="b14ceffc-adec-11de-8249-fe8fd1ebf09e"/>
+            <output>
+                <DataContainer name="biolume.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/biolume.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="2860" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="raw_55" format="integer" longName="raw_55"
+                            units="UNCALIBRATED" columnIndex="63"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="raw_54" format="integer" longName="raw_54"
+                            units="UNCALIBRATED" columnIndex="62"/>
+                        <RecordVariable name="humidity" format="integer" longName="humidity"
+                            units="UNCALIBRATED" columnIndex="6"/>
+                        <RecordVariable name="raw_2" format="integer" longName="raw_2"
+                            units="UNCALIBRATED" columnIndex="10"/>
+                        <RecordVariable name="raw_48" format="integer" longName="raw_48"
+                            units="UNCALIBRATED" columnIndex="56"/>
+                        <RecordVariable name="raw_6" format="integer" longName="raw_6"
+                            units="UNCALIBRATED" columnIndex="14"/>
+                        <RecordVariable name="pump" format="integer" longName="pump" units="RPM"
+                            columnIndex="4"/>
+                        <RecordVariable name="raw_57" format="integer" longName="raw_57"
+                            units="UNCALIBRATED" columnIndex="65"/>
+                        <RecordVariable name="raw_14" format="integer" longName="raw_14"
+                            units="UNCALIBRATED" columnIndex="22"/>
+                        <RecordVariable name="raw_22" format="integer" longName="raw_22"
+                            units="UNCALIBRATED" columnIndex="30"/>
+                        <RecordVariable name="raw_33" format="integer" longName="raw_33"
+                            units="UNCALIBRATED" columnIndex="41"/>
+                        <RecordVariable name="raw_30" format="integer" longName="raw_30"
+                            units="UNCALIBRATED" columnIndex="38"/>
+                        <RecordVariable name="raw_0" format="integer" longName="raw_0"
+                            units="UNCALIBRATED" columnIndex="8"/>
+                        <RecordVariable name="raw_47" format="integer" longName="raw_47"
+                            units="UNCALIBRATED" columnIndex="55"/>
+                        <RecordVariable name="temperature" format="integer" longName="temperature"
+                            units="UNCALIBRATED" columnIndex="7"/>
+                        <RecordVariable name="raw_27" format="integer" longName="raw_27"
+                            units="UNCALIBRATED" columnIndex="35"/>
+                        <RecordVariable name="raw_29" format="integer" longName="raw_29"
+                            units="UNCALIBRATED" columnIndex="37"/>
+                        <RecordVariable name="raw_32" format="integer" longName="raw_32"
+                            units="UNCALIBRATED" columnIndex="40"/>
+                        <RecordVariable name="raw_17" format="integer" longName="raw_17"
+                            units="UNCALIBRATED" columnIndex="25"/>
+                        <RecordVariable name="raw_11" format="integer" longName="raw_11"
+                            units="UNCALIBRATED" columnIndex="19"/>
+                        <RecordVariable name="raw_44" format="integer" longName="raw_44"
+                            units="UNCALIBRATED" columnIndex="52"/>
+                        <RecordVariable name="raw_40" format="integer" longName="raw_40"
+                            units="UNCALIBRATED" columnIndex="48"/>
+                        <RecordVariable name="raw_51" format="integer" longName="raw_51"
+                            units="UNCALIBRATED" columnIndex="59"/>
+                        <RecordVariable name="raw_58" format="integer" longName="raw_58"
+                            units="UNCALIBRATED" columnIndex="66"/>
+                        <RecordVariable name="raw_45" format="integer" longName="raw_45"
+                            units="UNCALIBRATED" columnIndex="53"/>
+                        <RecordVariable name="raw_21" format="integer" longName="raw_21"
+                            units="UNCALIBRATED" columnIndex="29"/>
+                        <RecordVariable name="raw_42" format="integer" longName="raw_42"
+                            units="UNCALIBRATED" columnIndex="50"/>
+                        <RecordVariable name="raw_34" format="integer" longName="raw_34"
+                            units="UNCALIBRATED" columnIndex="42"/>
+                        <RecordVariable name="raw_25" format="integer" longName="raw_25"
+                            units="UNCALIBRATED" columnIndex="33"/>
+                        <RecordVariable name="raw_9" format="integer" longName="raw_9"
+                            units="UNCALIBRATED" columnIndex="17"/>
+                        <RecordVariable name="raw_19" format="integer" longName="raw_19"
+                            units="UNCALIBRATED" columnIndex="27"/>
+                        <RecordVariable name="raw_56" format="integer" longName="raw_56"
+                            units="UNCALIBRATED" columnIndex="64"/>
+                        <RecordVariable name="raw_15" format="integer" longName="raw_15"
+                            units="UNCALIBRATED" columnIndex="23"/>
+                        <RecordVariable name="raw_8" format="integer" longName="raw_8"
+                            units="UNCALIBRATED" columnIndex="16"/>
+                        <RecordVariable name="raw_36" format="integer" longName="raw_36"
+                            units="UNCALIBRATED" columnIndex="44"/>
+                        <RecordVariable name="raw_43" format="integer" longName="raw_43"
+                            units="UNCALIBRATED" columnIndex="51"/>
+                        <RecordVariable name="raw_52" format="integer" longName="raw_52"
+                            units="UNCALIBRATED" columnIndex="60"/>
+                        <RecordVariable name="raw_41" format="integer" longName="raw_41"
+                            units="UNCALIBRATED" columnIndex="49"/>
+                        <RecordVariable name="rrr" format="integer" longName="rrr" units="UNKNOWN"
+                            columnIndex="2"/>
+                        <RecordVariable name="raw_59" format="integer" longName="raw_59"
+                            units="UNCALIBRATED" columnIndex="67"/>
+                        <RecordVariable name="raw_38" format="integer" longName="raw_38"
+                            units="UNCALIBRATED" columnIndex="46"/>
+                        <RecordVariable name="raw_18" format="integer" longName="raw_18"
+                            units="UNCALIBRATED" columnIndex="26"/>
+                        <RecordVariable name="raw_7" format="integer" longName="raw_7"
+                            units="UNCALIBRATED" columnIndex="15"/>
+                        <RecordVariable name="raw_1" format="integer" longName="raw_1"
+                            units="UNCALIBRATED" columnIndex="9"/>
+                        <RecordVariable name="raw_49" format="integer" longName="raw_49"
+                            units="UNCALIBRATED" columnIndex="57"/>
+                        <RecordVariable name="raw_46" format="integer" longName="raw_46"
+                            units="UNCALIBRATED" columnIndex="54"/>
+                        <RecordVariable name="raw_23" format="integer" longName="raw_23"
+                            units="UNCALIBRATED" columnIndex="31"/>
+                        <RecordVariable name="raw_5" format="integer" longName="raw_5"
+                            units="UNCALIBRATED" columnIndex="13"/>
+                        <RecordVariable name="raw_39" format="integer" longName="raw_39"
+                            units="UNCALIBRATED" columnIndex="47"/>
+                        <RecordVariable name="raw_16" format="integer" longName="raw_16"
+                            units="UNCALIBRATED" columnIndex="24"/>
+                        <RecordVariable name="raw_24" format="integer" longName="raw_24"
+                            units="UNCALIBRATED" columnIndex="32"/>
+                        <RecordVariable name="raw_28" format="integer" longName="raw_28"
+                            units="UNCALIBRATED" columnIndex="36"/>
+                        <RecordVariable name="raw_37" format="integer" longName="raw_37"
+                            units="UNCALIBRATED" columnIndex="45"/>
+                        <RecordVariable name="raw_3" format="integer" longName="raw_3"
+                            units="UNCALIBRATED" columnIndex="11"/>
+                        <RecordVariable name="raw_10" format="integer" longName="raw_10"
+                            units="UNCALIBRATED" columnIndex="18"/>
+                        <RecordVariable name="raw_31" format="integer" longName="raw_31"
+                            units="UNCALIBRATED" columnIndex="39"/>
+                        <RecordVariable name="raw_13" format="integer" longName="raw_13"
+                            units="UNCALIBRATED" columnIndex="21"/>
+                        <RecordVariable name="raw_53" format="integer" longName="raw_53"
+                            units="UNCALIBRATED" columnIndex="61"/>
+                        <RecordVariable name="cal_striing" format="float" longName="cal_striing"
+                            units="UNKNOWN" columnIndex="3"/>
+                        <RecordVariable name="raw_35" format="integer" longName="raw_35"
+                            units="UNCALIBRATED" columnIndex="43"/>
+                        <RecordVariable name="raw_50" format="integer" longName="raw_50"
+                            units="UNCALIBRATED" columnIndex="58"/>
+                        <RecordVariable name="raw_26" format="integer" longName="raw_26"
+                            units="UNCALIBRATED" columnIndex="34"/>
+                        <RecordVariable name="raw_4" format="integer" longName="raw_4"
+                            units="UNCALIBRATED" columnIndex="12"/>
+                        <RecordVariable name="raw_12" format="integer" longName="raw_12"
+                            units="UNCALIBRATED" columnIndex="20"/>
+                        <RecordVariable name="flow" format="integer" longName="flow" units="RPM"
+                            columnIndex="5"/>
+                        <RecordVariable name="raw_20" format="integer" longName="raw_20"
+                            units="UNCALIBRATED" columnIndex="28"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducer name="bluefinBattlog" dataProducerType="Deployment" role="instrument">
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1264" uuid="b14d6530-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1263" uuid="b14d652f-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <DataProducer dataProducerType="Deployment" role="sensor">
+                <Device id="1262" uuid="b14d652e-adec-11de-8249-fe8fd1ebf09e"/>
+            </DataProducer>
+            <Device name="bluefinBattlog" id="1237" uuid="b14d652d-adec-11de-8249-fe8fd1ebf09e"/>
+            <description>Deployment information for bluefinBattlog.log</description>
+            <output>
+                <DataContainer name="bluefinBattlog.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/bluefinBattlog.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="1812" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="temp_0" format="double"
+                            longName="Battery number 0 internal temp" units="Celsius"
+                            columnIndex="4"/>
+                        <RecordVariable name="maxvoltage_1" format="double"
+                            longName="Battery number 1 maximum cell brick voltage" units="Volts"
+                            columnIndex="14"/>
+                        <RecordVariable name="current_2" format="double"
+                            longName="Battery number 2 nominal current" units="Amps"
+                            columnIndex="19"/>
+                        <RecordVariable name="depth_0" format="double"
+                            longName="Depth reading when battery data 0 acquired" units="Meters"
+                            columnIndex="9"/>
+                        <RecordVariable name="maxvoltage_2" format="double"
+                            longName="Battery number 2 maximum cell brick voltage" units="Volts"
+                            columnIndex="22"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="voltage_1" format="double"
+                            longName="Battery number 1 nominal voltage" units="Volts"
+                            columnIndex="10"/>
+                        <RecordVariable name="capacity_0" format="double"
+                            longName="Battery number 0 remaining capacity" units="Watt-hours"
+                            columnIndex="8"/>
+                        <RecordVariable name="minvoltage_2" format="double"
+                            longName="Battery number 2 minimum cell brick voltage" units="Volts"
+                            columnIndex="21"/>
+                        <RecordVariable name="maxvoltage_0" format="double"
+                            longName="Battery number 0 maximum cell brick voltage" units="Volts"
+                            columnIndex="6"/>
+                        <RecordVariable name="depth_1" format="double"
+                            longName="Depth reading when battery data 1 acquired" units="Meters"
+                            columnIndex="17"/>
+                        <RecordVariable name="capacity_1" format="double"
+                            longName="Battery number 1 remaining capacity" units="Watt-hours"
+                            columnIndex="16"/>
+                        <RecordVariable name="depth_2" format="double"
+                            longName="Depth reading when battery data 2 acquired" units="Meters"
+                            columnIndex="25"/>
+                        <RecordVariable name="current_0" format="double"
+                            longName="Battery number 0 nominal current" units="Amps" columnIndex="3"/>
+                        <RecordVariable name="capacity_2" format="double"
+                            longName="Battery number 2 remaining capacity" units="Watt-hours"
+                            columnIndex="24"/>
+                        <RecordVariable name="current_1" format="double"
+                            longName="Battery number 1 nominal current" units="Amps"
+                            columnIndex="11"/>
+                        <RecordVariable name="waterleak_0" format="integer"
+                            longName="Battery number 0 water leak code" units="Unitless"
+                            columnIndex="7"/>
+                        <RecordVariable name="minvoltage_0" format="double"
+                            longName="Battery number 0 minimum cell brick voltage" units="Volts"
+                            columnIndex="5"/>
+                        <RecordVariable name="waterleak_2" format="integer"
+                            longName="Battery number 2 water leak code" units="Unitless"
+                            columnIndex="23"/>
+                        <RecordVariable name="voltage_0" format="double"
+                            longName="Battery number 0 nominal voltage" units="Volts"
+                            columnIndex="2"/>
+                        <RecordVariable name="minvoltage_1" format="double"
+                            longName="Battery number 1 minimum cell brick voltage" units="Volts"
+                            columnIndex="13"/>
+                        <RecordVariable name="waterleak_1" format="integer"
+                            longName="Battery number 1 water leak code" units="Unitless"
+                            columnIndex="15"/>
+                        <RecordVariable name="voltage_2" format="double"
+                            longName="Battery number 2 nominal voltage" units="Volts"
+                            columnIndex="18"/>
+                        <RecordVariable name="temp_1" format="double"
+                            longName="Battery number 1 internal temp" units="Celsius"
+                            columnIndex="12"/>
+                        <RecordVariable name="temp_2" format="double"
+                            longName="Battery number 2 internal temp" units="Celsius"
+                            columnIndex="20"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducer name="lisstlog" dataProducerType="Deployment" role="instrument">
+            <description>Deployment information for lisstlog.log</description>
+            <Device name="lisstlog" id="1271" uuid="b1510ec3-adec-11de-8249-fe8fd1ebf09e"/>
+            <output>
+                <DataContainer name="lisstlog.log"
+                    uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/lisstlog.log"
+                    dataContainerType="File" original="true" dodsAccessible="false" noNetCDF="false">
+                    <description>AUV data</description>
+                    <HeaderDescription byteOffset="1975" numHeaderLines="0"/>
+                    <RecordDescription recordType="0" bufferStyle="binary" bufferLengthType="fixed"
+                        parseable="true" endian="little">
+                        <RecordVariable name="detector26" format="integer" longName="detector26"
+                            units="UNKNOWN" columnIndex="27"/>
+                        <RecordVariable name="detector2" format="integer" longName="detector2"
+                            units="UNKNOWN" columnIndex="3"/>
+                        <RecordVariable name="detector16" format="integer" longName="detector16"
+                            units="UNKNOWN" columnIndex="17"/>
+                        <RecordVariable name="auxiliaryAnalogInput1" format="integer"
+                            longName="auxiliaryAnalogInput1" units="UNKNOWN" columnIndex="37"/>
+                        <RecordVariable name="detector29" format="integer" longName="detector29"
+                            units="UNKNOWN" columnIndex="30"/>
+                        <RecordVariable name="detector7" format="integer" longName="detector7"
+                            units="UNKNOWN" columnIndex="8"/>
+                        <RecordVariable name="detector27" format="integer" longName="detector27"
+                            units="UNKNOWN" columnIndex="28"/>
+                        <RecordVariable name="detector18" format="integer" longName="detector18"
+                            units="UNKNOWN" columnIndex="19"/>
+                        <RecordVariable name="detector24" format="integer" longName="detector24"
+                            units="UNKNOWN" columnIndex="25"/>
+                        <RecordVariable name="voltage" format="integer" longName="voltage"
+                            units="UNKNOWN" columnIndex="36"/>
+                        <RecordVariable name="laserTransmissionSensor" format="integer"
+                            longName="laserTransmissionSensor" units="UNKNOWN" columnIndex="34"/>
+                        <RecordVariable name="detector31" format="integer" longName="detector31"
+                            units="UNKNOWN" columnIndex="32"/>
+                        <RecordVariable name="detector28" format="integer" longName="detector28"
+                            units="UNKNOWN" columnIndex="29"/>
+                        <RecordVariable name="detector17" format="integer" longName="detector17"
+                            units="UNKNOWN" columnIndex="18"/>
+                        <RecordVariable name="time" format="double" longName="Time (GMT)"
+                            units="seconds since 1970-01-01 00:00:00" columnIndex="1"/>
+                        <RecordVariable name="laserReferenceSensor" format="integer"
+                            longName="laserReferenceSensor" units="UNKNOWN" columnIndex="35"/>
+                        <RecordVariable name="detector23" format="integer" longName="detector23"
+                            units="UNKNOWN" columnIndex="24"/>
+                        <RecordVariable name="detector8" format="integer" longName="detector8"
+                            units="UNKNOWN" columnIndex="9"/>
+                        <RecordVariable name="detector14" format="integer" longName="detector14"
+                            units="UNKNOWN" columnIndex="15"/>
+                        <RecordVariable name="detector25" format="integer" longName="detector25"
+                            units="UNKNOWN" columnIndex="26"/>
+                        <RecordVariable name="detector13" format="integer" longName="detector13"
+                            units="UNKNOWN" columnIndex="14"/>
+                        <RecordVariable name="temperatureIn100thsDegC" format="integer"
+                            longName="temperatureIn100thsDegC" units="UNKNOWN" columnIndex="39"/>
+                        <RecordVariable name="detector6" format="integer" longName="detector6"
+                            units="UNKNOWN" columnIndex="7"/>
+                        <RecordVariable name="detector1" format="integer" longName="detector1"
+                            units="UNKNOWN" columnIndex="2"/>
+                        <RecordVariable name="detector19" format="integer" longName="detector19"
+                            units="UNKNOWN" columnIndex="20"/>
+                        <RecordVariable name="detector12" format="integer" longName="detector12"
+                            units="UNKNOWN" columnIndex="13"/>
+                        <RecordVariable name="pressure" format="integer" longName="pressure"
+                            units="UNKNOWN" columnIndex="38"/>
+                        <RecordVariable name="detector21" format="integer" longName="detector21"
+                            units="UNKNOWN" columnIndex="22"/>
+                        <RecordVariable name="detector5" format="integer" longName="detector5"
+                            units="UNKNOWN" columnIndex="6"/>
+                        <RecordVariable name="detector20" format="integer" longName="detector20"
+                            units="UNKNOWN" columnIndex="21"/>
+                        <RecordVariable name="detector15" format="integer" longName="detector15"
+                            units="UNKNOWN" columnIndex="16"/>
+                        <RecordVariable name="detector11" format="integer" longName="detector11"
+                            units="UNKNOWN" columnIndex="12"/>
+                        <RecordVariable name="detector4" format="integer" longName="detector4"
+                            units="UNKNOWN" columnIndex="5"/>
+                        <RecordVariable name="detector3" format="integer" longName="detector3"
+                            units="UNKNOWN" columnIndex="4"/>
+                        <RecordVariable name="detector10" format="integer" longName="detector10"
+                            units="UNKNOWN" columnIndex="11"/>
+                        <RecordVariable name="detector22" format="integer" longName="detector22"
+                            units="UNKNOWN" columnIndex="23"/>
+                        <RecordVariable name="Day_100_Hour" format="integer" longName="Day_100_Hour"
+                            units="UNKNOWN" columnIndex="40"/>
+                        <RecordVariable name="detector32" format="integer" longName="detector32"
+                            units="UNKNOWN" columnIndex="33"/>
+                        <RecordVariable name="Min_100_Sec" format="integer" longName="Min_100_Sec"
+                            units="UNKNOWN" columnIndex="41"/>
+                        <RecordVariable name="detector30" format="integer" longName="detector30"
+                            units="UNKNOWN" columnIndex="31"/>
+                        <RecordVariable name="detector9" format="integer" longName="detector9"
+                            units="UNKNOWN" columnIndex="10"/>
+                    </RecordDescription>
+                </DataContainer>
+            </output>
+        </DataProducer>
+        <DataProducerGroup name="AUVCTD">
+            <description>Campaign name for this AUV mission.</description>
+        </DataProducerGroup>
+        <Resource name="adaptiveSampler.cfg"
+            uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/adaptiveSampler.cfg"
+            webAccessible="true"/>
+        <Resource name="devices.cfg"
+            uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/devices.cfg"
+            webAccessible="true"/>
+        <Resource name="syslog"
+            uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/syslog"
+            webAccessible="true"/>
+        <Resource name="ESP_Survey_Fall_2009.cfg.pp"
+            uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/ESP_Survey_Fall_2009.cfg.pp"
+            webAccessible="true"/>
+        <Resource name="abortMplan.cfg"
+            uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/abortMplan.cfg"
+            webAccessible="true"/>
+        <Resource name="isus_end.cfg"
+            uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/isus_end.cfg"
+            webAccessible="true"/>
+        <Device name="Dorado389; " id="987" uuid="b14c059a-adec-11de-8249-fe8fd1ebf09e"
+            mfgName="MBARI">
+            <description>Dorado AUV</description>
+        </Device>
+        <Resource name="vehicle.cfg"
+            uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/vehicle.cfg"
+            webAccessible="true"/>
+        <description>AUV mission generated from information in the directory 2009.272.00. WARNING!!!
+            Metadata is missing from the mission directory.</description>
+        <Person firstname="AUVCTD" surname="List" email="auvctd@listserver.mbari.org"
+            status="active"/>
+        <Resource name="workSite.cfg"
+            uri="http://ssds.shore.mbari.org/auvctd/missionlogs/2009/2009272/2009.272.00/workSite.cfg"
+            webAccessible="true"/>
+    </DataProducer>
+</Metadata>
