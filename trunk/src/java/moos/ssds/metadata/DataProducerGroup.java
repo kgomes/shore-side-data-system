@@ -21,6 +21,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
 
@@ -91,8 +93,8 @@ public class DataProducerGroup implements IMetadataObject, IDescription {
 	 * dirty objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -275,7 +277,11 @@ public class DataProducerGroup implements IMetadataObject, IDescription {
 	 * This method simply returns the clone of the object
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
-		return (DataProducerGroup) this.clone();
+		DataProducerGroup clonedDataProducerGroup = (DataProducerGroup) this
+				.clone();
+		logger.debug("deepCopy called and will return clone:");
+		logger.debug(clonedDataProducerGroup.toStringRepresentation("|"));
+		return clonedDataProducerGroup;
 	}
 
 	/**
@@ -304,4 +310,8 @@ public class DataProducerGroup implements IMetadataObject, IDescription {
 	 */
 	private long version = -1;
 
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(DataProducerGroup.class);
 }

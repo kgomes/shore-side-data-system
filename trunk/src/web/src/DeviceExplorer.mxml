@@ -18,6 +18,7 @@
 	<!-- Define the ActionScript to handle various events -->
 	<mx:Script>
 		<![CDATA[
+			import mx.managers.PopUpManager;
 			import mx.events.ListEvent;
 			import moos.ssds.web.UserInformation;
 			import moos.ssds.metadata.Device;
@@ -69,10 +70,12 @@
 			
 			// This method is called when the user finishes editing a field
 			public function deviceFieldChangeHandler(event:DataGridEvent):void{
+				
 				// Check to see if it was a cancel type event
 				if (event.reason == DataGridEventReason.CANCELLED) {
 					return;
 				}
+				
 				// Grab the new value of the cell
 				cellValue = TextInput(event.currentTarget.itemEditorInstance).text;
 				
@@ -115,11 +118,11 @@
 			public function addDeviceButtonHandler(event:MouseEvent):void {
 				Alert.show("Add clicked!");
 			}
-			
-			private function deviceDoubleClickedEventHandler(event:MouseEvent):void {
-				Alert.show("Device double clicked!" + event.target);
+			private function itemDoubleClickEventHandler(event:ListEvent):void {
+				var deviceInspectorWindow:DeviceInspector = DeviceInspector(PopUpManager.createPopUp(this,DeviceInspector,true));
+				deviceInspectorWindow.setDevice(selectedDevices.getItemAt(deviceDataGrid.selectedIndex) as Device);
+				PopUpManager.centerPopUp(deviceInspectorWindow);
 			}
-			
 		]]>
 	</mx:Script>
 	<!-- Define the remote object to use to query for devices -->
@@ -133,28 +136,28 @@
 		<mx:Form width="25%" height="100%">
 				<mx:FormHeading label="Query"/>
 				<mx:FormItem label="ID" toolTip="The ID assigned by the Shore-Side Data System">
-					<mx:TextInput id="idTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+					<mx:TextInput id="idTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'id','ASC',true);" width="100"/>
 				</mx:FormItem>
 				<mx:FormItem label="UUID" toolTip="The unique identifier that is assigned to the device">
-					<mx:TextInput id="uuidTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+					<mx:TextInput id="uuidTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'id','ASC',true);" width="100"/>
 				</mx:FormItem>
 				<mx:FormItem label="Name" toolTip="The name assigned to the device">
-					<mx:TextInput id="nameTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+					<mx:TextInput id="nameTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'id','ASC',true);" width="100"/>
 				</mx:FormItem>
 				<mx:FormItem label="Description" toolTip="A description assigned to the device">
-					<mx:TextInput id="descriptionTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+					<mx:TextInput id="descriptionTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'id','ASC',true);" width="100"/>
 				</mx:FormItem>
 				<mx:FormItem label="Mfg Name" toolTip="Name used by manfacturer">
-					<mx:TextInput id="mfgNameTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100" />
+					<mx:TextInput id="mfgNameTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'id','ASC',true);" width="100" />
 				</mx:FormItem>
 				<mx:FormItem label="Mfg Model" toolTip="Manufacturer's Model Number">
-					<mx:TextInput id="mfgModelTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+					<mx:TextInput id="mfgModelTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'id','ASC',true);" width="100"/>
 				</mx:FormItem>
 				<mx:FormItem label="Mfg S/N" toolTip="Manufacturer's Serial Number">
-					<mx:TextInput id="mfgSerialNumberTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);" width="100"/>
+					<mx:TextInput id="mfgSerialNumberTextInput" enter="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'id','ASC',true);" width="100"/>
 				</mx:FormItem>
 				<mx:FormItem>
-					<mx:Button label="Search" click="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'name','ASC',true);"/>
+					<mx:Button label="Search" click="deviceAccessRemoteObject.findBySearchingFields(idTextInput.text, uuidTextInput.text, nameTextInput.text, descriptionTextInput.text, mfgModelTextInput.text, mfgNameTextInput.text, mfgSerialNumberTextInput.text ,'id','ASC',true);"/>
 				</mx:FormItem>
 				<mx:FormItem id="adminButtons">
 						<mx:HBox width="100%">
@@ -162,7 +165,7 @@
 						</mx:HBox>
 				</mx:FormItem>
 		</mx:Form>
-		<mx:DataGrid id="deviceDataGrid" height="100%" width="75%" editable="{userInformationObject.isAdmin}" dataProvider="{selectedDevices}" itemEditEnd="deviceFieldChangeHandler(event);"  allowMultipleSelection="false">
+		<mx:DataGrid id="deviceDataGrid" height="100%" width="75%" editable="{userInformationObject.isAdmin}" dataProvider="{selectedDevices}" itemEditEnd="deviceFieldChangeHandler(event);"  allowMultipleSelection="false"  doubleClickEnabled="true" itemDoubleClick="itemDoubleClickEventHandler(event)">
 				<mx:columns>
 					<mx:DataGridColumn headerText="SSDS ID" dataField="id" dataTipField="description" editable="false"/>
 					<mx:DataGridColumn headerText="Name" dataField="name" dataTipField="description"/>

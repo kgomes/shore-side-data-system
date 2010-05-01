@@ -19,6 +19,8 @@ package moos.ssds.metadata
 	import flash.utils.IDataOutput;
 	import flash.utils.IExternalizable;
 	
+	import mx.collections.ArrayCollection;
+	
 	[Bindable]
 	[RemoteClass(alias="moos.ssds.metadata.Device")]
 	public class Device implements IExternalizable
@@ -38,7 +40,7 @@ package moos.ssds.metadata
 		public function Device()
 		{
 		}
-
+		
 		public function readExternal(input:IDataInput):void{
 			id = input.readObject() as Number;
 			uuid = input.readObject() as String;

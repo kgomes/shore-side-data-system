@@ -25,12 +25,12 @@ import javax.xml.bind.JAXBElement;
 
 import moos.ssds.data.parsers.PacketParserContext;
 import moos.ssds.data.parsers.Parser;
+import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.metadata.DataContainer;
 import moos.ssds.metadata.DataProducer;
 import moos.ssds.metadata.Device;
 import moos.ssds.metadata.IMetadataObject;
 import moos.ssds.metadata.RecordVariable;
-import moos.ssds.transmogrify.SSDSDevicePacket;
 import moos.ssds.util.XmlDateFormat;
 import net.opengis.gml.v_3_1_1.StringOrRefType;
 import net.opengis.sensorml.v_1_0_1.AbstractProcessType;

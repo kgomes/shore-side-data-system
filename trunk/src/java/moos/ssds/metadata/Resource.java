@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
 import moos.ssds.util.XmlDateFormat;
@@ -56,8 +58,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 * local URI string to the URL
 	 * 
 	 * @param url
-	 *            the <code>URL</code> to set as the uniform identifier for
-	 *            this resource
+	 *            the <code>URL</code> to set as the uniform identifier for this
+	 *            resource
 	 */
 	public Resource(URL url) throws MetadataException {
 		this.setUrl(url);
@@ -171,8 +173,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	}
 
 	/**
-	 * This method returns a <code>URI</code> that is the object form of the
-	 * URI reference specified by the uriString.
+	 * This method returns a <code>URI</code> that is the object form of the URI
+	 * reference specified by the uriString.
 	 * 
 	 * @return a <code>URI</code> reference that is a unique resource locator
 	 *         for the <code>Resource</code>
@@ -188,8 +190,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 * locator for this <code>Resource</code> to the <code>URI</code>.
 	 * 
 	 * @param uri
-	 *            a <code>URI</code> reference that is a unique resource
-	 *            locator for the <code>Resource</code>
+	 *            a <code>URI</code> reference that is a unique resource locator
+	 *            for the <code>Resource</code>
 	 */
 	public void setUri(URI uri) throws MetadataException {
 		this.setUriString(uri.toASCIIString());
@@ -220,8 +222,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 * <code>Resource</code>
 	 * 
 	 * @param url
-	 *            is the <code>URL</code> to use as the unique resource
-	 *            locator for this <code>Resource</code>
+	 *            is the <code>URL</code> to use as the unique resource locator
+	 *            for this <code>Resource</code>
 	 */
 	public void setUrl(URL url) throws MetadataException {
 		this.setUriString(url.toExternalForm());
@@ -230,8 +232,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	/**
 	 * This method indicates if this resource is available over HTTP or FTP
 	 * 
-	 * @return a <code>boolean</code> that indicates if it is (<code>true</code>)
-	 *         available over HTTP/FTP or not
+	 * @return a <code>boolean</code> that indicates if it is (<code>true</code>
+	 *         ) available over HTTP/FTP or not
 	 */
 	public boolean isWebAccessible() {
 		if (this.getUrl() == null)
@@ -271,16 +273,15 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	}
 
 	/**
-	 * These methods get and set the <code>Person</code> that is usually seen
-	 * as the owner of the <code>Device</code> (or point of contact).
+	 * These methods get and set the <code>Person</code> that is usually seen as
+	 * the owner of the <code>Device</code> (or point of contact).
 	 * 
 	 * @hibernate.many-to-one class="moos.ssds.metadata.Person"
 	 *                        column="PersonID_FK"
 	 *                        foreign-key="Resource_Owned_By_Person"
 	 *                        cascade="none" lazy="true"
 	 * @return the <code>Person</code> that is the owner of the
-	 *         <code>Device</code>. Returns null if no owner has been
-	 *         defined.
+	 *         <code>Device</code>. Returns null if no owner has been defined.
 	 */
 	public Person getPerson() {
 		return this.person;
@@ -393,8 +394,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 * objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -646,29 +647,49 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 * <code>Keywords</code> filled out
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
+		logger.debug("deepCopy called.");
+
 		// Grab the clone
 		Resource deepClone = (Resource) this.clone();
+		logger.debug("Cloned resource is:");
+		logger.debug(deepClone.toStringRepresentation("|"));
 
 		// Set the relationships
 		if (this.getPerson() != null) {
 			deepClone.setPerson((Person) this.getPerson().deepCopy());
+			logger.debug("Setting the person on the cloned resource to:");
+			logger.debug(deepClone.getPerson().toStringRepresentation("|"));
 		} else {
 			deepClone.setPerson(null);
 		}
 		if (this.getResourceType() != null) {
-			deepClone.setResourceType((ResourceType) this.getResourceType()
-					.deepCopy());
+			ResourceType clonedResourceType = (ResourceType) this
+					.getResourceType().deepCopy();
+			logger
+					.debug("Setting the resource type on the cloned resource to:");
+			logger.debug(clonedResourceType.toStringRepresentation("|"));
+			deepClone.setResourceType(clonedResourceType);
 		}
 		if (this.getResourceBLOB() != null) {
-			deepClone.setResourceBLOB((ResourceBLOB) this.getResourceBLOB()
-					.deepCopy());
+			ResourceBLOB clonedResourceBLOB = (ResourceBLOB) this
+					.getResourceBLOB().deepCopy();
+			logger
+					.debug("Setting the resource blob on the cloned resource to:");
+			logger.debug(clonedResourceBLOB.toStringRepresentation("|"));
+			deepClone.setResourceBLOB(clonedResourceBLOB);
 		}
 		if ((this.getKeywords() != null) && (this.getKeywords().size() > 0)) {
+			logger.debug("There are " + this.getKeywords().size()
+					+ " that need cloning and attaching");
 			Collection keywordsToCopy = this.getKeywords();
 			Iterator keywordIter = keywordsToCopy.iterator();
 			while (keywordIter.hasNext()) {
-				deepClone.addKeyword((Keyword) ((Keyword) keywordIter.next())
-						.deepCopy());
+				Keyword clonedKeyword = (Keyword) ((Keyword) keywordIter.next())
+						.deepCopy();
+				logger
+						.debug("Adding this cloned keyword to the cloned resource type:");
+				logger.debug(clonedKeyword.toStringRepresentation("|"));
+				deepClone.addKeyword(clonedKeyword);
 			}
 		}
 
@@ -725,8 +746,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	private Long contentLength;
 
 	/**
-	 * This is the MIME type that applies to this <code>DataContainer</code>
-	 * (if one applies).
+	 * This is the MIME type that applies to this <code>DataContainer</code> (if
+	 * one applies).
 	 */
 	private String mimeType;
 
@@ -736,8 +757,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	private long version = -1;
 
 	/**
-	 * This is the <code>Person</code> that is normally thought of as the
-	 * owner of the resource
+	 * This is the <code>Person</code> that is normally thought of as the owner
+	 * of the resource
 	 * 
 	 * @directed true
 	 * @label lazy
@@ -745,8 +766,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	private Person person;
 
 	/**
-	 * This is the <code>ResourceType</code> that this <code>Resource</code>
-	 * is categorized as
+	 * This is the <code>ResourceType</code> that this <code>Resource</code> is
+	 * categorized as
 	 * 
 	 * @directed true
 	 * @label unlazy
@@ -754,8 +775,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	private ResourceType resourceType;
 
 	/**
-	 * This is a <code>Collection</code> of <code>ResourceBLOB</code>s that
-	 * can be linked to the <code>Resource</code>
+	 * This is a <code>Collection</code> of <code>ResourceBLOB</code>s that can
+	 * be linked to the <code>Resource</code>
 	 * 
 	 * @directed true
 	 * @label lazy
@@ -763,8 +784,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	private ResourceBLOB resourceBLOB;
 
 	/**
-	 * This is a collection of <code>Keyword</code> objects that can be used
-	 * to search for <code>DataContainer</code>s.
+	 * This is a collection of <code>Keyword</code> objects that can be used to
+	 * search for <code>DataContainer</code>s.
 	 * 
 	 * @associates Keyword
 	 * @directed true
@@ -776,4 +797,9 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 * This is a date formatting utility
 	 */
 	private XmlDateFormat xmlDateFormat = new XmlDateFormat();
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(Resource.class);
 }

@@ -173,9 +173,9 @@
 			</mx:HBox>
 			<local:DeviceExplorer label="Devices"/>
 			<local:DataProducerExplorer label="Data Producers"/>
-			<mx:HBox label="Docs"/>
-			<mx:HBox label="Resources"/>
-			<mx:HBox label="About"/>
+			<mx:HBox label="Related Projects"/>
+			<!--<mx:HBox label="Resources"/>
+			<mx:HBox label="About"/> -->
 		</mx:TabNavigator>
 	</mx:Canvas>
 </mx:Application>

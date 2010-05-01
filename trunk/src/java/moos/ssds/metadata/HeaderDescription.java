@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
 
@@ -152,8 +154,8 @@ public class HeaderDescription implements IMetadataObject {
 	}
 
 	/**
-	 * These methods get and set the collection of <code>CommentTag</code>s
-	 * for this <code>HeaderDescription</code>.
+	 * These methods get and set the collection of <code>CommentTag</code>s for
+	 * this <code>HeaderDescription</code>.
 	 * 
 	 * @hibernate.set cascade="all" lazy="false" inverse="true"
 	 *                outer-join="true"
@@ -166,8 +168,8 @@ public class HeaderDescription implements IMetadataObject {
 	}
 
 	/**
-	 * This methods sets the <code>CommentTag</code>s that are associated
-	 * with the <code>HeaderDescription</code>
+	 * This methods sets the <code>CommentTag</code>s that are associated with
+	 * the <code>HeaderDescription</code>
 	 * 
 	 * @param commentTags
 	 */
@@ -237,8 +239,7 @@ public class HeaderDescription implements IMetadataObject {
 	}
 
 	/**
-	 * This method removes the given <code>CommentTag</code> from the
-	 * collection
+	 * This method removes the given <code>CommentTag</code> from the collection
 	 * 
 	 * @param commentTag
 	 *            is the <code>CommentTag</code> to remove from the collection
@@ -258,8 +259,8 @@ public class HeaderDescription implements IMetadataObject {
 	 * removeCommentTag(CommentTag) method
 	 * 
 	 * @param commentTag
-	 *            the <code>String</code> that will be removed from the list
-	 *            of comment tags
+	 *            the <code>String</code> that will be removed from the list of
+	 *            comment tags
 	 */
 	public void removeCommentTag(String commentTag) {
 		CommentTag ct = new CommentTag(commentTag);
@@ -267,8 +268,8 @@ public class HeaderDescription implements IMetadataObject {
 	}
 
 	/**
-	 * This method will clear out the collection of <code>CommentTag</code>s
-	 * and keep the integrity of the relationships intact.
+	 * This method will clear out the collection of <code>CommentTag</code>s and
+	 * keep the integrity of the relationships intact.
 	 */
 	public void clearCommentTags() {
 		this.commentTags.clear();
@@ -279,8 +280,8 @@ public class HeaderDescription implements IMetadataObject {
 	 * dirty objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -471,18 +472,25 @@ public class HeaderDescription implements IMetadataObject {
 	 * <code>CommentTags</code> also filled out
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
+		logger.debug("deepCopy called");
 		// Grab the clone
 		HeaderDescription deepClone = (HeaderDescription) this.clone();
+		logger.debug("Clone created and is:");
+		logger.debug(deepClone.toStringRepresentation("|"));
 
 		// Fill out comment tags
 		if ((this.getCommentTags() != null)
 				&& (this.getCommentTags().size() > 0)) {
+			logger.debug("There are " + this.getCommentTags().size()
+					+ " comment tags that will be cloned and attached");
 			Collection commentTags = this.getCommentTags();
 			Iterator commentTagIter = commentTags.iterator();
 			while (commentTagIter.hasNext()) {
-				deepClone
-						.addCommentTag((CommentTag) ((CommentTag) commentTagIter
-								.next()).deepCopy());
+				CommentTag clonedCommentTag = (CommentTag) ((CommentTag) commentTagIter
+						.next()).deepCopy();
+				logger.debug("The following cloned CommentTag will be added:");
+				logger.debug(clonedCommentTag.toStringRepresentation("|"));
+				deepClone.addCommentTag(clonedCommentTag);
 			}
 		}
 
@@ -533,4 +541,9 @@ public class HeaderDescription implements IMetadataObject {
 	 * @label unlazy & cascade all
 	 */
 	private Collection commentTags = new HashSet();
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(HeaderDescription.class);
 }

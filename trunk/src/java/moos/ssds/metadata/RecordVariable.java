@@ -388,8 +388,8 @@ public class RecordVariable implements IMetadataObject, IDescription {
 	 * dirty objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -671,33 +671,53 @@ public class RecordVariable implements IMetadataObject, IDescription {
 	 * This method returns a clone of the <code>RecordVariable</code> that has
 	 * deep copies of the <code>StandardVariable</code>,
 	 * <code>StandardUnit</code>, <code>StandardReferenceScale</code>,
-	 * <code>StandardKeyword</code>, and <code>StandardDomain</code> filled
-	 * out
+	 * <code>StandardKeyword</code>, and <code>StandardDomain</code> filled out
 	 */
 	public IMetadataObject deepCopy() throws CloneNotSupportedException {
+		logger.debug("deepCopy called");
 		// Grab the clone
 		RecordVariable deepClone = (RecordVariable) this.clone();
+		logger.debug("The following clone was created:");
+		logger.debug(deepClone.toStringRepresentation("|"));
 
 		// Set the relationships
 		if (this.getStandardVariable() != null) {
-			deepClone.setStandardVariable((StandardVariable) this
-					.getStandardVariable().deepCopy());
+			StandardVariable clonedStandardVariable = (StandardVariable) this
+					.getStandardVariable().deepCopy();
+			logger
+					.debug("The following cloned StandardVariable will be added:");
+			logger.debug(clonedStandardVariable.toStringRepresentation("|"));
+			deepClone.setStandardVariable(clonedStandardVariable);
 		}
 		if (this.getStandardUnit() != null) {
-			deepClone.setStandardUnit((StandardUnit) this.getStandardUnit()
-					.deepCopy());
+			StandardUnit clonedStandardUnit = (StandardUnit) this
+					.getStandardUnit().deepCopy();
+			logger.debug("The following cloned StandardUnit will be added:");
+			logger.debug(clonedStandardUnit.toStringRepresentation("|"));
+			deepClone.setStandardUnit(clonedStandardUnit);
 		}
 		if (this.getStandardDomain() != null) {
-			deepClone.setStandardDomain((StandardDomain) this
-					.getStandardDomain().deepCopy());
+			StandardDomain clonedStandardDomain = (StandardDomain) this
+					.getStandardDomain().deepCopy();
+			logger.debug("The following cloned StandardDomain will be added:");
+			logger.debug(clonedStandardDomain.toStringRepresentation("|"));
+			deepClone.setStandardDomain(clonedStandardDomain);
 		}
 		if (this.getStandardReferenceScale() != null) {
-			deepClone.setStandardReferenceScale((StandardReferenceScale) this
-					.getStandardReferenceScale().deepCopy());
+			StandardReferenceScale clonedStandardReferenceScale = (StandardReferenceScale) this
+					.getStandardReferenceScale().deepCopy();
+			logger
+					.debug("The following cloned StandardReferenceScale will be added:");
+			logger.debug(clonedStandardReferenceScale
+					.toStringRepresentation("|"));
+			deepClone.setStandardReferenceScale(clonedStandardReferenceScale);
 		}
 		if (this.getStandardKeyword() != null) {
-			deepClone.setStandardKeyword((StandardKeyword) this
-					.getStandardKeyword().deepCopy());
+			StandardKeyword clonedStandardKeyword = (StandardKeyword) this
+					.getStandardKeyword().deepCopy();
+			logger.debug("The following cloned StandardKeyword will be added:");
+			logger.debug(clonedStandardKeyword.toStringRepresentation("|"));
+			deepClone.setStandardKeyword(clonedStandardKeyword);
 		}
 		// Return the deep clone
 		return deepClone;

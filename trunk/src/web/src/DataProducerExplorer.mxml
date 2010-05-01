@@ -65,13 +65,13 @@
 	</mx:RemoteObject>
 	<mx:HDividedBox label="Deployments" width="100%" height="100%">
 		<mx:VBox width="30%" height="100%">
-			<mx:Form width="100%" height="50%">
+			<mx:Form width="100%" height="30%">
 				<mx:FormHeading label="Query"/>
 				<mx:FormItem label="Name">
 					<mx:TextInput width="150" id="deploymentNameTextInput" enter="dataProducerAccessRemoteObject.findByName(deploymentNameTextInput.text, false, 'name', 'ASC', false);"/>
 				</mx:FormItem>
 			</mx:Form>
-			<mx:Tree dataProvider="{selectedDataProducers}" iconField="icon" labelField="name" id="dataProducerTree" height="50%" width="100%" itemClick="treeClickHandler(event)"></mx:Tree>
+			<mx:Tree dataProvider="{selectedDataProducers}" iconField="icon" labelField="name" id="dataProducerTree" height="70%" width="100%" itemClick="treeClickHandler(event)"></mx:Tree>
 		</mx:VBox>
 		<mx:DataGrid id="selectedObjectDetailsGrid" width="70%" height="100%"/>
 	</mx:HDividedBox>

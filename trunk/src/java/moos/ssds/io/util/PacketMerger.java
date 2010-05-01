@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 
 import moos.ssds.io.PacketInput;
 import moos.ssds.io.PacketOutput;
-import moos.ssds.transmogrify.SSDSDevicePacket;
+import moos.ssds.io.SSDSDevicePacket;
 
 /**
  * <p>

@@ -40,6 +40,7 @@ import moos.ssds.data.parsers.Nmea21RecordParser;
 import moos.ssds.data.parsers.ParsingException;
 import moos.ssds.data.util.DataException;
 import moos.ssds.data.util.LocationAndTime;
+import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.metadata.DataContainer;
 import moos.ssds.metadata.DataProducer;
 import moos.ssds.metadata.Device;
@@ -50,7 +51,6 @@ import moos.ssds.services.metadata.DataProducerAccessUtil;
 import moos.ssds.services.metadata.DeviceAccessLocal;
 import moos.ssds.services.metadata.DeviceAccessLocalHome;
 import moos.ssds.services.metadata.DeviceAccessUtil;
-import moos.ssds.transmogrify.SSDSDevicePacket;
 
 import org.apache.log4j.Logger;
 

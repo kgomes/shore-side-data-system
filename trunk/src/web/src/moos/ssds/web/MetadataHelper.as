@@ -33,6 +33,7 @@ package moos.ssds.web
 			if (metadataObject is DataProducer) {
 				// Cast to a DataProducer				
 				var dp:DataProducer = metadataObject as DataProducer;
+
 				// Use the properties to create an array collection
 				var array:Array = new Array(
 					{"Attribute": "ID", "Value": dp.id},

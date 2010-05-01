@@ -29,7 +29,6 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import moos.ssds.transmogrify.SSDSDevicePacket;
 
 import org.apache.log4j.Logger;
 

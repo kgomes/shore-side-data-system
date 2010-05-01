@@ -853,6 +853,22 @@ public class DataProducerAccessEJB extends AccessBean implements
 	/**
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
+	 * @see DataProducerDAO#findClosestParentDataProducerLatitude
+	 */
+	public Double findClosestParentDataProducerLatitude(
+			DataProducer dataProducer) throws MetadataAccessException {
+		// Grab the DAO
+		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
+				.getMetadataDAO();
+
+		// Now call the method
+		return dataProducerDAO
+				.findClosestParentDataProducerLatitude(dataProducer);
+	}
+
+	/**
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Required"
 	 * @see DataProducerDAO#findChildDataProducers(DataProducer, boolean)
 	 */
 	public Collection findChildDataProducers(DataProducer dataProducer,
@@ -1027,21 +1043,21 @@ public class DataProducerAccessEJB extends AccessBean implements
 	/**
 	 * This method takes in a <code>IDeployment</code> and a DeviceType name,
 	 * and some nominal location coordinates and then tries to return a
-	 * <code>Collection</code> of <code>IDeployment</code>s the have a
-	 * similar device type name, that were deployed on (or under) the given
-	 * deployment (parent-child relationship). It will do a &quot;deep&quot;
-	 * search for devices. In other words, it will check all deployments of the
-	 * parent as well as of any sub-deployments under that parent (i.e. it will
-	 * &quot;Walk the chain&quot;).
+	 * <code>Collection</code> of <code>IDeployment</code>s the have a similar
+	 * device type name, that were deployed on (or under) the given deployment
+	 * (parent-child relationship). It will do a &quot;deep&quot; search for
+	 * devices. In other words, it will check all deployments of the parent as
+	 * well as of any sub-deployments under that parent (i.e. it will &quot;Walk
+	 * the chain&quot;).
 	 * 
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 * @param parentDeployment
-	 *            This is a parent <code>IDeployment</code> to start the
-	 *            search from. It is the &quot;Root&quot; of the search tree.
+	 *            This is a parent <code>IDeployment</code> to start the search
+	 *            from. It is the &quot;Root&quot; of the search tree.
 	 * @param deviceTypeName
-	 *            This is a <code>String</code> that will be used to search
-	 *            for devices that have a similar device type to that named with
+	 *            This is a <code>String</code> that will be used to search for
+	 *            devices that have a similar device type to that named with
 	 *            this string.
 	 * @param nominalLongitude
 	 *            This is the longitude that the device should be deployed at.
@@ -1066,8 +1082,8 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * @param depthTolerance
 	 *            This is the +/- that will be added to the
 	 *            <code>nominalDepth</code> parameter for window searches.
-	 * @return a <code>Collection</code> of <code>IDeployment</code>s that
-	 *         meet the search criteria defined by the incoming parameters. No
+	 * @return a <code>Collection</code> of <code>IDeployment</code>s that meet
+	 *         the search criteria defined by the incoming parameters. No
 	 *         duplicates are removed and if no deployments were found, an empty
 	 *         collection is returned.
 	 */
@@ -1099,11 +1115,11 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 * @param parentDeployment
-	 *            This is a parent <code>IDeployment</code> to start the
-	 *            search from. It is the &quot;Root&quot; of the search tree.
+	 *            This is a parent <code>IDeployment</code> to start the search
+	 *            from. It is the &quot;Root&quot; of the search tree.
 	 * @param deviceTypeName
-	 *            This is a <code>String</code> that will be used to search
-	 *            for devices that have a similar device type to that named with
+	 *            This is a <code>String</code> that will be used to search for
+	 *            devices that have a similar device type to that named with
 	 *            this string.
 	 * @param nominalLongitude
 	 *            This is the longitude that the device should be deployed at.
@@ -1128,8 +1144,8 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * @param depthTolerance
 	 *            This is the +/- that will be added to the
 	 *            <code>nominalDepth</code> parameter for window searches.
-	 * @return a <code>Collection</code> of <code>IDeployment</code>s that
-	 *         meet the search criteria defined by the incoming parameters. No
+	 * @return a <code>Collection</code> of <code>IDeployment</code>s that meet
+	 *         the search criteria defined by the incoming parameters. No
 	 *         duplicates are removed and if no deployments were found, an empty
 	 *         collection is returned.
 	 */
@@ -1154,12 +1170,12 @@ public class DataProducerAccessEJB extends AccessBean implements
 	}
 
 	/**
-	 * This method takes in the ID of a parent <code>IDevice</code>, the name
-	 * of a <code>IDeviceType</code>, and some nominal location coordinates
-	 * and then tries to return a <code>Collection</code> of
-	 * <code>IDevice</code>s with the given type, that were deployed on the
-	 * given device (parent-child) relationship. This will only look for direct
-	 * child deployments, it won't walk any of the sub deployments.
+	 * This method takes in the ID of a parent <code>IDevice</code>, the name of
+	 * a <code>IDeviceType</code>, and some nominal location coordinates and
+	 * then tries to return a <code>Collection</code> of <code>IDevice</code>s
+	 * with the given type, that were deployed on the given device
+	 * (parent-child) relationship. This will only look for direct child
+	 * deployments, it won't walk any of the sub deployments.
 	 * 
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
@@ -1194,11 +1210,11 @@ public class DataProducerAccessEJB extends AccessBean implements
 
 	/**
 	 * This method takes in the name of a <code>IDevice</code>, the name of a
-	 * <code>IDeviceType</code>, and some nominal location coordinates and
-	 * then tries to return a <code>Collection</code> of <code>IDevices</code>
-	 * with the given type, that were deployed on the given device
-	 * (parent-child) relationship. This will only look for direct child
-	 * deployments, it won't walk any of the sub deployments.
+	 * <code>IDeviceType</code>, and some nominal location coordinates and then
+	 * tries to return a <code>Collection</code> of <code>IDevices</code> with
+	 * the given type, that were deployed on the given device (parent-child)
+	 * relationship. This will only look for direct child deployments, it won't
+	 * walk any of the sub deployments.
 	 * 
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
@@ -1234,21 +1250,21 @@ public class DataProducerAccessEJB extends AccessBean implements
 	/**
 	 * This method takes in a <code>IDeployment</code> and a
 	 * <code>DeviceType</code> name, and some nominal location coordinates and
-	 * then tries to return a list of <code>IDevice</code>s the have a
-	 * similar device type name, that were deployed on the given device
-	 * (parent-child) relationship. It will do a &quot;deep&quot; search for
-	 * devices. In other words, it will check all deployments of the parent as
-	 * well as of any sub-deployments under that parent (i.e. it will &quot;Walk
-	 * the chain&quot;).
+	 * then tries to return a list of <code>IDevice</code>s the have a similar
+	 * device type name, that were deployed on the given device (parent-child)
+	 * relationship. It will do a &quot;deep&quot; search for devices. In other
+	 * words, it will check all deployments of the parent as well as of any
+	 * sub-deployments under that parent (i.e. it will &quot;Walk the
+	 * chain&quot;).
 	 * 
 	 * @ejb.interface-method view-type="both"
 	 * @ejb.transaction type="Required"
 	 * @param parentDeployment
-	 *            This is a parent <code>IDeployment</code> to start the
-	 *            search from. It is the &quot;Root&quot; of the search tree.
+	 *            This is a parent <code>IDeployment</code> to start the search
+	 *            from. It is the &quot;Root&quot; of the search tree.
 	 * @param deviceTypeName
-	 *            This is a <code>String</code> that will be used to search
-	 *            for devices that have a similar device type to that named with
+	 *            This is a <code>String</code> that will be used to search for
+	 *            devices that have a similar device type to that named with
 	 *            this string.
 	 * @param nominalLongitude
 	 *            This is the longitude that the device should be deployed at.
@@ -1273,11 +1289,11 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * @param depthTolerance
 	 *            This is the +/- that will be added to the
 	 *            <code>nominalDepth</code> parameter for window searches.
-	 * @return a <code>Collection</code> of <code>IDevice</code>s that meet
-	 *         the search criteria defined by the incoming parameters. The
-	 *         devices are listed from the most recent deployment first (index
-	 *         0) to the oldest deployment. Each device is listed only once in
-	 *         the return collection
+	 * @return a <code>Collection</code> of <code>IDevice</code>s that meet the
+	 *         search criteria defined by the incoming parameters. The devices
+	 *         are listed from the most recent deployment first (index 0) to the
+	 *         oldest deployment. Each device is listed only once in the return
+	 *         collection
 	 */
 	public Collection findAllDevicesByParentDeploymentByTypeAndByLocation(
 			DataProducer parentDeployment, String deviceTypeName,
@@ -1390,6 +1406,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 			Date newStartDate, boolean closeOld, Date oldEndDate,
 			String newHeadDeploymentName, String baseDataStreamUri)
 			throws MetadataAccessException {
+
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();

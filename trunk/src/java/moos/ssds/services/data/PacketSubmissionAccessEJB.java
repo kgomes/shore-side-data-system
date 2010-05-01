@@ -29,8 +29,8 @@ import javax.ejb.SessionContext;
 import moos.ssds.io.PacketOutputManager;
 import moos.ssds.io.PacketSQLInput;
 import moos.ssds.io.PacketSQLOutput;
+import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.services.data.util.DataException;
-import moos.ssds.transmogrify.SSDSDevicePacket;
 
 import org.apache.log4j.Logger;
 

@@ -23,9 +23,9 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 import moos.ssds.data.parsers.BinaryPacketParser;
+import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.metadata.RecordDescription;
 import moos.ssds.metadata.RecordVariable;
-import moos.ssds.transmogrify.SSDSDevicePacket;
 
 import org.apache.log4j.Logger;
 
