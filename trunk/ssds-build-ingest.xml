@@ -44,6 +44,8 @@
 		<delete dir="${project.build}/classes/moos/ssds/transmogrify" />
 		<!-- Now delete the configuration directory -->
 		<delete dir="${project.build}/ingest" />
+		<!-- Delete the client publishing build directory -->
+		<delete dir="${project.build}/ingest-pub" />
 	</target>
 
 	<!-- This target rebuilds the appropriate directories by using the project -->
@@ -51,6 +53,7 @@
 	<target name="rebuild-project-dirs" depends="init">
 		<!-- Base project directories -->
 		<mkdir dir="${project.build}" />
+		<mkdir dir="${project.build}/ingest-pub" />
 		<mkdir dir="${project.build}/classes" />
 		<mkdir dir="${project.build}/ingest/META-INF" />
 		<mkdir dir="${project.dist}" />
@@ -74,37 +77,13 @@
 		</ejbdoclet>
 	</target>
 
-	<!-- Compile the necessary code source code -->
-	<target name="compile" depends="init">
-		<!-- Run the appropriate javac -->
-		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
-			<src path="${src.java}" />
-			<include name="moos/ssds/ingest/**/*.java" />
-			<include name="moos/ssds/io/**/*.java" />
-			<include name="moos/ssds/transmogrify/SSDSDevicePacket.java" />
-			<include name="moos/ssds/transmogrify/SSDSGeoLocatedDevicePacket.java" />
-			<exclude name="moos/ssds/io/util/**/*.java" />
-			<classpath>
-				<pathelement location="${project.lib}/${siam.jar}" />
-				<fileset refid="jboss-client-jar-fileset" />
-			</classpath>
-		</javac>
-	</target>
-
-	<!-- The target to build -->
-	<target name="build" depends="clean,compile" description="This will clean all the compiled classes, run all the necessary XDoclet tasks, and compile the source code" />
-
-	<!-- The distribution target -->
-	<target name="dist" depends="build,ejb-doclet" description="This target runs the clean, compile and then builds this distributions">
-		<!-- Delete old jar files -->
-		<delete file="${project.dist}/ssds-ingest.jar" />
-
+	<!-- Copy any files that need to be setup before building jars or running tests -->
+	<target name="configure-files" depends="ejb-doclet" description="This target copies or configures any files that need to be setup before the distributions can be built or the tests can be run">
 		<!-- Now create the properties file that the IngestMDB and SQLIngestMDB will use -->
 		<copy file="${resources.build}/moos/ssds/ingest/ingest_template.properties" tofile="${project.build}/ingest/moos/ssds/ingest/ingest.properties" overwrite="true">
 			<filterset>
 				<filter token="RUMINATE_TOPIC_NAME" value="${ingest.ruminate.topic.name}" />
-				<filter token="SQL_TOPIC_NAME" value="${ingest.sql.topic.name}" />
-				<filter token="ARRIVAL_TOPIC_NAME" value="${ingest.arrival.topic.name}" />
+				<filter token="INGEST_FILE_SERIALIZATION" value="${content.directory.store.serialized.packets}" />
 			</filterset>
 		</copy>
 		<copy file="${resources.build}/moos/ssds/io/io_template.properties" tofile="${project.build}/ingest/moos/ssds/io/io.properties" overwrite="true">
@@ -133,12 +112,61 @@
 				<filter token="MAIN_CLASS_STATEMENT" value="" />
 			</filterset>
 		</copy>
+
+		<!-- Copy the correct JNDI file for the client publisher jar -->
+		<copy file="${resources.build}/jboss/jndi.properties" tofile="${project.build}/ingest-pub/jndi.properties" overwrite="true">
+			<filterset>
+				<filter token="SERVER_NAME" value="${ingest.publisher.host.name}" />
+			</filterset>
+		</copy>
+
+		<!-- Configure JMS properties as well -->
+		<copy file="${resources.build}/moos/ssds/jms/jms_template.properties" tofile="${project.build}/ingest-pub/moos/ssds/jms/jms.properties" overwrite="true">
+			<filterset>
+				<filter token="JMS_TOPIC" value="${ingest.topic.name}" />
+				<filter token="JMS_TOPIC_CONNECTION_FACTORY_JNDI_NAME" value="${ingest.publisher.jms.topic.connection.factory.jndi.name}" />
+			</filterset>
+		</copy>
+
+		<!-- log4j properties -->
+		<copy file="${src.resources}/build/log4j/log4j_ConsoleAndFileAppender_Template.properties" tofile="${project.build}/ingest-pub/log4j.properties" overwrite="true">
+			<filterset>
+				<filter token="LOG4J_LEVEL" value="${client.log4j.level}" />
+				<filter token="LOG4J_FILE_NAME" value="${client.log4j.file.name}" />
+				<filter token="LOG4J_DATE_PATTERN" value="${client.log4j.date.pattern}" />
+				<filter token="LOG4J_PATTERN_LAYOUT" value="${client.log4j.pattern.layout}" />
+			</filterset>
+		</copy>
+	</target>
+
+	<!-- Compile the necessary code source code -->
+	<target name="compile" depends="init">
+		<!-- Run the appropriate javac -->
+		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
+			<src path="${src.java}" />
+			<include name="moos/ssds/ingest/**/*.java" />
+			<include name="moos/ssds/io/**/*.java" />
+			<include name="moos/ssds/jms/**/*.java" />
+			<include name="moos/ssds/util/**/*.java" />
+			<classpath>
+				<pathelement location="${project.lib}/${siam.jar}" />
+				<fileset refid="jboss-client-jar-fileset" />
+			</classpath>
+		</javac>
+	</target>
+
+	<!-- The target to build -->
+	<target name="build" depends="clean,compile" description="This will clean all the compiled classes, run all the necessary XDoclet tasks, and compile the source code" />
+
+	<!-- The distribution target -->
+	<target name="dist" depends="build,configure-files" description="This target runs the clean, compile and then builds this distributions">
+		<!-- Delete old jar files -->
+		<delete file="${project.dist}/ssds-ingest.jar" />
+
 		<!-- Create the ingest jar  -->
 		<jar jarfile="${project.dist}/ssds-ingest.jar" manifest="${project.build}/ingest/META-INF/MANIFEST.MF">
 			<!-- Include the classes -->
 			<fileset dir="${build.classes}">
-				<include name="moos/ssds/transmogrify/SSDSDevicePacket.class" />
-				<include name="moos/ssds/transmogrify/SSDSGeoLocatedDevicePacket.class" />
 				<include name="moos/ssds/ingest/**/*.class" />
 				<include name="moos/ssds/io/**/*.class" />
 				<exclude name="moos/ssds/io/util/**/*.class" />
@@ -155,10 +183,34 @@
 			<fileset dir="${project.dir}" includes="lib/${siam.jar}" />
 		</jar>
 
+		<!-- Build up the jar file that will allow people to publish to the topic ingest is listening to -->
+		<jar jarfile="${project.dist}/ssds-ingest-pub.jar">
+			<fileset dir="${build.classes}">
+				<include name="moos/ssds/io/SSDSDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
+				<include name="moos/ssds/io/util/PacketUtility.class" />
+				<include name="moos/ssds/jms/PublisherComponent.class" />
+				<include name="moos/ssds/jms/PacketGenerator.class" />
+				<include name="moos/ssds/util/XmlDateFormat.class" />
+			</fileset>
+			<fileset dir="${project.build}/ingest-pub" includes="log4j.properties" />
+			<fileset dir="${project.build}/ingest-pub" includes="jndi.properties" />
+			<fileset dir="${project.build}/ingest-pub" includes="moos/ssds/jms/jms.properties" />
+		</jar>
 	</target>
 
 	<!-- The target to test the ingest component -->
-	<target name="test" depends="init">
+	<target name="test" depends="init,configure-files">
+		<!--
+		<sysproperty key="test.jms.number.of.test.threads" value="${transmogrify.test.jms.number.of.test.threads}" />
+		<sysproperty key="test.jms.buffer.size.limit" value="${transmogrify.test.jms.buffer.size.limit}" />
+		<sysproperty key="test.jms.number.of.packets" value="${transmogrify.test.jms.number.of.packets}" />
+		<sysproperty key="test.jms.starting.device.id" value="${transmogrify.test.jms.starting.device.id}" />
+		<sysproperty key="test.jms.starting.parent.id" value="${transmogrify.test.jms.starting.parent.id}" />
+		<sysproperty key="test.jms.topic.name" value="${transmogrify.test.jms.topic.name}" />
+		<sysproperty key="test.jms.host.name.long" value="${transmogrify.test.jms.host.name.long}" />
+		<sysproperty key="test.jms.seconds.to.sleep.before.readback" value="${transmogrify.test.jms.seconds.to.sleep.before.readback}" />
+		-->
 	</target>
 
 	<!-- Deploy the ingest component and configuration files -->
@@ -187,18 +239,28 @@
 				<filter token="TOPIC_NAME" value="${ingest.ruminate.topic.name}" />
 			</filterset>
 		</copy>
-		<copy file="${resources.build}/jboss/ssds-jms-service_template.xml" tofile="${ingest.deployment.location}/ssds-sql-ingest-service.xml" overwrite="true">
-			<filterset>
-				<filter token="TOPIC_NAME" value="${ingest.sql.topic.name}" />
-			</filterset>
-		</copy>
-		<copy file="${resources.build}/jboss/ssds-jms-service_template.xml" tofile="${ingest.deployment.location}/ssds-arrival-service.xml" overwrite="true">
-			<filterset>
-				<filter token="TOPIC_NAME" value="${ingest.arrival.topic.name}" />
-			</filterset>
-		</copy>
 		<!-- Now deploy the jar -->
 		<copy file="${project.dist}/ssds-ingest.jar" todir="${ingest.deployment.location}" />
+		<!-- Make sure the ssds-docs directory is there -->
+		<mkdir dir="${project.documentation.deploy.location}/client" />
+		<!-- Copy over the client publishing jar -->
+		<delete dir="${project.dist}/tempzip" />
+		<mkdir dir="${project.dist}/tempzip" />
+		<copy file="${resources.build}/doc/client/README_ingest_pub.html" tofile="${project.dist}/tempzip/README.html" overwrite="true">
+			<filterset>
+				<filter token="INGEST_CLASSPATH" value="${client.ingest.classpath}" />
+			</filterset>
+		</copy>
+		<copy file="${resources.build}/doc/client/packet-generator-ingest-template.properties" tofile="${project.dist}/tempzip/packet-generator-ingest-template.properties" overwrite="true" />
+		<zip destfile="${project.documentation.deploy.location}/client/ssds-ingest-pub.zip">
+			<fileset dir="${project.dist}/tempzip" includes="README.html" />
+			<fileset dir="${project.dist}/tempzip" includes="packet-generator-ingest-template.properties" />
+			<fileset dir="${project.dist}" includes="ssds-ingest-pub.jar" />
+			<fileset dir="${project.lib}" includes="${siam.jar}" />
+			<fileset refid="publisher-client-jboss-libs" />
+		</zip>
+		<!-- Go ahead and deploy the static doc index page -->
+		<copy file="${src.resources}/build/doc/index.html" todir="${project.documentation.deploy.location}" overwrite="true" />
 	</target>
 
 	<!-- This target removes the ingest application from the deployment location -->
@@ -206,9 +268,9 @@
 		<delete file="${ingest.deployment.location}/ssds-ingest.jar" />
 		<delete file="${ingest.deployment.location}/ssds-transmogrify-service.xml" />
 		<delete file="${ingest.deployment.location}/ssds-ruminate-service.xml" />
-		<delete file="${ingest.deployment.location}/ssds-sql-ingest-service.xml" />
-		<delete file="${ingest.deployment.location}/ssds-arrival-service.xml" />
 		<delete file="${ingest.deployment.location}/ssds-data-ds.xml" />
 		<delete file="${ingest.io.sql.datasource.jdbc.jar.deployment.location}/${ingest.io.sql.datasource.jdbc.jar}" />
+		<!-- Remove the client publishing jar -->
+		<delete file="${project.documentation.deploy.location}/client/ssds-ingest-pub.zip" />
 	</target>
 </project>

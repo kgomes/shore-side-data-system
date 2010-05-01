@@ -40,6 +40,8 @@
 	<target name="remove-working-dirs" depends="init">
 		<!-- Delete directory where classes are compiled to -->
 		<delete dir="${project.build}/classes/moos/ssds/transmogrify" />
+		<delete dir="${project.build}/classes/moos/ssds/io" />
+		<delete dir="${project.build}/classes/moos/ssds/jms" />
 		<!-- Now delete the configuration directory -->
 		<delete dir="${project.build}/transmogrify" />
 		<!-- Delete the client publishing build directory -->
@@ -79,35 +81,12 @@
 		</ejbdoclet>
 	</target>
 
-	<!-- Compile the necessary code source code -->
-	<target name="compile" depends="init">
-		<!-- Run the appropriate javac -->
-		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
-			<src path="${src.java}" />
-			<include name="moos/ssds/transmogrify/**/*.java" />
-			<include name="moos/ssds/jms/**/*.java" />
-			<classpath>
-				<pathelement location="${jboss.client.jar.directory}/${log4j.jar}" />
-				<pathelement location="${jboss.client.jar.directory}/${jboss-j2ee.jar}" />
-				<pathelement location="${project.lib}/${siam.jar}" />
-			</classpath>
-		</javac>
-	</target>
-
-	<!-- The target to build -->
-	<target name="build" depends="clean,compile" description="This will clean all the compiled
-		classes, run all the necessary XDoclet tasks, and compile the source code" />
-
-	<!-- The distribution target -->
-	<target name="dist" depends="build,ejb-doclet" description="This target runs the clean, compile and then builds this distribution">
-		<!-- Delete old server jar files -->
-		<delete file="${project.dist}/ssds-transmogrify.jar" />
-
+	<!-- Copy any files that need to be setup before building jars or running tests -->
+	<target name="configure-files" depends="ejb-doclet" description="This target copies or configures any files that	need to be setup before the distributions can be built or the tests can be run">
 		<!-- Now create the properties file that the TransmogrifyMDB will use -->
 		<copy file="${resources.build}/moos/ssds/transmogrify/transmogrify_template.properties" tofile="${project.build}/transmogrify/moos/ssds/transmogrify/transmogrify.properties" overwrite="true">
 			<filterset>
 				<filter token="TRANSMOGRIFY_REPUBLISH_TOPIC_NAME" value="${transmogrify.republish.topic.name}" />
-				<filter token="TRANSMOGRIFY_METADATA_TRACKING_DIRECTORY" value="${transmogrify.metadata.tracking.directory}" />
 			</filterset>
 		</copy>
 
@@ -118,22 +97,6 @@
 				<filter token="MAIN_CLASS_STATEMENT" value="" />
 			</filterset>
 		</copy>
-		<!-- Create the transmogrify jar file -->
-		<jar jarfile="${project.dist}/ssds-transmogrify.jar" manifest="${project.build}/transmogrify/META-INF/MANIFEST.MF">
-			<!-- Include the class -->
-			<fileset dir="${build.classes}">
-				<include name="moos/ssds/transmogrify/**/*.class" />
-			</fileset>
-			<!-- Include all necessary resources -->
-			<fileset dir="${project.build}/transmogrify">
-				<include name="moos/ssds/transmogrify/**/*.properties" />
-			</fileset>
-			<!-- Include the metadata for the deployment descriptor -->
-			<fileset dir="${project.build}/transmogrify">
-				<include name="META-INF/*.xml" />
-			</fileset>
-			<fileset dir="${project.dir}" includes="lib/${siam.jar}" />
-		</jar>
 
 		<!-- Copy the correct JNDI file for the client publisher jar -->
 		<copy file="${resources.build}/jboss/jndi.properties" tofile="${project.build}/transmogrify-pub/jndi.properties" overwrite="true">
@@ -150,19 +113,80 @@
 			</filterset>
 		</copy>
 
+		<!-- log4j properties -->
+		<copy file="${src.resources}/build/log4j/log4j_ConsoleAndFileAppender_Template.properties" tofile="${project.build}/transmogrify-pub/log4j.properties" overwrite="true">
+			<filterset>
+				<filter token="LOG4J_LEVEL" value="${client.log4j.level}" />
+				<filter token="LOG4J_FILE_NAME" value="${client.log4j.file.name}" />
+				<filter token="LOG4J_DATE_PATTERN" value="${client.log4j.date.pattern}" />
+				<filter token="LOG4J_PATTERN_LAYOUT" value="${client.log4j.pattern.layout}" />
+			</filterset>
+		</copy>
+	</target>
+
+	<!-- Compile the necessary code source code -->
+	<target name="compile" depends="init">
+		<!-- Run the appropriate javac -->
+		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
+			<src path="${src.java}" />
+			<include name="moos/ssds/transmogrify/**/*.java" />
+			<include name="moos/ssds/io/**/*.java" />
+			<include name="moos/ssds/jms/**/*.java" />
+			<include name="moos/ssds/util/**/*.java" />
+			<classpath>
+				<pathelement location="${jboss.client.jar.directory}/${log4j.jar}" />
+				<pathelement location="${jboss.client.jar.directory}/${jboss-j2ee.jar}" />
+				<pathelement location="${project.lib}/${siam.jar}" />
+			</classpath>
+		</javac>
+	</target>
+
+	<!-- The target to build -->
+	<target name="build" depends="clean,compile" description="This will clean all the compiled
+		classes, run all the necessary XDoclet tasks, and compile the source code" />
+
+	<!-- The distribution target -->
+	<target name="dist" depends="build,configure-files" description="This target runs the clean, compile and then builds this distribution">
+		<!-- Delete old server jar files -->
+		<delete file="${project.dist}/ssds-transmogrify.jar" />
+
+		<!-- Create the transmogrify jar file -->
+		<jar jarfile="${project.dist}/ssds-transmogrify.jar" manifest="${project.build}/transmogrify/META-INF/MANIFEST.MF">
+			<!-- Include the class -->
+			<fileset dir="${build.classes}">
+				<include name="moos/ssds/transmogrify/**/*.class" />
+				<include name="moos/ssds/io/SSDSDevicePacket.class" />
+				<include name="moos/ssds/io/util/PacketUtility.class" />
+			</fileset>
+			<!-- Include all necessary resources -->
+			<fileset dir="${project.build}/transmogrify">
+				<include name="moos/ssds/transmogrify/**/*.properties" />
+			</fileset>
+			<!-- Include the metadata for the deployment descriptor -->
+			<fileset dir="${project.build}/transmogrify">
+				<include name="META-INF/*.xml" />
+			</fileset>
+			<fileset dir="${project.dir}" includes="lib/${siam.jar}" />
+		</jar>
+
 		<!-- Now jar it up -->
 		<jar jarfile="${project.dist}/ssds-transmogrify-pub.jar">
-			<fileset dir="${build.classes}" includes="moos/ssds/jms/PublisherComponent.class" />
 			<fileset dir="${build.classes}">
-				<include name="moos/ssds/simulator/*.class" />
+				<include name="moos/ssds/io/SSDSDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
+				<include name="moos/ssds/io/util/PacketUtility.class" />
+				<include name="moos/ssds/jms/PublisherComponent.class" />
+				<include name="moos/ssds/jms/PacketGenerator.class" />
+				<include name="moos/ssds/util/XmlDateFormat.class" />
 			</fileset>
+			<fileset dir="${project.build}/transmogrify-pub" includes="log4j.properties" />
 			<fileset dir="${project.build}/transmogrify-pub" includes="jndi.properties" />
 			<fileset dir="${project.build}/transmogrify-pub" includes="moos/ssds/jms/jms.properties" />
 		</jar>
 	</target>
 
 	<!-- The target to test the TransmogrifyMDB instance -->
-	<target name="test" depends="init">
+	<target name="test" depends="init, configure-files">
 		<!-- First check to make sure the metadata services client jar is available for testing -->
 		<condition property="metadata.services.client.jar.exists">
 			<available file="${project.dist}/ssds-services-metadata-client.jar" type="file" />
@@ -174,9 +198,11 @@
 		<!-- Compile just the test classes -->
 		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
 			<src path="${src.java}" />
-			<include name="test/moos/ssds/jms/**/*.java" />
+			<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
+			<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
 			<classpath>
 				<pathelement location="${project.lib}/${junit.jar}" />
+				<pathelement location="${project.lib}/${jddac.jar}" />
 				<pathelement location="${project.dist}/ssds-transmogrify-pub.jar" />
 				<pathelement location="${project.dist}/ssds-services-metadata-client.jar" />
 				<fileset refid="all-project-lib-flattened-jar-fileset" />
@@ -188,24 +214,20 @@
 			<jvmarg value="-Xmx1024m" />
 			<classpath>
 				<pathelement location="${project.build}/classes" />
+				<pathelement location="${project.build}/transmogrify" />
+				<pathelement location="${project.build}/transmogrify-pub" />
 				<pathelement location="${project.lib}/${junit.jar}" />
+				<pathelement location="${project.lib}/${jddac.jar}" />
 				<pathelement location="${project.dist}/ssds-transmogrify-pub.jar" />
 				<pathelement location="${project.dist}/ssds-services-metadata-client.jar" />
 				<fileset refid="all-project-lib-flattened-jar-fileset" />
 				<fileset refid="jboss-client-jar-fileset" />
 			</classpath>
-			<sysproperty key="test.jms.number.of.test.threads" value="${transmogrify.test.jms.number.of.test.threads}" />
-			<sysproperty key="test.jms.buffer.size.limit" value="${transmogrify.test.jms.buffer.size.limit}" />
-			<sysproperty key="test.jms.number.of.packets" value="${transmogrify.test.jms.number.of.packets}" />
-			<sysproperty key="test.jms.starting.device.id" value="${transmogrify.test.jms.starting.device.id}" />
-			<sysproperty key="test.jms.starting.parent.id" value="${transmogrify.test.jms.starting.parent.id}" />
-			<sysproperty key="test.jms.topic.name" value="${transmogrify.test.jms.topic.name}" />
-			<sysproperty key="test.jms.host.name.long" value="${transmogrify.test.jms.host.name.long}" />
-			<sysproperty key="test.jms.seconds.to.sleep.before.readback" value="${transmogrify.test.jms.seconds.to.sleep.before.readback}" />
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${gen.test}">
 				<fileset dir="${src.java}">
-					<include name="test/moos/ssds/jms/TestIngest.java" />
+					<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
+					<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -236,8 +258,10 @@
 				<filter token="TRANSMOGRIFY_CLASSPATH" value="${client.transmogrify.classpath}" />
 			</filterset>
 		</copy>
+		<copy file="${resources.build}/doc/client/packet-generator-transmogrify-template.properties" tofile="${project.dist}/tempzip/packet-generator-transmogrify-template.properties" overwrite="true" />
 		<zip destfile="${project.documentation.deploy.location}/client/ssds-transmogrify-pub.zip">
 			<fileset dir="${project.dist}/tempzip" includes="README.html" />
+			<fileset dir="${project.dist}/tempzip" includes="packet-generator-transmogrify-template.properties" />
 			<fileset dir="${project.dist}" includes="ssds-transmogrify-pub.jar" />
 			<fileset dir="${project.lib}" includes="${siam.jar}" />
 			<fileset refid="publisher-client-jboss-libs" />
