@@ -258,10 +258,12 @@
 				<filter token="TRANSMOGRIFY_CLASSPATH" value="${client.transmogrify.classpath}" />
 			</filterset>
 		</copy>
+		<copy file="${resources.build}/doc/client/ExampleSSDSClientPublisher.java" tofile="${project.dist}/tempzip/ExampleSSDSClientPublisher.java" overwrite="true"/>
 		<copy file="${resources.build}/doc/client/packet-generator-transmogrify-template.properties" tofile="${project.dist}/tempzip/packet-generator-transmogrify-template.properties" overwrite="true" />
 		<zip destfile="${project.documentation.deploy.location}/client/ssds-transmogrify-pub.zip">
 			<fileset dir="${project.dist}/tempzip" includes="README.html" />
 			<fileset dir="${project.dist}/tempzip" includes="packet-generator-transmogrify-template.properties" />
+			<fileset dir="${project.dist}/tempzip" includes="ExampleSSDSClientPublisher.java" />
 			<fileset dir="${project.dist}" includes="ssds-transmogrify-pub.jar" />
 			<fileset dir="${project.lib}" includes="${siam.jar}" />
 			<fileset refid="publisher-client-jboss-libs" />
