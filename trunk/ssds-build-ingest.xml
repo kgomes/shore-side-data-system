@@ -16,7 +16,7 @@
 -->
 <project name="ssds-build-ingest" default="build" basedir=".">
 
-	<!-- Include various path definitions -->
+	<!-- Import all the path definitions -->
 	<import file="path-defs.xml" />
 
 	<!-- Define the ejb-doclet task -->
@@ -41,7 +41,7 @@
 		<!-- Delete directory where classes are compiled to -->
 		<delete dir="${project.build}/classes/moos/ssds/ingest" />
 		<delete dir="${project.build}/classes/moos/ssds/io" />
-		<delete dir="${project.build}/classes/moos/ssds/transmogrify" />
+		<delete dir="${project.build}/classes/moos/ssds/jms" />
 		<!-- Now delete the configuration directory -->
 		<delete dir="${project.build}/ingest" />
 		<!-- Delete the client publishing build directory -->
@@ -57,9 +57,13 @@
 		<mkdir dir="${project.build}/classes" />
 		<mkdir dir="${project.build}/ingest/META-INF" />
 		<mkdir dir="${project.dist}" />
+		<mkdir dir="${gen.doc}" />
+		<mkdir dir="${gen.html}" />
+		<mkdir dir="${gen.java2html}" />
+		<mkdir dir="${gen.test}" />
 	</target>
 
-	<!-- The clean targets -->
+	<!-- The clean target -->
 	<target name="clean" depends="remove-working-dirs,rebuild-project-dirs" />
 
 	<!-- The target to run xdoclet on the ingest specific classes -->
@@ -149,8 +153,9 @@
 			<include name="moos/ssds/jms/**/*.java" />
 			<include name="moos/ssds/util/**/*.java" />
 			<classpath>
+				<pathelement location="${jboss.client.jar.directory}/${log4j.jar}" />
+				<pathelement location="${jboss.client.jar.directory}/${jboss-j2ee.jar}" />
 				<pathelement location="${project.lib}/${siam.jar}" />
-				<fileset refid="jboss-client-jar-fileset" />
 			</classpath>
 		</javac>
 	</target>
@@ -252,9 +257,11 @@
 			</filterset>
 		</copy>
 		<copy file="${resources.build}/doc/client/packet-generator-ingest-template.properties" tofile="${project.dist}/tempzip/packet-generator-ingest-template.properties" overwrite="true" />
+		<copy file="${resources.build}/doc/client/ExampleSSDSIngestClientPublisher.java" tofile="${project.dist}/tempzip/ExampleSSDSIngestClientPublisher.java" overwrite="true" />
 		<zip destfile="${project.documentation.deploy.location}/client/ssds-ingest-pub.zip">
 			<fileset dir="${project.dist}/tempzip" includes="README.html" />
 			<fileset dir="${project.dist}/tempzip" includes="packet-generator-ingest-template.properties" />
+			<fileset dir="${project.dist}/tempzip" includes="ExampleSSDSIngestClientPublisher.java" />
 			<fileset dir="${project.dist}" includes="ssds-ingest-pub.jar" />
 			<fileset dir="${project.lib}" includes="${siam.jar}" />
 			<fileset refid="publisher-client-jboss-libs" />
