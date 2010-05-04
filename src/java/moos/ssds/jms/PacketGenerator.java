@@ -510,10 +510,25 @@ public class PacketGenerator {
 			// Try to open the file and read it into the first buffer
 			logger.debug("FirstBuffer property is "
 					+ packetProperties.getProperty("FirstBuffer"));
+			// Try to get the URL to the file
+			boolean firstBufferFileExist = false;
 			URL firstBufferUrl = ClassLoader.getSystemResource(packetProperties
 					.getProperty("FirstBuffer"));
-			File firstBufferFile = new File(firstBufferUrl.getFile());
-			if (firstBufferFile.exists()) {
+			// If the URL exists, try to check for an existing file at that URL
+			if (firstBufferUrl != null) {
+				// Create the abstract file
+				File firstBufferFile = new File(firstBufferUrl.getFile());
+				// Does it exist
+				if (firstBufferFile.exists()) {
+					firstBufferFileExist = true;
+				}
+			}
+
+			// Now, if file read it, otherwise use the property itself
+			if (firstBufferFileExist) {
+				logger.debug("First buffer property points to a file, "
+						+ "so it will be used for the first buffer");
+				File firstBufferFile = new File(firstBufferUrl.getFile());
 				// Open the file
 				FileInputStream fis = null;
 				try {
@@ -532,7 +547,7 @@ public class PacketGenerator {
 				}
 				firstBufferLength = firstBuffer.length;
 			} else {
-				logger.debug("Doesn't look like the buffer is a file, "
+				logger.debug("Doesn't look like the first buffer is a file, "
 						+ "so the property text will be treated as the buffer");
 				if (packetProperties.getProperty("FirstBuffer") != null) {
 					firstBuffer = packetProperties.getProperty("FirstBuffer")
@@ -549,11 +564,26 @@ public class PacketGenerator {
 			// Try to open the file and read it into the second buffer
 			logger.debug("SecondBuffer property is "
 					+ packetProperties.getProperty("SecondBuffer"));
+			// Try to get the URL to the file
+			boolean secondBufferFileExist = false;
 			URL secondBufferUrl = ClassLoader
 					.getSystemResource(packetProperties
 							.getProperty("SecondBuffer"));
-			File secondBufferFile = new File(secondBufferUrl.getFile());
-			if (secondBufferFile.exists()) {
+			// If the URL exists, try to check for an existing file at that URL
+			if (secondBufferUrl != null) {
+				// Create the abstract file
+				File secondBufferFile = new File(secondBufferUrl.getFile());
+				// Does it exist
+				if (secondBufferFile.exists()) {
+					secondBufferFileExist = true;
+				}
+			}
+
+			// Now, if file read it, otherwise use the property itself
+			if (secondBufferFileExist) {
+				logger.debug("Second buffer property points to a file, "
+						+ "so it will be used for the first buffer");
+				File secondBufferFile = new File(secondBufferUrl.getFile());
 				// Open the file
 				FileInputStream fis = null;
 				try {
@@ -582,6 +612,7 @@ public class PacketGenerator {
 				} else {
 					logger.error("No SecondBuffer property was specified");
 				}
+
 			}
 			logger.debug("secondBytes is " + secondBufferLength
 					+ " bytes long and is (converted to String): "
@@ -647,14 +678,22 @@ public class PacketGenerator {
 			// There is one argument, make sure that it is an existing file on
 			// the classpath
 			URL url = ClassLoader.getSystemResource(args[0]);
-			File propertiesFile = new File(url.getFile());
-			if (!propertiesFile.exists()) {
+			if (url == null) {
 				System.out
-						.println("Could not find the packet properties file: "
-								+ args[0]);
+						.println("Could not find the packet properties file specified.");
+				printUsage();
 			} else {
-				// Instantiate the PacketGenerator
-				packetGenerator = new PacketGenerator(propertiesFile);
+
+				File propertiesFile = new File(url.getFile());
+				if (!propertiesFile.exists()) {
+					System.out
+							.println("Could not find the packet properties file: "
+									+ args[0]);
+					printUsage();
+				} else {
+					// Instantiate the PacketGenerator
+					packetGenerator = new PacketGenerator(propertiesFile);
+				}
 			}
 		}
 
@@ -663,9 +702,7 @@ public class PacketGenerator {
 			try {
 				packetGenerator.publishPacket();
 			} catch (Exception e) {
-				PacketGenerator.logger.debug("Exception caught in main->"
-						+ e.getMessage());
-				e.printStackTrace();
+				logger.debug("Exception caught in main->" + e.getMessage());
 			}
 		}
 
@@ -677,12 +714,16 @@ public class PacketGenerator {
 	 * This method prints the usage information to System.out
 	 */
 	private static void printUsage() {
+		String classpath = ".:ssds-transmogrify-pub.jar:siam.jar:log4j.jar:concurrent.jar:"
+				+ "jbossall-client.jar:jboss-common-client.jar:jbossmq-client.jar:"
+				+ "jboss-system-client.jar:jnp-client.jar";
 		// Print the message
 		System.out
 				.println("moos.ssds.jms.PacketGenerator was not called correctly.");
 		System.out.println("It should be called using:");
-		System.out
-				.println("java -cp ssds-xxxxxx-pub.jar moos.ssds.jms.PacketGenerator packet.properties");
+		System.out.println("java -cp " + classpath
+				+ " moos.ssds.jms.PacketGenerator packet.properties");
+
 		System.out
 				.println("where packet.properties is the name of the file that contains the properties used");
 		System.out.println("to construct a packet and publish to the SSDS.");
