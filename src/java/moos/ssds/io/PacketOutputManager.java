@@ -267,7 +267,8 @@ public class PacketOutputManager {
 				packetOutput = new PacketOutput(new File(packetStorageName));
 			} catch (IOException e) {
 				logger
-						.error("Could not create a new PacketOutput for the requested packet");
+						.error("Could not create a new PacketOutput for the requested packet: "
+								+ e.getMessage());
 			}
 			if ((packetKey != null) && (packetOutput != null)) {
 				packetOutputs.put(packetKey, packetOutput);
