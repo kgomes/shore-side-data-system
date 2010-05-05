@@ -204,6 +204,16 @@ public class PacketOutput {
 	}
 
 	/**
+	 * This method takes in a byte array in the SSDS format and writes it to
+	 * disk
+	 * 
+	 * @param ssdsFormatByteArray
+	 */
+	public synchronized void writeBytes(byte[] ssdsFormatByteArray) {
+		this.writeByteArrayVersion3(ssdsFormatByteArray);
+	}
+
+	/**
 	 * This is the method to serialize the first version of
 	 * <code>SSDSDevicePacket</code> to a file
 	 * 
