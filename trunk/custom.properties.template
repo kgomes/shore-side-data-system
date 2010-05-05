@@ -22,12 +22,12 @@
 ################################################################
 
 ################################################################
-#                     JBoss Properties                         #
+#                  Adobe Flex Properties                       #
 ################################################################
 # SSDS Uses the Flex SDK from Adobe and so the build needs to
 # know where your Flex SDK installation.  This is is the path
 # to the Flex SDK
-FLEX_HOME=/Applications/flex_sdk_3
+FLEX_HOME=
 
 ################################################################
 #                     JBoss Properties                         #
@@ -35,11 +35,11 @@ FLEX_HOME=/Applications/flex_sdk_3
 # This property defines where JBoss is installed.  It must be a directory
 # that is reachable by the machine where the build is occurring.  Various
 # parts of the SSDS application will be deployed to this installation.
-jboss.home=/Applications/jboss-4.2.2.GA
+jboss.home=
 
 # This property is the name of the server where the jboss installation
-# will be running.
-jboss.host.name=localhost
+# will be running (can be localhost if running locally).
+jboss.host.name=
 
 # This property defines the base URL that is use to reach the JBoss
 # application via HTTP (i.e. through a web browser).  This should be
@@ -173,40 +173,13 @@ content.directory.dods.url=http://${jboss.host.name}/cgi-bin/nph-dods/
 ################################################################
 # This is the name of the database server where the SSDS will 
 # write data and metadata
-database.server.name=${jboss.host.name}
+database.server.name=
 # This is the type of database server that will be used (options
-# are mssql for Microsoft SQL Server or mysql for MySQL)
-database.server.type=mysql
+# are 'mssql' for Microsoft SQL Server or 'mysql' for MySQL)
+database.server.type=
 # Credentials for the user that will connect to the database
 database.server.login.username=
 database.server.login.password=
-# Database driver file
-database.driver.jar.file=jtds-1.2.2.jar
-#database.driver.jar.file=mysql-connector-java-5.1.5-bin.jar
-# Database driver class
-database.driver.class=net.sourceforge.jtds.jdbcx.JtdsDataSource
-#database.driver.class=com.mysql.jdbc.Driver
-# Database schema that might be used for some drivers.  For
-# example, for MSSQL, you might set it to the username that
-# is creating the database (${database.server.login.username})
-# and for MySQL, you would leave it blank
-database.schema=
-# Database source type mapping (tested options are 'MS SQLSERVER2000'|'mySQL')
-database.driver.type.mapping=MS SQLSERVER2000
-#database.driver.type.mapping=mySQL
-# Database connection URL for data storage
-data.database.driver.url=jdbc:jtds:sqlserver://[database_hostname]:1433/SSDS_Data
-#data.database.driver.url=jdbc:mysql://${jboss.host.name}:3306/ssds_data
-# Database connection URL for metadata storage
-metadata.database.driver.url=jdbc:jtds:sqlserver://[database_hostname]:1433/SSDS_Metadata
-#metadata.database.driver.url=jdbc:mysql://${jboss.host.name}:3306/SSDS_Metadata
-
-# This is the property that tells Hibernate what sql server you
-# are using for the metadata persistence.  Some examples are:
-# For MS SQL Server = org.hibernate.dialect.SQLServerDialect
-# For MySQL = org.hibernate.dialect.MySQLDialect
-metadata.hibernate.dialect=org.hibernate.dialect.SQLServerDialect
-#metadata.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
 ################################################################
 #                  Other SSDS Properties                       #
