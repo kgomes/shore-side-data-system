@@ -29,13 +29,12 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-
 import org.apache.log4j.Logger;
 
 /**
  * <p>
  * This class is used to read back the serialized packets that the Shore-Side
- * Data System uses to store data coming from streaming sources. It implmements
+ * Data System uses to store data coming from streaming sources. It implements
  * the Enumeration interface so that elements can be read from it and it can be
  * queried to see if more elements are available.
  * </p>
@@ -44,12 +43,12 @@ import org.apache.log4j.Logger;
  * @author : $Author: kgomes $
  * @version : $Revision: 1.20 $
  */
-public class PacketInput implements Enumeration {
+public class PacketInput implements Enumeration<Object> {
 
 	/**
-	 * No argument costructor. If created with this you will need to call the
-	 * <code>setFile(File file)</code> or <code>setURL(URL url)</code>
-	 * method before calling <code>readObject</code>
+	 * No argument constructor. If created with this you will need to call the
+	 * <code>setFile(File file)</code> or <code>setURL(URL url)</code> method
+	 * before calling <code>readObject</code>
 	 */
 	public PacketInput() {
 	}
@@ -58,8 +57,8 @@ public class PacketInput implements Enumeration {
 	 * This constructor that is used when reading from a file
 	 * 
 	 * @param file
-	 *            is the <code>File</code> object that points to the
-	 *            serialized packets to be read
+	 *            is the <code>File</code> object that points to the serialized
+	 *            packets to be read
 	 * @throws IOException
 	 *             if something with the reading goes wrong.
 	 */
@@ -78,8 +77,8 @@ public class PacketInput implements Enumeration {
 	 * be of variable size).
 	 * 
 	 * @param file
-	 *            is the <code>File</code> object that points to the
-	 *            serialized packets to be read
+	 *            is the <code>File</code> object that points to the serialized
+	 *            packets to be read
 	 * @param numBytesToSkip
 	 *            is the number of bytes to skip over before starting to read
 	 *            from the serialized stream file.
@@ -87,7 +86,7 @@ public class PacketInput implements Enumeration {
 	 *             if something goes wrong with the read
 	 */
 	public PacketInput(File file, long numBytesToSkip) throws IOException {
-		// Call the base constuctor
+		// Call the base constructor
 		this();
 		// Call set the file and use the method to skip over a number of bytes
 		setFile(file, numBytesToSkip);
@@ -116,8 +115,8 @@ public class PacketInput implements Enumeration {
 	 * variable size).
 	 * 
 	 * @param file
-	 *            is the <code>File</code> object that points to the
-	 *            serialized packets to be read
+	 *            is the <code>File</code> object that points to the serialized
+	 *            packets to be read
 	 * @param numBytesToSkip
 	 *            is the number of bytes to skip over before starting to read
 	 *            from the serialized stream file.
@@ -136,8 +135,7 @@ public class PacketInput implements Enumeration {
 	 * the given number of bytes
 	 * 
 	 * @param file
-	 *            is the <code>File</code> that contains the serialized
-	 *            packets
+	 *            is the <code>File</code> that contains the serialized packets
 	 * @param numBytesToSkip
 	 *            is the number of bytes to skip past before starting to read
 	 *            from the serialized stream. This helps speed up some access
@@ -175,13 +173,13 @@ public class PacketInput implements Enumeration {
 		}
 		if (stok.hasMoreTokens()) {
 			try {
-				metadataIDForTracking = new Long(stok.nextToken());
+				stok.nextToken();
 			} catch (Exception e) {
 			}
 		}
 		if (stok.hasMoreTokens()) {
 			try {
-				recordTypeForTracking = new Long(stok.nextToken());
+				stok.nextToken();
 			} catch (Exception e) {
 			}
 		}
@@ -194,7 +192,6 @@ public class PacketInput implements Enumeration {
 
 		// Clear the urlSource flags
 		this.urlSource = false;
-		this.moreURLElements = true;
 
 		// Create the stream input objects and DO NOT use a BufferedInputStream.
 		// This throws off the available() method of FileInputStream so that
@@ -231,8 +228,8 @@ public class PacketInput implements Enumeration {
 	 * skip over the given number of bytes from that stream.
 	 * 
 	 * @param url
-	 *            is the <code>URL</code> that points to the file that
-	 *            contains serialized packets
+	 *            is the <code>URL</code> that points to the file that contains
+	 *            serialized packets
 	 * @param numBytesToSkip
 	 *            is the number of bytes to read past after setting up the input
 	 *            streams from the URL.
@@ -254,35 +251,35 @@ public class PacketInput implements Enumeration {
 					+ e.getMessage());
 		}
 		// Check for property
-        String localPacketStoragePath = ingestProps.getProperty("io.storage.directory"); 
+		String localPacketStoragePath = ingestProps
+				.getProperty("io.storage.directory");
 		if ((localPacketStoragePath != null)
-				&& (!localPacketStoragePath
-						.equals(""))) {
-            // Check to see if file separator is already specified on the
-            // storage path
-            if (!localPacketStoragePath.endsWith(File.separator))
-                localPacketStoragePath = localPacketStoragePath
-                        + File.separator;
+				&& (!localPacketStoragePath.equals(""))) {
+			// Check to see if file separator is already specified on the
+			// storage path
+			if (!localPacketStoragePath.endsWith(File.separator))
+				localPacketStoragePath = localPacketStoragePath
+						+ File.separator;
 
-            // Grab the file name from the URL
-            String urlFile = url.getFile();
-            urlFile = urlFile.substring(urlFile.lastIndexOf("/") + 1);
+			// Grab the file name from the URL
+			String urlFile = url.getFile();
+			urlFile = urlFile.substring(urlFile.lastIndexOf("/") + 1);
 
-            // Now look for the file
-            File packetFile = new File(localPacketStoragePath + urlFile);
-            if (packetFile.exists()) {
-                //logger.debug("A packet file with the same name as the URL was found so that will be used locally");
-                try {
-                    this.setFile(packetFile, numBytesToSkip);
-                    return;
-                } catch (IOException e) {
-                    logger
-                            .error("IOException caught trying to call setFile from setURL:"
-                                    + e.getMessage());
-                }
-            }
-        }
-        
+			// Now look for the file
+			File packetFile = new File(localPacketStoragePath + urlFile);
+			if (packetFile.exists()) {
+				// logger.debug("A packet file with the same name as the URL was found so that will be used locally");
+				try {
+					this.setFile(packetFile, numBytesToSkip);
+					return;
+				} catch (IOException e) {
+					logger
+							.error("IOException caught trying to call setFile from setURL:"
+									+ e.getMessage());
+				}
+			}
+		}
+
 		// Since we are resetting the read source, reset the number of
 		// bytes read as well.
 		bytesReadSoFar = 0;
@@ -301,13 +298,13 @@ public class PacketInput implements Enumeration {
 		}
 		if (stok.hasMoreTokens()) {
 			try {
-				metadataIDForTracking = new Long(stok.nextToken());
+				stok.nextToken();
 			} catch (Exception e) {
 			}
 		}
 		if (stok.hasMoreTokens()) {
 			try {
-				recordTypeForTracking = new Long(stok.nextToken());
+				stok.nextToken();
 			} catch (Exception e) {
 			}
 		}
@@ -351,33 +348,37 @@ public class PacketInput implements Enumeration {
 
 		// Set URL flags
 		this.urlSource = true;
-		this.moreURLElements = true;
 
 		// Set the URL
 		this.packetURL = url;
 		try {
-            if (url.getProtocol().equals("http")) {
-            	this.httpURLConnection = (HttpURLConnection) url.openConnection();
-            	this.httpURLConnection.connect();
+			if (url.getProtocol().equals("http")) {
+				this.httpURLConnection = (HttpURLConnection) url
+						.openConnection();
+				this.httpURLConnection.connect();
 
-            	// DO NOT use a BufferedInputStream. This throws off the available90
-            	// method
-            	// of FileInputStream so that only one object can be retrieved.
-            	in = new DataInputStream(this.httpURLConnection.getInputStream());
-            } else {
-            	// Create a URL Connection
-            	this.packetURLConnection = url.openConnection();
-            	// Now connect
-            	this.packetURLConnection.connect();
-            	// DO NOT use a BufferedInputStream. This throws off the available90
-            	// method
-            	// of FileInputStream so that only one object can be retrieved.
-            	in = new DataInputStream(this.packetURLConnection.getInputStream());
-            }
-        } catch (Exception e1) {
-            // Clear out the input stream if something went wrong
-            in = null;
-        }
+				// DO NOT use a BufferedInputStream. This throws off the
+				// available90
+				// method
+				// of FileInputStream so that only one object can be retrieved.
+				in = new DataInputStream(this.httpURLConnection
+						.getInputStream());
+			} else {
+				// Create a URL Connection
+				this.packetURLConnection = url.openConnection();
+				// Now connect
+				this.packetURLConnection.connect();
+				// DO NOT use a BufferedInputStream. This throws off the
+				// available90
+				// method
+				// of FileInputStream so that only one object can be retrieved.
+				in = new DataInputStream(this.packetURLConnection
+						.getInputStream());
+			}
+		} catch (Exception e1) {
+			// Clear out the input stream if something went wrong
+			in = null;
+		}
 
 		// Skip number of bytes if there are any
 		if ((in != null) && (numBytesToSkip > 0)) {
@@ -406,8 +407,7 @@ public class PacketInput implements Enumeration {
 	/**
 	 * Return the file that is being read from
 	 * 
-	 * @return a <code>File</code> that points to a file of serialized
-	 *         packets.
+	 * @return a <code>File</code> that points to a file of serialized packets.
 	 */
 	public File getFile() {
 		return file;
@@ -415,21 +415,22 @@ public class PacketInput implements Enumeration {
 
 	/**
 	 * This method returns a boolean that indicates if there are more packets
-	 * that can be read from the source. If <code>true</code>, the caller
-	 * should be able to call <code>nextElement</code> to retrieve another
-	 * packet. <b><font color=\"red\">NOTE: THIS IS NOT RELIABLE WHEN READING
-	 * FROM A URL </font> </b>. The available() method on a URL is not reliable,
-	 * so it is currently fixed to always be true if a URL is being used.
+	 * that can be read from the source. If <code>true</code>, the caller should
+	 * be able to call <code>nextElement</code> to retrieve another packet.
+	 * <b><font color=\"red\">NOTE: THIS IS NOT RELIABLE WHEN READING FROM A URL
+	 * </font> </b>. The available() method on a URL is not reliable, so it is
+	 * currently fixed to always be true if a URL is being used.
 	 * 
 	 * TODO Fix when reading from URL
 	 * 
-	 * @return a <code>boolean</code> that indicates if more packets can be
-	 *         read from the source. More can be read if <code>true</code>,
-	 *         none if <code>false</code>.
+	 * @return a <code>boolean</code> that indicates if more packets can be read
+	 *         from the source. More can be read if <code>true</code>, none if
+	 *         <code>false</code>.
 	 */
 	public boolean hasMoreElements() {
-	    // If no input stream was found
-	    if (in == null) return false;
+		// If no input stream was found
+		if (in == null)
+			return false;
 		// Set the return to false as the default
 		boolean ok = false;
 		// If the source is a URL, return the current state
@@ -506,7 +507,6 @@ public class PacketInput implements Enumeration {
 			// it is most likely from the URL and you can
 			// set the more URL elements to false to indicate
 			// that no more are available.
-			this.moreURLElements = false;
 		} catch (IOException e) {
 			logger
 					.error("There was an IOException while trying get the next element:"
@@ -529,8 +529,9 @@ public class PacketInput implements Enumeration {
 	 *             if something goes wrong with the read
 	 */
 	public Object readObject() throws IOException {
-	    // If not input stream was found
-	    if (in == null) return null;
+		// If not input stream was found
+		if (in == null)
+			return null;
 		// The object to return
 		Object obj = null;
 		// Read in the version from the input stream
@@ -541,22 +542,22 @@ public class PacketInput implements Enumeration {
 
 		// Now based on the version value, call the appropriate read method
 		switch (tmpVersionID) {
-			case 1 :
-				obj = readVersion1();
-				break;
-			case 2 :
-				obj = readVersion2();
-				break;
-			case 3 :
-				obj = readVersion3();
-				break;
-			default :
-				// If the version is not one of the defined
-				// versions, then there is probably some
-				// junk in the stream or the reading got off
-				// track, so call a method to try to resolve
-				// that situation
-				obj = readFromOffTrackStream(tmpVersionID);
+		case 1:
+			obj = readVersion1();
+			break;
+		case 2:
+			obj = readVersion2();
+			break;
+		case 3:
+			obj = readVersion3();
+			break;
+		default:
+			// If the version is not one of the defined
+			// versions, then there is probably some
+			// junk in the stream or the reading got off
+			// track, so call a method to try to resolve
+			// that situation
+			obj = readFromOffTrackStream(tmpVersionID);
 		}
 		// Return the object
 		return obj;
@@ -566,8 +567,8 @@ public class PacketInput implements Enumeration {
 	 * This is the method that reads packets from the input stream that were
 	 * serialized in the version 1 format of packet.
 	 * 
-	 * @return an Object that is an <code>SSDSDevicePacket</code> that
-	 *         conforms to the first version of packet structure
+	 * @return an Object that is an <code>SSDSDevicePacket</code> that conforms
+	 *         to the first version of packet structure
 	 * 
 	 * @throws IOException
 	 *             if something goes wrong with the read.
@@ -598,23 +599,23 @@ public class PacketInput implements Enumeration {
 		// This is a hack, see docs below where constants are defined
 		if (bufferSize > PacketInput.MAX_FIRST_BUFFER_SIZE) {
 			// Create and log an error message
-//			StringBuffer errorMessage = new StringBuffer();
-//			errorMessage
-//					.append("A packet primary buffer size of " + bufferSize);
-//			errorMessage.append(" was read from the serialized packet stream ");
-//			if (this.file != null) {
-//				errorMessage.append("(File: " + this.file.getName() + ")");
-//			} else if (this.packetURL != null) {
-//				errorMessage.append("(URL: " + this.packetURL.toString() + ")");
-//			} else {
-//				errorMessage.append("(Unknown packet source)");
-//			}
-//			errorMessage.append(" with a SIAM timestamp of ");
-//			errorMessage.append(new Date(systemTime).toString());
-//			errorMessage.append(" and that exceeds the max size of "
-//					+ PacketInput.MAX_FIRST_BUFFER_SIZE);
-//			errorMessage.append(" so it has been reset to 1.");
-//			logger.debug(errorMessage.toString());
+			// StringBuffer errorMessage = new StringBuffer();
+			// errorMessage
+			// .append("A packet primary buffer size of " + bufferSize);
+			// errorMessage.append(" was read from the serialized packet stream ");
+			// if (this.file != null) {
+			// errorMessage.append("(File: " + this.file.getName() + ")");
+			// } else if (this.packetURL != null) {
+			// errorMessage.append("(URL: " + this.packetURL.toString() + ")");
+			// } else {
+			// errorMessage.append("(Unknown packet source)");
+			// }
+			// errorMessage.append(" with a SIAM timestamp of ");
+			// errorMessage.append(new Date(systemTime).toString());
+			// errorMessage.append(" and that exceeds the max size of "
+			// + PacketInput.MAX_FIRST_BUFFER_SIZE);
+			// errorMessage.append(" so it has been reset to 1.");
+			// logger.debug(errorMessage.toString());
 			// Reset the buffer size to one
 			bufferSize = 1;
 		}
@@ -653,8 +654,8 @@ public class PacketInput implements Enumeration {
 	 * This is the method that reads packets from the input stream that were
 	 * serialized in the version 2 format of packet.
 	 * 
-	 * @return an Object that is an <code>SSDSDevicePacket</code> that
-	 *         conforms to the second version of packet structure
+	 * @return an Object that is an <code>SSDSDevicePacket</code> that conforms
+	 *         to the second version of packet structure
 	 * 
 	 * @throws IOException
 	 *             if something goes wrong with the read.
@@ -687,23 +688,23 @@ public class PacketInput implements Enumeration {
 		// This is a hack, see docs below where constants are defined
 		if (bufferSize > PacketInput.MAX_FIRST_BUFFER_SIZE) {
 			// Create and log an error message
-//			StringBuffer errorMessage = new StringBuffer();
-//			errorMessage
-//					.append("A packet primary buffer size of " + bufferSize);
-//			errorMessage.append(" was read from the serialized packet stream ");
-//			if (this.file != null) {
-//				errorMessage.append("(File: " + this.file.getName() + ")");
-//			} else if (this.packetURL != null) {
-//				errorMessage.append("(URL: " + this.packetURL.toString() + ")");
-//			} else {
-//				errorMessage.append("(Unknown packet source)");
-//			}
-//			errorMessage.append(" with a SIAM timestamp of ");
-//			errorMessage.append(new Date(systemTime).toString());
-//			errorMessage.append(" and that exceeds the max size of "
-//					+ PacketInput.MAX_FIRST_BUFFER_SIZE);
-//			errorMessage.append(" so it has been reset to 1.");
-//			logger.debug(errorMessage.toString());
+			// StringBuffer errorMessage = new StringBuffer();
+			// errorMessage
+			// .append("A packet primary buffer size of " + bufferSize);
+			// errorMessage.append(" was read from the serialized packet stream ");
+			// if (this.file != null) {
+			// errorMessage.append("(File: " + this.file.getName() + ")");
+			// } else if (this.packetURL != null) {
+			// errorMessage.append("(URL: " + this.packetURL.toString() + ")");
+			// } else {
+			// errorMessage.append("(Unknown packet source)");
+			// }
+			// errorMessage.append(" with a SIAM timestamp of ");
+			// errorMessage.append(new Date(systemTime).toString());
+			// errorMessage.append(" and that exceeds the max size of "
+			// + PacketInput.MAX_FIRST_BUFFER_SIZE);
+			// errorMessage.append(" so it has been reset to 1.");
+			// logger.debug(errorMessage.toString());
 			// Set the buffer size back to 1
 			bufferSize = 1;
 		}
@@ -741,23 +742,23 @@ public class PacketInput implements Enumeration {
 		// This is a hack, see docs below where constants are defined
 		if (bufferTwoSize > PacketInput.MAX_SECOND_BUFFER_SIZE) {
 			// Create and log an error message
-//			StringBuffer errorMessage = new StringBuffer();
-//			errorMessage.append("A packet secondary buffer size of "
-//					+ bufferTwoSize);
-//			errorMessage.append(" was read from the serialized packet stream ");
-//			if (this.file != null) {
-//				errorMessage.append("(File: " + this.file.getName() + ")");
-//			} else if (this.packetURL != null) {
-//				errorMessage.append("(URL: " + this.packetURL.toString() + ")");
-//			} else {
-//				errorMessage.append("(Unknown packet source)");
-//			}
-//			errorMessage.append(" with a SIAM timestamp of ");
-//			errorMessage.append(new Date(systemTime).toString());
-//			errorMessage.append(" and that exceeds the max size of "
-//					+ PacketInput.MAX_SECOND_BUFFER_SIZE);
-//			errorMessage.append(" so it has been reset to 1.");
-//			logger.debug(errorMessage.toString());
+			// StringBuffer errorMessage = new StringBuffer();
+			// errorMessage.append("A packet secondary buffer size of "
+			// + bufferTwoSize);
+			// errorMessage.append(" was read from the serialized packet stream ");
+			// if (this.file != null) {
+			// errorMessage.append("(File: " + this.file.getName() + ")");
+			// } else if (this.packetURL != null) {
+			// errorMessage.append("(URL: " + this.packetURL.toString() + ")");
+			// } else {
+			// errorMessage.append("(Unknown packet source)");
+			// }
+			// errorMessage.append(" with a SIAM timestamp of ");
+			// errorMessage.append(new Date(systemTime).toString());
+			// errorMessage.append(" and that exceeds the max size of "
+			// + PacketInput.MAX_SECOND_BUFFER_SIZE);
+			// errorMessage.append(" so it has been reset to 1.");
+			// logger.debug(errorMessage.toString());
 			// Reset the secondary buffer size to one
 			bufferTwoSize = 1;
 		}
@@ -787,8 +788,8 @@ public class PacketInput implements Enumeration {
 	 * This is the method that reads packets from the input stream that were
 	 * serialized in the version 3 format of packet.
 	 * 
-	 * @return an Object that is an <code>SSDSDevicePacket</code> that
-	 *         conforms to the third version of packet structure
+	 * @return an Object that is an <code>SSDSDevicePacket</code> that conforms
+	 *         to the third version of packet structure
 	 * 
 	 * @throws IOException
 	 *             if something goes wrong with the read.
@@ -830,24 +831,24 @@ public class PacketInput implements Enumeration {
 		// This is a hack, see docs below where constants are defined
 		if (bufferSize > PacketInput.MAX_FIRST_BUFFER_SIZE) {
 			// Create and log an error message
-//			StringBuffer errorMessage = new StringBuffer();
-//			errorMessage
-//					.append("A packet primary buffer size of " + bufferSize);
-//			errorMessage.append(" was read from the serialized packet stream ");
-//			if (this.file != null) {
-//				errorMessage.append("(File: " + this.file.getName() + ")");
-//			} else if (this.packetURL != null) {
-//				errorMessage.append("(URL: " + this.packetURL.toString() + ")");
-//			} else {
-//				errorMessage.append("(Unknown packet source)");
-//			}
-//			errorMessage.append(" with a SIAM timestamp of ");
-//			errorMessage.append(new Date((systemTimeSeconds * 1000)
-//					+ (systemTimeNanoseconds / 1000)).toString());
-//			errorMessage.append(" and that exceeds the max size of "
-//					+ PacketInput.MAX_FIRST_BUFFER_SIZE);
-//			errorMessage.append(" so it has been reset to 1.");
-//			logger.debug(errorMessage.toString());
+			// StringBuffer errorMessage = new StringBuffer();
+			// errorMessage
+			// .append("A packet primary buffer size of " + bufferSize);
+			// errorMessage.append(" was read from the serialized packet stream ");
+			// if (this.file != null) {
+			// errorMessage.append("(File: " + this.file.getName() + ")");
+			// } else if (this.packetURL != null) {
+			// errorMessage.append("(URL: " + this.packetURL.toString() + ")");
+			// } else {
+			// errorMessage.append("(Unknown packet source)");
+			// }
+			// errorMessage.append(" with a SIAM timestamp of ");
+			// errorMessage.append(new Date((systemTimeSeconds * 1000)
+			// + (systemTimeNanoseconds / 1000)).toString());
+			// errorMessage.append(" and that exceeds the max size of "
+			// + PacketInput.MAX_FIRST_BUFFER_SIZE);
+			// errorMessage.append(" so it has been reset to 1.");
+			// logger.debug(errorMessage.toString());
 			// Reset the buffer size to 1
 			bufferSize = 1;
 		}
@@ -884,24 +885,24 @@ public class PacketInput implements Enumeration {
 		// This is a hack, see docs below where constants are defined
 		if (bufferTwoSize > PacketInput.MAX_SECOND_BUFFER_SIZE) {
 			// Create and log an error message
-//			StringBuffer errorMessage = new StringBuffer();
-//			errorMessage.append("A packet secondary buffer size of "
-//					+ bufferTwoSize);
-//			errorMessage.append(" was read from the serialized packet stream ");
-//			if (this.file != null) {
-//				errorMessage.append("(File: " + this.file.getName() + ")");
-//			} else if (this.packetURL != null) {
-//				errorMessage.append("(URL: " + this.packetURL.toString() + ")");
-//			} else {
-//				errorMessage.append("(Unknown packet source)");
-//			}
-//			errorMessage.append(" with a SIAM timestamp of ");
-//			errorMessage.append(new Date((systemTimeSeconds * 1000)
-//					+ (systemTimeNanoseconds / 1000)).toString());
-//			errorMessage.append(" and that exceeds the max size of "
-//					+ PacketInput.MAX_SECOND_BUFFER_SIZE);
-//			errorMessage.append(" so it has been reset to 1.");
-//			logger.error(errorMessage.toString());
+			// StringBuffer errorMessage = new StringBuffer();
+			// errorMessage.append("A packet secondary buffer size of "
+			// + bufferTwoSize);
+			// errorMessage.append(" was read from the serialized packet stream ");
+			// if (this.file != null) {
+			// errorMessage.append("(File: " + this.file.getName() + ")");
+			// } else if (this.packetURL != null) {
+			// errorMessage.append("(URL: " + this.packetURL.toString() + ")");
+			// } else {
+			// errorMessage.append("(Unknown packet source)");
+			// }
+			// errorMessage.append(" with a SIAM timestamp of ");
+			// errorMessage.append(new Date((systemTimeSeconds * 1000)
+			// + (systemTimeNanoseconds / 1000)).toString());
+			// errorMessage.append(" and that exceeds the max size of "
+			// + PacketInput.MAX_SECOND_BUFFER_SIZE);
+			// errorMessage.append(" so it has been reset to 1.");
+			// logger.error(errorMessage.toString());
 			// Reset the buffer size to 1
 			bufferTwoSize = 1;
 		}
@@ -954,7 +955,8 @@ public class PacketInput implements Enumeration {
 		// incoming integer into a byte array. This is done most
 		// easily using the BigInteger class, so we convert it
 		// to BigInteger
-		//logger.debug(bytesReadSoFar + ":bytesReadSoFar (readFromOffTrackStream called)");
+		// logger.debug(bytesReadSoFar +
+		// ":bytesReadSoFar (readFromOffTrackStream called)");
 		BigInteger bigInt = new BigInteger("" + tmpVersionID);
 
 		// Now convert it to an array of byte
@@ -992,9 +994,9 @@ public class PacketInput implements Enumeration {
 			} catch (Exception e1) {
 				bailOutOfLoop = true;
 			}
-			//            logger.debug("With new byte, sliding window is : " + new
+			// logger.debug("With new byte, sliding window is : " + new
 			// String(newIntBytes));
-			//            logger.debug("bytesReadSoFar = " + bytesReadSoFar);
+			// logger.debug("bytesReadSoFar = " + bytesReadSoFar);
 			// This is the integer that will be used to check for a valid
 			// version number
 			int possibleVersion = 0;
@@ -1005,7 +1007,7 @@ public class PacketInput implements Enumeration {
 
 			// Now convert to an int
 			possibleVersion = possibleVersionBigInt.intValue();
-			//            logger.debug("possibleVersionBigInt = " +
+			// logger.debug("possibleVersionBigInt = " +
 			// possibleVersionBigInt.intValue());
 
 			// Now check to see if the version number matches one of the
@@ -1018,8 +1020,10 @@ public class PacketInput implements Enumeration {
 				// is not valid, we can go back to the same spot and
 				// keep reading.
 				long tempNumberOfBytes = bytesReadSoFar;
-				//logger.debug("Possible Version of " + possibleVersion	+ " found");
-				//logger.debug(bytesReadSoFar	+ ":bytesReadSoFar (after possible version found)");
+				// logger.debug("Possible Version of " + possibleVersion +
+				// " found");
+				// logger.debug(bytesReadSoFar +
+				// ":bytesReadSoFar (after possible version found)");
 
 				// Now, depending on what version number was found, go
 				// ahead and try to read in an object of that version.
@@ -1028,15 +1032,15 @@ public class PacketInput implements Enumeration {
 				// continue
 				try {
 					switch (possibleVersion) {
-						case 1 :
-							objectToReturn = readVersion1();
-							break;
-						case 2 :
-							objectToReturn = readVersion2();
-							break;
-						case 3 :
-							objectToReturn = readVersion3();
-							break;
+					case 1:
+						objectToReturn = readVersion1();
+						break;
+					case 2:
+						objectToReturn = readVersion2();
+						break;
+					case 3:
+						objectToReturn = readVersion3();
+						break;
 					}
 				} catch (EOFException e3) {
 					bailOutOfLoop = true;
@@ -1044,7 +1048,8 @@ public class PacketInput implements Enumeration {
 					bailOutOfLoop = true;
 				} catch (Exception e3) {
 				}
-				//logger.debug(bytesReadSoFar	+ ":bytesReadSoFar (after tried to read object)");
+				// logger.debug(bytesReadSoFar +
+				// ":bytesReadSoFar (after tried to read object)");
 				// Now check to make sure its not null, so we can run some
 				// checks on it
 				if (objectToReturn != null) {
@@ -1075,7 +1080,7 @@ public class PacketInput implements Enumeration {
 							// Check to see if it passed the tests
 							if (eureka) {
 								// We found a packet, so return it an move on
-								//logger.debug("Returning the object and moving on");
+								// logger.debug("Returning the object and moving on");
 								return objectToReturn;
 							}
 						}
@@ -1085,13 +1090,16 @@ public class PacketInput implements Enumeration {
 				// the file/url reading stuff so we can go back and keep walking
 				// the
 				// stream to look for the next valid version number
-				//logger.debug("Object not valid");
-				//logger.debug(bytesReadSoFar	+ ":bytesReadSoFar (after object invalidated)");
-				//logger.debug(previousTempNumberOfBytes + ":previousTempNumberOfBytes (after object invalidated)");
-				//logger.debug(tempNumberOfBytes + ":tempNumberOfBytes (after object invalidated)");
+				// logger.debug("Object not valid");
+				// logger.debug(bytesReadSoFar +
+				// ":bytesReadSoFar (after object invalidated)");
+				// logger.debug(previousTempNumberOfBytes +
+				// ":previousTempNumberOfBytes (after object invalidated)");
+				// logger.debug(tempNumberOfBytes +
+				// ":tempNumberOfBytes (after object invalidated)");
 				// Bail out if weird condition exists
 				if (tempNumberOfBytes <= previousTempNumberOfBytes) {
-					//logger.debug("****** tempNumberOfBytes <= previousTempNumberOfBytes");
+					// logger.debug("****** tempNumberOfBytes <= previousTempNumberOfBytes");
 					bailOutOfLoop = true;
 					return null;
 				}
@@ -1102,7 +1110,7 @@ public class PacketInput implements Enumeration {
 						// read through (we subtract three because we want to go
 						// back and read the last three bytes of the number that
 						// was last found as a possible version
-						//						setFile(file, tempNumberOfBytes - 3);
+						// setFile(file, tempNumberOfBytes - 3);
 						setFile(file, tempNumberOfBytes);
 					} catch (IOException e) {
 					}
@@ -1116,13 +1124,13 @@ public class PacketInput implements Enumeration {
 							// back and read the last three bytes of the number
 							// that
 							// was last found as a possible version
-							//							setURL(packetURL, tempNumberOfBytes - 3);
+							// setURL(packetURL, tempNumberOfBytes - 3);
 							setURL(packetURL, tempNumberOfBytes);
 						} catch (IOException e) {
 						}
 					}
 				}
-				//logger.debug("Setting previousTempNumberOfBytes to tempNumberOfBytes");
+				// logger.debug("Setting previousTempNumberOfBytes to tempNumberOfBytes");
 				previousTempNumberOfBytes = tempNumberOfBytes;
 			}
 			// Now set the last byte array to the one we last tried so we
@@ -1147,7 +1155,9 @@ public class PacketInput implements Enumeration {
 	/** The DataInputStream that will be read from */
 	private DataInputStream in = null;
 
-	/** A secondary DataInputStream that will be used to parse a local byte array */
+	/**
+	 * A secondary DataInputStream that will be used to parse a local byte array
+	 */
 	private DataInputStream secondaryDIS;
 
 	/** The FileInputStream if a File is used */
@@ -1155,16 +1165,6 @@ public class PacketInput implements Enumeration {
 
 	/** The File that is pointed to by this PacketInput */
 	private File file;
-
-	/**
-	 * This string indicates if this particular <code>PacketInput</code> has
-	 * access to serialized packet on a local drive somewhere (relative to the
-	 * file system running the application). This is used so that if a
-	 * <code>PacketInput</code> is created using a URL and it has access to a
-	 * local file structure, it will check for the same filename on the local
-	 * storage to avoid to overhead of HTTP data access.
-	 */
-	private String localPacketFileLocation = null;
 
 	/** The URL that this PacketInput points to (if not using files) */
 	private URL packetURL = null;
@@ -1175,12 +1175,6 @@ public class PacketInput implements Enumeration {
 
 	/** This is a boolean to indicate if the data source points to a URL */
 	private boolean urlSource = false;
-
-	/**
-	 * This is a boolean to indicate if there are any more packets available
-	 * from a URL Source
-	 */
-	private boolean moreURLElements = true;
 
 	/** The number of bytes that have been read into the packet stream */
 	private long bytesReadSoFar = 0;
@@ -1193,8 +1187,6 @@ public class PacketInput implements Enumeration {
 	 */
 	private Long sourceIDForTracking = null;
 	private Long parentIDForTracking = null;
-	private Long metadataIDForTracking = null;
-	private Long recordTypeForTracking = null;
 
 	/*
 	 * TODO - THIS IS A HACK. Not sure but for some packets, the reading can get
