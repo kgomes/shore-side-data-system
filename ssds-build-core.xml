@@ -720,6 +720,7 @@
 				<filter token="DATASOURCE_USER_LOGIN_NAME" value="${data.services.sql.datasource.user.name}" />
 				<filter token="DATASOURCE_PASSWORD" value="${data.services.sql.datasource.password}" />
 				<filter token="DATASOURCE_TRANSACTION_ISOLATION" value="${data.services.sql.datasource.transaction.isolation}" />
+				<filter token="DATASOURCE_TYPE_MAPPING" value="${database.driver.type.mapping}" />
 			</filterset>
 		</copy>
 		<!-- Copy metadata DataSource xml configurations over -->
