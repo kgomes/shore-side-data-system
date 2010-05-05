@@ -34,7 +34,6 @@ import javax.naming.NamingException;
 import moos.ssds.io.PacketOutput;
 import moos.ssds.io.PacketOutputManager;
 import moos.ssds.io.PacketSQLOutput;
-import moos.ssds.io.util.PacketUtility;
 
 import org.apache.log4j.Logger;
 
