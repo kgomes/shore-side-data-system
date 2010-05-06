@@ -539,58 +539,6 @@ public class PacketUtility {
 	}
 
 	/**
-	 * This method takes in a byte array and populate the incoming variables
-	 * with the information parsed from the array
-	 * 
-	 * @param ssdsFormatByteArray
-	 * @param sourceID
-	 * @param parentID
-	 * @param packetType
-	 * @param packetSubType
-	 * @param metadataSequenceNumber
-	 * @param dataDescriptionVersion
-	 * @param timestampSeconds
-	 * @param timestampNanoseconds
-	 * @param sequenceNumber
-	 * @param firstBuffer
-	 * @param secondBuffer
-	 */
-	public static void readVariablesFromVersion3SSDSByteArray(
-			byte[] ssdsByteArray, long sourceID, long parentID, int packetType,
-			long packetSubType, long metadataSequenceNumber,
-			long dataDescriptionVersion, long timestampSeconds,
-			long timestampNanoseconds, long sequenceNumber, byte[] firstBuffer,
-			byte[] secondBuffer) {
-		// OK now parse out the keys from the byte array
-		DataInputStream dataInputStream = new DataInputStream(
-				new ByteArrayInputStream(ssdsByteArray));
-		try {
-			sourceID = dataInputStream.readLong();
-			parentID = dataInputStream.readLong();
-			packetType = dataInputStream.readInt();
-			packetSubType = dataInputStream.readLong();
-			metadataSequenceNumber = dataInputStream.readLong();
-			dataDescriptionVersion = dataInputStream.readLong();
-			timestampSeconds = dataInputStream.readLong();
-			timestampNanoseconds = dataInputStream.readLong();
-			sequenceNumber = dataInputStream.readLong();
-			int firstBufferSize = dataInputStream.readInt();
-			firstBuffer = new byte[firstBufferSize];
-			// Read in the data buffer
-			dataInputStream.read(firstBuffer);
-
-			// Read in the size of the secondary buffer
-			int secondBufferSize = dataInputStream.readInt();
-			secondBuffer = new byte[secondBufferSize];
-			// Read in the buffer
-			dataInputStream.read(secondBuffer);
-		} catch (IOException e) {
-			logger.error("IException caught reading from byte array: "
-					+ e.getMessage());
-		}
-	}
-
-	/**
 	 * This method takes in a DevicePacket and then converts it to a new
 	 * instance of a SSDSDevicePacket
 	 * 
