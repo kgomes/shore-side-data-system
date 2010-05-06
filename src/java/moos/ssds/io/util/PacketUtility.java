@@ -749,9 +749,27 @@ public class PacketUtility {
 		if (ssdsDevicePacket == null)
 			return null;
 
+		// There are some translation rules that apply to the translation
+		// between SSDSDevicePackets and SSDS byte arrays. They mostly come from
+		// legacy of development
+		int packetType = 0;
+		if (ssdsDevicePacket.getPacketType() == 0) {
+			packetType = 1;
+		} else if (ssdsDevicePacket.getPacketType() == 1) {
+			packetType = 0;
+		} else if (ssdsDevicePacket.getPacketType() == 2) {
+			packetType = 4;
+		}
+
+		long recordType = 0;
+		if (packetType == 0) {
+			recordType = 0;
+		} else {
+			recordType = ssdsDevicePacket.getRecordType();
+		}
+
 		return createSSDSFormatByteArray(ssdsDevicePacket.sourceID(),
-				ssdsDevicePacket.getParentId(), ssdsDevicePacket
-						.getPacketType(), ssdsDevicePacket.getRecordType(),
+				ssdsDevicePacket.getParentId(), packetType, recordType,
 				ssdsDevicePacket.getMetadataSequenceNumber(), ssdsDevicePacket
 						.getDataDescriptionVersion(), ssdsDevicePacket
 						.getTimestampSeconds(), ssdsDevicePacket
