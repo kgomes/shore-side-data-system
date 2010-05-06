@@ -641,7 +641,7 @@ public class PacketGenerator {
 		if (packetFormat.equalsIgnoreCase(SIAM_FORMAT)) {
 			return siamFormat;
 		} else {
-			return PacketUtility.convertSIAMByteArrayToSSDSByteArray(
+			return PacketUtility.convertSIAMByteArrayToVersion3SSDSByteArray(
 					siamFormat, false, false, false, false);
 		}
 	}
