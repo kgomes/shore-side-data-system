@@ -201,6 +201,8 @@ public class PacketOutput {
 		this.writeBytesMessageVersion3(bytesMessage);
 		// Flush the output
 		this.flush();
+		// Close the output
+		this.close();
 	}
 
 	/**
@@ -209,8 +211,13 @@ public class PacketOutput {
 	 * 
 	 * @param ssdsFormatByteArray
 	 */
-	public synchronized void writeBytes(byte[] ssdsFormatByteArray) {
+	public synchronized void writeBytes(byte[] ssdsFormatByteArray)
+			throws IOException {
 		this.writeByteArrayVersion3(ssdsFormatByteArray);
+		// Flush the output
+		this.flush();
+		// Close the output
+		this.close();
 	}
 
 	/**
@@ -291,7 +298,7 @@ public class PacketOutput {
 	private void writeVersion3(SSDSDevicePacket packet) throws IOException {
 		// Convert to a byte array and write
 		writeByteArrayVersion3(PacketUtility
-				.convertSSDSDevicePacketToSSDSByteArray(packet));
+				.convertSSDSDevicePacketToVersion3SSDSByteArray(packet));
 	}
 
 	/**
@@ -392,7 +399,7 @@ public class PacketOutput {
 							(0xFF & byteTwoArrayIS.read()) | 0x100)
 							.substring(1));
 				}
-				logger.debug("Got bytesMessage and wrote to disk file "
+				logger.debug("Got bytes array and wrote to disk file "
 						+ file.getAbsolutePath() + ":" + "deviceID=" + deviceID
 						+ "," + "parentID=" + parentID + "," + "packetType="
 						+ packetType + "," + "packetSubType=" + packetSubType
