@@ -426,7 +426,8 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 
 				// Since a DevicePacket was found, convert it to a
 				// SSDSDevicePacket
-				SSDSDevicePacket ssdsDevicePacket = new SSDSDevicePacket(dp);
+				SSDSDevicePacket ssdsDevicePacket = PacketUtility
+						.convertSIAMDevicePacketToSSDSDevicePacket(dp);
 
 				// Now we need to add things that are not there. These are
 				// device specific things that are gathered from the properties
@@ -449,7 +450,7 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 				// Now convert it to a BytesMessage and publish it
 				this
 						.publishSSDSFormattedBytes(PacketUtility
-								.convertSSDSDevicePacketToSSDSByteArray(ssdsDevicePacket));
+								.convertSSDSDevicePacketToVersion3SSDSByteArray(ssdsDevicePacket));
 			} else {
 				logger.error("The incoming ObjectMessage did not "
 						+ "contain a DevicePacket.");
@@ -490,9 +491,9 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 		// incoming byte array looks like a SIAM formatted byte array
 
 		// Convert it to SSDS format
-		byte[] ssdsBytes = PacketUtility.convertSIAMByteArrayToSSDSByteArray(
+		byte[] ssdsBytes = PacketUtility.convertSIAMByteArrayToVersion3SSDSByteArray(
 				siamBytes, false, false, false, false);
-		PacketUtility.logSSDSMessageByteArray(ssdsBytes, false);
+		PacketUtility.logVersion3SSDSByteArray(ssdsBytes, false);
 
 		// Now publish those
 		publishSSDSFormattedBytes(ssdsBytes);
