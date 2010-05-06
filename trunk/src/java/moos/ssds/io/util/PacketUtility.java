@@ -13,7 +13,12 @@ import javax.jms.JMSException;
 import moos.ssds.io.SSDSDevicePacket;
 
 import org.apache.log4j.Logger;
+import org.mbari.siam.distributed.DeviceMessagePacket;
+import org.mbari.siam.distributed.DevicePacket;
 import org.mbari.siam.distributed.Exportable;
+import org.mbari.siam.distributed.MetadataPacket;
+import org.mbari.siam.distributed.SensorDataPacket;
+import org.mbari.siam.distributed.SummaryPacket;
 
 /**
  * This class contains some utility methods for dealing with the various aspects
@@ -261,7 +266,7 @@ public class PacketUtility {
 	 * 
 	 * @param ssdsByteArray
 	 */
-	public static void logSSDSMessageByteArray(byte[] ssdsByteArray,
+	public static void logVersion3SSDSByteArray(byte[] ssdsByteArray,
 			boolean convertBuffersToASCII) {
 		// This is a string buffer to keep track of the progress of the
 		// extraction
@@ -478,7 +483,7 @@ public class PacketUtility {
 	 * This method takes int the various pieces of information and builds a byte
 	 * array that is in the prescribed SSDS format
 	 */
-	public static byte[] createSSDSFormatByteArray(long sourceID,
+	public static byte[] createVersion3SSDSByteArray(long sourceID,
 			long parentID, int packetType, long packetSubType,
 			long metadataSequenceNumber, long dataDescriptionVersion,
 			long timestampSeconds, long timestampNanoseconds,
@@ -534,6 +539,175 @@ public class PacketUtility {
 	}
 
 	/**
+	 * This method takes in a byte array and populate the incoming variables
+	 * with the information parsed from the array
+	 * 
+	 * @param ssdsFormatByteArray
+	 * @param sourceID
+	 * @param parentID
+	 * @param packetType
+	 * @param packetSubType
+	 * @param metadataSequenceNumber
+	 * @param dataDescriptionVersion
+	 * @param timestampSeconds
+	 * @param timestampNanoseconds
+	 * @param sequenceNumber
+	 * @param firstBuffer
+	 * @param secondBuffer
+	 */
+	public static void readVariablesFromVersion3SSDSByteArray(
+			byte[] ssdsByteArray, long sourceID, long parentID, int packetType,
+			long packetSubType, long metadataSequenceNumber,
+			long dataDescriptionVersion, long timestampSeconds,
+			long timestampNanoseconds, long sequenceNumber, byte[] firstBuffer,
+			byte[] secondBuffer) {
+		// OK now parse out the keys from the byte array
+		DataInputStream dataInputStream = new DataInputStream(
+				new ByteArrayInputStream(ssdsByteArray));
+		try {
+			sourceID = dataInputStream.readLong();
+			parentID = dataInputStream.readLong();
+			packetType = dataInputStream.readInt();
+			packetSubType = dataInputStream.readLong();
+			metadataSequenceNumber = dataInputStream.readLong();
+			dataDescriptionVersion = dataInputStream.readLong();
+			timestampSeconds = dataInputStream.readLong();
+			timestampNanoseconds = dataInputStream.readLong();
+			sequenceNumber = dataInputStream.readLong();
+			int firstBufferSize = dataInputStream.readInt();
+			firstBuffer = new byte[firstBufferSize];
+			// Read in the data buffer
+			dataInputStream.read(firstBuffer);
+
+			// Read in the size of the secondary buffer
+			int secondBufferSize = dataInputStream.readInt();
+			secondBuffer = new byte[secondBufferSize];
+			// Read in the buffer
+			dataInputStream.read(secondBuffer);
+		} catch (IOException e) {
+			logger.error("IException caught reading from byte array: "
+					+ e.getMessage());
+		}
+	}
+
+	/**
+	 * This method takes in a DevicePacket and then converts it to a new
+	 * instance of a SSDSDevicePacket
+	 * 
+	 * @param devicePacket
+	 * @return
+	 */
+	public static SSDSDevicePacket convertSIAMDevicePacketToSSDSDevicePacket(
+			DevicePacket devicePacket) {
+		// Make sure the device packet is not null
+		if (devicePacket == null)
+			return null;
+		// The SSDSDevicePacket to return
+		SSDSDevicePacket ssdsDevicePacket = new SSDSDevicePacket(devicePacket
+				.sourceID());
+
+		// Copy over the sequence number
+		ssdsDevicePacket.setSequenceNo(devicePacket.sequenceNo());
+
+		// Copy over the system time
+		ssdsDevicePacket.setSystemTime(devicePacket.systemTime());
+
+		// Copy over parent id and record type
+		ssdsDevicePacket.setParentId(devicePacket.getParentId());
+		ssdsDevicePacket.setPlatformID(devicePacket.getParentId());
+		ssdsDevicePacket.setRecordType(devicePacket.getRecordType());
+
+		// Check to see if it is a MetadataPacket
+		if (devicePacket instanceof MetadataPacket) {
+			logger.debug("DevicePacket is a MetadataPacket:");
+			// Dump the data buffer into this one
+			ssdsDevicePacket.setDataBuffer(((MetadataPacket) devicePacket)
+					.getBytes());
+			// Dump the cause buffer into the other buffer
+			ssdsDevicePacket.setOtherBuffer(((MetadataPacket) devicePacket)
+					.cause());
+			// Set the packetType to 1
+			ssdsDevicePacket.setPacketType(0);
+			// Set the recordtype to zero also
+			ssdsDevicePacket.setRecordType(0L);
+			// Set the metadata sequence number to this sequence number
+			ssdsDevicePacket
+					.setMetadataSequenceNumber(((MetadataPacket) devicePacket)
+							.metadataRef());
+			ssdsDevicePacket
+					.setDataDescriptionVersion(((MetadataPacket) devicePacket)
+							.metadataRef());
+		}
+
+		// Now check to see if this is a SensorDataPacket
+		if (devicePacket instanceof SensorDataPacket) {
+			logger.debug("DevicePacket is a SensorDataPacket:");
+			StringBuffer hexData = new StringBuffer();
+			ByteArrayInputStream byteArrayIS = new ByteArrayInputStream(
+					((SensorDataPacket) devicePacket).dataBuffer());
+			while (byteArrayIS.available() > 0) {
+				hexData.append(Integer.toHexString(
+						(0xFF & byteArrayIS.read()) | 0x100).substring(1));
+			}
+
+			// Copy the data buffer over
+			ssdsDevicePacket.setDataBuffer(((SensorDataPacket) devicePacket)
+					.dataBuffer());
+			// Set the packetType to 0
+			ssdsDevicePacket.setPacketType(1);
+			// Set the recordType
+			ssdsDevicePacket.setRecordType(((SensorDataPacket) devicePacket)
+					.getRecordType());
+			// Set the metadata sequence number to the one recieved
+			// from the class
+			ssdsDevicePacket
+					.setMetadataSequenceNumber(((SensorDataPacket) devicePacket)
+							.metadataRef());
+			ssdsDevicePacket
+					.setDataDescriptionVersion(((SensorDataPacket) devicePacket)
+							.metadataRef());
+		}
+
+		// Check to see if DeviceMessagePacket (works for Measurement packets
+		// too
+		if (devicePacket instanceof DeviceMessagePacket) {
+			logger.debug("DevicePacket is a DeviceMessagePacket:");
+			// Dump the message buffer
+			ssdsDevicePacket.setDataBuffer(((DeviceMessagePacket) devicePacket)
+					.getMessage());
+			// Set the packet type
+			ssdsDevicePacket.setPacketType(2);
+			// Set the metadataSequenceNumber
+			ssdsDevicePacket
+					.setMetadataSequenceNumber(((DeviceMessagePacket) devicePacket)
+							.metadataRef());
+			ssdsDevicePacket
+					.setDataDescriptionVersion(((DeviceMessagePacket) devicePacket)
+							.metadataRef());
+		}
+
+		// Summary Packets
+		if (devicePacket instanceof SummaryPacket) {
+			logger.debug("DevicePacket is a SummaryPacket:");
+			// Dump the message buffer
+			ssdsDevicePacket.setDataBuffer(((SummaryPacket) devicePacket)
+					.getData());
+			// Set the packet type
+			ssdsDevicePacket.setPacketType(1);
+			// Set the metadataSequenceNumber
+			ssdsDevicePacket
+					.setMetadataSequenceNumber(((SummaryPacket) devicePacket)
+							.metadataRef());
+			ssdsDevicePacket
+					.setDataDescriptionVersion(((SummaryPacket) devicePacket)
+							.metadataRef());
+		}
+
+		// Now return it
+		return ssdsDevicePacket;
+	}
+
+	/**
 	 * This method takes in a byte array in SIAM exported format and converts to
 	 * the SSDS expected format
 	 * 
@@ -542,7 +716,7 @@ public class PacketUtility {
 	 * @return byte array in SSDS format, returns null if the incoming array is
 	 *         empty
 	 */
-	public static byte[] convertSIAMByteArrayToSSDSByteArray(
+	public static byte[] convertSIAMByteArrayToVersion3SSDSByteArray(
 			byte[] siamByteArray, boolean logSIAMByteArray,
 			boolean convertBuffersToASCIIInSIAMLogEntry,
 			boolean logSSDSByteArray,
@@ -704,13 +878,13 @@ public class PacketUtility {
 			// secondary
 			if (packetType == 1) {
 				// Construct the SSDS formatted byte array
-				ssdsByteArray = createSSDSFormatByteArray(sourceID, parentID,
+				ssdsByteArray = createVersion3SSDSByteArray(sourceID, parentID,
 						packetType, packetSubType, metadataRef, metadataRef,
 						timestampSeconds, timestampNanoseconds, sequenceNumber,
 						secondBufferBytes, firstBufferBytes);
 			} else {
 				// Construct the SSDS formatted byte array
-				ssdsByteArray = createSSDSFormatByteArray(sourceID, parentID,
+				ssdsByteArray = createVersion3SSDSByteArray(sourceID, parentID,
 						packetType, packetSubType, metadataRef, metadataRef,
 						timestampSeconds, timestampNanoseconds, sequenceNumber,
 						firstBufferBytes, secondBufferBytes);
@@ -728,7 +902,7 @@ public class PacketUtility {
 		// otherwise return null
 		if (ssdsByteArray != null && ssdsByteArray.length > 0
 				&& logSSDSByteArray) {
-			logSSDSMessageByteArray(ssdsByteArray,
+			logVersion3SSDSByteArray(ssdsByteArray,
 					convertBuffersToASCIIInSSDSLogEntry);
 		}
 
@@ -738,12 +912,12 @@ public class PacketUtility {
 
 	/**
 	 * This method takes in a SSDSDevicePacket and extracts the information into
-	 * the propert byte array structure
+	 * the proper byte array structure
 	 * 
 	 * @param ssdsDevicePacket
 	 * @return
 	 */
-	public static byte[] convertSSDSDevicePacketToSSDSByteArray(
+	public static byte[] convertSSDSDevicePacketToVersion3SSDSByteArray(
 			SSDSDevicePacket ssdsDevicePacket) {
 		// Make sure the packet is not null
 		if (ssdsDevicePacket == null)
@@ -762,13 +936,13 @@ public class PacketUtility {
 		}
 
 		long recordType = 0;
-		if (packetType == 0) {
+		if (ssdsDevicePacket.getPacketType() == 0) {
 			recordType = 0;
 		} else {
 			recordType = ssdsDevicePacket.getRecordType();
 		}
 
-		return createSSDSFormatByteArray(ssdsDevicePacket.sourceID(),
+		return createVersion3SSDSByteArray(ssdsDevicePacket.sourceID(),
 				ssdsDevicePacket.getParentId(), packetType, recordType,
 				ssdsDevicePacket.getMetadataSequenceNumber(), ssdsDevicePacket
 						.getDataDescriptionVersion(), ssdsDevicePacket
@@ -776,5 +950,80 @@ public class PacketUtility {
 						.getTimestampNanoseconds(), ssdsDevicePacket
 						.sequenceNo(), ssdsDevicePacket.getDataBuffer(),
 				ssdsDevicePacket.getOtherBuffer());
+	}
+
+	/**
+	 * This method takes in a SSDS formatted byte array and converts it to a new
+	 * SSDSDevicePacket
+	 * 
+	 * @param ssdsByteArray
+	 * @return
+	 */
+	public static SSDSDevicePacket convertVersion3SSDSByteArrayToSSDSDevicePacket(
+			byte[] ssdsByteArray) {
+
+		// OK now parse out the keys from the byte array
+		DataInputStream dataInputStream = new DataInputStream(
+				new ByteArrayInputStream(ssdsByteArray));
+		long sourceID = -99;
+		long platformID = -99;
+		int packetType = -99;
+		long recordType = -99;
+		long metadataSequenceNumber = -99;
+		long dataDescriptionVersion = -99;
+		long systemTimeSeconds = -99;
+		long systemTimeNanoseconds = -99;
+		long sequenceNumber = -99;
+		int bufferSize = -99;
+		byte[] buffer = null;
+		int bufferTwoSize = -99;
+		byte[] bufferTwo = null;
+		try {
+			sourceID = dataInputStream.readLong();
+			platformID = dataInputStream.readLong();
+			int ssdsPacketType = dataInputStream.readInt();
+			if (ssdsPacketType == 0) {
+				packetType = 1;
+			} else if (ssdsPacketType == 1) {
+				packetType = 0;
+			} else if (ssdsPacketType == 4) {
+				packetType = 2;
+			}
+			recordType = dataInputStream.readLong();
+			metadataSequenceNumber = dataInputStream.readLong();
+			dataDescriptionVersion = dataInputStream.readLong();
+			systemTimeSeconds = dataInputStream.readLong();
+			systemTimeNanoseconds = dataInputStream.readLong();
+			sequenceNumber = dataInputStream.readLong();
+			bufferSize = dataInputStream.readInt();
+			buffer = new byte[bufferSize];
+			// Read in the data buffer
+			dataInputStream.read(buffer);
+			// Read in the size of the secondary buffer
+			bufferTwoSize = dataInputStream.readInt();
+			bufferTwo = new byte[bufferTwoSize];
+			// Read in the buffer
+			dataInputStream.read(bufferTwo);
+		} catch (IOException e) {
+			logger.error("IException caught reading from byte array: "
+					+ e.getMessage());
+		}
+
+		// Create a new packet
+		SSDSDevicePacket packet = new SSDSDevicePacket(sourceID);
+		packet.setPlatformID(platformID);
+		packet.setPacketType(packetType);
+		packet.setRecordType(recordType);
+		packet.setMetadataSequenceNumber(metadataSequenceNumber);
+		packet.setDataDescriptionVersion(dataDescriptionVersion);
+		packet.setSystemTime((systemTimeSeconds * 1000)
+				+ (systemTimeNanoseconds / 1000));
+		packet.setSequenceNo(sequenceNumber);
+		packet.setDataBuffer(buffer);
+		packet.setOtherBuffer(bufferTwo);
+
+		// Return the packet
+		return packet;
+
 	}
 }
