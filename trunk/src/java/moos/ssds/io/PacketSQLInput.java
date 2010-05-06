@@ -18,18 +18,16 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-
 import org.apache.log4j.Logger;
 
 /**
  * <p>
  * This class provides access to the raw data in a DataStream that was collected
  * by SSDS and stored in a relational database. It supports different query
- * arguments that, in general, if left <code>null</code> will not be used in
- * the query. Also, note that some parameters have starts and ends and if the
- * end is left null, only the start value will be queried for. Otherwise an
- * inclusive query (includes starts and ends) will be performed. The parameters
- * are:
+ * arguments that, in general, if left <code>null</code> will not be used in the
+ * query. Also, note that some parameters have starts and ends and if the end is
+ * left null, only the start value will be queried for. Otherwise an inclusive
+ * query (includes starts and ends) will be performed. The parameters are:
  * <ul>
  * <li>deviceID</li>
  * <li>startParentID</li>
@@ -1074,13 +1072,12 @@ public class PacketSQLInput implements Enumeration {
 
 	/**
 	 * This method returns a boolean that indicates if there are more packets
-	 * that can be read from the source. If <code>true</code>, the caller
-	 * should be able to call <code>nextElement</code> to retrieve another
-	 * packet.
+	 * that can be read from the source. If <code>true</code>, the caller should
+	 * be able to call <code>nextElement</code> to retrieve another packet.
 	 * 
-	 * @return a <code>boolean</code> that indicates if more packets can be
-	 *         read from the source. More can be read if <code>true</code>,
-	 *         none if <code>false</code>.
+	 * @return a <code>boolean</code> that indicates if more packets can be read
+	 *         from the source. More can be read if <code>true</code>, none if
+	 *         <code>false</code>.
 	 */
 	public boolean hasMoreElements() {
 		// Set the return to false as the default
@@ -1212,15 +1209,15 @@ public class PacketSQLInput implements Enumeration {
 	 * the object will be read from the current location of the result set
 	 * cursor
 	 * 
-	 * @return an Object that is an <code>SSDSDevicePacket</code> that
-	 *         conforms to the third version of packet structure
+	 * @return an Object that is an <code>SSDSDevicePacket</code> that conforms
+	 *         to the third version of packet structure
 	 */
 	private Object readVersion3() throws SQLException {
 		// Create a new packet
 		int bufferLen = resultSet.getInt("bufferLen");
 		int bufferTwoLen = resultSet.getInt("bufferTwoLen");
 		SSDSGeoLocatedDevicePacket packet = new SSDSGeoLocatedDevicePacket(
-				this.deviceID.longValue(), bufferLen);
+				this.deviceID.longValue());
 		packet.setPlatformID(resultSet.getLong("parentID"));
 		int ssdsPacketType = resultSet.getInt("packetType");
 		int packetType = -1;
@@ -1310,7 +1307,7 @@ public class PacketSQLInput implements Enumeration {
 	private DataSource dataSource = null;
 
 	/* *************************************************** */
-	/* * These parameters are for direct DB connections ** */
+	/*  * These parameters are for direct DB connections ** */
 	/* *************************************************** */
 	private String databaseDriverClassName = null;
 	private String databaseJDBCUrl = null;
@@ -1319,7 +1316,7 @@ public class PacketSQLInput implements Enumeration {
 	// This is a boolean that tells the object if this is supposed to be a
 	// direct connection to the database or not
 	private boolean directConnection = false;
-	/* ************** End direct DB connection *********** */
+	/*  ************** End direct DB connection *********** */
 	/* *************************************************** */
 
 	/**

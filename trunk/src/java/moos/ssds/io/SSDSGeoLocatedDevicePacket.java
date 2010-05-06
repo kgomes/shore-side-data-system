@@ -15,9 +15,6 @@
  */
 package moos.ssds.io;
 
-
-import org.mbari.siam.distributed.DevicePacket;
-
 public class SSDSGeoLocatedDevicePacket extends SSDSDevicePacket implements
 		java.io.Serializable {
 
@@ -27,20 +24,11 @@ public class SSDSGeoLocatedDevicePacket extends SSDSDevicePacket implements
 	private static final long serialVersionUID = 3L;
 
 	/**
-	 * @see moos.ssds.io.SSDSDevicePacket#SSDSDevicePacket(DevicePacket)
-	 * @param devicePacket
+	 * @see moos.ssds.io.SSDSDevicePacket#SSDSDevicePacket(long)
+	 * @param sourceID
 	 */
-	public SSDSGeoLocatedDevicePacket(DevicePacket devicePacket) {
-		super(devicePacket);
-	}
-
-	/**
-	 * @see moos.ssds.io.SSDSDevicePacket#SSDSDevicePacket(long, int)
-	 * @param deviceID
-	 * @param bufferLength
-	 */
-	public SSDSGeoLocatedDevicePacket(long deviceID, int bufferLength) {
-		super(deviceID, bufferLength);
+	public SSDSGeoLocatedDevicePacket(long sourceID) {
+		super(sourceID);
 	}
 
 	/**
