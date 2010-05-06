@@ -168,7 +168,7 @@ public class PacketSQLOutput {
 
 		// Log the message
 		logger.debug("writeBytesVersion3 called.");
-		PacketUtility.logSSDSMessageByteArray(bytes, false);
+		PacketUtility.logVersion3SSDSByteArray(bytes, false);
 
 		// Setup the streams to read the bytes
 		ByteArrayInputStream byteIS = new ByteArrayInputStream(bytes);

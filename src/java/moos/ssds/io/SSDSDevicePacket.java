@@ -15,14 +15,8 @@
  */
 package moos.ssds.io;
 
-import java.io.ByteArrayInputStream;
-
 import org.apache.log4j.Logger;
-import org.mbari.siam.distributed.DeviceMessagePacket;
 import org.mbari.siam.distributed.DevicePacket;
-import org.mbari.siam.distributed.MetadataPacket;
-import org.mbari.siam.distributed.SensorDataPacket;
-import org.mbari.siam.distributed.SummaryPacket;
 
 /**
  * <p>
@@ -104,114 +98,13 @@ public class SSDSDevicePacket extends DevicePacket implements
 	public static int VERSION_ID = 3;
 
 	/**
-	 * This is a constuctor that takes in an existing data packet and constructs
-	 * the appropriate SSDSDevicePacket for for our application
+	 * This constructor simply uses the constructor from the DevicePacket
 	 * 
-	 * @param packet
-	 *            A sensor data packet
-	 * @see org.mbari.isi.interfaces.SensorDataPacket
+	 * @param sourceID
 	 */
-	public SSDSDevicePacket(DevicePacket devicePacket) {
-
-		// Call the super constructor
-		super(devicePacket.sourceID());
-
-		// Copy over the sequence number
-		this.setSequenceNo(devicePacket.sequenceNo());
-
-		// Copy over the system time
-		this.setSystemTime(devicePacket.systemTime());
-
-		// Copy over parent id and record type
-		this.setParentId(devicePacket.getParentId());
-		this.setPlatformID(devicePacket.getParentId());
-		this.setRecordType(devicePacket.getRecordType());
-
-		// Check to see if it is a MetadataPacket
-		if (devicePacket instanceof MetadataPacket) {
-			logger.debug("DevicePacket is a MetadataPacket:");
-			// Dumpt the data buffer into this one
-			this.setDataBuffer(((MetadataPacket) devicePacket).getBytes());
-			// Dump the cause buffer into the other buffer
-			this.setOtherBuffer(((MetadataPacket) devicePacket).cause());
-			// Set the packetType to 1
-			this.setPacketType(1);
-			// Set the recordtype to zero also
-			this.setRecordType(0L);
-			// Set the metadata sequence number to this sequence number
-			this.setMetadataSequenceNumber(((MetadataPacket) devicePacket)
-					.metadataRef());
-			this.setDataDescriptionVersion(((MetadataPacket) devicePacket)
-					.metadataRef());
-		}
-
-		// Now check to see if this is a SensorDataPacket
-		if (devicePacket instanceof SensorDataPacket) {
-			logger.debug("DevicePacket is a SensorDataPacket:");
-			StringBuffer hexData = new StringBuffer();
-			ByteArrayInputStream byteArrayIS = new ByteArrayInputStream(
-					((SensorDataPacket) devicePacket).dataBuffer());
-			while (byteArrayIS.available() > 0) {
-				hexData.append(Integer.toHexString(
-						(0xFF & byteArrayIS.read()) | 0x100).substring(1));
-			}
-
-			// Copy the data buffer over
-			this.setDataBuffer(((SensorDataPacket) devicePacket).dataBuffer());
-			// Set the packetType to 0
-			this.setPacketType(0);
-			// Set the recordType
-			this.setRecordType(((SensorDataPacket) devicePacket)
-					.getRecordType());
-			// Set the metadata sequence number to the one recieved
-			// from the class
-			this.setMetadataSequenceNumber(((SensorDataPacket) devicePacket)
-					.metadataRef());
-			this.setDataDescriptionVersion(((SensorDataPacket) devicePacket)
-					.metadataRef());
-		}
-
-		// Check to see if DeviceMessagePacket (works for Measurement packets
-		// too
-		if (devicePacket instanceof DeviceMessagePacket) {
-			logger.debug("DevicePacket is a DeviceMessagePacket:");
-			// Dump the message buffer
-			this.setDataBuffer(((DeviceMessagePacket) devicePacket)
-					.getMessage());
-			// Set the packet type
-			this.setPacketType(4);
-			// Set the metadataSequenceNumber
-			this.setMetadataSequenceNumber(((DeviceMessagePacket) devicePacket)
-					.metadataRef());
-			this.setDataDescriptionVersion(((DeviceMessagePacket) devicePacket)
-					.metadataRef());
-		}
-
-		// Summary Packets
-		if (devicePacket instanceof SummaryPacket) {
-			logger.debug("DevicePacket is a SummaryPacket:");
-			// Dump the message buffer
-			this.setDataBuffer(((SummaryPacket) devicePacket).getData());
-			// Set the packet type
-			this.setPacketType(0);
-			// Set the metadataSequenceNumber
-			this.setMetadataSequenceNumber(((SummaryPacket) devicePacket)
-					.metadataRef());
-			this.setDataDescriptionVersion(((SummaryPacket) devicePacket)
-					.metadataRef());
-		}
-
-	} // End constructor
-
-	/**
-	 * A constructor that takes in the sourceID and the size of the buffer
-	 */
-	public SSDSDevicePacket(long sourceID, int buffersize) {
-		// Construct the super class object
+	public SSDSDevicePacket(long sourceID) {
+		// Just use the DevicePacket constructor
 		super(sourceID);
-
-		// Now setup the buffer to the right size
-		this.setDataBuffer(new byte[buffersize]);
 	}
 
 	/**
@@ -231,6 +124,7 @@ public class SSDSDevicePacket extends DevicePacket implements
 	 */
 	public void setMetadataSequenceNumber(long metadataSequenceNumber) {
 		this.metadataSequenceNumber = metadataSequenceNumber;
+		super.setMetadataRef(metadataSequenceNumber);
 	}
 
 	/**
@@ -289,6 +183,7 @@ public class SSDSDevicePacket extends DevicePacket implements
 	 */
 	public void setPlatformID(long platformID) {
 		this.platformID = platformID;
+		super.setParentId(platformID);
 	}
 
 	/**
@@ -308,6 +203,7 @@ public class SSDSDevicePacket extends DevicePacket implements
 	 */
 	public void setRecordType(long recordType) {
 		this.recordType = recordType;
+		super.setRecordType(recordType);
 	}
 
 	/**
