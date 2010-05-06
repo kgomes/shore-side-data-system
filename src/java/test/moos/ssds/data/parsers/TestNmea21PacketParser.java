@@ -41,100 +41,101 @@ import org.apache.log4j.Logger;
  */
 public class TestNmea21PacketParser extends TestCase {
 
-    /**
-     * Constructs a test case with the given name.
-     */
-    public TestNmea21PacketParser(String name) {
-        super(name);
-    }
+	/**
+	 * Constructs a test case with the given name.
+	 */
+	public TestNmea21PacketParser(String name) {
+		super(name);
+	}
 
-    /**
+	/**
      * 
      */
-    protected void setUp() {}
+	protected void setUp() {
+	}
 
-    /**
-     * Tears down the fixture
-     */
-    protected void tearDown() {}
+	/**
+	 * Tears down the fixture
+	 */
+	protected void tearDown() {
+	}
 
-    /**
-     * TODO - Document
-     */
-    public void testParse() {
-        // First create the SSDSDevicePacket
-        SSDSDevicePacket testPacket = new SSDSDevicePacket(99L, nmea1
-            .getBytes().length);
-        testPacket.setSystemTime(new Date().getTime());
-        testPacket.setMetadataRef(1L);
-        testPacket.setDataBuffer(nmea1.getBytes());
-        testPacket.setDataDescriptionVersion(1L);
-        testPacket.setMetadataSequenceNumber(1L);
-        testPacket.setOtherBuffer(new byte[0]);
-        testPacket.setPacketType(1);
-        testPacket.setParentId(100);
-        testPacket.setPlatformID(100L);
-        testPacket.setRecordType(1L);
-        testPacket.setSequenceNo(1L);
+	/**
+	 * TODO - Document
+	 */
+	public void testParse() {
+		// First create the SSDSDevicePacket
+		SSDSDevicePacket testPacket = new SSDSDevicePacket(99L);
+		testPacket.setSystemTime(new Date().getTime());
+		testPacket.setMetadataRef(1L);
+		testPacket.setDataBuffer(nmea1.getBytes());
+		testPacket.setDataDescriptionVersion(1L);
+		testPacket.setMetadataSequenceNumber(1L);
+		testPacket.setOtherBuffer(new byte[0]);
+		testPacket.setPacketType(1);
+		testPacket.setParentId(100);
+		testPacket.setPlatformID(100L);
+		testPacket.setRecordType(1L);
+		testPacket.setSequenceNo(1L);
 
-        // NmeaPacketParser
-        Nmea21PacketParser pp = new Nmea21PacketParser(
-            Nmea21RecordParser.RMC_ABBR);
+		// NmeaPacketParser
+		Nmea21PacketParser pp = new Nmea21PacketParser(
+				Nmea21RecordParser.RMC_ABBR);
 
-        // For record one
-        Map dataMap = null;
-        try {
-            dataMap = pp.parse(testPacket);
-        } catch (ParsingException e) {
-            logger.error("ParsingException : " + e.getMessage());
-        }
-        // Now check all the results
-        RecordDescription rd = pp.getRecordDescription();
-        // Grab the RVs
-        Collection recordVariables = rd.getRecordVariables();
-        // Iterate over them
-        Iterator it = recordVariables.iterator();
-        while (it.hasNext()) {
-            RecordVariable rvToCheck = (RecordVariable) it.next();
-            if (rvToCheck.getName().equalsIgnoreCase("time")) {
-                Long time = (Long) dataMap.get(rvToCheck);
-                Calendar calendar = Calendar.getInstance();
-                Date date = new Date();
-                date.setTime(time.longValue());
-                calendar.setTime(date);
-                calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
-                assertEquals("Hours should be equal", 19, calendar
-                    .get(Calendar.HOUR_OF_DAY));
-                assertEquals("Minutes should be equal", 44, calendar
-                    .get(Calendar.MINUTE));
-                assertEquals("Seconds should be equal", 41, calendar
-                    .get(Calendar.SECOND));
-                assertEquals("Year should be equal", 2006, calendar
-                    .get(Calendar.YEAR));
-                assertEquals("Month should be equal", 5, calendar
-                    .get(Calendar.MONTH) + 1);
-                assertEquals("Day of Month should be equal", 17, calendar
-                    .get(Calendar.DAY_OF_MONTH));
-            } else if (rvToCheck.getName().equalsIgnoreCase("grid_latitude")) {
-                Double latitude = (Double) dataMap.get(rvToCheck);
-                assertEquals("Latitude should be correct", latitude
-                    .doubleValue(), 36.83470333333333, 0.0001);
-            } else if (rvToCheck.getName().equalsIgnoreCase("grid_longitude")) {
-                Double longitude = (Double) dataMap.get(rvToCheck);
-                assertEquals("Latitude should be correct", longitude
-                    .doubleValue(), -121.89858833333334, 0.0001);
-                logger.debug("");
-            }
-        }
-    }
+		// For record one
+		Map dataMap = null;
+		try {
+			dataMap = pp.parse(testPacket);
+		} catch (ParsingException e) {
+			logger.error("ParsingException : " + e.getMessage());
+		}
+		// Now check all the results
+		RecordDescription rd = pp.getRecordDescription();
+		// Grab the RVs
+		Collection recordVariables = rd.getRecordVariables();
+		// Iterate over them
+		Iterator it = recordVariables.iterator();
+		while (it.hasNext()) {
+			RecordVariable rvToCheck = (RecordVariable) it.next();
+			if (rvToCheck.getName().equalsIgnoreCase("time")) {
+				Long time = (Long) dataMap.get(rvToCheck);
+				Calendar calendar = Calendar.getInstance();
+				Date date = new Date();
+				date.setTime(time.longValue());
+				calendar.setTime(date);
+				calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+				assertEquals("Hours should be equal", 19, calendar
+						.get(Calendar.HOUR_OF_DAY));
+				assertEquals("Minutes should be equal", 44, calendar
+						.get(Calendar.MINUTE));
+				assertEquals("Seconds should be equal", 41, calendar
+						.get(Calendar.SECOND));
+				assertEquals("Year should be equal", 2006, calendar
+						.get(Calendar.YEAR));
+				assertEquals("Month should be equal", 5, calendar
+						.get(Calendar.MONTH) + 1);
+				assertEquals("Day of Month should be equal", 17, calendar
+						.get(Calendar.DAY_OF_MONTH));
+			} else if (rvToCheck.getName().equalsIgnoreCase("grid_latitude")) {
+				Double latitude = (Double) dataMap.get(rvToCheck);
+				assertEquals("Latitude should be correct", latitude
+						.doubleValue(), 36.83470333333333, 0.0001);
+			} else if (rvToCheck.getName().equalsIgnoreCase("grid_longitude")) {
+				Double longitude = (Double) dataMap.get(rvToCheck);
+				assertEquals("Latitude should be correct", longitude
+						.doubleValue(), -121.89858833333334, 0.0001);
+				logger.debug("");
+			}
+		}
+	}
 
-    /**
-     * The strings to parse
-     */
-    private String nmea1 = "$GPRMC,194441,A,3650.0822,N,12153.9153,W,001.5,284.9,170506,014.8,E*60";
+	/**
+	 * The strings to parse
+	 */
+	private String nmea1 = "$GPRMC,194441,A,3650.0822,N,12153.9153,W,001.5,284.9,170506,014.8,E*60";
 
-    /**
-     * A log4j logger
-     */
-    static Logger logger = Logger.getLogger(TestNmea21PacketParser.class);
+	/**
+	 * A log4j logger
+	 */
+	static Logger logger = Logger.getLogger(TestNmea21PacketParser.class);
 }
