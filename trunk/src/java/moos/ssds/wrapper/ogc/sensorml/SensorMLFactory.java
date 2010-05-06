@@ -220,7 +220,7 @@ public class SensorMLFactory {
 							Collection<SSDSDevicePacket> devicePacketCollection = new ArrayList<SSDSDevicePacket>();
 							SSDSDevicePacket ssdsDevicePacket = new SSDSDevicePacket(
 									dataProducerToConvert.getDevice().getId()
-											.longValue(), dataRecord.length);
+											.longValue());
 							ssdsDevicePacket.setDataBuffer(dataRecord);
 							devicePacketCollection.add(ssdsDevicePacket);
 							PacketParserContext ppc = new PacketParserContext(

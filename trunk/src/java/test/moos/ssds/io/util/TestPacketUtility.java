@@ -360,7 +360,7 @@ public class TestPacketUtility extends TestCase {
 				"MetadataPacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(
 						PacketUtility
-								.convertSIAMByteArrayToSSDSByteArray(
+								.convertSIAMByteArrayToVersion3SSDSByteArray(
 										PacketUtility
 												.extractByteArrayFromBytesMessage(metadataBytesMessage),
 										true, true, true, true), deviceID,
@@ -376,7 +376,7 @@ public class TestPacketUtility extends TestCase {
 				"DeviceMessagePacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(
 						PacketUtility
-								.convertSIAMByteArrayToSSDSByteArray(
+								.convertSIAMByteArrayToVersion3SSDSByteArray(
 										PacketUtility
 												.extractByteArrayFromBytesMessage(deviceMessageBytesMessage),
 										true, true, true, true), deviceID,
@@ -396,7 +396,7 @@ public class TestPacketUtility extends TestCase {
 				"MeasurmentPacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(
 						PacketUtility
-								.convertSIAMByteArrayToSSDSByteArray(
+								.convertSIAMByteArrayToVersion3SSDSByteArray(
 										PacketUtility
 												.extractByteArrayFromBytesMessage(measurementBytesMessage),
 										true, true, true, true), deviceID,
@@ -414,7 +414,7 @@ public class TestPacketUtility extends TestCase {
 				"SensorDataPacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(
 						PacketUtility
-								.convertSIAMByteArrayToSSDSByteArray(
+								.convertSIAMByteArrayToVersion3SSDSByteArray(
 										PacketUtility
 												.extractByteArrayFromBytesMessage(sensorDataBytesMessage),
 										true, true, true, true), deviceID,
@@ -431,7 +431,7 @@ public class TestPacketUtility extends TestCase {
 				"SummaryPacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(
 						PacketUtility
-								.convertSIAMByteArrayToSSDSByteArray(
+								.convertSIAMByteArrayToVersion3SSDSByteArray(
 										PacketUtility
 												.extractByteArrayFromBytesMessage(summaryPacketBytesMessage),
 										true, true, true, true), deviceID,
@@ -447,12 +447,12 @@ public class TestPacketUtility extends TestCase {
 	public void testSIAMPacketToSSDSDevicePacketToSSDSByteArray() {
 		// Take the MetadataPacket and convert to SSDSDevicePacket using a
 		// constructor
-		SSDSDevicePacket ssdsMetadataDevicePacket = new SSDSDevicePacket(
-				metadataPacket);
+		SSDSDevicePacket ssdsMetadataDevicePacket = PacketUtility
+				.convertSIAMDevicePacketToSSDSDevicePacket(metadataPacket);
 
 		// Now convert that packet to an SSDS byte array
 		byte[] ssdsMetadataDevicePacketByteArray = PacketUtility
-				.convertSSDSDevicePacketToSSDSByteArray(ssdsMetadataDevicePacket);
+				.convertSSDSDevicePacketToVersion3SSDSByteArray(ssdsMetadataDevicePacket);
 
 		// Now test
 		assertTrue(
@@ -466,12 +466,12 @@ public class TestPacketUtility extends TestCase {
 						metadataPacketCauseMessage.getBytes()));
 
 		// DeviceMessagePacket
-		SSDSDevicePacket ssdsDeviceMessageDevicePacket = new SSDSDevicePacket(
-				deviceMessagePacket);
+		SSDSDevicePacket ssdsDeviceMessageDevicePacket = PacketUtility
+				.convertSIAMDevicePacketToSSDSDevicePacket(deviceMessagePacket);
 
 		// Now convert that packet to an SSDS byte array
 		byte[] ssdsDeviceMessageDevicePacketByteArray = PacketUtility
-				.convertSSDSDevicePacketToSSDSByteArray(ssdsDeviceMessageDevicePacket);
+				.convertSSDSDevicePacketToVersion3SSDSByteArray(ssdsDeviceMessageDevicePacket);
 		assertTrue(
 				"DeviceMessagePacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(ssdsDeviceMessageDevicePacketByteArray,
@@ -484,12 +484,12 @@ public class TestPacketUtility extends TestCase {
 								.getBytes(), null));
 
 		// MeasurementPacket
-		SSDSDevicePacket ssdsMeasurmentDevicePacket = new SSDSDevicePacket(
-				measurementPacket);
+		SSDSDevicePacket ssdsMeasurmentDevicePacket = PacketUtility
+				.convertSIAMDevicePacketToSSDSDevicePacket(measurementPacket);
 
 		// Now convert that packet to an SSDS byte array
 		byte[] ssdsMeasurmentDevicePacketByteArray = PacketUtility
-				.convertSSDSDevicePacketToSSDSByteArray(ssdsMeasurmentDevicePacket);
+				.convertSSDSDevicePacketToVersion3SSDSByteArray(ssdsMeasurmentDevicePacket);
 		ArgArray targetMeasurementPacketArgArray = new ArgArray();
 		targetMeasurementPacketArgArray.put("TestKey1", "TestKeyValue1");
 		targetMeasurementPacketArgArray.put("TestKey2", "TestValue2");
@@ -506,12 +506,12 @@ public class TestPacketUtility extends TestCase {
 						null));
 
 		// SensorDataPacket
-		SSDSDevicePacket ssdsSensorDataDevicePacket = new SSDSDevicePacket(
-				sensorDataPacket);
+		SSDSDevicePacket ssdsSensorDataDevicePacket = PacketUtility
+				.convertSIAMDevicePacketToSSDSDevicePacket(sensorDataPacket);
 
 		// Now convert that packet to an SSDS byte array
 		byte[] ssdsSensorDataDevicePacketByteArray = PacketUtility
-				.convertSSDSDevicePacketToSSDSByteArray(ssdsSensorDataDevicePacket);
+				.convertSSDSDevicePacketToVersion3SSDSByteArray(ssdsSensorDataDevicePacket);
 		assertTrue(
 				"SensorDataPacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(ssdsSensorDataDevicePacketByteArray,
@@ -524,12 +524,12 @@ public class TestPacketUtility extends TestCase {
 								.getBytes(), null));
 
 		// SummaryPacket
-		SSDSDevicePacket ssdsSummaryDevicePacket = new SSDSDevicePacket(
-				summaryPacket);
+		SSDSDevicePacket ssdsSummaryDevicePacket = PacketUtility
+				.convertSIAMDevicePacketToSSDSDevicePacket(summaryPacket);
 
 		// Now convert that packet to an SSDS byte array
 		byte[] ssdsSummaryDevicePacketByteArray = PacketUtility
-				.convertSSDSDevicePacketToSSDSByteArray(ssdsSummaryDevicePacket);
+				.convertSSDSDevicePacketToVersion3SSDSByteArray(ssdsSummaryDevicePacket);
 		assertTrue(
 				"SummaryPacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(ssdsSummaryDevicePacketByteArray, deviceID,
