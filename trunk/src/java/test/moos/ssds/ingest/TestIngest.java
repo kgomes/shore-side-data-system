@@ -105,8 +105,7 @@ public class TestIngest extends TestCase {
 		Date packetDate = new Date();
 
 		// Create a new SensorDataPacket
-		SSDSDevicePacket packetToSend = new SSDSDevicePacket(101,
-				messagePayload.getBytes().length);
+		SSDSDevicePacket packetToSend = new SSDSDevicePacket(101);
 
 		// Set the packet type to data
 		// 0 = Metadata
@@ -134,7 +133,7 @@ public class TestIngest extends TestCase {
 		packetToSend.setRecordType(1);
 
 		pc.publishBytes(PacketUtility
-				.convertSSDSDevicePacketToSSDSByteArray(packetToSend));
+				.convertSSDSDevicePacketToVersion3SSDSByteArray(packetToSend));
 	}
 
 	/**
