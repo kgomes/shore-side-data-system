@@ -542,6 +542,60 @@ public class TestPacketUtility extends TestCase {
 								.getBytes(), null));
 	}
 
+	public void testReadVariablesFromVersion3SSDSByteArray() {
+		// Construct a SSDS byte array
+		long sourceID = 101;
+		long parentID = 100;
+		// The type of packet Data = 0, Metadata = 1, Device Message = 4
+		int packetType = 0;
+		// This is the record type
+		long packetSubType = 1;
+		long metadataSequenceNumber = 0;
+		long dataDescriptionVersion = 0;
+		Date now = new Date();
+		// TODO kgomes this needs to be changed after but SSDS-77 is fixed
+		long timestampSeconds = now.getTime() / 1000;
+		long timestampNanoseconds = (now.getTime() % 1000) * 1000;
+		long sequenceNumber = 1;
+		byte[] firstBuffer = "Sensor Data First Buffer".getBytes();
+		byte[] secondBuffer = "SensorData Second Buffer (ignored)".getBytes();
+
+		// Create the byte array
+		byte[] ssdsByteArray = PacketUtility.createVersion3SSDSByteArray(
+				sourceID, parentID, packetType, packetSubType,
+				metadataSequenceNumber, dataDescriptionVersion,
+				timestampSeconds, timestampNanoseconds, sequenceNumber,
+				firstBuffer, secondBuffer);
+
+		// Call the extraction method
+		Object[] extractedArray = PacketUtility
+				.readVariablesFromVersion3SSDSByteArray(ssdsByteArray);
+
+		// Now test
+		assertEquals("SourceIDs should be the same", sourceID,
+				((Long) extractedArray[0]).longValue());
+		assertEquals("ParentIDs should be the same", parentID,
+				((Long) extractedArray[1]).longValue());
+		assertEquals("PacketTypes should be the same", packetType,
+				((Integer) extractedArray[2]).intValue());
+		assertEquals("PacketSubTypes should be the same", packetSubType,
+				((Long) extractedArray[3]).longValue());
+		assertEquals("MetadataSequenceNumbers should be the same",
+				metadataSequenceNumber, ((Long) extractedArray[4]).longValue());
+		assertEquals("DataDescriptionVersion should be the same",
+				dataDescriptionVersion, ((Long) extractedArray[5]).longValue());
+		assertEquals("TimestampSeconds should be the same", timestampSeconds,
+				((Long) extractedArray[6]).longValue());
+		assertEquals("TimestampNanoseconds should be the same",
+				timestampNanoseconds, ((Long) extractedArray[7]).longValue());
+		assertEquals("SequenceNumbers should be the same", sequenceNumber,
+				((Long) extractedArray[8]).longValue());
+		assertTrue("First buffers should be the same", Arrays.equals(
+				firstBuffer, ((byte[]) extractedArray[10])));
+		assertTrue("Second buffers should be the same", Arrays.equals(
+				secondBuffer, ((byte[]) extractedArray[12])));
+	}
+
 	/**
 	 * This is a convenience method that takes in a byte array and compares it
 	 * to the incoming parameters. It returns true if they all match and false

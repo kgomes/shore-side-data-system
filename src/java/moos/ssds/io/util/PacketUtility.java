@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 import javax.jms.BytesMessage;
@@ -536,6 +538,69 @@ public class PacketUtility {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * This method takes in a byte array and return an Object array that will be
+	 * in the order of items in the SSDS byte arrary format
+	 * 
+	 * @return an array of <code>Object</code>s that will be the various pieces
+	 *         of the SSDS Byte Array
+	 *         <ol>
+	 *         <li>sourceID (long)</li>
+	 *         <li>parentID (long)</li>
+	 *         <li>packetType (int)</li>
+	 *         <li>packetSubType (long)</li>
+	 *         <li>metadataSequenceNumber (long)</li>
+	 *         <li>dataDescriptionVersion (long)</li>
+	 *         <li>timestampSeconds (long)</li>
+	 *         <li>timestampNanoseconds (long)</li>
+	 *         <li>sequenceNumber (long)</li>
+	 *         <li>firstBufferLength (int)</li>
+	 *         <li>firstBuffer (byte [])</li>
+	 *         <li>secondBufferLength (int)</li>
+	 *         <li>secondBuffer (byte [])</li>
+	 *         </ol>
+	 * @param ssdsFormatByteArray
+	 */
+	public static Object[] readVariablesFromVersion3SSDSByteArray(
+			byte[] ssdsByteArray) {
+		// The collection to return is an array list
+		ArrayList<Object> returnCollection = new ArrayList<Object>();
+
+		// OK now parse out the keys from the byte array
+		DataInputStream dataInputStream = new DataInputStream(
+				new ByteArrayInputStream(ssdsByteArray));
+		try {
+			returnCollection.add(dataInputStream.readLong());
+			returnCollection.add(dataInputStream.readLong());
+			returnCollection.add(dataInputStream.readInt());
+			returnCollection.add(dataInputStream.readLong());
+			returnCollection.add(dataInputStream.readLong());
+			returnCollection.add(dataInputStream.readLong());
+			returnCollection.add(dataInputStream.readLong());
+			returnCollection.add(dataInputStream.readLong());
+			returnCollection.add(dataInputStream.readLong());
+			int firstBufferSize = dataInputStream.readInt();
+			byte[] firstBuffer = new byte[firstBufferSize];
+			// Read in the data buffer
+			dataInputStream.read(firstBuffer);
+			returnCollection.add(firstBufferSize);
+			returnCollection.add(firstBuffer);
+			// Read in the size of the secondary buffer
+			int secondBufferSize = dataInputStream.readInt();
+			byte[] secondBuffer = new byte[secondBufferSize];
+			// Read in the buffer
+			dataInputStream.read(secondBuffer);
+			returnCollection.add(secondBufferSize);
+			returnCollection.add(secondBuffer);
+		} catch (IOException e) {
+			logger.error("IException caught reading from byte array: "
+					+ e.getMessage());
+		}
+
+		// Now return the collection
+		return returnCollection.toArray();
 	}
 
 	/**
