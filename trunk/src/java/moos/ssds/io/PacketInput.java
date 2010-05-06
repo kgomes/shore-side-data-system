@@ -571,7 +571,7 @@ public class PacketInput implements Enumeration<Object> {
 		return obj;
 	}
 
-	public byte[] readByteArrayVersion3() throws IOException {
+	private byte[] readByteArrayVersion3() throws IOException {
 
 		// Create the output byte array (streams)
 		ByteArrayOutputStream byteOS = new ByteArrayOutputStream();
@@ -673,7 +673,7 @@ public class PacketInput implements Enumeration<Object> {
 	 * @throws IOException
 	 *             if something goes wrong with the read
 	 */
-	public Object readObject() throws IOException {
+	private Object readObject() throws IOException {
 		// If not input stream was found
 		if (in == null)
 			return null;
