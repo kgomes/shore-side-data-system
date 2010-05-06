@@ -16,7 +16,9 @@
 package moos.ssds.io;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,6 +30,8 @@ import java.net.URLConnection;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import moos.ssds.io.util.PacketUtility;
 
 import org.apache.log4j.Logger;
 
@@ -44,6 +48,57 @@ import org.apache.log4j.Logger;
  * @version : $Revision: 1.20 $
  */
 public class PacketInput implements Enumeration<Object> {
+
+	/** A log4j logger */
+	static Logger logger = Logger.getLogger(PacketInput.class);
+
+	/** The DataInputStream that will be read from */
+	private DataInputStream in = null;
+
+	/**
+	 * A secondary DataInputStream that will be used to parse a local byte array
+	 */
+	// private DataInputStream secondaryDIS;
+
+	/** The FileInputStream if a File is used */
+	private FileInputStream fin;
+
+	/** The File that is pointed to by this PacketInput */
+	private File file;
+
+	/** The URL that this PacketInput points to (if not using files) */
+	private URL packetURL = null;
+
+	/** The URLConnection that is used by this PacketInput */
+	private URLConnection packetURLConnection = null;
+	private HttpURLConnection httpURLConnection = null;
+
+	/** This is a boolean to indicate if the data source points to a URL */
+	private boolean urlSource = false;
+
+	/** The number of bytes that have been read into the packet stream */
+	private long bytesReadSoFar = 0;
+
+	/*
+	 * These variables are used to keep track of what the values of the key
+	 * attributes of sourceID, metadataID, parentID, and recordType are. These
+	 * are used so that if the reading gets off track, it can be put back on
+	 * track.
+	 */
+	private Long sourceIDForTracking = null;
+	private Long parentIDForTracking = null;
+
+	/*
+	 * TODO - THIS IS A HACK. Not sure but for some packets, the reading can get
+	 * off track and the buffer sizes can be read incorrectly and be REALLY big.
+	 * So I am choosing a logical number to say that the sizes should not exceed
+	 * those numbers.
+	 */
+
+	// This is the max allowable size of the primary buffer;
+	private static final int MAX_FIRST_BUFFER_SIZE = 1000000;
+	// This is the max allowable size of the secondary buffer
+	private static final int MAX_SECOND_BUFFER_SIZE = 500000;
 
 	/**
 	 * No argument constructor. If created with this you will need to call the
@@ -516,6 +571,96 @@ public class PacketInput implements Enumeration<Object> {
 		return obj;
 	}
 
+	public byte[] readByteArrayVersion3() throws IOException {
+
+		// Create the output byte array (streams)
+		ByteArrayOutputStream byteOS = new ByteArrayOutputStream();
+		DataOutputStream dataOS = new DataOutputStream(byteOS);
+
+		// Create a byte array to hold the header keys for the packet
+		byte[] headerKeys = new byte[72];
+
+		// Read in those bytes
+		in.read(headerKeys);
+
+		// Increment the number of bytes read so far
+		this.bytesReadSoFar += 72;
+
+		// OK now parse out the keys from the byte array
+		DataInputStream secondaryDIS = new DataInputStream(
+				new ByteArrayInputStream(headerKeys));
+		// Read in and write sourceID
+		dataOS.writeLong(secondaryDIS.readLong());
+		// Read in and write parentID
+		dataOS.writeLong(secondaryDIS.readLong());
+		// Read in and write the packetType
+		dataOS.writeInt(secondaryDIS.readInt());
+		// Read in and write packet sub type
+		dataOS.writeLong(secondaryDIS.readLong());
+		// Read in and write metadatasequenceNumber
+		dataOS.writeLong(secondaryDIS.readLong());
+		// Read in and write the data description version
+		dataOS.writeLong(secondaryDIS.readLong());
+		// Read in and write timestamp seconds
+		dataOS.writeLong(secondaryDIS.readLong());
+		// Read in and write the timestamp nanoseconds
+		dataOS.writeLong(secondaryDIS.readLong());
+		// Read in and write the sequence number
+		dataOS.writeLong(secondaryDIS.readLong());
+		// Read in and write the size of the first buffer
+		int bufferSize = secondaryDIS.readInt();
+		// This is an exceptional trap that happens if for some
+		// reason the size read in is negative.
+		if (bufferSize < 0)
+			bufferSize = 0;
+		// This is a hack, see docs below where constants are defined
+		if (bufferSize > PacketInput.MAX_FIRST_BUFFER_SIZE) {
+			// Reset the buffer size to 1
+			bufferSize = 0;
+		}
+		// TODO - THIS IS A MAJOR HACK TO GET URL READING WORKING. For
+		// some stupid reason, when reading from a URL, if you run at
+		// full bore, you get exceptions thrown, but by inputting a
+		// one millisecond sleep, it seems to fix it
+		if (this.urlSource) {
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+			}
+		}
+
+		// Create the byte array to store the primary data buffer
+		byte[] buffer = new byte[bufferSize];
+		// Read in the data buffer
+		in.read(buffer);
+		// Write out buffer size and buffer
+		dataOS.writeInt(bufferSize);
+		dataOS.write(buffer);
+		// Increment the number of bytes read so far
+		this.bytesReadSoFar += bufferSize;
+		// Read in the size of the secondary buffer
+		int bufferTwoSize = in.readInt();
+		// Increment the number of bytes read in
+		this.bytesReadSoFar += 4;
+		// This is a hack, see docs below where constants are defined
+		if (bufferTwoSize > PacketInput.MAX_SECOND_BUFFER_SIZE) {
+			// Reset the buffer size to 1
+			bufferTwoSize = 0;
+		}
+		// Allocate an array of bytes that will store the secondary buffer
+		byte[] bufferTwo = new byte[bufferTwoSize];
+		// Read in the buffer
+		in.read(bufferTwo);
+		// Write out the buffer size and buffer
+		dataOS.writeInt(bufferTwoSize);
+		dataOS.write(bufferTwo);
+		// Increment the number of bytes read so far
+		this.bytesReadSoFar += bufferTwoSize;
+
+		// Now return the byte array
+		return byteOS.toByteArray();
+	}
+
 	/**
 	 * This method is called to read an object from the stream. It checks the
 	 * version from the stream and then calls the appropriate read of the
@@ -567,6 +712,7 @@ public class PacketInput implements Enumeration<Object> {
 	 * This is the method that reads packets from the input stream that were
 	 * serialized in the version 1 format of packet.
 	 * 
+	 * @deprecated
 	 * @return an Object that is an <code>SSDSDevicePacket</code> that conforms
 	 *         to the first version of packet structure
 	 * 
@@ -584,7 +730,8 @@ public class PacketInput implements Enumeration<Object> {
 		this.bytesReadSoFar += 52;
 
 		// OK now parse out the keys from the byte array
-		secondaryDIS = new DataInputStream(new ByteArrayInputStream(headerKeys));
+		DataInputStream secondaryDIS = new DataInputStream(
+				new ByteArrayInputStream(headerKeys));
 		long sourceID = secondaryDIS.readLong();
 		long recordType = secondaryDIS.readLong();
 		long metadataID = secondaryDIS.readLong();
@@ -638,7 +785,7 @@ public class PacketInput implements Enumeration<Object> {
 		this.bytesReadSoFar += bufferSize;
 
 		// Create a new packet
-		SSDSDevicePacket packet = new SSDSDevicePacket(sourceID, bufferSize);
+		SSDSDevicePacket packet = new SSDSDevicePacket(sourceID);
 		packet.setMetadataSequenceNumber(metadataID);
 		packet.setRecordType(recordType);
 		packet.setPlatformID(platformID);
@@ -654,6 +801,7 @@ public class PacketInput implements Enumeration<Object> {
 	 * This is the method that reads packets from the input stream that were
 	 * serialized in the version 2 format of packet.
 	 * 
+	 * @deprecated
 	 * @return an Object that is an <code>SSDSDevicePacket</code> that conforms
 	 *         to the second version of packet structure
 	 * 
@@ -672,7 +820,8 @@ public class PacketInput implements Enumeration<Object> {
 		this.bytesReadSoFar += 56;
 
 		// OK now parse out the keys from the byte array
-		secondaryDIS = new DataInputStream(new ByteArrayInputStream(headerKeys));
+		DataInputStream secondaryDIS = new DataInputStream(
+				new ByteArrayInputStream(headerKeys));
 		long sourceID = secondaryDIS.readLong();
 		int packetType = secondaryDIS.readInt();
 		long metadataID = secondaryDIS.readLong();
@@ -770,7 +919,7 @@ public class PacketInput implements Enumeration<Object> {
 		this.bytesReadSoFar += bufferTwoSize;
 
 		// Create a new packet
-		SSDSDevicePacket packet = new SSDSDevicePacket(sourceID, bufferSize);
+		SSDSDevicePacket packet = new SSDSDevicePacket(sourceID);
 		packet.setPacketType(packetType);
 		packet.setMetadataSequenceNumber(metadataID);
 		packet.setRecordType(recordType);
@@ -797,137 +946,14 @@ public class PacketInput implements Enumeration<Object> {
 	 *             if the end of the input stream is hit.
 	 */
 	private Object readVersion3() throws IOException, EOFException {
-		// Create a byte array to hold the header keys for the packet
-		byte[] headerKeys = new byte[72];
-		// Read in those bytes
-		in.read(headerKeys);
-		// Increment the number of bytes read so far
-		this.bytesReadSoFar += 72;
 
-		// OK now parse out the keys from the byte array
-		secondaryDIS = new DataInputStream(new ByteArrayInputStream(headerKeys));
-		long sourceID = secondaryDIS.readLong();
-		long platformID = secondaryDIS.readLong();
-		int ssdsPacketType = secondaryDIS.readInt();
-		int packetType = -1;
-		if (ssdsPacketType == 0) {
-			packetType = 1;
-		} else if (ssdsPacketType == 1) {
-			packetType = 0;
-		} else if (ssdsPacketType == 4) {
-			packetType = 2;
-		}
-		long recordType = secondaryDIS.readLong();
-		long metadataID = secondaryDIS.readLong();
-		long dataDescriptionVersion = secondaryDIS.readLong();
-		long systemTimeSeconds = secondaryDIS.readLong();
-		long systemTimeNanoseconds = secondaryDIS.readLong();
-		long sequenceNo = secondaryDIS.readLong();
-		int bufferSize = secondaryDIS.readInt();
-		// This is an exceptional trap that happens if for some
-		// reason the size read in is negative.
-		if (bufferSize < 0)
-			bufferSize = 1;
-		// This is a hack, see docs below where constants are defined
-		if (bufferSize > PacketInput.MAX_FIRST_BUFFER_SIZE) {
-			// Create and log an error message
-			// StringBuffer errorMessage = new StringBuffer();
-			// errorMessage
-			// .append("A packet primary buffer size of " + bufferSize);
-			// errorMessage.append(" was read from the serialized packet stream ");
-			// if (this.file != null) {
-			// errorMessage.append("(File: " + this.file.getName() + ")");
-			// } else if (this.packetURL != null) {
-			// errorMessage.append("(URL: " + this.packetURL.toString() + ")");
-			// } else {
-			// errorMessage.append("(Unknown packet source)");
-			// }
-			// errorMessage.append(" with a SIAM timestamp of ");
-			// errorMessage.append(new Date((systemTimeSeconds * 1000)
-			// + (systemTimeNanoseconds / 1000)).toString());
-			// errorMessage.append(" and that exceeds the max size of "
-			// + PacketInput.MAX_FIRST_BUFFER_SIZE);
-			// errorMessage.append(" so it has been reset to 1.");
-			// logger.debug(errorMessage.toString());
-			// Reset the buffer size to 1
-			bufferSize = 1;
-		}
-		// TODO - THIS IS A MAJOR HACK TO GET URL READING WORKING. For
-		// some stupid reason, when reading from a URL, if you run at
-		// full bore, you get exceptions thrown, but by inputting a
-		// one millisecond sleep, it seems to fix it
-		if (this.urlSource) {
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-			}
-		}
+		// Read the byte array from the file
+		byte[] nextByteArray = readByteArrayVersion3();
 
-		// Create the byte array to store the primary data buffer
-		byte[] buffer = new byte[bufferSize];
-		// Read in the data buffer
-		in.read(buffer);
-		// Increment the number of bytes read so far
-		this.bytesReadSoFar += bufferSize;
-		// Read in the size of the secondary buffer
-		int bufferTwoSize = in.readInt();
-		// Increment the number of bytes read in
-		this.bytesReadSoFar += 4;
-		// This is a check that basically says, if the packet is not a metadata
-		// packet, the secondary buffer should be a size of one
-		if (packetType != 0) {
-			bufferTwoSize = 1;
-		}
-		// This is an exceptional trap that happens if for some
-		// reason the size read in is negative.
-		if (bufferTwoSize < 0)
-			bufferTwoSize = 1;
-		// This is a hack, see docs below where constants are defined
-		if (bufferTwoSize > PacketInput.MAX_SECOND_BUFFER_SIZE) {
-			// Create and log an error message
-			// StringBuffer errorMessage = new StringBuffer();
-			// errorMessage.append("A packet secondary buffer size of "
-			// + bufferTwoSize);
-			// errorMessage.append(" was read from the serialized packet stream ");
-			// if (this.file != null) {
-			// errorMessage.append("(File: " + this.file.getName() + ")");
-			// } else if (this.packetURL != null) {
-			// errorMessage.append("(URL: " + this.packetURL.toString() + ")");
-			// } else {
-			// errorMessage.append("(Unknown packet source)");
-			// }
-			// errorMessage.append(" with a SIAM timestamp of ");
-			// errorMessage.append(new Date((systemTimeSeconds * 1000)
-			// + (systemTimeNanoseconds / 1000)).toString());
-			// errorMessage.append(" and that exceeds the max size of "
-			// + PacketInput.MAX_SECOND_BUFFER_SIZE);
-			// errorMessage.append(" so it has been reset to 1.");
-			// logger.error(errorMessage.toString());
-			// Reset the buffer size to 1
-			bufferTwoSize = 1;
-		}
-		// Allocate an array of bytes that will store the secondary buffer
-		byte[] bufferTwo = new byte[bufferTwoSize];
-		// Read in the buffer
-		in.read(bufferTwo);
-		// Increment the number of bytes read so far
-		this.bytesReadSoFar += bufferTwoSize;
+		// Now conver to SSDSDevicePacket and return
+		return PacketUtility
+				.convertVersion3SSDSByteArrayToSSDSDevicePacket(nextByteArray);
 
-		// Create a new packet
-		SSDSDevicePacket packet = new SSDSDevicePacket(sourceID, bufferSize);
-		packet.setPlatformID(platformID);
-		packet.setPacketType(packetType);
-		packet.setRecordType(recordType);
-		packet.setMetadataSequenceNumber(metadataID);
-		packet.setDataDescriptionVersion(dataDescriptionVersion);
-		packet.setSystemTime((systemTimeSeconds * 1000)
-				+ (systemTimeNanoseconds / 1000));
-		packet.setSequenceNo(sequenceNo);
-		packet.setDataBuffer(buffer);
-		packet.setOtherBuffer(bufferTwo);
-
-		// Return the packet
-		return packet;
 	}
 
 	/**
@@ -1152,54 +1178,4 @@ public class PacketInput implements Enumeration<Object> {
 		return bytesReadSoFar;
 	}
 
-	/** The DataInputStream that will be read from */
-	private DataInputStream in = null;
-
-	/**
-	 * A secondary DataInputStream that will be used to parse a local byte array
-	 */
-	private DataInputStream secondaryDIS;
-
-	/** The FileInputStream if a File is used */
-	private FileInputStream fin;
-
-	/** The File that is pointed to by this PacketInput */
-	private File file;
-
-	/** The URL that this PacketInput points to (if not using files) */
-	private URL packetURL = null;
-
-	/** The URLConnection that is used by this PacketInput */
-	private URLConnection packetURLConnection = null;
-	private HttpURLConnection httpURLConnection = null;
-
-	/** This is a boolean to indicate if the data source points to a URL */
-	private boolean urlSource = false;
-
-	/** The number of bytes that have been read into the packet stream */
-	private long bytesReadSoFar = 0;
-
-	/*
-	 * These variables are used to keep track of what the values of the key
-	 * attributes of sourceID, metadataID, parentID, and recordType are. These
-	 * are used so that if the reading gets off track, it can be put back on
-	 * track.
-	 */
-	private Long sourceIDForTracking = null;
-	private Long parentIDForTracking = null;
-
-	/*
-	 * TODO - THIS IS A HACK. Not sure but for some packets, the reading can get
-	 * off track and the buffer sizes can be read incorrectly and be REALLY big.
-	 * So I am choosing a logical number to say that the sizes should not exceed
-	 * those numbers.
-	 */
-
-	// This is the max allowable size of the primary buffer;
-	private static final int MAX_FIRST_BUFFER_SIZE = 1000000;
-	// This is the max allowable size of the secondary buffer
-	private static final int MAX_SECOND_BUFFER_SIZE = 500000;
-
-	/** A log4j logger */
-	static Logger logger = Logger.getLogger(PacketInput.class);
 }
