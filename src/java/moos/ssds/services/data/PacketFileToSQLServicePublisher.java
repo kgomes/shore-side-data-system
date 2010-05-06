@@ -123,7 +123,7 @@ public class PacketFileToSQLServicePublisher {
 				SSDSDevicePacket ssdsdp = (SSDSDevicePacket) pi.nextElement();
 				if (this.packetSubmissionAccess != null) {
 					byte[] ssdsBytes = PacketUtility
-							.convertSSDSDevicePacketToSSDSByteArray(ssdsdp);
+							.convertSSDSDevicePacketToVersion3SSDSByteArray(ssdsdp);
 					packetSubmissionAccess.submitPacketAsByteArray(new Long(
 							this.deviceID).longValue(), ssdsBytes);
 				}
