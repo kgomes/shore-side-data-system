@@ -18,6 +18,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import moos.ssds.io.util.PacketUtility;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -70,7 +72,111 @@ import org.apache.log4j.Logger;
  * @author : $Author: kgomes $
  * @version : $Revision: 1.1.2.6 $
  */
-public class PacketSQLInput implements Enumeration {
+public class PacketSQLInput implements Enumeration<Object> {
+
+	/** A log4j logger */
+	static Logger logger = Logger.getLogger(PacketSQLInput.class);
+
+	/**
+	 * These variables are used to control the query
+	 */
+	// The ID of the device to find the data for
+	private Long deviceID = null;
+	// The start and end range of parent IDs
+	private Long startParentID = null;
+	private Long endParentID = null;
+	// The start and end range of packetType
+	private Integer startPacketType = null;
+	private Integer endPacketType = null;
+	// The start and end range of packetSubType
+	private Long startPacketSubType = null;
+	private Long endPacketSubType = null;
+	// The start and end range of the DataDescriptionID
+	private Long startDataDescriptionID = null;
+	private Long endDataDescriptionID = null;
+	// The start and end range of the DataDecriptionVersion
+	private Long startDataDescriptionVersion = null;
+	private Long endDataDescriptionVersion = null;
+	// The start and end range of the TimestampSeconds
+	private Long startTimestampSeconds = null;
+	private Long endTimestampSeconds = null;
+	// The start and end range of the TimestampNanoseconds
+	private Long startTimestampNanoseconds = null;
+	private Long endTimestampNanoseconds = null;
+	// The start and end range of the SequenceNumber
+	private Long startSequenceNumber = null;
+	private Long endSequenceNumber = null;
+	// This is the number of packets back that the selection is to grab
+	private Long lastNumberOfPackets = null;
+	// The latitude that the packet was acquired at
+	private Double startLatitude = null;
+	private Double endLatitude = null;
+	// The longitude that the packet was acquired at
+	private Double startLongitude = null;
+	private Double endLongitude = null;
+	// The depth the packet was acquired at
+	private Float startDepth = null;
+	private Float endDepth = null;
+
+	/**
+	 * This is the value that will be returned if any of the parameter objects
+	 * are null
+	 */
+	public static final int MISSING_VALUE = -999999;
+
+	/**
+	 * This is the DataSource that the packet will be read from
+	 */
+	private DataSource dataSource = null;
+
+	/* ********************************************** */
+	/* These parameters are for direct DB connections */
+	/* ********************************************** */
+	private String databaseJDBCUrl = null;
+	private String username = null;
+	private String password = null;
+	// This is a boolean that tells the object if this is supposed to be a
+	// direct connection to the database or not
+	private boolean directConnection = false;
+	/* ************************ */
+	/* End direct DB connection */
+	/* ************************ */
+
+	/**
+	 * This is the actual connection to the database used
+	 */
+	private Connection connection = null;
+
+	/**
+	 * This is the result set that contains the database rows
+	 */
+	private ResultSet resultSet = null;
+
+	/**
+	 * Boolean to indicate if any of the query variables have changed since the
+	 * last time it was queried
+	 */
+	private boolean paramsChanged = true;
+
+	/**
+	 * A boolean to indicate there is not more data
+	 */
+	private boolean noMoreData = false;
+
+	/**
+	 * This is the delimiter that is used in queries to delimit the table name
+	 * since they are device IDs. The default is set to the MySQL one of `, but
+	 * it can be changed in the constructor
+	 */
+	private String sqlTableDelimiter = "`";
+
+	/**
+	 * These are the SQL fragments that will be inserted to select by last
+	 * number of packets. These are DB specific they need to be set before
+	 * using.
+	 */
+	private String sqlLastNumberOfPacketsPreamble = null;
+	private String sqlLastNumberOfPacketsPostamble = null;
 
 	/**
 	 * No argument constructor. If created with this you will need to call the
@@ -1204,45 +1310,73 @@ public class PacketSQLInput implements Enumeration {
 	}
 
 	/**
+	 * This method returns the next record read from the database but in the
+	 * SSDS byte array format
+	 * 
+	 * @return
+	 */
+	public byte[] nextSSDSByteArray() {
+		if (paramsChanged) {
+			try {
+				this.queryForData();
+			} catch (SQLException e) {
+				logger
+						.error("SQLException caught trying to go to nextElement, then previous row: "
+								+ e.getMessage());
+			}
+		}
+		// The object to return
+		byte[] byteArrayToReturn = null;
+		try {
+			// Advance cursor and see if there is something to return
+			if (resultSet.next()) {
+				// Read in the version from the input stream
+				int tmpVersionID = resultSet.getInt("ssdsPacketVersion");
+				// Now based on the version value, call the appropriate read
+				// method
+				switch (tmpVersionID) {
+				case 3:
+					byteArrayToReturn = readVersion3SSDSByteArray();
+					break;
+				}
+			} else {
+				noMoreData = true;
+			}
+		} catch (SQLException e) {
+			logger.error("SQLException caught trying to readObject: "
+					+ e.getMessage());
+		}
+		// Return the object
+		return byteArrayToReturn;
+	}
+
+	/**
+	 * This method reads in the next record as a byte array, but then returns
+	 * those records in the form of an array of Object in the SSDS byte array
+	 * form and order
+	 * 
+	 * @return
+	 */
+	public Object[] nextSSDSByteArrayAsObjectArray() {
+		return PacketUtility.readVariablesFromVersion3SSDSByteArray(this
+				.nextSSDSByteArray());
+	}
+
+	/**
 	 * This is the method that reads packets from the input stream that were
 	 * serialized in the version 3 format of packet. This method assumes that
 	 * the object will be read from the current location of the result set
 	 * cursor
 	 * 
-	 * @return an Object that is an <code>SSDSDevicePacket</code> that conforms
-	 *         to the third version of packet structure
+	 * @return an Object that is an <code>SSDSGeoLocatedDevicePacket</code> that
+	 *         conforms to the third version of packet structure
 	 */
 	private Object readVersion3() throws SQLException {
-		// Create a new packet
-		int bufferLen = resultSet.getInt("bufferLen");
-		int bufferTwoLen = resultSet.getInt("bufferTwoLen");
-		SSDSGeoLocatedDevicePacket packet = new SSDSGeoLocatedDevicePacket(
-				this.deviceID.longValue());
-		packet.setPlatformID(resultSet.getLong("parentID"));
-		int ssdsPacketType = resultSet.getInt("packetType");
-		int packetType = -1;
-		if (ssdsPacketType == 0) {
-			packetType = 1;
-		} else if (ssdsPacketType == 1) {
-			packetType = 0;
-		} else if (ssdsPacketType == 4) {
-			packetType = 2;
-		}
-		packet.setPacketType(packetType);
-		packet.setRecordType(resultSet.getLong("packetSubType"));
-		packet
-				.setMetadataSequenceNumber(resultSet
-						.getLong("dataDescriptionID"));
-		packet.setDataDescriptionVersion(resultSet
-				.getLong("dataDescriptionVersion"));
-		packet.setSystemTime((resultSet.getLong("timestampSeconds") * 1000)
-				+ (resultSet.getLong("timestampNanoseconds") / 1000));
-		packet.setSequenceNo(resultSet.getLong("sequenceNumber"));
-		// Now pull the Blob
-		Blob bufferOneBlob = resultSet.getBlob("bufferBytes");
-		packet.setDataBuffer(bufferOneBlob.getBytes(1, bufferLen));
-		Blob bufferTwoBlob = resultSet.getBlob("bufferTwoBytes");
-		packet.setOtherBuffer(bufferTwoBlob.getBytes(1, bufferTwoLen));
+
+		// Read in the SSDS byte array and convert to an SSDSDevicePacket
+		SSDSGeoLocatedDevicePacket packet = (SSDSGeoLocatedDevicePacket) PacketUtility
+				.convertVersion3SSDSByteArrayToSSDSDevicePacket(this
+						.readVersion3SSDSByteArray(), true);
 
 		// Set the geo coordinates
 		packet.setLatitude(resultSet.getDouble("latitude"));
@@ -1254,107 +1388,29 @@ public class PacketSQLInput implements Enumeration {
 	}
 
 	/**
-	 * These variables are used to control the query
+	 * This method reads in the data from the database and converts it to a byte
+	 * array that is in the version 3 SSDS format
+	 * 
+	 * @return
+	 * @throws SQLException
 	 */
-	private int packetVersion = 3;
-	// The ID of the device to find the data for
-	private Long deviceID = null;
-	// The start and end range of parent IDs
-	private Long startParentID = null;
-	private Long endParentID = null;
-	// The start and end range of packetType
-	private Integer startPacketType = null;
-	private Integer endPacketType = null;
-	// The start and end range of packetSubType
-	private Long startPacketSubType = null;
-	private Long endPacketSubType = null;
-	// The start and end range of the DataDescriptionID
-	private Long startDataDescriptionID = null;
-	private Long endDataDescriptionID = null;
-	// The start and end range of the DataDecriptionVersion
-	private Long startDataDescriptionVersion = null;
-	private Long endDataDescriptionVersion = null;
-	// The start and end range of the TimestampSeconds
-	private Long startTimestampSeconds = null;
-	private Long endTimestampSeconds = null;
-	// The start and end range of the TimestampNanoseconds
-	private Long startTimestampNanoseconds = null;
-	private Long endTimestampNanoseconds = null;
-	// The start and end range of the SequenceNumber
-	private Long startSequenceNumber = null;
-	private Long endSequenceNumber = null;
-	// This is the number of packets back that the selection is to grab
-	private Long lastNumberOfPackets = null;
-	// The latitude that the packet was aquired at
-	private Double startLatitude = null;
-	private Double endLatitude = null;
-	// The longitude that the packet was aquired at
-	private Double startLongitude = null;
-	private Double endLongitude = null;
-	// The depth the packet was aquired at
-	private Float startDepth = null;
-	private Float endDepth = null;
+	private byte[] readVersion3SSDSByteArray() throws SQLException {
+		// Grab the buffer lengths
+		int bufferLen = resultSet.getInt("bufferLen");
+		int bufferTwoLen = resultSet.getInt("bufferTwoLen");
+		// Grab the blobs for the buffers
+		Blob bufferOneBlob = resultSet.getBlob("bufferBytes");
+		Blob bufferTwoBlob = resultSet.getBlob("bufferTwoBytes");
 
-	/**
-	 * This is the value that will be returned if any of the parameter objects
-	 * are null
-	 */
-	public static final int MISSING_VALUE = -999999;
-
-	/**
-	 * This is the DataSource that the packet will be read from
-	 */
-	private DataSource dataSource = null;
-
-	/* *************************************************** */
-	/*  * These parameters are for direct DB connections ** */
-	/* *************************************************** */
-	private String databaseDriverClassName = null;
-	private String databaseJDBCUrl = null;
-	private String username = null;
-	private String password = null;
-	// This is a boolean that tells the object if this is supposed to be a
-	// direct connection to the database or not
-	private boolean directConnection = false;
-	/*  ************** End direct DB connection *********** */
-	/* *************************************************** */
-
-	/**
-	 * This is the actual connection to the database used
-	 */
-	private Connection connection = null;
-
-	/**
-	 * This is the result set that contains the database rows
-	 */
-	private ResultSet resultSet = null;
-
-	/**
-	 * Boolean to indicate if any of the query variables have changed since the
-	 * last time it was queried
-	 */
-	private boolean paramsChanged = true;
-
-	/**
-	 * A boolean to indicate there is not more data
-	 */
-	private boolean noMoreData = false;
-
-	/**
-	 * This is the delimiter that is used in queries to delimit the table name
-	 * since they are device IDs. The default is set to the MySQL one of `, but
-	 * it can be changed in the constructor
-	 */
-	private String sqlTableDelimiter = "`";
-
-	/**
-	 * These are the SQL fragments that will be inserted to select by last
-	 * number of packets. These are DB specific they need to be set before
-	 * using.
-	 */
-	private String sqlLastNumberOfPacketsPreamble = null;
-	private String sqlLastNumberOfPacketsPostamble = null;
-
-	/** A log4j logger */
-	static Logger logger = Logger.getLogger(PacketSQLInput.class);
+		// Now return the array in SSDS format
+		return PacketUtility.createVersion3SSDSByteArray(this.deviceID
+				.longValue(), resultSet.getLong("parentID"), resultSet
+				.getInt("packetType"), resultSet.getLong("packetSubType"),
+				resultSet.getLong("dataDescriptionID"), resultSet
+						.getLong("dataDescriptionVersion"), resultSet
+						.getLong("timestampSeconds"), resultSet
+						.getLong("timestampNanoseconds"), resultSet
+						.getLong("sequenceNumber"), bufferOneBlob.getBytes(1,
+						bufferLen), bufferTwoBlob.getBytes(1, bufferTwoLen));
+	}
 }
