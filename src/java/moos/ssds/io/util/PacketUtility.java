@@ -6,13 +6,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 
 import moos.ssds.io.SSDSDevicePacket;
+import moos.ssds.io.SSDSGeoLocatedDevicePacket;
 
 import org.apache.log4j.Logger;
 import org.mbari.siam.distributed.DeviceMessagePacket;
@@ -973,7 +973,7 @@ public class PacketUtility {
 	 * @return
 	 */
 	public static SSDSDevicePacket convertVersion3SSDSByteArrayToSSDSDevicePacket(
-			byte[] ssdsByteArray) {
+			byte[] ssdsByteArray, boolean convertToGeoPacket) {
 
 		// OK now parse out the keys from the byte array
 		DataInputStream dataInputStream = new DataInputStream(
@@ -1023,7 +1023,12 @@ public class PacketUtility {
 		}
 
 		// Create a new packet
-		SSDSDevicePacket packet = new SSDSDevicePacket(sourceID);
+		SSDSDevicePacket packet = null;
+		if (convertToGeoPacket) {
+			packet = new SSDSGeoLocatedDevicePacket(sourceID);
+		} else {
+			packet = new SSDSDevicePacket(sourceID);
+		}
 		packet.setPlatformID(platformID);
 		packet.setPacketType(packetType);
 		packet.setRecordType(recordType);
