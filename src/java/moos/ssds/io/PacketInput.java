@@ -951,8 +951,8 @@ public class PacketInput implements Enumeration<Object> {
 		byte[] nextByteArray = readByteArrayVersion3();
 
 		// Now conver to SSDSDevicePacket and return
-		return PacketUtility
-				.convertVersion3SSDSByteArrayToSSDSDevicePacket(nextByteArray);
+		return PacketUtility.convertVersion3SSDSByteArrayToSSDSDevicePacket(
+				nextByteArray, false);
 
 	}
 

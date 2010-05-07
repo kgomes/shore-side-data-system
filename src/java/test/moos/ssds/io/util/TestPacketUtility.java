@@ -594,6 +594,45 @@ public class TestPacketUtility extends TestCase {
 				firstBuffer, ((byte[]) extractedArray[10])));
 		assertTrue("Second buffers should be the same", Arrays.equals(
 				secondBuffer, ((byte[]) extractedArray[12])));
+
+		// Let's try nulling out some things
+		firstBuffer = null;
+
+		// Create the byte array again
+		ssdsByteArray = PacketUtility.createVersion3SSDSByteArray(sourceID,
+				parentID, packetType, packetSubType, metadataSequenceNumber,
+				dataDescriptionVersion, timestampSeconds, timestampNanoseconds,
+				sequenceNumber, firstBuffer, secondBuffer);
+
+		// Call the extraction method
+		extractedArray = PacketUtility
+				.readVariablesFromVersion3SSDSByteArray(ssdsByteArray);
+
+		// Now test
+		assertEquals("SourceIDs should be the same", sourceID,
+				((Long) extractedArray[0]).longValue());
+		assertEquals("ParentIDs should be the same", parentID,
+				((Long) extractedArray[1]).longValue());
+		assertEquals("PacketTypes should be the same", packetType,
+				((Integer) extractedArray[2]).intValue());
+		assertEquals("PacketSubTypes should be the same", packetSubType,
+				((Long) extractedArray[3]).longValue());
+		assertEquals("MetadataSequenceNumbers should be the same",
+				metadataSequenceNumber, ((Long) extractedArray[4]).longValue());
+		assertEquals("DataDescriptionVersion should be the same",
+				dataDescriptionVersion, ((Long) extractedArray[5]).longValue());
+		assertEquals("TimestampSeconds should be the same", timestampSeconds,
+				((Long) extractedArray[6]).longValue());
+		assertEquals("TimestampNanoseconds should be the same",
+				timestampNanoseconds, ((Long) extractedArray[7]).longValue());
+		assertEquals("SequenceNumbers should be the same", sequenceNumber,
+				((Long) extractedArray[8]).longValue());
+		assertEquals("First buffer should be of 0 length", 0,
+				((Integer) extractedArray[9]).intValue());
+		assertTrue("First buffer should be an empty buffer", Arrays.equals(
+				new byte[0], ((byte[]) extractedArray[10])));
+		assertTrue("Second buffers should be the same", Arrays.equals(
+				secondBuffer, ((byte[]) extractedArray[12])));
 	}
 
 	/**
