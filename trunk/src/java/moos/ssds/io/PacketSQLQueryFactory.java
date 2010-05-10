@@ -1,23 +1,9 @@
 package moos.ssds.io;
 
-import java.io.IOException;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
-import moos.ssds.io.util.PacketUtility;
 
 import org.apache.log4j.Logger;
 
@@ -51,6 +37,23 @@ public class PacketSQLQueryFactory {
 	 * statement and the order in which the are selected and returned
 	 */
 	private String[] selectParametersAndOrder = null;
+
+	/**
+	 * This is a list of available parameters to use for select. This is a
+	 * convenience so the add method can make sure it is a valid parameter.
+	 */
+	private List<String> availableParameters = null;
+
+	/**
+	 * This is an array of phrases that will be used to build the ORDER BY
+	 * clause
+	 */
+	private String[] orderByParameters = null;
+
+	/**
+	 * This is a flag to indicate the default order by parameters are being used
+	 */
+	private boolean defaultOrderByParameters = true;
 
 	/**
 	 * This is the device for which the queries will be created. It translates
@@ -121,7 +124,29 @@ public class PacketSQLQueryFactory {
 	/**
 	 * This is the default constructor
 	 */
-	public PacketSQLQueryFactory() {
+	public PacketSQLQueryFactory(Long deviceID) {
+		// Set the device ID
+		this.setDeviceID(deviceID);
+
+		// Construct the list of parameters
+		availableParameters = new ArrayList<String>();
+		availableParameters.add(DEVICE_ID);
+		availableParameters.add(PARENT_ID);
+		availableParameters.add(PACKET_TYPE);
+		availableParameters.add(PACKET_SUB_TYPE);
+		availableParameters.add(DATA_DESCRIPTION_ID);
+		availableParameters.add(DATA_DESCRIPTION_VERSION);
+		availableParameters.add(TIMESTAMP_SECONDS);
+		availableParameters.add(TIMESTAMP_NANOSECONDS);
+		availableParameters.add(SEQUENCE_NUMBER);
+		availableParameters.add(BUFFER_LEN);
+		availableParameters.add(BUFFER_BYTES);
+		availableParameters.add(BUFFER_TWO_LEN);
+		availableParameters.add(BUFFER_TWO_BYTES);
+		availableParameters.add(LATITUDE);
+		availableParameters.add(LONGITUDE);
+		availableParameters.add(DEPTH);
+
 		// Create a properties object and read in the io.properties file
 		Properties ioProperties = new Properties();
 		try {
@@ -141,6 +166,9 @@ public class PacketSQLQueryFactory {
 				.getProperty("io.storage.sql.lastnumber.preamble");
 		this.sqlLastNumberOfPacketsPostamble = ioProperties
 				.getProperty("io.storage.sql.lastnumber.postamble");
+
+		// Clear the order by parameters and set to default
+		this.clearOrderByParameters();
 	}
 
 	/**
@@ -151,8 +179,15 @@ public class PacketSQLQueryFactory {
 		selectParametersAndOrder = null;
 	}
 
+	/**
+	 * This method adds a parameter to the list of parameters to be returned in
+	 * the SELECT query
+	 * 
+	 * @param selectParameter
+	 */
 	public void addSelectParameter(String selectParameter) {
-		if (selectParameter != null && !selectParameter.equals("")) {
+		if (selectParameter != null && !selectParameter.equals("")
+				&& availableParameters.contains(selectParameter)) {
 			// Create an array list so it can be expanded
 			List<String> temporaryList = null;
 			if (selectParametersAndOrder == null) {
@@ -163,6 +198,54 @@ public class PacketSQLQueryFactory {
 			// Add the parameter
 			temporaryList.add(selectParameter);
 			// Now convert back to array
+			selectParametersAndOrder = temporaryList
+					.toArray(new String[temporaryList.size()]);
+		}
+	}
+
+	/**
+	 * This method clears out all the order by parameters that will be used in
+	 * the query. It sets up the default to be timestampSeconds and
+	 * timestampNanoseconds ascending as the default
+	 */
+	public void clearOrderByParameters() {
+		orderByParameters = null;
+		this.addOrderByParameter(TIMESTAMP_SECONDS, false);
+		this.addOrderByParameter(TIMESTAMP_NANOSECONDS, false);
+		defaultOrderByParameters = true;
+	}
+
+	/**
+	 * This method adds a parameter to order the result by. The boolean
+	 * indicates if it should be descending (true) or ascending (false)
+	 * 
+	 * @param orderByParameter
+	 *            the parameter to order the results by
+	 * @param isDescending
+	 *            whether or not that sorting should be done in descending
+	 *            (true) or ascending (false) order
+	 */
+	public void addOrderByParameter(String orderByParameter,
+			boolean isDescending) {
+		if (orderByParameter != null && !orderByParameter.equals("")
+				&& availableParameters.contains(orderByParameter)) {
+			// Create an array list so it can be expanded
+			List<String> temporaryList = null;
+			if (defaultOrderByParameters) {
+				temporaryList = new ArrayList<String>();
+				defaultOrderByParameters = false;
+			} else {
+				temporaryList = Arrays.asList(orderByParameters);
+			}
+			// Add the parameter
+			if (isDescending) {
+				temporaryList.add(orderByParameter + " DESC");
+			} else {
+				temporaryList.add(orderByParameter + " ASC");
+			}
+			// Now convert back to array
+			orderByParameters = temporaryList.toArray(new String[temporaryList
+					.size()]);
 		}
 	}
 
@@ -181,7 +264,7 @@ public class PacketSQLQueryFactory {
 	 * @param deviceID
 	 *            The deviceID to set.
 	 */
-	public void setDeviceID(long deviceID) {
+	private void setDeviceID(long deviceID) {
 		if (deviceID == PacketSQLQuery.MISSING_VALUE) {
 			this.deviceID = null;
 		} else {
@@ -724,8 +807,25 @@ public class PacketSQLQueryFactory {
 		}
 	}
 
+	/**
+	 * This method returns the query string that will be used to find the values
+	 * of interest that were constructed using this factory
+	 * 
+	 * @return
+	 */
+	public String getQueryStatement() {
+		return constructSelectStatement() + constructWhereClause()
+				+ constructOrderByClause();
+	}
+
+	/**
+	 * This method takes the parameters listed in the String array and
+	 * constructs the appropriate SELECT clause
+	 * 
+	 * @return
+	 */
 	private String constructSelectStatement() {
-		// First check to see if the select paramater array is empty or null. If
+		// First check to see if the select parameter array is empty or null. If
 		// that is the case, assume all parameters in the default order are
 		// requested
 		StringBuilder selectBuilder = new StringBuilder();
@@ -759,6 +859,12 @@ public class PacketSQLQueryFactory {
 		return selectBuilder.toString();
 	}
 
+	/**
+	 * This method examines all the parameters in the factory and constructs the
+	 * appropriate WHERE clause
+	 * 
+	 * @return
+	 */
 	private String constructWhereClause() {
 		// A StringBuilder to use for the construction
 		StringBuilder whereClauseBuilder = new StringBuilder();
@@ -766,7 +872,7 @@ public class PacketSQLQueryFactory {
 		// A boolean to track if WHERE was added
 		boolean whereAdded = false;
 
-		// Add all contraints
+		// Add all constraints
 		if (this.startParentID != null) {
 			if (!whereAdded) {
 				whereClauseBuilder.append(" WHERE");
@@ -969,507 +1075,23 @@ public class PacketSQLQueryFactory {
 	}
 
 	/**
-	 * This method runs the query using the parameters stored and then holds the
-	 * result set
-	 */
-	private void queryForData() throws SQLException {
-		if (this.deviceID == null) {
-			throw new SQLException("The DeviceID was not specified.");
-		}
-		// Close the old connection
-		if (this.connection != null)
-			this.connection.close();
-
-		// Grab a new connection
-		if (!directConnection) {
-			this.connection = this.dataSource.getConnection();
-		} else {
-			this.connection = DriverManager.getConnection(this.databaseJDBCUrl,
-					this.username, this.password);
-		}
-
-		// Clear the no more data flag
-		noMoreData = false;
-
-		// A boolean to track if WHERE was added
-		boolean whereAdded = false;
-
-		// Build up the query
-		StringBuffer queryString = new StringBuffer();
-		queryString.append("SELECT * FROM ");
-		if (this.lastNumberOfPackets != null) {
-			// First replace any tags in preamble with number of packets and
-			// then append
-			queryString.append((this.sqlLastNumberOfPacketsPreamble.replaceAll(
-					"@LAST_NUMBER_OF_PACKETS@", this.lastNumberOfPackets + ""))
-					+ " ");
-			// queryString.append("(SELECT TOP "
-			// + this.lastNumberOfPackets.longValue() + " * FROM ");
-		}
-		queryString.append(this.sqlTableDelimiter + this.deviceID.longValue()
-				+ this.sqlTableDelimiter);
-
-		// Add all contraints
-		if (this.startParentID != null) {
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			}
-			if (this.endParentID != null) {
-				queryString.append(" parentID >= "
-						+ this.startParentID.longValue() + " AND parentID <= "
-						+ this.endParentID.longValue());
-			} else {
-				queryString.append(" parentID = "
-						+ this.startParentID.longValue());
-			}
-		}
-		// Now check for packetType clause
-		if (startPacketType != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endPacketType != null) {
-				queryString.append(" packetType >= "
-						+ startPacketType.intValue() + " AND packetType <= "
-						+ endPacketType.intValue());
-			} else {
-				queryString.append(" packetType = "
-						+ startPacketType.intValue());
-			}
-		}
-		// Now for packetSubType
-		if (startPacketSubType != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endPacketSubType != null) {
-				queryString.append(" packetSubType >= "
-						+ startPacketSubType.longValue()
-						+ " AND packetSubType <= "
-						+ endPacketSubType.longValue());
-			} else {
-				queryString.append(" packetSubType = "
-						+ startPacketSubType.longValue());
-			}
-		}
-		// Now for the dataDescriptionID
-		if (startDataDescriptionID != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endDataDescriptionID != null) {
-				queryString.append(" dataDescriptionID >= "
-						+ startDataDescriptionID.longValue()
-						+ " AND dataDescriptionID <= "
-						+ endDataDescriptionID.longValue());
-			} else {
-				queryString.append(" dataDescriptionID = "
-						+ startDataDescriptionID.longValue());
-			}
-		}
-		// Now for the dataDescriptionVersion
-		if (startDataDescriptionVersion != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endDataDescriptionVersion != null) {
-				queryString.append(" dataDescriptionVersion >= "
-						+ startDataDescriptionVersion.longValue()
-						+ " AND dataDescriptionVersion <= "
-						+ endDataDescriptionVersion.longValue());
-			} else {
-				queryString.append(" dataDescriptionVersion = "
-						+ startDataDescriptionVersion.longValue());
-			}
-		}
-		// Now for the timestampSeconds
-		if (startTimestampSeconds != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endTimestampSeconds != null) {
-				queryString.append(" timestampSeconds >= "
-						+ startTimestampSeconds.longValue()
-						+ " AND timestampSeconds <= "
-						+ endTimestampSeconds.longValue());
-			} else {
-				queryString.append(" timestampSeconds = "
-						+ startTimestampSeconds.longValue());
-			}
-		}
-
-		// Now for the timestampNanoseconds
-		// TODO KJG 2006-02-8 I removed the nanoseconds part because it doesn't
-		// make any sense in the query side of things. You would only use these
-		// if you were querying within the same second.
-
-		// Now for the sequenceNumber
-		if (startSequenceNumber != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endSequenceNumber != null) {
-				queryString.append(" sequenceNumber >= "
-						+ startSequenceNumber.longValue()
-						+ " AND sequenceNumber <= "
-						+ endSequenceNumber.longValue());
-			} else {
-				queryString.append(" sequenceNumber = "
-						+ startSequenceNumber.longValue());
-			}
-		}
-		// Now for the latitude
-		if (startLatitude != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endLatitude != null) {
-				queryString.append(" latitude >= "
-						+ startLatitude.doubleValue() + " AND latitude <= "
-						+ endLatitude.doubleValue());
-			} else {
-				queryString
-						.append(" latitude = " + startLatitude.doubleValue());
-			}
-		}
-		// Now for the longitude
-		if (startLongitude != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endLongitude != null) {
-				queryString.append(" longitude >= "
-						+ startLongitude.doubleValue() + " AND longitude <= "
-						+ endLongitude.doubleValue());
-			} else {
-				queryString.append(" longitude = "
-						+ startLongitude.doubleValue());
-			}
-		}
-		// Now for the depth
-		if (startDepth != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endDepth != null) {
-				queryString.append(" depth >= " + startDepth.floatValue()
-						+ " AND depth <= " + endDepth.floatValue());
-			} else {
-				queryString.append(" depth = " + startDepth.floatValue());
-			}
-		}
-
-		// Now add some ordering stuff
-		if (this.lastNumberOfPackets != null) {
-			// Replace postamble with last number of packets and append
-			queryString.append(" "
-					+ (this.sqlLastNumberOfPacketsPostamble.replaceAll(
-							"@LAST_NUMBER_OF_PACKETS@",
-							this.lastNumberOfPackets + "")));
-			// queryString
-			// .append(" ORDER BY timestampSeconds DESC, timestampNanoseconds
-			// DESC) DERIVEDTBL");
-		}
-		queryString.append(" ORDER BY timestampSeconds, timestampNanoseconds");
-
-		// Now let's run it
-		logger.debug("SQL statement is: " + queryString.toString());
-
-		PreparedStatement pstmt = null;
-		try {
-			pstmt = connection.prepareStatement(queryString.toString());
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (pstmt != null) {
-			resultSet = null;
-			try {
-				resultSet = pstmt.executeQuery();
-			} catch (SQLException e) {
-				logger
-						.info("SQLException caught trying to read from device table "
-								+ this.deviceID.longValue()
-								+ ": "
-								+ e.getMessage());
-			}
-		}
-		// Changed the flag to indicate that the parameters are done changing
-		this.paramsChanged = false;
-	}
-
-	/**
-	 * This method returns a boolean that indicates if there are more packets
-	 * that can be read from the source. If <code>true</code>, the caller should
-	 * be able to call <code>nextElement</code> to retrieve another packet.
-	 * 
-	 * @return a <code>boolean</code> that indicates if more packets can be read
-	 *         from the source. More can be read if <code>true</code>, none if
-	 *         <code>false</code>.
-	 */
-	public boolean hasMoreElements() {
-		// Set the return to false as the default
-		boolean ok = false;
-		// First check to see if the parameters were changed and
-		// run the query again if they have
-		if (this.paramsChanged) {
-			try {
-				this.queryForData();
-			} catch (SQLException e) {
-				logger.error("SQLException caught trying to re-run query: "
-						+ e.getMessage());
-			}
-		}
-		if ((!noMoreData) && (resultSet != null)) {
-			try {
-				if (resultSet.isLast()) {
-					ok = false;
-				} else {
-					ok = true;
-				}
-			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to go to next, then previous row: "
-								+ e.getMessage());
-			}
-		} else {
-			ok = false;
-		}
-		return ok;
-	}
-
-	/**
-	 * This method closes the results and connections.
-	 */
-	public void close() {
-		try {
-			// Close the result set
-			if (resultSet != null)
-				resultSet.close();
-			// Close the connection
-			if (connection != null)
-				connection.close();
-		} catch (SQLException e) {
-			logger.error("SQLException caught trying to close: "
-					+ e.getMessage());
-		} catch (Exception e) {
-			logger.error("Exception caught: " + e.getMessage());
-		}
-	}
-
-	/**
-	 * This method implement the nextElement() method from the
-	 * <code>Enumeration</code> interface. When called, it returns the next
-	 * available object from the packet stream.
-	 * 
-	 * @return An object that should be an instance of an SSDSDevicePacket
-	 *         Object, it can return null if no object was available
-	 */
-	public Object nextElement() {
-		if (paramsChanged) {
-			try {
-				this.queryForData();
-			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to go to nextElement, then previous row: "
-								+ e.getMessage());
-			}
-		}
-		// The object to return
-		Object obj = null;
-		// If there are results, read the next object
-		if (resultSet != null) {
-			obj = readObject();
-		}
-		// Now return it
-		return obj;
-	}
-
-	/**
-	 * This method is called to read an object from the stream. It checks the
-	 * version from the stream and then calls the appropriate read of the
-	 * correct version.
-	 * 
-	 * @return An object that is an <code>SSDSDevicePacket</code> that is read
-	 *         from the serialized packet stream. A null is returned if no
-	 *         packet was available.
-	 * @throws IOException
-	 *             if something goes wrong with the read
-	 */
-	public Object readObject() {
-		if (paramsChanged) {
-			try {
-				this.queryForData();
-			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to go to nextElement, then previous row: "
-								+ e.getMessage());
-			}
-		}
-		// The object to return
-		Object obj = null;
-		try {
-			// Advance cursor and see if there is something to return
-			if (resultSet.next()) {
-				// Read in the version from the input stream
-				int tmpVersionID = resultSet.getInt("ssdsPacketVersion");
-				// Now based on the version value, call the appropriate read
-				// method
-				switch (tmpVersionID) {
-				case 3:
-					obj = readVersion3();
-					break;
-				}
-			} else {
-				noMoreData = true;
-			}
-		} catch (SQLException e) {
-			logger.error("SQLException caught trying to readObject: "
-					+ e.getMessage());
-		}
-		// Return the object
-		return obj;
-	}
-
-	/**
-	 * This method returns the next record read from the database but in the
-	 * SSDS byte array format
+	 * This method build the order by clause based on the parameters in the
+	 * orderByParameters array
 	 * 
 	 * @return
 	 */
-	public byte[] nextSSDSByteArray() {
-		if (paramsChanged) {
-			try {
-				this.queryForData();
-			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to go to nextElement, then previous row: "
-								+ e.getMessage());
+	private String constructOrderByClause() {
+		// Create a string builder to construct the order by clause
+		StringBuilder orderByStringBuilder = new StringBuilder();
+		// Make sure there are parameters
+		if (orderByParameters != null && orderByParameters.length > 0) {
+			orderByStringBuilder.append(" ORDER BY");
+			for (int i = 0; i < orderByParameters.length; i++) {
+				orderByStringBuilder.append(" " + orderByParameters[i]);
+				if (i != (orderByParameters.length - 1))
+					orderByStringBuilder.append(",");
 			}
 		}
-		// The object to return
-		byte[] byteArrayToReturn = null;
-		try {
-			// Advance cursor and see if there is something to return
-			if (resultSet.next()) {
-				// Read in the version from the input stream
-				int tmpVersionID = resultSet.getInt("ssdsPacketVersion");
-				// Now based on the version value, call the appropriate read
-				// method
-				switch (tmpVersionID) {
-				case 3:
-					byteArrayToReturn = readVersion3SSDSByteArray();
-					break;
-				}
-			} else {
-				noMoreData = true;
-			}
-		} catch (SQLException e) {
-			logger.error("SQLException caught trying to readObject: "
-					+ e.getMessage());
-		}
-		// Return the object
-		return byteArrayToReturn;
-	}
-
-	/**
-	 * This method reads in the next record as a byte array, but then returns
-	 * those records in the form of an array of Object in the SSDS byte array
-	 * form and order
-	 * 
-	 * @return
-	 */
-	public Object[] nextSSDSByteArrayAsObjectArray() {
-		return PacketUtility.readVariablesFromVersion3SSDSByteArray(this
-				.nextSSDSByteArray());
-	}
-
-	/**
-	 * This is the method that reads packets from the input stream that were
-	 * serialized in the version 3 format of packet. This method assumes that
-	 * the object will be read from the current location of the result set
-	 * cursor
-	 * 
-	 * @return an Object that is an <code>SSDSGeoLocatedDevicePacket</code> that
-	 *         conforms to the third version of packet structure
-	 */
-	private Object readVersion3() throws SQLException {
-
-		// Read in the SSDS byte array and convert to an SSDSDevicePacket
-		SSDSGeoLocatedDevicePacket packet = (SSDSGeoLocatedDevicePacket) PacketUtility
-				.convertVersion3SSDSByteArrayToSSDSDevicePacket(this
-						.readVersion3SSDSByteArray(), true);
-
-		// Set the geo coordinates
-		packet.setLatitude(resultSet.getDouble("latitude"));
-		packet.setLongitude(resultSet.getDouble("longitude"));
-		packet.setDepth(resultSet.getFloat("depth"));
-
-		// Return the packet
-		return packet;
-	}
-
-	/**
-	 * This method reads in the data from the database and converts it to a byte
-	 * array that is in the version 3 SSDS format
-	 * 
-	 * @return
-	 * @throws SQLException
-	 */
-	private byte[] readVersion3SSDSByteArray() throws SQLException {
-		// Grab the buffer lengths
-		int bufferLen = resultSet.getInt("bufferLen");
-		int bufferTwoLen = resultSet.getInt("bufferTwoLen");
-		// Grab the blobs for the buffers
-		Blob bufferOneBlob = resultSet.getBlob("bufferBytes");
-		Blob bufferTwoBlob = resultSet.getBlob("bufferTwoBytes");
-
-		// Now return the array in SSDS format
-		return PacketUtility.createVersion3SSDSByteArray(this.deviceID
-				.longValue(), resultSet.getLong("parentID"), resultSet
-				.getInt("packetType"), resultSet.getLong("packetSubType"),
-				resultSet.getLong("dataDescriptionID"), resultSet
-						.getLong("dataDescriptionVersion"), resultSet
-						.getLong("timestampSeconds"), resultSet
-						.getLong("timestampNanoseconds"), resultSet
-						.getLong("sequenceNumber"), bufferOneBlob.getBytes(1,
-						bufferLen), bufferTwoBlob.getBytes(1, bufferTwoLen));
+		return orderByStringBuilder.toString();
 	}
 }
