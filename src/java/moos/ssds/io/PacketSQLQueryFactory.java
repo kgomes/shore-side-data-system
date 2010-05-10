@@ -7,6 +7,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import javax.naming.Context;
@@ -138,6 +141,29 @@ public class PacketSQLQueryFactory {
 				.getProperty("io.storage.sql.lastnumber.preamble");
 		this.sqlLastNumberOfPacketsPostamble = ioProperties
 				.getProperty("io.storage.sql.lastnumber.postamble");
+	}
+
+	/**
+	 * This method clears out all the select parameters that will be used in the
+	 * query
+	 */
+	public void clearSelectParameters() {
+		selectParametersAndOrder = null;
+	}
+
+	public void addSelectParameter(String selectParameter) {
+		if (selectParameter != null && !selectParameter.equals("")) {
+			// Create an array list so it can be expanded
+			List<String> temporaryList = null;
+			if (selectParametersAndOrder == null) {
+				temporaryList = new ArrayList<String>();
+			} else {
+				temporaryList = Arrays.asList(selectParametersAndOrder);
+			}
+			// Add the parameter
+			temporaryList.add(selectParameter);
+			// Now convert back to array
+		}
 	}
 
 	/**
@@ -731,6 +757,215 @@ public class PacketSQLQueryFactory {
 				+ this.sqlTableDelimiter);
 
 		return selectBuilder.toString();
+	}
+
+	private String constructWhereClause() {
+		// A StringBuilder to use for the construction
+		StringBuilder whereClauseBuilder = new StringBuilder();
+
+		// A boolean to track if WHERE was added
+		boolean whereAdded = false;
+
+		// Add all contraints
+		if (this.startParentID != null) {
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			}
+			if (this.endParentID != null) {
+				whereClauseBuilder.append(" parentID >= "
+						+ this.startParentID.longValue() + " AND parentID <= "
+						+ this.endParentID.longValue());
+			} else {
+				whereClauseBuilder.append(" parentID = "
+						+ this.startParentID.longValue());
+			}
+		}
+		// Now check for packetType clause
+		if (startPacketType != null) {
+			// Add where if not added
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			} else {
+				whereClauseBuilder.append(" AND");
+			}
+			if (endPacketType != null) {
+				whereClauseBuilder.append(" packetType >= "
+						+ startPacketType.intValue() + " AND packetType <= "
+						+ endPacketType.intValue());
+			} else {
+				whereClauseBuilder.append(" packetType = "
+						+ startPacketType.intValue());
+			}
+		}
+		// Now for packetSubType
+		if (startPacketSubType != null) {
+			// Add where if not added
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			} else {
+				whereClauseBuilder.append(" AND");
+			}
+			if (endPacketSubType != null) {
+				whereClauseBuilder.append(" packetSubType >= "
+						+ startPacketSubType.longValue()
+						+ " AND packetSubType <= "
+						+ endPacketSubType.longValue());
+			} else {
+				whereClauseBuilder.append(" packetSubType = "
+						+ startPacketSubType.longValue());
+			}
+		}
+		// Now for the dataDescriptionID
+		if (startDataDescriptionID != null) {
+			// Add where if not added
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			} else {
+				whereClauseBuilder.append(" AND");
+			}
+			if (endDataDescriptionID != null) {
+				whereClauseBuilder.append(" dataDescriptionID >= "
+						+ startDataDescriptionID.longValue()
+						+ " AND dataDescriptionID <= "
+						+ endDataDescriptionID.longValue());
+			} else {
+				whereClauseBuilder.append(" dataDescriptionID = "
+						+ startDataDescriptionID.longValue());
+			}
+		}
+		// Now for the dataDescriptionVersion
+		if (startDataDescriptionVersion != null) {
+			// Add where if not added
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			} else {
+				whereClauseBuilder.append(" AND");
+			}
+			if (endDataDescriptionVersion != null) {
+				whereClauseBuilder.append(" dataDescriptionVersion >= "
+						+ startDataDescriptionVersion.longValue()
+						+ " AND dataDescriptionVersion <= "
+						+ endDataDescriptionVersion.longValue());
+			} else {
+				whereClauseBuilder.append(" dataDescriptionVersion = "
+						+ startDataDescriptionVersion.longValue());
+			}
+		}
+		// Now for the timestampSeconds
+		if (startTimestampSeconds != null) {
+			// Add where if not added
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			} else {
+				whereClauseBuilder.append(" AND");
+			}
+			if (endTimestampSeconds != null) {
+				whereClauseBuilder.append(" timestampSeconds >= "
+						+ startTimestampSeconds.longValue()
+						+ " AND timestampSeconds <= "
+						+ endTimestampSeconds.longValue());
+			} else {
+				whereClauseBuilder.append(" timestampSeconds = "
+						+ startTimestampSeconds.longValue());
+			}
+		}
+
+		// Now for the timestampNanoseconds
+		// TODO KJG 2006-02-8 I removed the nanoseconds part because it doesn't
+		// make any sense in the query side of things. You would only use these
+		// if you were querying within the same second.
+
+		// Now for the sequenceNumber
+		if (startSequenceNumber != null) {
+			// Add where if not added
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			} else {
+				whereClauseBuilder.append(" AND");
+			}
+			if (endSequenceNumber != null) {
+				whereClauseBuilder.append(" sequenceNumber >= "
+						+ startSequenceNumber.longValue()
+						+ " AND sequenceNumber <= "
+						+ endSequenceNumber.longValue());
+			} else {
+				whereClauseBuilder.append(" sequenceNumber = "
+						+ startSequenceNumber.longValue());
+			}
+		}
+		// Now for the latitude
+		if (startLatitude != null) {
+			// Add where if not added
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			} else {
+				whereClauseBuilder.append(" AND");
+			}
+			if (endLatitude != null) {
+				whereClauseBuilder.append(" latitude >= "
+						+ startLatitude.doubleValue() + " AND latitude <= "
+						+ endLatitude.doubleValue());
+			} else {
+				whereClauseBuilder.append(" latitude = "
+						+ startLatitude.doubleValue());
+			}
+		}
+		// Now for the longitude
+		if (startLongitude != null) {
+			// Add where if not added
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			} else {
+				whereClauseBuilder.append(" AND");
+			}
+			if (endLongitude != null) {
+				whereClauseBuilder.append(" longitude >= "
+						+ startLongitude.doubleValue() + " AND longitude <= "
+						+ endLongitude.doubleValue());
+			} else {
+				whereClauseBuilder.append(" longitude = "
+						+ startLongitude.doubleValue());
+			}
+		}
+		// Now for the depth
+		if (startDepth != null) {
+			// Add where if not added
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			} else {
+				whereClauseBuilder.append(" AND");
+			}
+			if (endDepth != null) {
+				whereClauseBuilder.append(" depth >= "
+						+ startDepth.floatValue() + " AND depth <= "
+						+ endDepth.floatValue());
+			} else {
+				whereClauseBuilder
+						.append(" depth = " + startDepth.floatValue());
+			}
+		}
+
+		// Now add some ordering stuff
+		if (this.lastNumberOfPackets != null) {
+			// Replace postamble with last number of packets and append
+			whereClauseBuilder.append(" "
+					+ (this.sqlLastNumberOfPacketsPostamble.replaceAll(
+							"@LAST_NUMBER_OF_PACKETS@",
+							this.lastNumberOfPackets + "")));
+		}
+
+		// Return the where clause
+		return whereClauseBuilder.toString();
 	}
 
 	/**
