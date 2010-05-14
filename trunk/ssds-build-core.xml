@@ -344,7 +344,6 @@
 				<include name="moos/ssds/services/metadata/**/*.class" />
 				<include name="moos/ssds/services/blazeds/**/*.class" />
 				<include name="moos/ssds/util/**/*.class" />
-				<include name="moos/ssds/util/**/*.class" />
 				<include name="moos/ssds/io/**/*.class" />
 				<include name="moos/ssds/wrapper/**/*.class" />
 				<include name="moos/ssds/transmogrify/SSDSDevicePacket.class" />
