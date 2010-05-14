@@ -264,11 +264,11 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 		// If the result set is OK, try to skip the number of rows that we have
 		// already read
 		if (resultSet != null) {
+			boolean moveToRowOK = true;
 			try {
 				resultSet.absolute(rowCounter + 1);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				
 			}
 		}
 
