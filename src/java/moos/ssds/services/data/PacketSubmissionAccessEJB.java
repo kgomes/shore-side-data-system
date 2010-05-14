@@ -17,9 +17,6 @@ package moos.ssds.services.data;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.TreeMap;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -27,9 +24,7 @@ import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 
 import moos.ssds.io.PacketOutputManager;
-import moos.ssds.io.PacketSQLInput;
 import moos.ssds.io.PacketSQLOutput;
-import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.services.data.util.DataException;
 
 import org.apache.log4j.Logger;
