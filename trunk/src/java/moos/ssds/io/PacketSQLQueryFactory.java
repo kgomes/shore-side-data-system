@@ -2,6 +2,8 @@ package moos.ssds.io;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -9,13 +11,13 @@ import org.apache.log4j.Logger;
 
 public class PacketSQLQueryFactory {
 	/** A log4j logger */
-	static Logger logger = Logger.getLogger(PacketSQLQuery.class);
+	static Logger logger = Logger.getLogger(PacketSQLQueryFactory.class);
 
 	/**
 	 * These are the variables that are used to construct the SELECT part of the
 	 * clause
 	 */
-	public static final String DEVICE_ID = "deviceID";
+	public static final String SSDS_PACKET_VERSION = "ssdsPacketVersion";
 	public static final String PARENT_ID = "parentID";
 	public static final String PACKET_TYPE = "packetType";
 	public static final String PACKET_SUB_TYPE = "packetSubType";
@@ -45,6 +47,13 @@ public class PacketSQLQueryFactory {
 	private List<String> availableParameters = null;
 
 	/**
+	 * This is a <code>HashMap</code> that will store the field names as the key
+	 * and the <code>Class</code> that that field is as the value
+	 */
+	@SuppressWarnings("unchecked")
+	private HashMap<String, Class> parameterClassMap = null;
+
+	/**
 	 * This is an array of phrases that will be used to build the ORDER BY
 	 * clause
 	 */
@@ -54,6 +63,11 @@ public class PacketSQLQueryFactory {
 	 * This is a flag to indicate the default order by parameters are being used
 	 */
 	private boolean defaultOrderByParameters = true;
+
+	/**
+	 * This is the version of packet that will be queried for
+	 */
+	private Integer ssdsPacketVersion = null;
 
 	/**
 	 * This is the device for which the queries will be created. It translates
@@ -122,30 +136,48 @@ public class PacketSQLQueryFactory {
 	private String sqlLastNumberOfPacketsPostamble = null;
 
 	/**
-	 * This is the default constructor
+	 * The default constructor
 	 */
-	public PacketSQLQueryFactory(Long deviceID) {
-		// Set the device ID
-		this.setDeviceID(deviceID);
+	@SuppressWarnings("unchecked")
+	public PacketSQLQueryFactory() {
+
+		logger.debug("PacketSQLQueryFactory constructor called");
 
 		// Construct the list of parameters
 		availableParameters = new ArrayList<String>();
-		availableParameters.add(DEVICE_ID);
+		parameterClassMap = new HashMap<String, Class>();
+		availableParameters.add(SSDS_PACKET_VERSION);
+		parameterClassMap.put(SSDS_PACKET_VERSION, int.class);
 		availableParameters.add(PARENT_ID);
+		parameterClassMap.put(PARENT_ID, long.class);
 		availableParameters.add(PACKET_TYPE);
+		parameterClassMap.put(PACKET_TYPE, int.class);
 		availableParameters.add(PACKET_SUB_TYPE);
+		parameterClassMap.put(PACKET_SUB_TYPE, long.class);
 		availableParameters.add(DATA_DESCRIPTION_ID);
+		parameterClassMap.put(DATA_DESCRIPTION_ID, long.class);
 		availableParameters.add(DATA_DESCRIPTION_VERSION);
+		parameterClassMap.put(DATA_DESCRIPTION_VERSION, long.class);
 		availableParameters.add(TIMESTAMP_SECONDS);
+		parameterClassMap.put(TIMESTAMP_SECONDS, long.class);
 		availableParameters.add(TIMESTAMP_NANOSECONDS);
+		parameterClassMap.put(TIMESTAMP_NANOSECONDS, long.class);
 		availableParameters.add(SEQUENCE_NUMBER);
+		parameterClassMap.put(SEQUENCE_NUMBER, long.class);
 		availableParameters.add(BUFFER_LEN);
+		parameterClassMap.put(BUFFER_LEN, int.class);
 		availableParameters.add(BUFFER_BYTES);
+		parameterClassMap.put(BUFFER_BYTES, byte[].class);
 		availableParameters.add(BUFFER_TWO_LEN);
+		parameterClassMap.put(BUFFER_TWO_LEN, int.class);
 		availableParameters.add(BUFFER_TWO_BYTES);
+		parameterClassMap.put(BUFFER_TWO_BYTES, byte[].class);
 		availableParameters.add(LATITUDE);
+		parameterClassMap.put(LATITUDE, long.class);
 		availableParameters.add(LONGITUDE);
+		parameterClassMap.put(LONGITUDE, long.class);
 		availableParameters.add(DEPTH);
+		parameterClassMap.put(DEPTH, long.class);
 
 		// Create a properties object and read in the io.properties file
 		Properties ioProperties = new Properties();
@@ -166,9 +198,24 @@ public class PacketSQLQueryFactory {
 				.getProperty("io.storage.sql.lastnumber.preamble");
 		this.sqlLastNumberOfPacketsPostamble = ioProperties
 				.getProperty("io.storage.sql.lastnumber.postamble");
+		logger.debug("sqlTableDelimiter = " + sqlTableDelimiter
+				+ ", sqlLastNumberOfPacketsPreamble = "
+				+ sqlLastNumberOfPacketsPreamble
+				+ ", sqlLastNumberOfPacketsPostamble = "
+				+ sqlLastNumberOfPacketsPostamble);
 
 		// Clear the order by parameters and set to default
 		this.clearOrderByParameters();
+
+	}
+
+	/**
+	 * This is the default constructor
+	 */
+	public PacketSQLQueryFactory(Long deviceID) {
+		this();
+		// Set the device ID
+		this.setDeviceID(deviceID);
 	}
 
 	/**
@@ -193,7 +240,8 @@ public class PacketSQLQueryFactory {
 			if (selectParametersAndOrder == null) {
 				temporaryList = new ArrayList<String>();
 			} else {
-				temporaryList = Arrays.asList(selectParametersAndOrder);
+				temporaryList = new ArrayList<String>(Arrays
+						.asList(selectParametersAndOrder));
 			}
 			// Add the parameter
 			temporaryList.add(selectParameter);
@@ -230,12 +278,13 @@ public class PacketSQLQueryFactory {
 		if (orderByParameter != null && !orderByParameter.equals("")
 				&& availableParameters.contains(orderByParameter)) {
 			// Create an array list so it can be expanded
-			List<String> temporaryList = null;
+			ArrayList<String> temporaryList = null;
 			if (defaultOrderByParameters) {
 				temporaryList = new ArrayList<String>();
 				defaultOrderByParameters = false;
 			} else {
-				temporaryList = Arrays.asList(orderByParameters);
+				temporaryList = new ArrayList<String>(Arrays
+						.asList(orderByParameters));
 			}
 			// Add the parameter
 			if (isDescending) {
@@ -250,13 +299,41 @@ public class PacketSQLQueryFactory {
 	}
 
 	/**
+	 * A method to retrieve the packet version parameter
+	 */
+	public int geSSDSPacketVersion() {
+		if (ssdsPacketVersion != null) {
+			return ssdsPacketVersion.intValue();
+		} else {
+			return MISSING_VALUE;
+		}
+	}
+
+	/**
+	 * This method sets the version of the packet that will be queried for
+	 * 
+	 * @param packetVersion
+	 */
+	public void setSSDSPacketVersion(int packetVersion)
+			throws IllegalArgumentException {
+		if (packetVersion == MISSING_VALUE) {
+			this.ssdsPacketVersion = null;
+		} else if (packetVersion < 1) {
+			throw new IllegalArgumentException(
+					"The packetVersion cannot be less than 1");
+		} else {
+			this.ssdsPacketVersion = packetVersion;
+		}
+	}
+
+	/**
 	 * @return Returns the deviceID.
 	 */
 	public long getDeviceID() {
 		if (deviceID != null) {
 			return deviceID.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -264,9 +341,9 @@ public class PacketSQLQueryFactory {
 	 * @param deviceID
 	 *            The deviceID to set.
 	 */
-	private void setDeviceID(long deviceID) {
-		if (deviceID == PacketSQLQuery.MISSING_VALUE) {
-			this.deviceID = null;
+	public void setDeviceID(long deviceID) {
+		if (deviceID == MISSING_VALUE) {
+			throw new IllegalArgumentException("Device ID must be specified.");
 		} else {
 			this.deviceID = new Long(deviceID);
 		}
@@ -279,7 +356,7 @@ public class PacketSQLQueryFactory {
 		if (startParentID != null) {
 			return startParentID.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -288,7 +365,7 @@ public class PacketSQLQueryFactory {
 	 *            The parentID to set.
 	 */
 	public void setStartParentID(long startParentID) {
-		if (startParentID == PacketSQLQuery.MISSING_VALUE) {
+		if (startParentID == MISSING_VALUE) {
 			this.startParentID = null;
 		} else {
 			this.startParentID = new Long(startParentID);
@@ -302,7 +379,7 @@ public class PacketSQLQueryFactory {
 		if (endParentID != null) {
 			return endParentID.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -311,7 +388,7 @@ public class PacketSQLQueryFactory {
 	 *            The parentID to set.
 	 */
 	public void setEndParentID(long endParentID) {
-		if (endParentID == PacketSQLQuery.MISSING_VALUE) {
+		if (endParentID == MISSING_VALUE) {
 			this.endParentID = null;
 		} else {
 			this.endParentID = new Long(endParentID);
@@ -325,7 +402,7 @@ public class PacketSQLQueryFactory {
 		if (startPacketType != null) {
 			return startPacketType.intValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -334,7 +411,7 @@ public class PacketSQLQueryFactory {
 	 *            The packetType to set.
 	 */
 	public void setStartPacketType(int startPacketType) {
-		if (startPacketType == PacketSQLQuery.MISSING_VALUE) {
+		if (startPacketType == MISSING_VALUE) {
 			this.startPacketType = null;
 		} else {
 			this.startPacketType = new Integer(startPacketType);
@@ -348,7 +425,7 @@ public class PacketSQLQueryFactory {
 		if (endPacketType != null) {
 			return endPacketType.intValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -357,7 +434,7 @@ public class PacketSQLQueryFactory {
 	 *            The packetType to set.
 	 */
 	public void setEndPacketType(int endPacketType) {
-		if (endPacketType == PacketSQLQuery.MISSING_VALUE) {
+		if (endPacketType == MISSING_VALUE) {
 			this.endPacketType = null;
 		} else {
 			this.endPacketType = new Integer(endPacketType);
@@ -371,7 +448,7 @@ public class PacketSQLQueryFactory {
 		if (startPacketSubType != null) {
 			return startPacketSubType.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -380,7 +457,7 @@ public class PacketSQLQueryFactory {
 	 *            The packetSubType to set.
 	 */
 	public void setStartPacketSubType(long startPacketSubType) {
-		if (startPacketSubType == PacketSQLQuery.MISSING_VALUE) {
+		if (startPacketSubType == MISSING_VALUE) {
 			this.startPacketSubType = null;
 		} else {
 			this.startPacketSubType = new Long(startPacketSubType);
@@ -394,7 +471,7 @@ public class PacketSQLQueryFactory {
 		if (endPacketSubType != null) {
 			return endPacketSubType.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -403,7 +480,7 @@ public class PacketSQLQueryFactory {
 	 *            The packetSubType to set.
 	 */
 	public void setEndPacketSubType(long endPacketSubType) {
-		if (endPacketSubType == PacketSQLQuery.MISSING_VALUE) {
+		if (endPacketSubType == MISSING_VALUE) {
 			this.endPacketSubType = null;
 		} else {
 			this.endPacketSubType = new Long(endPacketSubType);
@@ -417,7 +494,7 @@ public class PacketSQLQueryFactory {
 		if (startDataDescriptionID != null) {
 			return startDataDescriptionID.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -426,7 +503,7 @@ public class PacketSQLQueryFactory {
 	 *            The dataDescriptionID to set.
 	 */
 	public void setStartDataDescriptionID(long startDataDescriptionID) {
-		if (startDataDescriptionID == PacketSQLQuery.MISSING_VALUE) {
+		if (startDataDescriptionID == MISSING_VALUE) {
 			this.startDataDescriptionID = null;
 		} else {
 			this.startDataDescriptionID = new Long(startDataDescriptionID);
@@ -440,7 +517,7 @@ public class PacketSQLQueryFactory {
 		if (endDataDescriptionID != null) {
 			return endDataDescriptionID.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -449,7 +526,7 @@ public class PacketSQLQueryFactory {
 	 *            The dataDescriptionID to set.
 	 */
 	public void setEndDataDescriptionID(long endDataDescriptionID) {
-		if (endDataDescriptionID == PacketSQLQuery.MISSING_VALUE) {
+		if (endDataDescriptionID == MISSING_VALUE) {
 			this.endDataDescriptionID = null;
 		} else {
 			this.endDataDescriptionID = new Long(endDataDescriptionID);
@@ -463,7 +540,7 @@ public class PacketSQLQueryFactory {
 		if (startDataDescriptionVersion != null) {
 			return startDataDescriptionVersion.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -472,7 +549,7 @@ public class PacketSQLQueryFactory {
 	 *            The dataDescriptionVersion to set.
 	 */
 	public void setStartDataDescriptionVersion(long startDataDescriptionVersion) {
-		if (startDataDescriptionVersion == PacketSQLQuery.MISSING_VALUE) {
+		if (startDataDescriptionVersion == MISSING_VALUE) {
 			this.startDataDescriptionVersion = null;
 		} else {
 			this.startDataDescriptionVersion = new Long(
@@ -487,7 +564,7 @@ public class PacketSQLQueryFactory {
 		if (endDataDescriptionVersion != null) {
 			return endDataDescriptionVersion.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -496,10 +573,28 @@ public class PacketSQLQueryFactory {
 	 *            The dataDescriptionVersion to set.
 	 */
 	public void setEndDataDescriptionVersion(long endDataDescriptionVersion) {
-		if (endDataDescriptionVersion == PacketSQLQuery.MISSING_VALUE) {
+		if (endDataDescriptionVersion == MISSING_VALUE) {
 			this.endDataDescriptionVersion = null;
 		} else {
 			this.endDataDescriptionVersion = new Long(endDataDescriptionVersion);
+		}
+	}
+
+	/**
+	 * A method to set the start date for the query
+	 * 
+	 * TODO kgomes This is affected by SSDS-77 bug
+	 * 
+	 * @param startDate
+	 */
+	public void setStartDate(Date startDate) {
+		if (startDate == null) {
+			this.setStartTimestampSeconds(MISSING_VALUE);
+			this.setStartTimestampNanoseconds(MISSING_VALUE);
+		} else {
+			this.setStartTimestampSeconds(startDate.getTime() / 1000);
+			this
+					.setStartTimestampNanoseconds((startDate.getTime() % 1000) * 1000);
 		}
 	}
 
@@ -510,7 +605,7 @@ public class PacketSQLQueryFactory {
 		if (this.startTimestampSeconds != null) {
 			return this.startTimestampSeconds.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -519,10 +614,27 @@ public class PacketSQLQueryFactory {
 	 *            The timestampSeconds to set.
 	 */
 	public void setStartTimestampSeconds(long startTimestampSeconds) {
-		if (startTimestampSeconds == PacketSQLQuery.MISSING_VALUE) {
+		if (startTimestampSeconds == MISSING_VALUE) {
 			this.startTimestampSeconds = null;
 		} else {
 			this.startTimestampSeconds = new Long(startTimestampSeconds);
+		}
+	}
+
+	/**
+	 * A method to set the end date for the query
+	 * 
+	 * TODO kgomes This is affected by SSDS-77 bug
+	 * 
+	 * @param startDate
+	 */
+	public void setEndDate(Date endDate) {
+		if (endDate == null) {
+			this.setEndTimestampSeconds(MISSING_VALUE);
+			this.setEndTimestampNanoseconds(MISSING_VALUE);
+		} else {
+			this.setEndTimestampSeconds(endDate.getTime() / 1000);
+			this.setEndTimestampNanoseconds((endDate.getTime() % 1000) * 1000);
 		}
 	}
 
@@ -533,7 +645,7 @@ public class PacketSQLQueryFactory {
 		if (this.endTimestampSeconds != null) {
 			return this.endTimestampSeconds.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -542,7 +654,7 @@ public class PacketSQLQueryFactory {
 	 *            The timestampSeconds to set.
 	 */
 	public void setEndTimestampSeconds(long endTimestampSeconds) {
-		if (endTimestampSeconds == PacketSQLQuery.MISSING_VALUE) {
+		if (endTimestampSeconds == MISSING_VALUE) {
 			this.endTimestampSeconds = null;
 		} else {
 			this.endTimestampSeconds = new Long(endTimestampSeconds);
@@ -556,7 +668,7 @@ public class PacketSQLQueryFactory {
 		if (this.startTimestampNanoseconds != null) {
 			return this.startTimestampNanoseconds.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -565,7 +677,7 @@ public class PacketSQLQueryFactory {
 	 *            The timestampNanoseconds to set.
 	 */
 	public void setStartTimestampNanoseconds(long startTimestampNanoseconds) {
-		if (startTimestampNanoseconds == PacketSQLQuery.MISSING_VALUE) {
+		if (startTimestampNanoseconds == MISSING_VALUE) {
 			this.startTimestampNanoseconds = null;
 		} else {
 			this.startTimestampNanoseconds = new Long(startTimestampNanoseconds);
@@ -579,7 +691,7 @@ public class PacketSQLQueryFactory {
 		if (this.endTimestampNanoseconds != null) {
 			return this.endTimestampNanoseconds.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -588,7 +700,7 @@ public class PacketSQLQueryFactory {
 	 *            The timestampNanoseconds to set.
 	 */
 	public void setEndTimestampNanoseconds(long endTimestampNanoseconds) {
-		if (endTimestampNanoseconds == PacketSQLQuery.MISSING_VALUE) {
+		if (endTimestampNanoseconds == MISSING_VALUE) {
 			this.endTimestampNanoseconds = null;
 		} else {
 			this.endTimestampNanoseconds = new Long(endTimestampNanoseconds);
@@ -602,7 +714,7 @@ public class PacketSQLQueryFactory {
 		if (this.startSequenceNumber != null) {
 			return this.startSequenceNumber.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -611,7 +723,7 @@ public class PacketSQLQueryFactory {
 	 *            The sequenceNumber to set.
 	 */
 	public void setStartSequenceNumber(long startSequenceNumber) {
-		if (startSequenceNumber == PacketSQLQuery.MISSING_VALUE) {
+		if (startSequenceNumber == MISSING_VALUE) {
 			this.startSequenceNumber = null;
 		} else {
 			this.startSequenceNumber = new Long(startSequenceNumber);
@@ -625,7 +737,7 @@ public class PacketSQLQueryFactory {
 		if (this.endSequenceNumber != null) {
 			return this.endSequenceNumber.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -634,7 +746,7 @@ public class PacketSQLQueryFactory {
 	 *            The sequenceNumber to set.
 	 */
 	public void setEndSequenceNumber(long endSequenceNumber) {
-		if (endSequenceNumber == PacketSQLQuery.MISSING_VALUE) {
+		if (endSequenceNumber == MISSING_VALUE) {
 			this.endSequenceNumber = null;
 		} else {
 			this.endSequenceNumber = new Long(endSequenceNumber);
@@ -651,7 +763,7 @@ public class PacketSQLQueryFactory {
 		if (this.lastNumberOfPackets != null) {
 			return this.lastNumberOfPackets.longValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -662,7 +774,7 @@ public class PacketSQLQueryFactory {
 	 * @param lastNumberOfPackets
 	 */
 	public void setLastNumberOfPackets(long lastNumberOfPackets) {
-		if (lastNumberOfPackets == PacketSQLQuery.MISSING_VALUE) {
+		if (lastNumberOfPackets == MISSING_VALUE) {
 			this.lastNumberOfPackets = null;
 		} else {
 			this.lastNumberOfPackets = new Long(lastNumberOfPackets);
@@ -674,7 +786,7 @@ public class PacketSQLQueryFactory {
 	 */
 	public double getStartLatitude() {
 		if (this.startLatitude == null) {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		} else {
 			return this.startLatitude.doubleValue();
 		}
@@ -685,7 +797,7 @@ public class PacketSQLQueryFactory {
 	 *            The startLatitude to set.
 	 */
 	public void setStartLatitude(double startLatitude) {
-		if (startLatitude == PacketSQLQuery.MISSING_VALUE) {
+		if (startLatitude == MISSING_VALUE) {
 			this.startLatitude = null;
 		} else {
 			this.startLatitude = new Double(startLatitude);
@@ -697,7 +809,7 @@ public class PacketSQLQueryFactory {
 	 */
 	public double getEndLatitude() {
 		if (this.endLatitude == null) {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		} else {
 			return this.endLatitude.doubleValue();
 		}
@@ -708,7 +820,7 @@ public class PacketSQLQueryFactory {
 	 *            The endLatitude to set.
 	 */
 	public void setEndLatitude(double endLatitude) {
-		if (endLatitude == PacketSQLQuery.MISSING_VALUE) {
+		if (endLatitude == MISSING_VALUE) {
 			this.endLatitude = null;
 		} else {
 			this.endLatitude = new Double(endLatitude);
@@ -720,7 +832,7 @@ public class PacketSQLQueryFactory {
 	 */
 	public double getStartLongitude() {
 		if (this.startLongitude == null) {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		} else {
 			return startLongitude.doubleValue();
 		}
@@ -731,7 +843,7 @@ public class PacketSQLQueryFactory {
 	 *            The startLongitude to set.
 	 */
 	public void setStartLongitude(double startLongitude) {
-		if (startLongitude == PacketSQLQuery.MISSING_VALUE) {
+		if (startLongitude == MISSING_VALUE) {
 			this.startLongitude = null;
 		} else {
 			this.startLongitude = new Double(startLongitude);
@@ -743,7 +855,7 @@ public class PacketSQLQueryFactory {
 	 */
 	public double getEndLongitude() {
 		if (this.endLongitude == null) {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		} else {
 			return endLongitude.doubleValue();
 		}
@@ -754,7 +866,7 @@ public class PacketSQLQueryFactory {
 	 *            The endLongitude to set.
 	 */
 	public void setEndLongitude(double endLongitude) {
-		if (endLongitude == PacketSQLQuery.MISSING_VALUE) {
+		if (endLongitude == MISSING_VALUE) {
 			this.endLongitude = null;
 		} else {
 			this.endLongitude = new Double(endLongitude);
@@ -766,7 +878,7 @@ public class PacketSQLQueryFactory {
 	 */
 	public float getStartDepth() {
 		if (this.startDepth == null) {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		} else {
 			return startDepth.floatValue();
 		}
@@ -777,7 +889,7 @@ public class PacketSQLQueryFactory {
 	 *            The startDepth to set.
 	 */
 	public void setStartDepth(float startDepth) {
-		if (startDepth == PacketSQLQuery.MISSING_VALUE) {
+		if (startDepth == MISSING_VALUE) {
 			this.startDepth = null;
 		} else {
 			this.startDepth = new Float(startDepth);
@@ -791,7 +903,7 @@ public class PacketSQLQueryFactory {
 		if (this.endDepth != null) {
 			return this.endDepth.floatValue();
 		} else {
-			return PacketSQLQuery.MISSING_VALUE;
+			return MISSING_VALUE;
 		}
 	}
 
@@ -800,7 +912,7 @@ public class PacketSQLQueryFactory {
 	 *            The endDepth to set.
 	 */
 	public void setEndDepth(float endDepth) {
-		if (endDepth == PacketSQLQuery.MISSING_VALUE) {
+		if (endDepth == MISSING_VALUE) {
 			this.endDepth = null;
 		} else {
 			this.endDepth = new Float(endDepth);
@@ -814,8 +926,72 @@ public class PacketSQLQueryFactory {
 	 * @return
 	 */
 	public String getQueryStatement() {
-		return constructSelectStatement() + constructWhereClause()
+		return constructSelectStatement()
+				+ constructLastNumberOfPacketsPreamble()
+				+ this.sqlTableDelimiter + this.deviceID.longValue()
+				+ this.sqlTableDelimiter + constructWhereClause()
+				+ constructLastNumberOfPacketPostamble()
 				+ constructOrderByClause();
+	}
+
+	/**
+	 * This method returns the listing of the fields that will be returned and
+	 * the order in which they are returned
+	 * 
+	 * @return
+	 */
+	public String[] listReturnFields() {
+		String[] fields = null;
+		// Check to see if no select parameters were specified. If not, include
+		// all of them.
+		if (selectParametersAndOrder == null
+				|| selectParametersAndOrder.length == 0) {
+			fields = new String[16];
+			fields[0] = SSDS_PACKET_VERSION;
+			fields[1] = PARENT_ID;
+			fields[2] = PACKET_TYPE;
+			fields[3] = PACKET_SUB_TYPE;
+			fields[4] = DATA_DESCRIPTION_ID;
+			fields[5] = DATA_DESCRIPTION_VERSION;
+			fields[6] = TIMESTAMP_SECONDS;
+			fields[7] = TIMESTAMP_NANOSECONDS;
+			fields[8] = SEQUENCE_NUMBER;
+			fields[9] = BUFFER_LEN;
+			fields[10] = BUFFER_BYTES;
+			fields[11] = BUFFER_TWO_LEN;
+			fields[12] = BUFFER_TWO_BYTES;
+			fields[13] = LATITUDE;
+			fields[14] = LONGITUDE;
+			fields[15] = DEPTH;
+		} else {
+			fields = new String[selectParametersAndOrder.length];
+			for (int i = 0; i < selectParametersAndOrder.length; i++) {
+				fields[i] = selectParametersAndOrder[i];
+			}
+		}
+		return fields;
+	}
+
+	/**
+	 * This method returns an array of <code>Class</code>es that specify the
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public Class[] listReturnClasses() {
+		// Grab the listing of the fields
+		String[] fields = listReturnFields();
+
+		// Create an array of classes
+		Class[] classes = new Class[fields.length];
+
+		// Loop over and based on the name, add a class for the type
+		for (int i = 0; i < classes.length; i++) {
+			classes[i] = parameterClassMap.get(fields[i]);
+		}
+
+		// Now return it
+		return classes;
 	}
 
 	/**
@@ -841,22 +1017,48 @@ public class PacketSQLQueryFactory {
 			for (int i = 0; i < selectParametersAndOrder.length; i++) {
 				selectBuilder.append(selectParametersAndOrder[i]);
 				if (i != (selectParametersAndOrder.length - 1))
-					selectBuilder.append(",");
+					selectBuilder.append(", ");
 			}
 		}
 		selectBuilder.append(" FROM ");
-		if (this.lastNumberOfPackets != null) {
-			// First replace any tags in preamble with number of packets and
-			// then append
-			selectBuilder.append((this.sqlLastNumberOfPacketsPreamble
-					.replaceAll("@LAST_NUMBER_OF_PACKETS@",
-							this.lastNumberOfPackets + ""))
-					+ " ");
-		}
-		selectBuilder.append(this.sqlTableDelimiter + this.deviceID.longValue()
-				+ this.sqlTableDelimiter);
 
 		return selectBuilder.toString();
+	}
+
+	/**
+	 * This is a method to construct a preamble that will be needed if the
+	 * "last number of packets" is specified
+	 * 
+	 * @return
+	 */
+	private String constructLastNumberOfPacketsPreamble() {
+		if (this.lastNumberOfPackets != null) {
+			// First replace any tags in preamble with number of packets and
+			// then return
+			return (this.sqlLastNumberOfPacketsPreamble.replaceAll(
+					"@LAST_NUMBER_OF_PACKETS@", this.lastNumberOfPackets + "") + " ");
+		} else {
+			return "";
+		}
+	}
+
+	/**
+	 * This is a method to construct a postamble that will be needed if the
+	 * "last number of packets" is specified
+	 * 
+	 * @return
+	 */
+	private String constructLastNumberOfPacketPostamble() {
+		if (this.lastNumberOfPackets != null) {
+			// Replace postamble with last number of packets and append
+			return " "
+					+ (this.sqlLastNumberOfPacketsPostamble.replaceAll(
+							"@LAST_NUMBER_OF_PACKETS@",
+							this.lastNumberOfPackets + ""));
+
+		} else {
+			return "";
+		}
 	}
 
 	/**
@@ -871,6 +1073,16 @@ public class PacketSQLQueryFactory {
 
 		// A boolean to track if WHERE was added
 		boolean whereAdded = false;
+
+		// Add all constraints
+		if (this.ssdsPacketVersion != null) {
+			if (!whereAdded) {
+				whereClauseBuilder.append(" WHERE");
+				whereAdded = true;
+			}
+			whereClauseBuilder.append(" ssdsPacketVersion = "
+					+ this.ssdsPacketVersion.longValue());
+		}
 
 		// Add all constraints
 		if (this.startParentID != null) {
@@ -1059,15 +1271,6 @@ public class PacketSQLQueryFactory {
 				whereClauseBuilder
 						.append(" depth = " + startDepth.floatValue());
 			}
-		}
-
-		// Now add some ordering stuff
-		if (this.lastNumberOfPackets != null) {
-			// Replace postamble with last number of packets and append
-			whereClauseBuilder.append(" "
-					+ (this.sqlLastNumberOfPacketsPostamble.replaceAll(
-							"@LAST_NUMBER_OF_PACKETS@",
-							this.lastNumberOfPackets + "")));
 		}
 
 		// Return the where clause
