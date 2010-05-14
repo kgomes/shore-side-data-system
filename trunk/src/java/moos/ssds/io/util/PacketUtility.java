@@ -13,6 +13,7 @@ import javax.jms.JMSException;
 
 import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.io.SSDSGeoLocatedDevicePacket;
+import moos.ssds.util.DateUtils;
 
 import org.apache.log4j.Logger;
 import org.mbari.siam.distributed.DeviceMessagePacket;
@@ -322,9 +323,9 @@ public class PacketUtility {
 						+ timestampNanoseconds + "|");
 
 				// Print out the human readable date
-				long epochMillis = timestampSeconds * 1000
-						+ timestampNanoseconds / 1000;
-				loggerMessage.append("Date=" + new Date(epochMillis) + "|");
+				loggerMessage.append("Date="
+						+ DateUtils.constructDateFromEpochSecondsAndNanseconds(
+								timestampSeconds, timestampNanoseconds) + "|");
 
 				// Read in the sequence number
 				long sequenceNumber = dis.readLong();
@@ -883,8 +884,10 @@ public class PacketUtility {
 			// since 1/1/70
 			// TODO kgomes, there is a bug here and is referenced in SSDS-77 in
 			// JIRA.
-			long timestampSeconds = timestamp / 1000;
-			long timestampNanoseconds = (timestamp % 1000 * 1000);
+			long timestampSeconds = DateUtils
+					.getEpochTimestampSecondsFromEpochMillis(timestamp);
+			long timestampNanoseconds = DateUtils
+					.getNanosecondsFromEpochMillis(timestamp);
 
 			// If it is a metadata packet, I need to reverse the buffers and I
 			// want the byte buffers as the main payload and the "cause" as the
@@ -1034,8 +1037,9 @@ public class PacketUtility {
 		packet.setRecordType(recordType);
 		packet.setMetadataSequenceNumber(metadataSequenceNumber);
 		packet.setDataDescriptionVersion(dataDescriptionVersion);
-		packet.setSystemTime((systemTimeSeconds * 1000)
-				+ (systemTimeNanoseconds / 1000));
+		packet.setSystemTime(DateUtils
+				.constructEpochMillisFromEpochSecondsAndNanoseconds(
+						systemTimeSeconds, systemTimeNanoseconds));
 		packet.setSequenceNo(sequenceNumber);
 		packet.setDataBuffer(buffer);
 		packet.setOtherBuffer(bufferTwo);
