@@ -42,6 +42,7 @@
 		<delete dir="${project.build}/classes/moos/ssds/ingest" />
 		<delete dir="${project.build}/classes/moos/ssds/io" />
 		<delete dir="${project.build}/classes/moos/ssds/jms" />
+		<delete dir="${project.build}/classes/moos/ssds/util" />
 		<!-- Now delete the configuration directory -->
 		<delete dir="${project.build}/ingest" />
 		<!-- Delete the client publishing build directory -->
@@ -161,10 +162,10 @@
 	</target>
 
 	<!-- The target to build -->
-	<target name="build" depends="clean,compile" description="This will clean all the compiled classes, run all the necessary XDoclet tasks, and compile the source code" />
+	<target name="build" depends="clean,compile,configure-files" description="This will clean all the compiled classes, run all the necessary XDoclet tasks, and compile the source code" />
 
 	<!-- The distribution target -->
-	<target name="dist" depends="build,configure-files" description="This target runs the clean, compile and then builds this distributions">
+	<target name="dist" depends="build" description="This target runs the clean, compile and then builds this distributions">
 		<!-- Delete old jar files -->
 		<delete file="${project.dist}/ssds-ingest.jar" />
 
@@ -174,6 +175,7 @@
 			<fileset dir="${build.classes}">
 				<include name="moos/ssds/ingest/**/*.class" />
 				<include name="moos/ssds/io/**/*.class" />
+				<include name="moos/ssds/util/*.class" />
 				<exclude name="moos/ssds/io/util/**/*.class" />
 			</fileset>
 			<!-- Include all necessary resources -->
@@ -196,7 +198,7 @@
 				<include name="moos/ssds/io/util/PacketUtility.class" />
 				<include name="moos/ssds/jms/PublisherComponent.class" />
 				<include name="moos/ssds/jms/PacketGenerator.class" />
-				<include name="moos/ssds/util/XmlDateFormat.class" />
+				<include name="moos/ssds/util/*.class" />
 			</fileset>
 			<fileset dir="${project.build}/ingest-pub" includes="log4j.properties" />
 			<fileset dir="${project.build}/ingest-pub" includes="jndi.properties" />
@@ -206,16 +208,41 @@
 
 	<!-- The target to test the ingest component -->
 	<target name="test" depends="init,configure-files">
-		<!--
-		<sysproperty key="test.jms.number.of.test.threads" value="${transmogrify.test.jms.number.of.test.threads}" />
-		<sysproperty key="test.jms.buffer.size.limit" value="${transmogrify.test.jms.buffer.size.limit}" />
-		<sysproperty key="test.jms.number.of.packets" value="${transmogrify.test.jms.number.of.packets}" />
-		<sysproperty key="test.jms.starting.device.id" value="${transmogrify.test.jms.starting.device.id}" />
-		<sysproperty key="test.jms.starting.parent.id" value="${transmogrify.test.jms.starting.parent.id}" />
-		<sysproperty key="test.jms.topic.name" value="${transmogrify.test.jms.topic.name}" />
-		<sysproperty key="test.jms.host.name.long" value="${transmogrify.test.jms.host.name.long}" />
-		<sysproperty key="test.jms.seconds.to.sleep.before.readback" value="${transmogrify.test.jms.seconds.to.sleep.before.readback}" />
-		-->
+		<!-- Clean out the compiled test classes -->
+		<delete dir="${project.build}/classes/test/moos/ssds" />
+
+		<!-- Compile just the test classes -->
+		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
+			<src path="${src.java}" />
+			<include name="test/moos/ssds/ClassPathHacker.java" />
+			<include name="test/moos/ssds/io/PacketSQLQueryFactoryTest.java" />
+			<include name="test/moos/ssds/io/TestPacketOutput.java" />
+			<classpath>
+				<pathelement location="${project.build}/classes" />
+				<pathelement location="${project.lib}/${junit.jar}" />
+				<pathelement location="${project.lib}/${jddac.jar}" />
+				<fileset refid="all-project-lib-flattened-jar-fileset" />
+				<fileset refid="jboss-client-jar-fileset" />
+			</classpath>
+		</javac>
+		<junit printsummary="withOutAndErr" haltonfailure="no" errorProperty="test.failed" failureProperty="test.failed">
+			<jvmarg value="-Xms512m" />
+			<jvmarg value="-Xmx1024m" />
+			<classpath>
+				<pathelement location="${project.build}/classes" />
+				<pathelement location="${project.lib}/${junit.jar}" />
+				<pathelement location="${project.lib}/${jddac.jar}" />
+				<fileset refid="all-project-lib-flattened-jar-fileset" />
+				<fileset refid="jboss-client-jar-fileset" />
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${gen.test}">
+				<fileset dir="${src.java}">
+					<include name="test/moos/ssds/io/PacketSQLQueryFactoryTest.java" />
+					<include name="test/moos/ssds/io/TestPacketOutput.java" />
+				</fileset>
+			</batchtest>
+		</junit>
 	</target>
 
 	<!-- Deploy the ingest component and configuration files -->
