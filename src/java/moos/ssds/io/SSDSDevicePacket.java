@@ -15,6 +15,8 @@
  */
 package moos.ssds.io;
 
+import moos.ssds.util.DateUtils;
+
 import org.apache.log4j.Logger;
 import org.mbari.siam.distributed.DevicePacket;
 
@@ -147,21 +149,21 @@ public class SSDSDevicePacket extends DevicePacket implements
 	}
 
 	/**
-	 * TODO kgomes This is incorrect per bug SSDS-77 in JIRA
+	 * Returns the time in epoch seconds
 	 * 
 	 * @return
 	 */
 	public long getTimestampSeconds() {
-		return systemTime() / 1000;
+		return DateUtils.getEpochTimestampSecondsFromEpochMillis(systemTime());
 	}
 
 	/**
-	 * TODO kgomes This is incorrect per bug SSDS-77 in JIRA
+	 * Returns the nanaoseconds portion of the timestamp
 	 * 
 	 * @return
 	 */
 	public long getTimestampNanoseconds() {
-		return (systemTime() % 1000) * 1000;
+		return DateUtils.getNanosecondsFromEpochMillis(systemTime());
 	}
 
 	/**
