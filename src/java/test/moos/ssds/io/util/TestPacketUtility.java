@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -23,12 +24,15 @@ import moos.ssds.io.util.PacketUtility;
 import net.java.jddac.common.type.ArgArray;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.mbari.siam.distributed.DeviceMessagePacket;
 import org.mbari.siam.distributed.MeasurementPacket;
 import org.mbari.siam.distributed.MetadataPacket;
 import org.mbari.siam.distributed.SensorDataPacket;
 import org.mbari.siam.distributed.SummaryPacket;
 import org.mbari.siam.operations.utils.ExportablePacket;
+
+import test.moos.ssds.ClassPathHacker;
 
 public class TestPacketUtility extends TestCase {
 
@@ -119,6 +123,26 @@ public class TestPacketUtility extends TestCase {
 	 */
 	public TestPacketUtility(String arg0) {
 		super(arg0);
+		// Add the base of the transmogrifier build files to the classpath
+		try {
+			ClassPathHacker.addFile(new File("build/transmogrify"));
+			ClassPathHacker.addFile(new File("build/transmogrify-pub"));
+		} catch (IOException e1) {
+			logger.error("IOException caught trying to add the "
+					+ "build/transmogrify directory to the class path"
+					+ e1.getMessage());
+		}
+
+		Properties log4jProperties = new Properties();
+		try {
+			log4jProperties.load(this.getClass().getResourceAsStream(
+					"/log4j.properties"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		PropertyConfigurator.configure(log4jProperties);
+
 	}
 
 	/**

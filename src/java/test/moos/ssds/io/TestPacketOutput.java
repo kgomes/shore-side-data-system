@@ -1,10 +1,15 @@
 package test.moos.ssds.io;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
+import test.moos.ssds.ClassPathHacker;
 
 import moos.ssds.io.PacketInput;
 import moos.ssds.io.PacketOutput;
@@ -20,6 +25,26 @@ public class TestPacketOutput extends TestCase {
 
 	public TestPacketOutput(String name) {
 		super(name);
+		// Add the base of the transmogrifier build files to the classpath
+		try {
+			ClassPathHacker.addFile(new File("build/ingest"));
+			ClassPathHacker.addFile(new File("build/ingest-pub"));
+		} catch (IOException e1) {
+			logger.error("IOException caught trying to add the "
+					+ "build/transmogrify directory to the class path"
+					+ e1.getMessage());
+		}
+
+		Properties log4jProperties = new Properties();
+		try {
+			log4jProperties.load(this.getClass().getResourceAsStream(
+					"/log4j.properties"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		PropertyConfigurator.configure(log4jProperties);
+
 	}
 
 	protected void setUp() throws Exception {
