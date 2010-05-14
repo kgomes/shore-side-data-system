@@ -42,6 +42,7 @@
 		<delete dir="${project.build}/classes/moos/ssds/transmogrify" />
 		<delete dir="${project.build}/classes/moos/ssds/io" />
 		<delete dir="${project.build}/classes/moos/ssds/jms" />
+		<delete dir="${project.build}/classes/moos/ssds/util" />
 		<!-- Now delete the configuration directory -->
 		<delete dir="${project.build}/transmogrify" />
 		<!-- Delete the client publishing build directory -->
@@ -142,11 +143,11 @@
 	</target>
 
 	<!-- The target to build -->
-	<target name="build" depends="clean,compile" description="This will clean all the compiled
+	<target name="build" depends="clean,compile,configure-files" description="This will clean all the compiled
 		classes, run all the necessary XDoclet tasks, and compile the source code" />
 
 	<!-- The distribution target -->
-	<target name="dist" depends="build,configure-files" description="This target runs the clean, compile and then builds this distribution">
+	<target name="dist" depends="build" description="This target runs the clean, compile and then builds this distribution">
 		<!-- Delete old server jar files -->
 		<delete file="${project.dist}/ssds-transmogrify.jar" />
 
@@ -157,6 +158,7 @@
 				<include name="moos/ssds/transmogrify/**/*.class" />
 				<include name="moos/ssds/io/SSDSDevicePacket.class" />
 				<include name="moos/ssds/io/util/PacketUtility.class" />
+				<include name="moss/ssds/util/*.class" />
 			</fileset>
 			<!-- Include all necessary resources -->
 			<fileset dir="${project.build}/transmogrify">
@@ -177,7 +179,7 @@
 				<include name="moos/ssds/io/util/PacketUtility.class" />
 				<include name="moos/ssds/jms/PublisherComponent.class" />
 				<include name="moos/ssds/jms/PacketGenerator.class" />
-				<include name="moos/ssds/util/XmlDateFormat.class" />
+				<include name="moos/ssds/util/*.class" />
 			</fileset>
 			<fileset dir="${project.build}/transmogrify-pub" includes="log4j.properties" />
 			<fileset dir="${project.build}/transmogrify-pub" includes="jndi.properties" />
@@ -187,24 +189,20 @@
 
 	<!-- The target to test the TransmogrifyMDB instance -->
 	<target name="test" depends="init, configure-files">
-		<!-- First check to make sure the metadata services client jar is available for testing -->
-		<condition property="metadata.services.client.jar.exists">
-			<available file="${project.dist}/ssds-services-metadata-client.jar" type="file" />
-		</condition>
-		<fail unless="metadata.services.client.jar.exists" message="Even though this is the transmogrify build, it needs the client jar for the metadata services for testing.  Please build the ssds core component before running these tests." />
-
 		<!-- Clean out the compiled test classes -->
-		<delete dir="${project.build}/classes/test/moos/ssds/jms" />
+		<delete dir="${project.build}/classes/test/moos/ssds/transmogrify" />
+		<delete dir="${project.build}/classes/test/moos/ssds/io/util" />
+
 		<!-- Compile just the test classes -->
 		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
 			<src path="${src.java}" />
+			<include name="test/moos/ssds/ClassPathHacker.java" />
 			<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
 			<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
 			<classpath>
+				<pathelement location="${project.build}/classes" />
 				<pathelement location="${project.lib}/${junit.jar}" />
 				<pathelement location="${project.lib}/${jddac.jar}" />
-				<pathelement location="${project.dist}/ssds-transmogrify-pub.jar" />
-				<pathelement location="${project.dist}/ssds-services-metadata-client.jar" />
 				<fileset refid="all-project-lib-flattened-jar-fileset" />
 				<fileset refid="jboss-client-jar-fileset" />
 			</classpath>
@@ -214,12 +212,8 @@
 			<jvmarg value="-Xmx1024m" />
 			<classpath>
 				<pathelement location="${project.build}/classes" />
-				<pathelement location="${project.build}/transmogrify" />
-				<pathelement location="${project.build}/transmogrify-pub" />
 				<pathelement location="${project.lib}/${junit.jar}" />
 				<pathelement location="${project.lib}/${jddac.jar}" />
-				<pathelement location="${project.dist}/ssds-transmogrify-pub.jar" />
-				<pathelement location="${project.dist}/ssds-services-metadata-client.jar" />
 				<fileset refid="all-project-lib-flattened-jar-fileset" />
 				<fileset refid="jboss-client-jar-fileset" />
 			</classpath>
@@ -258,7 +252,7 @@
 				<filter token="TRANSMOGRIFY_CLASSPATH" value="${client.transmogrify.classpath}" />
 			</filterset>
 		</copy>
-		<copy file="${resources.build}/doc/client/ExampleSSDSClientPublisher.java" tofile="${project.dist}/tempzip/ExampleSSDSClientPublisher.java" overwrite="true"/>
+		<copy file="${resources.build}/doc/client/ExampleSSDSClientPublisher.java" tofile="${project.dist}/tempzip/ExampleSSDSClientPublisher.java" overwrite="true" />
 		<copy file="${resources.build}/doc/client/packet-generator-transmogrify-template.properties" tofile="${project.dist}/tempzip/packet-generator-transmogrify-template.properties" overwrite="true" />
 		<zip destfile="${project.documentation.deploy.location}/client/ssds-transmogrify-pub.zip">
 			<fileset dir="${project.dist}/tempzip" includes="README.html" />
