@@ -2,6 +2,7 @@ package test.moos.ssds.transmogrify;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
@@ -14,9 +15,11 @@ import moos.ssds.jms.PublisherComponent;
 import moos.ssds.jms.SubscriberComponent;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.mbari.siam.distributed.MetadataPacket;
 import org.mbari.siam.operations.utils.ExportablePacket;
 
+import test.moos.ssds.ClassPathHacker;
 import test.moos.ssds.io.util.TestPacketUtility;
 
 public class TransmogrifyMDBTest extends TestCase {
@@ -44,6 +47,26 @@ public class TransmogrifyMDBTest extends TestCase {
 	public TransmogrifyMDBTest(String name) {
 		super(name);
 
+		// Add the base of the transmogrifier build files to the classpath
+		try {
+			ClassPathHacker.addFile(new File("build/transmogrify"));
+			ClassPathHacker.addFile(new File("build/transmogrify-pub"));
+		} catch (IOException e1) {
+			logger.error("IOException caught trying to add the "
+					+ "build/transmogrify directory to the class path"
+					+ e1.getMessage());
+		}
+
+		Properties log4jProperties = new Properties();
+		try {
+			log4jProperties.load(this.getClass().getResourceAsStream(
+					"/log4j.properties"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		PropertyConfigurator.configure(log4jProperties);
+
 		// Grab the transmogrifier properties for the file
 		Properties transmogProps = new Properties();
 		logger.debug("Constructor called ... going to "
@@ -53,7 +76,11 @@ public class TransmogrifyMDBTest extends TestCase {
 					"/moos/ssds/transmogrify/transmogrify.properties"));
 		} catch (Exception e) {
 			logger.error("Exception trying to read in properties file: "
-					+ e.getMessage());
+					+ e.getMessage()
+					+ "\nThis could be due to the fact that you have "
+					+ "not run 'ant -Dtarget=build' from the root of "
+					+ "the project directory.  This needs to be done "
+					+ "before these tests are run.");
 		}
 
 		// Grab the topic name to republish to
