@@ -49,6 +49,82 @@ import org.mbari.siam.distributed.DevicePacket;
 public class PublisherComponent {
 
 	/**
+	 * This is the name of the topic that will used to publish packets to
+	 */
+	private String topicname;
+
+	/**
+	 * This is the default topic name that is read from the properties file
+	 */
+	private String defaultTopicname;
+
+	/**
+	 * This is the JNDI Context that will be used (Naming Service) to locate the
+	 * appropriate remote classes to use for publishing messages.
+	 */
+	private Context jndiContext;
+
+	/**
+	 * This is the hostname where the naming service is located
+	 */
+	private String jndiHostName = null;
+
+	/**
+	 * This is the JMS TopicConnectionFactory that is used to get a topic that
+	 * can then be used to publish messages to
+	 */
+	private TopicConnectionFactory topicConnectionFactory;
+
+	/**
+	 * This is the connection to the topic that the messages will be published
+	 * to
+	 */
+	private TopicConnection topicConnection;
+
+	/**
+	 * This is the JMS topic that will be used for publishing
+	 */
+	private Topic topic;
+
+	/**
+	 * This is a session that the publishing of messages will be run in.
+	 */
+	private TopicSession topicSession;
+
+	/**
+	 * This is the topic publisher that is actually used to send messages to the
+	 * topic
+	 */
+	private TopicPublisher topicPublisher;
+
+	/**
+	 * This is a JMS message that is used to send to the topic
+	 */
+	private ObjectMessage message;
+
+	/**
+	 * This is a BytesMessage that can be used to publish an array of bytes.
+	 */
+	private BytesMessage bytesMessage;
+
+	/**
+	 * This is a boolean to track if this PublisherComponent is currently
+	 * connected to a topic session
+	 */
+	private boolean connected = false;
+
+	/**
+	 * A properties file used for reading in jms information for the publisher
+	 * to utilize when working
+	 */
+	private Properties jmsProps = new Properties();
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(PublisherComponent.class);
+
+	/**
 	 * This is a constructor that starts a connection to a JMS server
 	 * 
 	 * @param topicName
@@ -557,79 +633,4 @@ public class PublisherComponent {
 		}
 	} // End finalize
 
-	/**
-	 * This is the name of the topic that will used to publish packets to
-	 */
-	private String topicname;
-
-	/**
-	 * This is the default topic name that is read from the properties file
-	 */
-	private String defaultTopicname;
-
-	/**
-	 * This is the JNDI Context that will be used (Naming Service) to locate the
-	 * appropriate remote classes to use for publishing messages.
-	 */
-	private Context jndiContext;
-
-	/**
-	 * This is the hostname where the naming service is located
-	 */
-	private String jndiHostName = null;
-
-	/**
-	 * This is the JMS TopicConnectionFactory that is used to get a topic that
-	 * can then be used to publish messages to
-	 */
-	private TopicConnectionFactory topicConnectionFactory;
-
-	/**
-	 * This is the connection to the topic that the messages will be published
-	 * to
-	 */
-	private TopicConnection topicConnection;
-
-	/**
-	 * This is the JMS topic that will be used for publishing
-	 */
-	private Topic topic;
-
-	/**
-	 * This is a session that the publishing of messages will be run in.
-	 */
-	private TopicSession topicSession;
-
-	/**
-	 * This is the topic publisher that is actually used to send messages to the
-	 * topic
-	 */
-	private TopicPublisher topicPublisher;
-
-	/**
-	 * This is a JMS message that is used to send to the topic
-	 */
-	private ObjectMessage message;
-
-	/**
-	 * This is a BytesMessage that can be used to publish an array of bytes.
-	 */
-	private BytesMessage bytesMessage;
-
-	/**
-	 * This is a boolean to track if this PublisherComponent is currently
-	 * connected to a topic session
-	 */
-	private boolean connected = false;
-
-	/**
-	 * A properties file used for reading in jms information for the publisher
-	 * to utilize when working
-	 */
-	private Properties jmsProps = new Properties();
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(PublisherComponent.class);
 } // End PublisherComponent
