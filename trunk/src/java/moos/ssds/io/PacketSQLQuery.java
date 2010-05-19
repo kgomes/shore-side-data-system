@@ -62,6 +62,11 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	private int pageSize = 50;
 
 	/**
+	 * This is the index into the current page we have read
+	 */
+	private int pageIndexCounter = 0;
+
+	/**
 	 * This array holds the results of the query for returning
 	 */
 	private Object[] resultsCache = new Object[pageSize];
@@ -205,7 +210,7 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	 * PacketSQLQueryFactory and then holds the result set
 	 */
 	public void queryForData() throws SQLException {
-
+		logger.debug("queryForData called");
 		// Make sure the factory is there and has a device ID
 		if (packetSQLQueryFactory == null
 				|| packetSQLQueryFactory.getDeviceID() <= 0)
@@ -216,8 +221,14 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 		// Clear the no more data flag
 		noMoreData = false;
 
-		// Rest the row counter
+		// Reset the row counter
 		rowCounter = 0;
+
+		// Reset the page index
+		pageIndexCounter = 0;
+
+		// And a new cache
+		resultsCache = new Object[pageSize];
 
 		// Call the method to fill the results cache
 		fillResultsCache();
@@ -229,6 +240,8 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	 * and puts them in the cache
 	 */
 	private void fillResultsCache() throws SQLException {
+		logger.debug("fillResultsCache called");
+
 		// Create a connection to the database
 		Connection connection = null;
 
@@ -236,12 +249,23 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 		if (!directConnection) {
 			logger.debug("It is not a direct connection so we "
 					+ "will grab a connection from the DataSource");
-			connection = this.dataSource.getConnection();
+			try {
+				connection = this.dataSource.getConnection();
+			} catch (Exception e) {
+				logger.error("Exception caught trying to get "
+						+ "Connection from DataSource "
+						+ "(not direction connection): " + e.getMessage());
+			}
 		} else {
 			logger.debug("This is a direct connection, so we "
 					+ "will use DriverManager to get a connection");
-			connection = DriverManager.getConnection(this.databaseJDBCUrl,
-					this.username, this.password);
+			try {
+				connection = DriverManager.getConnection(this.databaseJDBCUrl,
+						this.username, this.password);
+			} catch (Exception e) {
+				logger.error("Exception caught trying to get "
+						+ "Connection from DataSource: " + e.getMessage());
+			}
 		}
 
 		// Grab the SQL statement from the factory
@@ -259,19 +283,145 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 		if (preparedStatement != null) {
 			// Run the query
 			resultSet = preparedStatement.executeQuery();
+			logger.debug("Query was executed");
+		} else {
+			logger.error("Prepared statement was null!");
 		}
 
 		// If the result set is OK, try to skip the number of rows that we have
-		// already read
+		// already read and move to the row just before new rows (this is
+		// because we will call .next() on the result set)
 		if (resultSet != null) {
+
 			boolean moveToRowOK = true;
-			try {
-				resultSet.absolute(rowCounter + 1);
-			} catch (Exception e) {
-				
+			if (rowCounter > 0) {
+				logger.debug("Since row counter is " + rowCounter
+						+ " going to try to move to that row in resultSet");
+				try {
+					resultSet.absolute(rowCounter);
+				} catch (Exception e) {
+					logger.error("Exception caught trying to move to row "
+							+ (rowCounter + 1) + " in the resultSet: "
+							+ e.getMessage());
+					moveToRowOK = false;
+				}
 			}
+
+			// If it looks like we were able to move ahead to the correct row
+			if (moveToRowOK) {
+				logger.debug("Looks like we are ready to "
+						+ "start filling the cache");
+
+				// Here are a couple of streaming support classes
+				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+				DataOutputStream dataOutputStream = new DataOutputStream(
+						byteArrayOutputStream);
+
+				// Now iterate over the number of rows and fill the cache
+				for (int i = 0; i < pageSize; i++) {
+					logger.debug("On page row " + i);
+					try {
+						// Advance cursor and see if there is something to
+						// return
+						if (resultSet.next()) {
+							logger.debug("OK, next record found, "
+									+ "going to read in the columns");
+							// Reset the byte array outputstream
+							byteArrayOutputStream.reset();
+
+							// I need to loop over the fields that are in the
+							// PacketSQLQueryFactory
+							for (int j = 0; j < packetSQLQueryFactory
+									.listReturnFields().length; j++) {
+								logger.debug("Reading field "
+										+ j
+										+ " which should be called "
+										+ packetSQLQueryFactory
+												.listReturnFields()[j]
+										+ " and should be of type "
+										+ packetSQLQueryFactory
+												.listReturnClasses()[j]);
+								try {
+									if (packetSQLQueryFactory
+											.listReturnClasses()[j] == int.class) {
+										Integer integerResult = resultSet
+												.getInt(packetSQLQueryFactory
+														.listReturnFields()[j]);
+										logger.debug("Read integer of "
+												+ integerResult);
+										dataOutputStream
+												.writeInt(integerResult);
+									} else if (packetSQLQueryFactory
+											.listReturnClasses()[j] == long.class) {
+										Long longResult = resultSet
+												.getLong(packetSQLQueryFactory
+														.listReturnFields()[j]);
+										logger.debug("Read long of "
+												+ longResult);
+										dataOutputStream.writeLong(longResult);
+									} else if (packetSQLQueryFactory
+											.listReturnClasses()[j] == byte[].class) {
+										byte[] byteResult = resultSet
+												.getBytes(packetSQLQueryFactory
+														.listReturnFields()[j]);
+										logger
+												.debug("Read bytes (as String) of "
+														+ new String(byteResult));
+										dataOutputStream.write(byteResult);
+									}
+								} catch (IOException e) {
+									logger
+											.error("IOException caught trying to "
+													+ "write query results to DataOutputStream: "
+													+ e.getMessage());
+								}
+							}
+							// We should have the full up byte array, so let's
+							// stuff it into the page cache
+							resultsCache[i] = byteArrayOutputStream
+									.toByteArray();
+							logger
+									.debug("Wrote result array to results cache at index "
+											+ i);
+						} else {
+							logger.debug("Looks like there is "
+									+ "no next() record.");
+							resultsCache[i] = null;
+						}
+					} catch (SQLException e) {
+						logger
+								.error("SQLException caught trying to readObject: "
+										+ e.getMessage());
+					}
+				}
+				// Clear the page index
+				pageIndexCounter = 0;
+			}
+		} else {
+			logger.error("ResultSet was NULL!");
 		}
 
+		// Now close everything out
+		try {
+			logger.debug("Closing everything up: resultSet,  "
+					+ "preparedStatement, and connection");
+			// Close the result set
+			if (resultSet != null)
+				resultSet.close();
+			// Close the prepared statement
+			if (preparedStatement != null)
+				preparedStatement.close();
+			// Close the connection
+			if (connection != null) {
+				connection.close();
+				connection = null;
+			}
+		} catch (SQLException e) {
+			logger.error("SQLException caught trying to close: "
+					+ e.getMessage());
+		} catch (Exception e) {
+			logger.error("Exception caught trying to close: " + e.getMessage());
+		}
 	}
 
 	/**
@@ -311,20 +461,17 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	 *         <code>false</code>.
 	 */
 	public boolean hasMoreElements() {
+		logger.debug("hasMoreElements called with pageIndexCounter = "
+				+ pageIndexCounter + ", and noMoreData = " + noMoreData);
 		// Set the return to false as the default
 		boolean ok = false;
-		if ((!noMoreData) && (resultSet != null)) {
-			try {
-				if (resultSet.isLast()) {
-					ok = false;
-				} else {
-					ok = true;
-				}
-			} catch (SQLException e) {
-				logger.error("SQLException caught trying to call isLast: "
-						+ e.getMessage());
-			}
+		if ((!noMoreData) && (resultsCache[pageIndexCounter] != null)) {
+			logger.debug("Will return true to indicate "
+					+ "there are more records available");
+			ok = true;
 		} else {
+			logger.debug("Will return false as it looks "
+					+ "like there are no more records");
 			ok = false;
 		}
 		return ok;
@@ -334,25 +481,7 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	 * This method closes the results and connections.
 	 */
 	public void close() {
-		logger.debug("Close called on PacketSQLQuery");
-		try {
-			// Close the result set
-			if (resultSet != null)
-				resultSet.close();
-			// Close the prepared statement
-			if (preparedStatement != null)
-				preparedStatement.close();
-			// Close the connection
-			if (connection != null) {
-				connection.close();
-				connection = null;
-			}
-		} catch (SQLException e) {
-			logger.error("SQLException caught trying to close: "
-					+ e.getMessage());
-		} catch (Exception e) {
-			logger.error("Exception caught trying to close: " + e.getMessage());
-		}
+		// Nothing to do here as the connection closing is moved to the cache
 	}
 
 	/**
@@ -365,13 +494,33 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	 */
 	public byte[] nextElement() {
 
-		// The byte array that will be returned
-		byte[] byteArrayToReturn = null;
-
-		// If there are results, read the next object
-		if (resultSet != null) {
-			byteArrayToReturn = readByteArray();
+		logger.debug("nextElement called, pageIndexCounter = "
+				+ pageIndexCounter + " and rowCounter = " + rowCounter);
+		// The first thing to do is check that page counter is not past the end
+		// of the results cache
+		if (pageIndexCounter + 1 > pageSize) {
+			logger.debug("PageIndexCounter is " + pageIndexCounter
+					+ " which looks to be at the last "
+					+ "row of the page so we will need to refresh the cache.");
+			// We need to refresh the cache
+			try {
+				fillResultsCache();
+			} catch (SQLException e) {
+				logger.error("SQLException caught trying to "
+						+ "refresh the cache: " + e.getMessage());
+			}
 		}
+		// The byte array that will be returned will be the byte array at the
+		// current page index
+		byte[] byteArrayToReturn = (byte[]) resultsCache[pageIndexCounter];
+		if (byteArrayToReturn == null) {
+			logger.debug("The read byte array is null!");
+			noMoreData = true;
+		}
+
+		// Now move the pageCounter and resultsCounter index
+		rowCounter++;
+		pageIndexCounter++;
 
 		// Now return it
 		return byteArrayToReturn;
@@ -383,48 +532,51 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	 * @return An byte array that is structured based on the query in the
 	 *         associated PacketSQLQueryFactory.
 	 */
-	public byte[] readByteArray() {
-
-		// Here are a couple of streaming support classes
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		DataOutputStream dataOutputStream = new DataOutputStream(
-				byteArrayOutputStream);
-
-		// The array of fields and their associated classes that will be read
-		// from the result set
-		try {
-			// Advance cursor and see if there is something to return
-			if (resultSet.next()) {
-
-				// I need to loop over the fields that are in the
-				// PacketSQLQueryFactory
-				for (int i = 0; i < packetSQLQueryFactory.listReturnFields().length; i++) {
-					Object columnResult = resultSet
-							.getObject(packetSQLQueryFactory.listReturnFields()[i]);
-					try {
-						if (packetSQLQueryFactory.listReturnClasses()[i] == int.class) {
-							dataOutputStream.writeInt((Integer) columnResult);
-						} else if (packetSQLQueryFactory.listReturnClasses()[i] == long.class) {
-							dataOutputStream.writeLong((Long) columnResult);
-						} else if (packetSQLQueryFactory.listReturnClasses()[i] == byte[].class) {
-							dataOutputStream.write((byte[]) columnResult);
-						}
-					} catch (IOException e) {
-						logger.error("IOException caught trying to "
-								+ "write query results to DataOutputStream: "
-								+ e.getMessage());
-					}
-				}
-			} else {
-				noMoreData = true;
-			}
-		} catch (SQLException e) {
-			logger.error("SQLException caught trying to readObject: "
-					+ e.getMessage());
-		}
-		// Return the object
-		return byteArrayOutputStream.toByteArray();
-	}
+	// public byte[] readByteArray() {
+	//
+	// // Here are a couple of streaming support classes
+	// ByteArrayOutputStream byteArrayOutputStream = new
+	// ByteArrayOutputStream();
+	// DataOutputStream dataOutputStream = new DataOutputStream(
+	// byteArrayOutputStream);
+	//
+	// // The array of fields and their associated classes that will be read
+	// // from the result set
+	// try {
+	// // Advance cursor and see if there is something to return
+	// if (resultSet.next()) {
+	//
+	// // I need to loop over the fields that are in the
+	// // PacketSQLQueryFactory
+	// for (int i = 0; i < packetSQLQueryFactory.listReturnFields().length; i++)
+	// {
+	// Object columnResult = resultSet
+	// .getObject(packetSQLQueryFactory.listReturnFields()[i]);
+	// try {
+	// if (packetSQLQueryFactory.listReturnClasses()[i] == int.class) {
+	// dataOutputStream.writeInt((Integer) columnResult);
+	// } else if (packetSQLQueryFactory.listReturnClasses()[i] == long.class) {
+	// dataOutputStream.writeLong((Long) columnResult);
+	// } else if (packetSQLQueryFactory.listReturnClasses()[i] == byte[].class)
+	// {
+	// dataOutputStream.write((byte[]) columnResult);
+	// }
+	// } catch (IOException e) {
+	// logger.error("IOException caught trying to "
+	// + "write query results to DataOutputStream: "
+	// + e.getMessage());
+	// }
+	// }
+	// } else {
+	// noMoreData = true;
+	// }
+	// } catch (SQLException e) {
+	// logger.error("SQLException caught trying to readObject: "
+	// + e.getMessage());
+	// }
+	// // Return the object
+	// return byteArrayOutputStream.toByteArray();
+	// }
 
 	/**
 	 * The method that is called during garbage collection
