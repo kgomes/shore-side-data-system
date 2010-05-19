@@ -54,11 +54,6 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * This is the session context
-	 */
-	private SessionContext sessionContext = null;
-
-	/**
 	 * This is the packet SQL factory that will be used to construct the query
 	 */
 	private PacketSQLQueryFactory packetSQLQueryFactory = null;
@@ -110,7 +105,6 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	public void setSessionContext(SessionContext sessionContext)
 			throws EJBException, RemoteException {
 		logger.debug("setSessionContext called with context " + sessionContext);
-		sessionContext = sessionContext;
 	}
 
 	/**
