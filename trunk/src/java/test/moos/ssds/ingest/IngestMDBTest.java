@@ -1,11 +1,13 @@
 package test.moos.ssds.ingest;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 
@@ -20,6 +22,7 @@ import moos.ssds.jms.PublisherComponent;
 import moos.ssds.services.data.SSDSByteArrayAccess;
 import moos.ssds.services.data.SSDSByteArrayAccessHome;
 import moos.ssds.services.data.SSDSByteArrayAccessUtil;
+import moos.ssds.util.DateUtils;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -110,10 +113,10 @@ public class IngestMDBTest extends TestCase {
 		// MetadataPacket comes first
 		MetadataPacket metadataPacket = new MetadataPacket(101, ("Cause")
 				.getBytes(), ("Buffer bytes").getBytes());
-		metadataPacket.setMetadataRef(0);
+		metadataPacket.setMetadataRef(1);
 		metadataPacket.setParentId(100);
 		metadataPacket.setRecordType(0);
-		metadataPacket.setSequenceNo(1);
+		metadataPacket.setSequenceNo(9);
 		Date metadataPacketDate = new Date();
 		metadataPacket.setSystemTime(metadataPacketDate.getTime());
 
@@ -162,13 +165,67 @@ public class IngestMDBTest extends TestCase {
 
 			// Now grab the byte array
 			if (ssdsByteArrayAccess.hasMoreElements()) {
-				byte[] ssdsVersion3ByteArrayWithVersion = ssdsByteArrayAccess
-						.nextElement();
+				byte[] returnedByteArray = ssdsByteArrayAccess.nextElement();
 
-				// Convert to SSDS DevicePacket
+				// Convert it to SSDS format
+				byte[] ssdsFormat = null;
+				if (returnedByteArray != null)
+					ssdsFormat = PacketUtility
+							.stripOffVersionAndAddDeviceIDInFront(
+									returnedByteArray, 101);
+
+				// Now convert it to SSDSDevice Packet
 				SSDSDevicePacket ssdsDevicePacket = PacketUtility
-						.convertSSDSByteArrayToSSDSDevicePacket(
-								ssdsVersion3ByteArrayWithVersion, true);
+						.convertVersion3SSDSByteArrayToSSDSDevicePacket(
+								ssdsFormat, true);
+
+				// Now check some things
+				// SourceID (device ID)
+				assertEquals("SourceID should be 101", 101, ssdsDevicePacket
+						.sourceID());
+				// SystemTime
+				assertEquals("System time should be equal", metadataPacketDate
+						.getTime(), ssdsDevicePacket.systemTime());
+				// Sequence Number
+				assertEquals("The sequence Number should be 9", 9,
+						ssdsDevicePacket.sequenceNo());
+				// MetadataRef
+				assertEquals("MetadataRef should be 1", 1, ssdsDevicePacket
+						.metadataRef());
+				// ParentID
+				assertEquals("ParentID should be 100", 100, ssdsDevicePacket
+						.getParentId());
+				// RecordType
+				assertEquals("RecordType should be 0", 0, ssdsDevicePacket
+						.getRecordType());
+				// MetadataSequenceNumber
+				assertEquals("MetadataSequenceNumber should be 1", 1,
+						ssdsDevicePacket.getMetadataSequenceNumber());
+				// DeviceDescriptionVersion
+				assertEquals("DataDescriptionVersion should be 1", 1,
+						ssdsDevicePacket.getDataDescriptionVersion());
+				// Timestamp Seconds
+				assertEquals("Timestamp seconds should be equal", DateUtils
+						.getEpochTimestampSeconds(metadataPacketDate),
+						ssdsDevicePacket.getTimestampSeconds());
+				// Timestamp Nanoseconds
+				assertEquals("Timestamp nanoseconds should be equal", DateUtils
+						.getNanoseconds(metadataPacketDate), ssdsDevicePacket
+						.getTimestampNanoseconds());
+				// PlatformID
+				assertEquals("PlatformID should be 100", 100, ssdsDevicePacket
+						.getPlatformID());
+				// PacketType
+				assertEquals("PacketType should be 1", 1, ssdsDevicePacket
+						.getPacketType());
+
+				// Data Buffer
+				assertTrue("Data Buffers should be equal", Arrays.equals(
+						"Buffer bytes".getBytes(), ssdsDevicePacket
+								.getDataBuffer()));
+				// Other Buffer
+				assertTrue("Other buffers should be equal", Arrays.equals(
+						"Cause".getBytes(), ssdsDevicePacket.getOtherBuffer()));
 			}
 
 			ssdsByteArrayAccess.remove();
