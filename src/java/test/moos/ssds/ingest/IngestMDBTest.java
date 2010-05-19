@@ -167,7 +167,7 @@ public class IngestMDBTest extends TestCase {
 
 				// Convert to SSDS DevicePacket
 				SSDSDevicePacket ssdsDevicePacket = PacketUtility
-						.convertVersion3SSDSByteArrayToSSDSDevicePacket(
+						.convertSSDSByteArrayToSSDSDevicePacket(
 								ssdsVersion3ByteArrayWithVersion, true);
 			}
 
