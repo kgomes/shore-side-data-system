@@ -969,6 +969,119 @@ public class PacketUtility {
 	}
 
 	/**
+	 * This method takes in a byte array that is in SSDS and <b>DOES HAVE</b> an
+	 * integer at the front of the byte array that indicates what version of
+	 * byte array it is.
+	 * 
+	 * @param ssdsByteArray
+	 * @return
+	 */
+	public static SSDSDevicePacket convertSSDSByteArrayToSSDSDevicePacket(
+			byte[] ssdsByteArray, boolean convertToGeoPacket) {
+		// The packet to return
+		SSDSDevicePacket ssdsDevicePacket = null;
+
+		// OK now parse out the keys from the byte array
+		DataInputStream dataInputStream = new DataInputStream(
+				new ByteArrayInputStream(ssdsByteArray));
+		// Read in the version
+		int ssdsPacketVersion = -1;
+		try {
+			ssdsPacketVersion = dataInputStream.readInt();
+		} catch (IOException e) {
+			logger.error("IOException caught trying to read "
+					+ "the packet version from the byte array");
+		}
+		// Check the version
+		if (ssdsPacketVersion == 3) {
+			// A new non-version numbered byte array
+			int numBytesAvailable = 0;
+			byte[] version3ByteArray = null;
+			try {
+				numBytesAvailable = dataInputStream.available();
+				version3ByteArray = new byte[numBytesAvailable];
+				dataInputStream.read(version3ByteArray);
+			} catch (IOException e) {
+				logger.error("IOException caught trying to read " + "the rest("
+						+ numBytesAvailable
+						+ ") of the bytes from the byte array");
+			}
+			ssdsDevicePacket = convertVersion3SSDSByteArrayToSSDSDevicePacket(
+					version3ByteArray, convertToGeoPacket);
+		}
+
+		// Now return it
+		return ssdsDevicePacket;
+	}
+
+	/**
+	 * This method was created due to the fact that the queries that come back
+	 * from a PackSQLQuery have a version int at the beginning and no deviceID.
+	 * This method takes in that byte array and a deviceID and constructs a
+	 * propery SSDS formatted byte array.
+	 * 
+	 * @param byteArrayWithVersionAndNoDevice
+	 * @param deviceID
+	 * @return
+	 */
+	public static byte[] stripOffVersionAndAddDeviceIDInFront(
+			byte[] byteArrayWithVersionAndNoDevice, long deviceID) {
+		// The byte array to return
+		byte[] byteArrayToReturn = null;
+
+		// Make sure it is not null
+		if (byteArrayWithVersionAndNoDevice != null) {
+
+			// Create a byte array output to enable us to insert the deviceID
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			DataOutputStream dataOutputStream = new DataOutputStream(
+					byteArrayOutputStream);
+
+			// The first thing is to strip off the packet version
+			// OK now parse out the keys from the byte array
+			DataInputStream dataInputStream = new DataInputStream(
+					new ByteArrayInputStream(byteArrayWithVersionAndNoDevice));
+
+			// Read in the version
+			int ssdsPacketVersion = -1;
+			try {
+				ssdsPacketVersion = dataInputStream.readInt();
+			} catch (IOException e) {
+				logger.error("IOException caught trying to read "
+						+ "the packet version from the byte array");
+			}
+			// Check the version
+			if (ssdsPacketVersion == 3) {
+				try {
+					// First slip in the deviceID
+					dataOutputStream.writeLong(deviceID);
+
+					// The rest of the payload needs to be written
+					int numBytesAvailable = 0;
+					byte[] restOfPayload = null;
+					numBytesAvailable = dataInputStream.available();
+					restOfPayload = new byte[numBytesAvailable];
+					dataInputStream.read(restOfPayload);
+
+					// Now write it
+					dataOutputStream.write(restOfPayload);
+
+					// Now assign it to the return value
+					byteArrayToReturn = byteArrayOutputStream.toByteArray();
+				} catch (IOException e) {
+					logger.error("IOException caught trying to read bytes "
+							+ "from incoming array, slip in device "
+							+ "ID and write rest of the array: "
+							+ e.getMessage());
+				}
+			}
+
+		}
+		// Return the results
+		return byteArrayToReturn;
+	}
+
+	/**
 	 * This method takes in a SSDS formatted byte array and converts it to a new
 	 * SSDSDevicePacket
 	 * 
