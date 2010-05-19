@@ -54,7 +54,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * This is the session contexct
+	 * This is the session context
 	 */
 	private SessionContext sessionContext = null;
 
