@@ -198,6 +198,9 @@ public class PacketOutput {
 	 */
 	public synchronized void writeBytesMessage(BytesMessage bytesMessage)
 			throws IOException {
+		// Set the file
+		this.setFile(file);
+		// Write the message
 		this.writeBytesMessageVersion3(bytesMessage);
 		// Flush the output
 		this.flush();
@@ -213,6 +216,9 @@ public class PacketOutput {
 	 */
 	public synchronized void writeBytes(byte[] ssdsFormatByteArray)
 			throws IOException {
+		// Set the file
+		this.setFile(file);
+		// Write the bytes
 		this.writeByteArrayVersion3(ssdsFormatByteArray);
 		// Flush the output
 		this.flush();
