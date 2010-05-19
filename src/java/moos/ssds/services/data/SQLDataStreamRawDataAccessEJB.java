@@ -66,6 +66,123 @@ import org.apache.log4j.Logger;
 public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 
 	/**
+	 * These are the constants that define the types of sorting and filtering
+	 * can be done by this service
+	 */
+	public static final String BY_SEQUENCE_NUMBER = "sequenceNumber";
+	public static final String BY_TIMESTAMP = "timestamp";
+
+	/**
+	 * Some constants to define what properties are available
+	 */
+	public static final String NUMBER_OF_RECORDS = "numRecords";
+	public static final String DATE_OF_LAST_RECORD = "lastRecordDate";
+	public static final String AVERAGE_SAMPLE_INTERVAL_IN_MILLIS = "averageSampleIntervalInMillis";
+	public static final String TIME_ONLY_GAP = "timeGap";
+	public static final String SEQ_ONLY_GAP = "seqGap";
+	public static final String TIME_SEQ_GAP = "timeSeqGap";
+	public static final String SERVICE_CALCULATED = "serviceCalculated";
+	public static final String USER_SPECIFIED = "userSpecified";
+
+	/**
+	 * This is the <code>DataSource</code> that the EJB will use to interact
+	 * with the SSDS_Data database
+	 * 
+	 * @associates DataSource
+	 */
+	private static DataSource dataSource = null;
+
+	/**
+	 * This is the host where the DataSource will be looked up
+	 */
+	private String jndiHostName = null;
+
+	/**
+	 * This is the JNDI name of the data source that will be used
+	 */
+	private String dataSourceJndiName = null;
+
+	/**
+	 * The IO Properties for the PacketInput/Output
+	 */
+	private static Properties ioProperties = null;
+
+	/**
+	 * This is the string that is used to delimit the table name in the SQL
+	 * query
+	 */
+	private String sqlTableDelimiter = null;
+
+	/**
+	 * This is the SQL to execute to see if the table for a certain device
+	 * exists in the database. It is a template because the code will have to
+	 * substitute the device ID in this string before the query is executed. The
+	 * template is read from an external properties file.
+	 */
+	private String sqlCheckTableExistsTemplate = null;
+
+	/**
+	 * This is a string that will be read from a properties file that will then
+	 * be used to build a query to count the number of rows for a specific
+	 * device. It is a template because the code will have to substitute the
+	 * device ID in this string before the query is executed
+	 */
+	private String sqlCountNumberOfRowsTemplate = null;
+
+	/**
+	 * This is a string that will be read from a properties file that will then
+	 * be used to build a query to count the number of rows for a specific
+	 * device and record type. It is a template because the code will have to
+	 * substitute the device ID and record type before executing the query.
+	 */
+	private String sqlCountNumberOfRowsWithRecordTypeTemplate = null;
+
+	/**
+	 * This is a string that will be read from a properties file that will
+	 * contain some template text for the SQL statement to find the latest
+	 * timestamp for a particular device
+	 */
+	private String sqlLatestTimestampSecondsTemplate = null;
+
+	/**
+	 * Same as sqlLatestTimestampSecondsTemplate, but with another clause to
+	 * allow specification of Record Type
+	 */
+	private String sqlLatestTimestampSecondsWithRecordTypeTemplate = null;
+
+	/**
+	 * This is a string that will be read from a properites file that will
+	 * contain some template text for the SQL statement to find the latest
+	 * nanosecond portion of the latest timestamp
+	 */
+	private String sqlLatestTimestampNanosecondsTemplate = null;
+
+	/**
+	 * Same as sqlLatestTimestampNanosecondsTemplate, but with another clause to
+	 * allow specification of Record Type
+	 */
+	private String sqlLatestTimestampNanosecondsWithRecordTypeTemplate = null;
+
+	/**
+	 * This is a string that will be read from a properties file that will
+	 * contain some template text that will be used to construct a query for
+	 * packets within a time window
+	 */
+	private String sqlSelectPacketsByTimeTemplate = null;
+
+	/**
+	 * Same as sqlSelectPacketsByTimeTemplate, but with RecordType clause
+	 */
+	private String sqlSelectPacketsByTimeWithRecordTypeTemplate = null;
+
+	private String sqlLastNumberOfPacketsPreamble = null;
+	private String sqlLastNumberOfPacketsPostamble = null;
+
+	/** A log4j logger */
+	static Logger logger = Logger
+			.getLogger(SQLDataStreamRawDataAccessEJB.class);
+
+	/**
 	 * @see javax.ejb.SessionBean#ejbActivate()
 	 */
 	public void ejbActivate() throws EJBException, RemoteException {
@@ -955,15 +1072,15 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 		}
 
 		// Create a PacketSQLInput
-		PacketSQLInput packetSQLInput = new PacketSQLInput();
+		PacketSQLInput packetSQLInput = new PacketSQLInput(null, deviceID, null);
 		// Set the right SQL delimiter
-		packetSQLInput.setSqlTableDelimiter(this.sqlTableDelimiter);
-
-		// Set the pre and post ambles for last number of packets query
-		packetSQLInput
-				.setSqlLastNumberOfPacketsPreamble(this.sqlLastNumberOfPacketsPreamble);
-		packetSQLInput
-				.setSqlLastNumberOfPacketsPostamble(this.sqlLastNumberOfPacketsPostamble);
+		// packetSQLInput.setSqlTableDelimiter(this.sqlTableDelimiter);
+		//
+		// // Set the pre and post ambles for last number of packets query
+		// packetSQLInput
+		// .setSqlLastNumberOfPacketsPreamble(this.sqlLastNumberOfPacketsPreamble);
+		// packetSQLInput
+		// .setSqlLastNumberOfPacketsPostamble(this.sqlLastNumberOfPacketsPostamble);
 
 		// Set all the values
 		packetSQLInput.setDeviceID(deviceID.longValue());
@@ -1153,122 +1270,5 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 		// Now return the results
 		return treeMapToReturn;
 	}
-
-	/**
-	 * These are the constants that define the types of sorting and filtering
-	 * can be done by this service
-	 */
-	public static final String BY_SEQUENCE_NUMBER = "sequenceNumber";
-	public static final String BY_TIMESTAMP = "timestamp";
-
-	/**
-	 * Some constants to define what properties are available
-	 */
-	public static final String NUMBER_OF_RECORDS = "numRecords";
-	public static final String DATE_OF_LAST_RECORD = "lastRecordDate";
-	public static final String AVERAGE_SAMPLE_INTERVAL_IN_MILLIS = "averageSampleIntervalInMillis";
-	public static final String TIME_ONLY_GAP = "timeGap";
-	public static final String SEQ_ONLY_GAP = "seqGap";
-	public static final String TIME_SEQ_GAP = "timeSeqGap";
-	public static final String SERVICE_CALCULATED = "serviceCalculated";
-	public static final String USER_SPECIFIED = "userSpecified";
-
-	/**
-	 * This is the <code>DataSource</code> that the EJB will use to interact
-	 * with the SSDS_Data database
-	 * 
-	 * @associates DataSource
-	 */
-	private static DataSource dataSource = null;
-
-	/**
-	 * This is the host where the DataSource will be looked up
-	 */
-	private String jndiHostName = null;
-
-	/**
-	 * This is the JNDI name of the data source that will be used
-	 */
-	private String dataSourceJndiName = null;
-
-	/**
-	 * The IO Properties for the PacketInput/Output
-	 */
-	private static Properties ioProperties = null;
-
-	/**
-	 * This is the string that is used to delimit the table name in the SQL
-	 * query
-	 */
-	private String sqlTableDelimiter = null;
-
-	/**
-	 * This is the SQL to execute to see if the table for a certain device
-	 * exists in the database. It is a template because the code will have to
-	 * substitute the device ID in this string before the query is executed. The
-	 * template is read from an external properties file.
-	 */
-	private String sqlCheckTableExistsTemplate = null;
-
-	/**
-	 * This is a string that will be read from a properties file that will then
-	 * be used to build a query to count the number of rows for a specific
-	 * device. It is a template because the code will have to substitute the
-	 * device ID in this string before the query is executed
-	 */
-	private String sqlCountNumberOfRowsTemplate = null;
-
-	/**
-	 * This is a string that will be read from a properties file that will then
-	 * be used to build a query to count the number of rows for a specific
-	 * device and record type. It is a template because the code will have to
-	 * substitute the device ID and record type before executing the query.
-	 */
-	private String sqlCountNumberOfRowsWithRecordTypeTemplate = null;
-
-	/**
-	 * This is a string that will be read from a properties file that will
-	 * contain some template text for the SQL statement to find the latest
-	 * timestamp for a particular device
-	 */
-	private String sqlLatestTimestampSecondsTemplate = null;
-
-	/**
-	 * Same as sqlLatestTimestampSecondsTemplate, but with another clause to
-	 * allow specification of Record Type
-	 */
-	private String sqlLatestTimestampSecondsWithRecordTypeTemplate = null;
-
-	/**
-	 * This is a string that will be read from a properites file that will
-	 * contain some template text for the SQL statement to find the latest
-	 * nanosecond portion of the latest timestamp
-	 */
-	private String sqlLatestTimestampNanosecondsTemplate = null;
-
-	/**
-	 * Same as sqlLatestTimestampNanosecondsTemplate, but with another clause to
-	 * allow specification of Record Type
-	 */
-	private String sqlLatestTimestampNanosecondsWithRecordTypeTemplate = null;
-
-	/**
-	 * This is a string that will be read from a properties file that will
-	 * contain some template text that will be used to construct a query for
-	 * packets within a time window
-	 */
-	private String sqlSelectPacketsByTimeTemplate = null;
-
-	/**
-	 * Same as sqlSelectPacketsByTimeTemplate, but with RecordType clause
-	 */
-	private String sqlSelectPacketsByTimeWithRecordTypeTemplate = null;
-
-	private String sqlLastNumberOfPacketsPreamble = null;
-	private String sqlLastNumberOfPacketsPostamble = null;
-
-	/** A log4j logger */
-	static Logger logger = Logger
-			.getLogger(SQLDataStreamRawDataAccessEJB.class);
 
 }
