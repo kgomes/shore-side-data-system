@@ -3,19 +3,9 @@
 
 package moos.ssds.io;
 
-import java.io.IOException;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.Properties;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import moos.ssds.io.util.PacketUtility;
@@ -78,45 +68,55 @@ public class PacketSQLInput implements Enumeration<Object> {
 	static Logger logger = Logger.getLogger(PacketSQLInput.class);
 
 	/**
+	 * This is the packet SQL factory that will be used to construct the query
+	 */
+	private PacketSQLQueryFactory packetSQLQueryFactory = null;
+
+	/**
+	 * This is the PacketSQLQuery used to actually handle the SQL calls
+	 */
+	private PacketSQLQuery packetSQLQuery = null;
+
+	/**
 	 * These variables are used to control the query
 	 */
 	// The ID of the device to find the data for
-	private Long deviceID = null;
-	// The start and end range of parent IDs
-	private Long startParentID = null;
-	private Long endParentID = null;
-	// The start and end range of packetType
-	private Integer startPacketType = null;
-	private Integer endPacketType = null;
-	// The start and end range of packetSubType
-	private Long startPacketSubType = null;
-	private Long endPacketSubType = null;
-	// The start and end range of the DataDescriptionID
-	private Long startDataDescriptionID = null;
-	private Long endDataDescriptionID = null;
-	// The start and end range of the DataDecriptionVersion
-	private Long startDataDescriptionVersion = null;
-	private Long endDataDescriptionVersion = null;
-	// The start and end range of the TimestampSeconds
-	private Long startTimestampSeconds = null;
-	private Long endTimestampSeconds = null;
-	// The start and end range of the TimestampNanoseconds
-	private Long startTimestampNanoseconds = null;
-	private Long endTimestampNanoseconds = null;
-	// The start and end range of the SequenceNumber
-	private Long startSequenceNumber = null;
-	private Long endSequenceNumber = null;
-	// This is the number of packets back that the selection is to grab
-	private Long lastNumberOfPackets = null;
-	// The latitude that the packet was acquired at
-	private Double startLatitude = null;
-	private Double endLatitude = null;
-	// The longitude that the packet was acquired at
-	private Double startLongitude = null;
-	private Double endLongitude = null;
-	// The depth the packet was acquired at
-	private Float startDepth = null;
-	private Float endDepth = null;
+	// private Long deviceID = null;
+	// // The start and end range of parent IDs
+	// private Long startParentID = null;
+	// private Long endParentID = null;
+	// // The start and end range of packetType
+	// private Integer startPacketType = null;
+	// private Integer endPacketType = null;
+	// // The start and end range of packetSubType
+	// private Long startPacketSubType = null;
+	// private Long endPacketSubType = null;
+	// // The start and end range of the DataDescriptionID
+	// private Long startDataDescriptionID = null;
+	// private Long endDataDescriptionID = null;
+	// // The start and end range of the DataDecriptionVersion
+	// private Long startDataDescriptionVersion = null;
+	// private Long endDataDescriptionVersion = null;
+	// // The start and end range of the TimestampSeconds
+	// private Long startTimestampSeconds = null;
+	// private Long endTimestampSeconds = null;
+	// // The start and end range of the TimestampNanoseconds
+	// private Long startTimestampNanoseconds = null;
+	// private Long endTimestampNanoseconds = null;
+	// // The start and end range of the SequenceNumber
+	// private Long startSequenceNumber = null;
+	// private Long endSequenceNumber = null;
+	// // This is the number of packets back that the selection is to grab
+	// private Long lastNumberOfPackets = null;
+	// // The latitude that the packet was acquired at
+	// private Double startLatitude = null;
+	// private Double endLatitude = null;
+	// // The longitude that the packet was acquired at
+	// private Double startLongitude = null;
+	// private Double endLongitude = null;
+	// // The depth the packet was acquired at
+	// private Float startDepth = null;
+	// private Float endDepth = null;
 
 	/**
 	 * This is the value that will be returned if any of the parameter objects
@@ -125,67 +125,13 @@ public class PacketSQLInput implements Enumeration<Object> {
 	public static final int MISSING_VALUE = -999999;
 
 	/**
-	 * This is the DataSource that the packet will be read from
-	 */
-	private DataSource dataSource = null;
-
-	/* ********************************************** */
-	/* These parameters are for direct DB connections */
-	/* ********************************************** */
-	private String databaseJDBCUrl = null;
-	private String username = null;
-	private String password = null;
-	// This is a boolean that tells the object if this is supposed to be a
-	// direct connection to the database or not
-	private boolean directConnection = false;
-	/* ************************ */
-	/* End direct DB connection */
-	/* ************************ */
-
-	/**
-	 * This is the actual connection to the database used
-	 */
-	private Connection connection = null;
-
-	/**
-	 * This is the result set that contains the database rows
-	 */
-	private ResultSet resultSet = null;
-
-	/**
-	 * Boolean to indicate if any of the query variables have changed since the
-	 * last time it was queried
-	 */
-	private boolean paramsChanged = true;
-
-	/**
-	 * A boolean to indicate there is not more data
-	 */
-	private boolean noMoreData = false;
-
-	/**
-	 * This is the delimiter that is used in queries to delimit the table name
-	 * since they are device IDs. The default is set to the MySQL one of `, but
-	 * it can be changed in the constructor
-	 */
-	private String sqlTableDelimiter = "`";
-
-	/**
-	 * These are the SQL fragments that will be inserted to select by last
-	 * number of packets. These are DB specific they need to be set before
-	 * using.
-	 */
-	private String sqlLastNumberOfPacketsPreamble = null;
-	private String sqlLastNumberOfPacketsPostamble = null;
-
-	/**
 	 * No argument constructor. If created with this you will need to call the
 	 * <code>setDataSource(DataSource dataSource)</code> method before calling
 	 * <code>readObject</code>
 	 */
-	public PacketSQLInput() {
-		this(null, PacketSQLInput.MISSING_VALUE, "`");
-	}
+	// public PacketSQLInput() {
+	// this(null, PacketSQLInput.MISSING_VALUE, "`");
+	// }
 
 	/**
 	 * This constructor takes in the DataSource that will be used to query data
@@ -196,9 +142,23 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 */
 	public PacketSQLInput(DataSource dataSource, long deviceID,
 			String sqlTableDelimiter) {
-		this.setDataSource(dataSource);
-		this.setDeviceID(deviceID);
-		this.setSqlTableDelimiter(sqlTableDelimiter);
+		// Create the new PacketSQLQueryFactory
+		this.packetSQLQueryFactory = new PacketSQLQueryFactory(deviceID);
+
+		// If the sqlTableDelimeter is specified, it must be overriding
+		if (sqlTableDelimiter != null) {
+			this.packetSQLQueryFactory.setSqlTableDelimiter(sqlTableDelimiter);
+		}
+
+		// Construct a new PacketSQLQuery
+		try {
+			this.packetSQLQuery = new PacketSQLQuery(dataSource,
+					packetSQLQueryFactory);
+		} catch (SQLException e) {
+			logger
+					.error("SQLException caught trying to setup a new PacketSQLQuery:"
+							+ e.getMessage());
+		}
 	}
 
 	/**
@@ -217,125 +177,31 @@ public class PacketSQLInput implements Enumeration<Object> {
 			String databaseJDBCUrl, String username, String password,
 			long deviceID, String sqlTableDelimiter) throws SQLException,
 			ClassNotFoundException {
+
 		// First check that incoming parameters are OK
 		if ((databaseDriverClassName == null) || (databaseJDBCUrl == null)
 				|| (username == null) || (password == null))
 			throw new SQLException(
 					"One of the constructor parameters was not specified, all four must be.");
 
-		// Set the flag for a direct connection
-		this.directConnection = true;
+		// Create the factory
+		this.packetSQLQueryFactory = new PacketSQLQueryFactory(deviceID);
 
-		// Load the DB driver
-		Class.forName(databaseDriverClassName);
-
-		this.setSqlTableDelimiter(sqlTableDelimiter);
-	}
-
-	/**
-	 * @return Returns the ds.
-	 */
-	public DataSource getDataSource() {
-		return dataSource;
-	}
-
-	/**
-	 * @param ds
-	 *            The ds to set.
-	 */
-	public void setDataSource(DataSource dataSource) {
-		// Set the flag to turn off the direct connection
-		this.directConnection = false;
-		// If the data source is null, look up one using the local properties
-		if (dataSource == null) {
-			Properties ioProperties = null;
-			// Create and load the io properties
-			ioProperties = new Properties();
-			try {
-				ioProperties.load(this.getClass().getResourceAsStream(
-						"/moos/ssds/io/io.properties"));
-			} catch (Exception e) {
-				logger.error("Exception trying to read in properties file: "
-						+ e.getMessage());
-			}
-			// Grab JNDI stuff
-			String jndiHostName = ioProperties
-					.getProperty("io.storage.sql.jndi.server");
-			String dataSourceJndiName = "java:/"
-					+ ioProperties.getProperty("io.storage.sql.jndi.name");
-
-			// Now grab the DataSource from the JNDI
-			Context jndiContext = null;
-			try {
-				jndiContext = new InitialContext();
-				if ((jndiHostName != null) && (!jndiHostName.equals(""))) {
-					jndiContext.removeFromEnvironment(Context.PROVIDER_URL);
-					jndiContext.addToEnvironment(Context.PROVIDER_URL,
-							jndiHostName + ":1099");
-				}
-				// logger.debug("JNDI environment = "
-				// + jndiContext.getEnvironment());
-			} catch (NamingException ne) {
-				logger
-						.error("!!--> A naming exception was caught while trying "
-								+ "to get an initial context: "
-								+ ne.getMessage());
-				return;
-			} catch (Exception e) {
-				logger
-						.error("!!--> An unknown exception was caught while trying "
-								+ "to get an initial context: "
-								+ e.getMessage());
-				return;
-			}
-			try {
-				this.dataSource = (DataSource) jndiContext
-						.lookup(dataSourceJndiName);
-			} catch (NamingException e1) {
-				logger.error("Could not get DataSource: " + e1.getMessage());
-			}
-
-		} else {
-			this.dataSource = dataSource;
+		// If the sqlTableDelimeter is specified, it must be overriding
+		if (sqlTableDelimiter != null) {
+			this.packetSQLQueryFactory.setSqlTableDelimiter(sqlTableDelimiter);
 		}
-		this.paramsChanged = true;
-	}
 
-	public String getSqlTableDelimiter() {
-		return sqlTableDelimiter;
-	}
-
-	public void setSqlTableDelimiter(String sqlTableDelimiter) {
-		this.sqlTableDelimiter = sqlTableDelimiter;
-	}
-
-	public String getSqlLastNumberOfPacketsPreamble() {
-		return sqlLastNumberOfPacketsPreamble;
-	}
-
-	public void setSqlLastNumberOfPacketsPreamble(
-			String sqlLastNumberOfPacketsPreamble) {
-		this.sqlLastNumberOfPacketsPreamble = sqlLastNumberOfPacketsPreamble;
-	}
-
-	public String getSqlLastNumberOfPacketsPostamble() {
-		return sqlLastNumberOfPacketsPostamble;
-	}
-
-	public void setSqlLastNumberOfPacketsPostamble(
-			String sqlLastNumberOfPacketsPostamble) {
-		this.sqlLastNumberOfPacketsPostamble = sqlLastNumberOfPacketsPostamble;
+		// Now the packetSQLQuery
+		this.packetSQLQuery = new PacketSQLQuery(databaseDriverClassName,
+				databaseJDBCUrl, username, password, this.packetSQLQueryFactory);
 	}
 
 	/**
 	 * @return Returns the deviceID.
 	 */
 	public long getDeviceID() {
-		if (deviceID != null) {
-			return deviceID.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getDeviceID();
 	}
 
 	/**
@@ -343,23 +209,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The deviceID to set.
 	 */
 	public void setDeviceID(long deviceID) {
-		if (deviceID == PacketSQLInput.MISSING_VALUE) {
-			this.deviceID = null;
-		} else {
-			this.deviceID = new Long(deviceID);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setDeviceID(deviceID);
 	}
 
 	/**
 	 * @return Returns the startParentID.
 	 */
 	public long getStartParentID() {
-		if (startParentID != null) {
-			return startParentID.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getStartParentID();
 	}
 
 	/**
@@ -367,23 +224,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The parentID to set.
 	 */
 	public void setStartParentID(long startParentID) {
-		if (startParentID == PacketSQLInput.MISSING_VALUE) {
-			this.startParentID = null;
-		} else {
-			this.startParentID = new Long(startParentID);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setStartParentID(startParentID);
 	}
 
 	/**
 	 * @return Returns the endParentID.
 	 */
 	public long getEndParentID() {
-		if (endParentID != null) {
-			return endParentID.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getEndParentID();
 	}
 
 	/**
@@ -391,23 +239,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The parentID to set.
 	 */
 	public void setEndParentID(long endParentID) {
-		if (endParentID == PacketSQLInput.MISSING_VALUE) {
-			this.endParentID = null;
-		} else {
-			this.endParentID = new Long(endParentID);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setEndParentID(endParentID);
 	}
 
 	/**
 	 * @return Returns the startPacketType.
 	 */
 	public int getStartPacketType() {
-		if (startPacketType != null) {
-			return startPacketType.intValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getStartPacketType();
 	}
 
 	/**
@@ -415,23 +254,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The packetType to set.
 	 */
 	public void setStartPacketType(int startPacketType) {
-		if (startPacketType == PacketSQLInput.MISSING_VALUE) {
-			this.startPacketType = null;
-		} else {
-			this.startPacketType = new Integer(startPacketType);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setStartPacketType(startPacketType);
 	}
 
 	/**
 	 * @return Returns the endPacketType.
 	 */
 	public int getEndPacketType() {
-		if (endPacketType != null) {
-			return endPacketType.intValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getEndPacketType();
 	}
 
 	/**
@@ -439,23 +269,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The packetType to set.
 	 */
 	public void setEndPacketType(int endPacketType) {
-		if (endPacketType == PacketSQLInput.MISSING_VALUE) {
-			this.endPacketType = null;
-		} else {
-			this.endPacketType = new Integer(endPacketType);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setEndPacketType(endPacketType);
 	}
 
 	/**
 	 * @return Returns the startPacketSubType.
 	 */
 	public long getStartPacketSubType() {
-		if (startPacketSubType != null) {
-			return startPacketSubType.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getStartPacketSubType();
 	}
 
 	/**
@@ -463,23 +284,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The packetSubType to set.
 	 */
 	public void setStartPacketSubType(long startPacketSubType) {
-		if (startPacketSubType == PacketSQLInput.MISSING_VALUE) {
-			this.startPacketSubType = null;
-		} else {
-			this.startPacketSubType = new Long(startPacketSubType);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setStartPacketSubType(startPacketSubType);
 	}
 
 	/**
 	 * @return Returns the endPacketSubType.
 	 */
 	public long getEndPacketSubType() {
-		if (endPacketSubType != null) {
-			return endPacketSubType.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getEndPacketSubType();
 	}
 
 	/**
@@ -487,23 +299,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The packetSubType to set.
 	 */
 	public void setEndPacketSubType(long endPacketSubType) {
-		if (endPacketSubType == PacketSQLInput.MISSING_VALUE) {
-			this.endPacketSubType = null;
-		} else {
-			this.endPacketSubType = new Long(endPacketSubType);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setEndPacketSubType(endPacketSubType);
 	}
 
 	/**
 	 * @return Returns the startDataDescriptionID.
 	 */
 	public long getStartDataDescriptionID() {
-		if (startDataDescriptionID != null) {
-			return startDataDescriptionID.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getStartDataDescriptionID();
 	}
 
 	/**
@@ -511,23 +314,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The dataDescriptionID to set.
 	 */
 	public void setStartDataDescriptionID(long startDataDescriptionID) {
-		if (startDataDescriptionID == PacketSQLInput.MISSING_VALUE) {
-			this.startDataDescriptionID = null;
-		} else {
-			this.startDataDescriptionID = new Long(startDataDescriptionID);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setStartDataDescriptionID(startDataDescriptionID);
 	}
 
 	/**
 	 * @return Returns the endDataDescriptionID.
 	 */
 	public long getEndDataDescriptionID() {
-		if (endDataDescriptionID != null) {
-			return endDataDescriptionID.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getEndDataDescriptionID();
 	}
 
 	/**
@@ -535,23 +329,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The dataDescriptionID to set.
 	 */
 	public void setEndDataDescriptionID(long endDataDescriptionID) {
-		if (endDataDescriptionID == PacketSQLInput.MISSING_VALUE) {
-			this.endDataDescriptionID = null;
-		} else {
-			this.endDataDescriptionID = new Long(endDataDescriptionID);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setEndDataDescriptionID(endDataDescriptionID);
 	}
 
 	/**
 	 * @return Returns the startDataDescriptionVersion.
 	 */
 	public long getStartDataDescriptionVersion() {
-		if (startDataDescriptionVersion != null) {
-			return startDataDescriptionVersion.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getStartDataDescriptionVersion();
 	}
 
 	/**
@@ -559,24 +344,15 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The dataDescriptionVersion to set.
 	 */
 	public void setStartDataDescriptionVersion(long startDataDescriptionVersion) {
-		if (startDataDescriptionVersion == PacketSQLInput.MISSING_VALUE) {
-			this.startDataDescriptionVersion = null;
-		} else {
-			this.startDataDescriptionVersion = new Long(
-					startDataDescriptionVersion);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory
+				.setStartDataDescriptionVersion(startDataDescriptionVersion);
 	}
 
 	/**
 	 * @return Returns the endDataDescriptionVersion.
 	 */
 	public long getEndDataDescriptionVersion() {
-		if (endDataDescriptionVersion != null) {
-			return endDataDescriptionVersion.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getEndDataDescriptionVersion();
 	}
 
 	/**
@@ -584,23 +360,15 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The dataDescriptionVersion to set.
 	 */
 	public void setEndDataDescriptionVersion(long endDataDescriptionVersion) {
-		if (endDataDescriptionVersion == PacketSQLInput.MISSING_VALUE) {
-			this.endDataDescriptionVersion = null;
-		} else {
-			this.endDataDescriptionVersion = new Long(endDataDescriptionVersion);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory
+				.setEndDataDescriptionVersion(endDataDescriptionVersion);
 	}
 
 	/**
 	 * @return Returns the startTimestampSeconds.
 	 */
 	public long getStartTimestampSeconds() {
-		if (this.startTimestampSeconds != null) {
-			return this.startTimestampSeconds.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getStartTimestampSeconds();
 	}
 
 	/**
@@ -608,23 +376,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The timestampSeconds to set.
 	 */
 	public void setStartTimestampSeconds(long startTimestampSeconds) {
-		if (startTimestampSeconds == PacketSQLInput.MISSING_VALUE) {
-			this.startTimestampSeconds = null;
-		} else {
-			this.startTimestampSeconds = new Long(startTimestampSeconds);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setStartTimestampSeconds(startTimestampSeconds);
 	}
 
 	/**
 	 * @return Returns the endTimestampSeconds.
 	 */
 	public long getEndTimestampSeconds() {
-		if (this.endTimestampSeconds != null) {
-			return this.endTimestampSeconds.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getEndTimestampSeconds();
 	}
 
 	/**
@@ -632,23 +391,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The timestampSeconds to set.
 	 */
 	public void setEndTimestampSeconds(long endTimestampSeconds) {
-		if (endTimestampSeconds == PacketSQLInput.MISSING_VALUE) {
-			this.endTimestampSeconds = null;
-		} else {
-			this.endTimestampSeconds = new Long(endTimestampSeconds);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setEndTimestampSeconds(endTimestampSeconds);
 	}
 
 	/**
 	 * @return Returns the startTimestampNanoseconds.
 	 */
 	public long getStartTimestampNanoseconds() {
-		if (this.startTimestampNanoseconds != null) {
-			return this.startTimestampNanoseconds.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getStartTimestampNanoseconds();
 	}
 
 	/**
@@ -656,23 +406,15 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The timestampNanoseconds to set.
 	 */
 	public void setStartTimestampNanoseconds(long startTimestampNanoseconds) {
-		if (startTimestampNanoseconds == PacketSQLInput.MISSING_VALUE) {
-			this.startTimestampNanoseconds = null;
-		} else {
-			this.startTimestampNanoseconds = new Long(startTimestampNanoseconds);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory
+				.setStartTimestampNanoseconds(startTimestampNanoseconds);
 	}
 
 	/**
 	 * @return Returns the endTimestampNanoseconds.
 	 */
 	public long getEndTimestampNanoseconds() {
-		if (this.endTimestampNanoseconds != null) {
-			return this.endTimestampNanoseconds.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getEndTimestampNanoseconds();
 	}
 
 	/**
@@ -680,23 +422,15 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The timestampNanoseconds to set.
 	 */
 	public void setEndTimestampNanoseconds(long endTimestampNanoseconds) {
-		if (endTimestampNanoseconds == PacketSQLInput.MISSING_VALUE) {
-			this.endTimestampNanoseconds = null;
-		} else {
-			this.endTimestampNanoseconds = new Long(endTimestampNanoseconds);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory
+				.setEndTimestampNanoseconds(endTimestampNanoseconds);
 	}
 
 	/**
 	 * @return Returns the startSequenceNumber.
 	 */
 	public long getStartSequenceNumber() {
-		if (this.startSequenceNumber != null) {
-			return this.startSequenceNumber.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getStartSequenceNumber();
 	}
 
 	/**
@@ -704,23 +438,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The sequenceNumber to set.
 	 */
 	public void setStartSequenceNumber(long startSequenceNumber) {
-		if (startSequenceNumber == PacketSQLInput.MISSING_VALUE) {
-			this.startSequenceNumber = null;
-		} else {
-			this.startSequenceNumber = new Long(startSequenceNumber);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setStartSequenceNumber(startSequenceNumber);
 	}
 
 	/**
 	 * @return Returns the endSequenceNumber.
 	 */
 	public long getEndSequenceNumber() {
-		if (this.endSequenceNumber != null) {
-			return this.endSequenceNumber.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getEndSequenceNumber();
 	}
 
 	/**
@@ -728,12 +453,7 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The sequenceNumber to set.
 	 */
 	public void setEndSequenceNumber(long endSequenceNumber) {
-		if (endSequenceNumber == PacketSQLInput.MISSING_VALUE) {
-			this.endSequenceNumber = null;
-		} else {
-			this.endSequenceNumber = new Long(endSequenceNumber);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setEndSequenceNumber(endSequenceNumber);
 	}
 
 	/**
@@ -743,11 +463,7 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 * @return
 	 */
 	public long getLastNumberOfPackets() {
-		if (this.lastNumberOfPackets != null) {
-			return this.lastNumberOfPackets.longValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getLastNumberOfPackets();
 	}
 
 	/**
@@ -757,23 +473,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 * @param lastNumberOfPackets
 	 */
 	public void setLastNumberOfPackets(long lastNumberOfPackets) {
-		if (lastNumberOfPackets == PacketSQLInput.MISSING_VALUE) {
-			this.lastNumberOfPackets = null;
-		} else {
-			this.lastNumberOfPackets = new Long(lastNumberOfPackets);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setLastNumberOfPackets(lastNumberOfPackets);
 	}
 
 	/**
 	 * @return Returns the startLatitude.
 	 */
 	public double getStartLatitude() {
-		if (this.startLatitude == null) {
-			return PacketSQLInput.MISSING_VALUE;
-		} else {
-			return this.startLatitude.doubleValue();
-		}
+		return packetSQLQueryFactory.getStartLatitude();
 	}
 
 	/**
@@ -781,23 +488,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The startLatitude to set.
 	 */
 	public void setStartLatitude(double startLatitude) {
-		if (startLatitude == PacketSQLInput.MISSING_VALUE) {
-			this.startLatitude = null;
-		} else {
-			this.startLatitude = new Double(startLatitude);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setStartLatitude(startLatitude);
 	}
 
 	/**
 	 * @return Returns the endLatitude.
 	 */
 	public double getEndLatitude() {
-		if (this.endLatitude == null) {
-			return PacketSQLInput.MISSING_VALUE;
-		} else {
-			return this.endLatitude.doubleValue();
-		}
+		return getEndLatitude();
 	}
 
 	/**
@@ -805,23 +503,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The endLatitude to set.
 	 */
 	public void setEndLatitude(double endLatitude) {
-		if (endLatitude == PacketSQLInput.MISSING_VALUE) {
-			this.endLatitude = null;
-		} else {
-			this.endLatitude = new Double(endLatitude);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setEndLatitude(endLatitude);
 	}
 
 	/**
 	 * @return Returns the startLongitude.
 	 */
 	public double getStartLongitude() {
-		if (this.startLongitude == null) {
-			return PacketSQLInput.MISSING_VALUE;
-		} else {
-			return startLongitude.doubleValue();
-		}
+		return packetSQLQueryFactory.getStartLongitude();
 	}
 
 	/**
@@ -829,23 +518,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The startLongitude to set.
 	 */
 	public void setStartLongitude(double startLongitude) {
-		if (startLongitude == PacketSQLInput.MISSING_VALUE) {
-			this.startLongitude = null;
-		} else {
-			this.startLongitude = new Double(startLongitude);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setStartLongitude(startLongitude);
 	}
 
 	/**
 	 * @return Returns the endLongitude.
 	 */
 	public double getEndLongitude() {
-		if (this.endLongitude == null) {
-			return PacketSQLInput.MISSING_VALUE;
-		} else {
-			return endLongitude.doubleValue();
-		}
+		return packetSQLQueryFactory.getEndLongitude();
 	}
 
 	/**
@@ -853,23 +533,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The endLongitude to set.
 	 */
 	public void setEndLongitude(double endLongitude) {
-		if (endLongitude == PacketSQLInput.MISSING_VALUE) {
-			this.endLongitude = null;
-		} else {
-			this.endLongitude = new Double(endLongitude);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setEndLongitude(endLongitude);
 	}
 
 	/**
 	 * @return Returns the startDepth.
 	 */
 	public float getStartDepth() {
-		if (this.startDepth == null) {
-			return PacketSQLInput.MISSING_VALUE;
-		} else {
-			return startDepth.floatValue();
-		}
+		return packetSQLQueryFactory.getStartDepth();
 	}
 
 	/**
@@ -877,23 +548,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The startDepth to set.
 	 */
 	public void setStartDepth(float startDepth) {
-		if (startDepth == PacketSQLInput.MISSING_VALUE) {
-			this.startDepth = null;
-		} else {
-			this.startDepth = new Float(startDepth);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setStartDepth(startDepth);
 	}
 
 	/**
 	 * @return Returns the endDepth.
 	 */
 	public float getEndDepth() {
-		if (this.endDepth != null) {
-			return this.endDepth.floatValue();
-		} else {
-			return PacketSQLInput.MISSING_VALUE;
-		}
+		return packetSQLQueryFactory.getEndDepth();
 	}
 
 	/**
@@ -901,279 +563,17 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *            The endDepth to set.
 	 */
 	public void setEndDepth(float endDepth) {
-		if (endDepth == PacketSQLInput.MISSING_VALUE) {
-			this.endDepth = null;
-		} else {
-			this.endDepth = new Float(endDepth);
-		}
-		this.paramsChanged = true;
+		packetSQLQueryFactory.setEndDepth(endDepth);
 	}
 
 	/**
 	 * This method runs the query using the parameters stored and then holds the
 	 * result set
 	 */
-	private void queryForData() throws SQLException {
-		if (this.deviceID == null) {
-			throw new SQLException("The DeviceID was not specified.");
-		}
-		// Close the old connection
-		if (this.connection != null)
-			this.connection.close();
-
-		// Grab a new connection
-		if (!directConnection) {
-			this.connection = this.dataSource.getConnection();
-		} else {
-			this.connection = DriverManager.getConnection(this.databaseJDBCUrl,
-					this.username, this.password);
-		}
-
-		// Clear the no more data flag
-		noMoreData = false;
-
-		// A boolean to track if WHERE was added
-		boolean whereAdded = false;
-
-		// Build up the query
-		StringBuffer queryString = new StringBuffer();
-		queryString.append("SELECT * FROM ");
-		if (this.lastNumberOfPackets != null) {
-			// First replace any tags in preamble with number of packets and
-			// then append
-			queryString.append((this.sqlLastNumberOfPacketsPreamble.replaceAll(
-					"@LAST_NUMBER_OF_PACKETS@", this.lastNumberOfPackets + ""))
-					+ " ");
-			// queryString.append("(SELECT TOP "
-			// + this.lastNumberOfPackets.longValue() + " * FROM ");
-		}
-		queryString.append(this.sqlTableDelimiter + this.deviceID.longValue()
-				+ this.sqlTableDelimiter);
-
-		// Add all contraints
-		if (this.startParentID != null) {
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			}
-			if (this.endParentID != null) {
-				queryString.append(" parentID >= "
-						+ this.startParentID.longValue() + " AND parentID <= "
-						+ this.endParentID.longValue());
-			} else {
-				queryString.append(" parentID = "
-						+ this.startParentID.longValue());
-			}
-		}
-		// Now check for packetType clause
-		if (startPacketType != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endPacketType != null) {
-				queryString.append(" packetType >= "
-						+ startPacketType.intValue() + " AND packetType <= "
-						+ endPacketType.intValue());
-			} else {
-				queryString.append(" packetType = "
-						+ startPacketType.intValue());
-			}
-		}
-		// Now for packetSubType
-		if (startPacketSubType != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endPacketSubType != null) {
-				queryString.append(" packetSubType >= "
-						+ startPacketSubType.longValue()
-						+ " AND packetSubType <= "
-						+ endPacketSubType.longValue());
-			} else {
-				queryString.append(" packetSubType = "
-						+ startPacketSubType.longValue());
-			}
-		}
-		// Now for the dataDescriptionID
-		if (startDataDescriptionID != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endDataDescriptionID != null) {
-				queryString.append(" dataDescriptionID >= "
-						+ startDataDescriptionID.longValue()
-						+ " AND dataDescriptionID <= "
-						+ endDataDescriptionID.longValue());
-			} else {
-				queryString.append(" dataDescriptionID = "
-						+ startDataDescriptionID.longValue());
-			}
-		}
-		// Now for the dataDescriptionVersion
-		if (startDataDescriptionVersion != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endDataDescriptionVersion != null) {
-				queryString.append(" dataDescriptionVersion >= "
-						+ startDataDescriptionVersion.longValue()
-						+ " AND dataDescriptionVersion <= "
-						+ endDataDescriptionVersion.longValue());
-			} else {
-				queryString.append(" dataDescriptionVersion = "
-						+ startDataDescriptionVersion.longValue());
-			}
-		}
-		// Now for the timestampSeconds
-		if (startTimestampSeconds != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endTimestampSeconds != null) {
-				queryString.append(" timestampSeconds >= "
-						+ startTimestampSeconds.longValue()
-						+ " AND timestampSeconds <= "
-						+ endTimestampSeconds.longValue());
-			} else {
-				queryString.append(" timestampSeconds = "
-						+ startTimestampSeconds.longValue());
-			}
-		}
-
-		// Now for the timestampNanoseconds
-		// TODO KJG 2006-02-8 I removed the nanoseconds part because it doesn't
-		// make any sense in the query side of things. You would only use these
-		// if you were querying within the same second.
-
-		// Now for the sequenceNumber
-		if (startSequenceNumber != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endSequenceNumber != null) {
-				queryString.append(" sequenceNumber >= "
-						+ startSequenceNumber.longValue()
-						+ " AND sequenceNumber <= "
-						+ endSequenceNumber.longValue());
-			} else {
-				queryString.append(" sequenceNumber = "
-						+ startSequenceNumber.longValue());
-			}
-		}
-		// Now for the latitude
-		if (startLatitude != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endLatitude != null) {
-				queryString.append(" latitude >= "
-						+ startLatitude.doubleValue() + " AND latitude <= "
-						+ endLatitude.doubleValue());
-			} else {
-				queryString
-						.append(" latitude = " + startLatitude.doubleValue());
-			}
-		}
-		// Now for the longitude
-		if (startLongitude != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endLongitude != null) {
-				queryString.append(" longitude >= "
-						+ startLongitude.doubleValue() + " AND longitude <= "
-						+ endLongitude.doubleValue());
-			} else {
-				queryString.append(" longitude = "
-						+ startLongitude.doubleValue());
-			}
-		}
-		// Now for the depth
-		if (startDepth != null) {
-			// Add where if not added
-			if (!whereAdded) {
-				queryString.append(" WHERE");
-				whereAdded = true;
-			} else {
-				queryString.append(" AND");
-			}
-			if (endDepth != null) {
-				queryString.append(" depth >= " + startDepth.floatValue()
-						+ " AND depth <= " + endDepth.floatValue());
-			} else {
-				queryString.append(" depth = " + startDepth.floatValue());
-			}
-		}
-
-		// Now add some ordering stuff
-		if (this.lastNumberOfPackets != null) {
-			// Replace postamble with last number of packets and append
-			queryString.append(" "
-					+ (this.sqlLastNumberOfPacketsPostamble.replaceAll(
-							"@LAST_NUMBER_OF_PACKETS@",
-							this.lastNumberOfPackets + "")));
-			// queryString
-			// .append(" ORDER BY timestampSeconds DESC, timestampNanoseconds
-			// DESC) DERIVEDTBL");
-		}
-		queryString.append(" ORDER BY timestampSeconds, timestampNanoseconds");
-
-		// Now let's run it
-		logger.debug("SQL statement is: " + queryString.toString());
-
-		PreparedStatement pstmt = null;
-		try {
-			pstmt = connection.prepareStatement(queryString.toString());
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (pstmt != null) {
-			resultSet = null;
-			try {
-				resultSet = pstmt.executeQuery();
-			} catch (SQLException e) {
-				logger
-						.info("SQLException caught trying to read from device table "
-								+ this.deviceID.longValue()
-								+ ": "
-								+ e.getMessage());
-			}
-		}
-		// Changed the flag to indicate that the parameters are done changing
-		this.paramsChanged = false;
+	public void queryForData() throws SQLException {
+		// Query on the packetSQLQuery
+		if (packetSQLQuery != null)
+			packetSQLQuery.queryForData();
 	}
 
 	/**
@@ -1186,53 +586,14 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *         <code>false</code>.
 	 */
 	public boolean hasMoreElements() {
-		// Set the return to false as the default
-		boolean ok = false;
-		// First check to see if the parameters were changed and
-		// run the query again if they have
-		if (this.paramsChanged) {
-			try {
-				this.queryForData();
-			} catch (SQLException e) {
-				logger.error("SQLException caught trying to re-run query: "
-						+ e.getMessage());
-			}
-		}
-		if ((!noMoreData) && (resultSet != null)) {
-			try {
-				if (resultSet.isLast()) {
-					ok = false;
-				} else {
-					ok = true;
-				}
-			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to go to next, then previous row: "
-								+ e.getMessage());
-			}
-		} else {
-			ok = false;
-		}
-		return ok;
+		return packetSQLQuery.hasMoreElements();
 	}
 
 	/**
 	 * This method closes the results and connections.
 	 */
 	public void close() {
-		try {
-			// Close the result set
-			if (resultSet != null)
-				resultSet.close();
-			// Close the connection
-			if (connection != null)
-				connection.close();
-		} catch (SQLException e) {
-			logger.error("SQLException caught trying to close: "
-					+ e.getMessage());
-		} catch (Exception e) {
-			logger.error("Exception caught: " + e.getMessage());
-		}
+		packetSQLQuery.close();
 	}
 
 	/**
@@ -1244,69 +605,16 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 *         Object, it can return null if no object was available
 	 */
 	public Object nextElement() {
-		if (paramsChanged) {
-			try {
-				this.queryForData();
-			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to go to nextElement, then previous row: "
-								+ e.getMessage());
-			}
-		}
-		// The object to return
-		Object obj = null;
-		// If there are results, read the next object
-		if (resultSet != null) {
-			obj = readObject();
-		}
-		// Now return it
-		return obj;
-	}
+		// This is the object to return
+		Object objectToReturn = null;
 
-	/**
-	 * This method is called to read an object from the stream. It checks the
-	 * version from the stream and then calls the appropriate read of the
-	 * correct version.
-	 * 
-	 * @return An object that is an <code>SSDSDevicePacket</code> that is read
-	 *         from the serialized packet stream. A null is returned if no
-	 *         packet was available.
-	 * @throws IOException
-	 *             if something goes wrong with the read
-	 */
-	public Object readObject() {
-		if (paramsChanged) {
-			try {
-				this.queryForData();
-			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to go to nextElement, then previous row: "
-								+ e.getMessage());
-			}
-		}
-		// The object to return
-		Object obj = null;
-		try {
-			// Advance cursor and see if there is something to return
-			if (resultSet.next()) {
-				// Read in the version from the input stream
-				int tmpVersionID = resultSet.getInt("ssdsPacketVersion");
-				// Now based on the version value, call the appropriate read
-				// method
-				switch (tmpVersionID) {
-				case 3:
-					obj = readVersion3();
-					break;
-				}
-			} else {
-				noMoreData = true;
-			}
-		} catch (SQLException e) {
-			logger.error("SQLException caught trying to readObject: "
-					+ e.getMessage());
-		}
-		// Return the object
-		return obj;
+		// Convert it to and SSDSDevicePacket
+		objectToReturn = PacketUtility
+				.convertVersion3SSDSByteArrayToSSDSDevicePacket(
+						nextSSDSByteArray(), true);
+
+		// Now return it
+		return objectToReturn;
 	}
 
 	/**
@@ -1316,38 +624,21 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 * @return
 	 */
 	public byte[] nextSSDSByteArray() {
-		if (paramsChanged) {
-			try {
-				this.queryForData();
-			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to go to nextElement, then previous row: "
-								+ e.getMessage());
-			}
-		}
-		// The object to return
-		byte[] byteArrayToReturn = null;
-		try {
-			// Advance cursor and see if there is something to return
-			if (resultSet.next()) {
-				// Read in the version from the input stream
-				int tmpVersionID = resultSet.getInt("ssdsPacketVersion");
-				// Now based on the version value, call the appropriate read
-				// method
-				switch (tmpVersionID) {
-				case 3:
-					byteArrayToReturn = readVersion3SSDSByteArray();
-					break;
-				}
-			} else {
-				noMoreData = true;
-			}
-		} catch (SQLException e) {
-			logger.error("SQLException caught trying to readObject: "
-					+ e.getMessage());
-		}
-		// Return the object
-		return byteArrayToReturn;
+		// The byte array to return
+		byte[] ssdsFormat = null;
+
+		// First thing to do is the grab the next element from the sql query
+		// underneath
+		byte[] byteArrayWithVersionAndNoDevice = packetSQLQuery.nextElement();
+
+		// Convert it to SSDS format
+		if (byteArrayWithVersionAndNoDevice != null)
+			ssdsFormat = PacketUtility.stripOffVersionAndAddDeviceIDInFront(
+					byteArrayWithVersionAndNoDevice, packetSQLQueryFactory
+							.getDeviceID());
+
+		// Now return it
+		return ssdsFormat;
 	}
 
 	/**
@@ -1360,57 +651,5 @@ public class PacketSQLInput implements Enumeration<Object> {
 	public Object[] nextSSDSByteArrayAsObjectArray() {
 		return PacketUtility.readVariablesFromVersion3SSDSByteArray(this
 				.nextSSDSByteArray());
-	}
-
-	/**
-	 * This is the method that reads packets from the input stream that were
-	 * serialized in the version 3 format of packet. This method assumes that
-	 * the object will be read from the current location of the result set
-	 * cursor
-	 * 
-	 * @return an Object that is an <code>SSDSGeoLocatedDevicePacket</code> that
-	 *         conforms to the third version of packet structure
-	 */
-	private Object readVersion3() throws SQLException {
-
-		// Read in the SSDS byte array and convert to an SSDSDevicePacket
-		SSDSGeoLocatedDevicePacket packet = (SSDSGeoLocatedDevicePacket) PacketUtility
-				.convertVersion3SSDSByteArrayToSSDSDevicePacket(this
-						.readVersion3SSDSByteArray(), true);
-
-		// Set the geo coordinates
-		packet.setLatitude(resultSet.getDouble("latitude"));
-		packet.setLongitude(resultSet.getDouble("longitude"));
-		packet.setDepth(resultSet.getFloat("depth"));
-
-		// Return the packet
-		return packet;
-	}
-
-	/**
-	 * This method reads in the data from the database and converts it to a byte
-	 * array that is in the version 3 SSDS format
-	 * 
-	 * @return
-	 * @throws SQLException
-	 */
-	private byte[] readVersion3SSDSByteArray() throws SQLException {
-		// Grab the buffer lengths
-		int bufferLen = resultSet.getInt("bufferLen");
-		int bufferTwoLen = resultSet.getInt("bufferTwoLen");
-		// Grab the blobs for the buffers
-		Blob bufferOneBlob = resultSet.getBlob("bufferBytes");
-		Blob bufferTwoBlob = resultSet.getBlob("bufferTwoBytes");
-
-		// Now return the array in SSDS format
-		return PacketUtility.createVersion3SSDSByteArray(this.deviceID
-				.longValue(), resultSet.getLong("parentID"), resultSet
-				.getInt("packetType"), resultSet.getLong("packetSubType"),
-				resultSet.getLong("dataDescriptionID"), resultSet
-						.getLong("dataDescriptionVersion"), resultSet
-						.getLong("timestampSeconds"), resultSet
-						.getLong("timestampNanoseconds"), resultSet
-						.getLong("sequenceNumber"), bufferOneBlob.getBytes(1,
-						bufferLen), bufferTwoBlob.getBytes(1, bufferTwoLen));
 	}
 }

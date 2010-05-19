@@ -1,5 +1,6 @@
 package moos.ssds.io;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -9,7 +10,13 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-public class PacketSQLQueryFactory {
+public class PacketSQLQueryFactory implements Serializable {
+	/**
+	 * This is the version ID For serializing the PacketSQLQueryFactory in the
+	 * session EJBs.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/** A log4j logger */
 	static Logger logger = Logger.getLogger(PacketSQLQueryFactory.class);
 
@@ -917,6 +924,14 @@ public class PacketSQLQueryFactory {
 		} else {
 			this.endDepth = new Float(endDepth);
 		}
+	}
+
+	public String getSqlTableDelimiter() {
+		return sqlTableDelimiter;
+	}
+
+	public void setSqlTableDelimiter(String sqlTableDelimiter) {
+		this.sqlTableDelimiter = sqlTableDelimiter;
 	}
 
 	/**
