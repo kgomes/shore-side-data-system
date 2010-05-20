@@ -1,0 +1,19 @@
+#summary Introductory Page to the Shore-Side Data System Wiki
+
+= Introduction =
+
+These pages are the main source of documentation for the Shore-Side Data System Project.  You will find information about the design, development, deployment and use of the Shore-Side Data System software.
+
+= Documents =
+
+  # Requirements
+  # Design
+  # Development
+  # Deployment
+  # Use
+
+If you have any questions please contact the SSDS team at ssds at listserver.mbari.org
+
+Thanks,
+
+SSDS Team
