@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary This page describes the transmogrify and ingest components of SSDS
 #sidebar TableOfContents
 
 = Transmogrify and Ingest Components =
@@ -6,6 +6,8 @@
 This page documents the components that are known as "Transmogrify" (nod to Bill Watterson here) and "Ingest". These are the components that take in data and metadata streams and perform various tasks with them as they are brought into the SSDS. They are both implemented as Message Driven Beans (EJB) and are wired in series with Transmogrify feeding into Ingest. The original reason for having both was that Transmogrify was to handle data and metadata from the SIAM system that had some special characteristics and needed to be converted to the generic message format that the SSDS is expecting. If someone wanted to send the generic format, they could bypass the Transmogrify and send straight to Ingest. As with all things, patchwork becomes production and Transmogrify lives on to this day.
 
 Here is a sequence diagram of the basic steps that occur when a packet is submitted via JMS to the SSDS.
+
+
 
 === Transmogrify Packet Structure ===
 
