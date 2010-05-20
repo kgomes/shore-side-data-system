@@ -1,3 +1,4 @@
 #summary Information about the development of the SSDS Software
+#sidebar TableOfContents
 
 Under Construction
