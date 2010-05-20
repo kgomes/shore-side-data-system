@@ -7,10 +7,10 @@ These pages are the main source of documentation for the Shore-Side Data System 
 = Documents =
 
   # [Requirements]
-  # Design
-  # Development
-  # Deployment
-  # Use
+  # [Design]
+  # [Development]
+  # [Deployment]
+  # [Use]
 
 If you have any questions please contact the SSDS team at ssds at listserver.mbari.org
 
