@@ -9,11 +9,11 @@ Here is a sequence diagram of the basic steps that occur when a packet is submit
 
 === Transmogrify Packet Structure ===
 
-Our initial and primary publisher of data for the SSDS was the SIAM infrastructure.  Initially they would publish serialized Java objects that were SIAM DevicePacket classes.  In the SSDS, we created SSDSDevicePacket sub classes to map the SIAM DevicePacket information to the SSDS world.  Here is a class diagram of the classes involved:
+Our initial and primary publisher of data for the SSDS was the SIAM infrastructure.  Initially they would publish serialized Java objects that were SIAM !DevicePacket classes.  In the SSDS, we created !SSDSDevicePacket sub classes to map the SIAM !DevicePacket information to the SSDS world.  Here is a class diagram of the classes involved:
 
-Just as a note, the idea with the SSDSGeoLocatedDevicePacket was that if there was a way to link a particular device to another device that was providing geospatial data, you could correlate all the SSDSDevicePackets by time with that device and tag each individual packet with a geospatial reference.
+Just as a note, the idea with the !SSDSGeoLocatedDevicePacket was that if there was a way to link a particular device to another device that was providing geospatial data, you could correlate all the !SSDSDevicePackets by time with that device and tag each individual packet with a geospatial reference.
 
-When the Transmogrify component receives a SIAM DevicePacket, it converts it to a SSDSDevicePacket using the PacketUtility class. Here are the various attributes on the classes and how they map to each other.
+When the Transmogrify component receives a SIAM !DevicePacket, it converts it to a !SSDSDevicePacket using the !PacketUtility class. Here are the various attributes on the classes and how they map to each other.
 
 || *DevicePacket* || *MetadataPacket* || *SensorDataPacket* || *DeviceMessagePacket* || *SensorStatusPacket* || *SSDSDevicePacket* || *SSDSGeoLocatedDevicePacket* || *Description* ||
 ||_sourceID||_inherited_||_inherited_||_inherited_||_inherited_||_inherited_||_inherited_||This is the ID of the device that generated the packet||
