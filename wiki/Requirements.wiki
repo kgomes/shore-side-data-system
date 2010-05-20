@@ -1,5 +1,3 @@
 #summary A description of the requirements for the SSDS software
 
-= Introduction =
-
 Under Construction
