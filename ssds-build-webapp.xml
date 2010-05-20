@@ -20,7 +20,7 @@
 	<import file="path-defs.xml" />
 
 	<!-- Define the Flex tasks -->
-	<taskdef resource="flexTasks.tasks" classpath="${resources.build}/flex/flexTasks.jar" />
+	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
 
 	<!-- This target checks to see if any dependencies are missing -->
 	<target name="check-dependencies">
