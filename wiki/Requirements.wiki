@@ -1,3 +1,4 @@
 #summary A description of the requirements for the SSDS software
+#sidebar TableOfContents
 
 Under Construction
