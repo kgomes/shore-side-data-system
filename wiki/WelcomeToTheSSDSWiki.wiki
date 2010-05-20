@@ -1,4 +1,5 @@
 #summary Introductory Page to the Shore-Side Data System Wiki
+#sidebar TableOfContents
 
 = Introduction =
 
