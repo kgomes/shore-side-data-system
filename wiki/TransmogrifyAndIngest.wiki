@@ -7,7 +7,7 @@ This page documents the components that are known as "Transmogrify" (nod to Bill
 
 Here is a sequence diagram of the basic steps that occur when a packet is submitted via JMS to the SSDS.
 
-
+[http://shore-side-data-system.googlecode.com/svn/wiki/images/TransmogrifyIngest.jpg]
 
 === Transmogrify Packet Structure ===
 
