@@ -118,12 +118,16 @@
 		<include name="lib/${dods.jar}" />
 		<include name="lib/${metadata.datasource.jdbc.jar}" />
 		<include name="lib/${backport.util.concurrent.jar}" />
-		<include name="lib/${cfgatewayadapter.jar}" />
-		<include name="lib/${flex.messaging.common.jar}" />
-		<include name="lib/${flex.messaging.core.jar}" />
-		<include name="lib/${flex.messaging.opt.jar}" />
-		<include name="lib/${flex.messaging.proxy.jar}" />
-		<include name="lib/${flex.messaging.remoting.jar}" />
+		<include name="lib/${blazeds.cfgatewayadapter.jar}" />
+		<include name="lib/${blazeds.commons.codec.jar}" />
+		<include name="lib/${blazeds.commons.httpclient.jar}" />
+		<include name="lib/${blazeds.commons.logging.jar}" />
+		<include name="lib/${blazeds.flex.messaging.common.jar}" />
+		<include name="lib/${blazeds.flex.messaging.core.jar}" />
+		<include name="lib/${blazeds.flex.messaging.opt.jar}" />
+		<include name="lib/${blazeds.flex.messaging.proxy.jar}" />
+		<include name="lib/${blazeds.flex.messaging.remoting.jar}" />
+		<include name="lib/s${blazeds.flex.rds.server.jar}" />
 	</fileset>
 
 	<!-- I also need the fileset without the 'lib' dir -->
@@ -152,13 +156,17 @@
 		<include name="${xerces.jar}" />
 		<include name="${dods.jar}" />
 		<include name="${metadata.datasource.jdbc.jar}" />
-		<include name="${backport.util.concurrent.jar}}" />
-		<include name="${cfgatewayadapter.jar}" />
-		<include name="${flex.messaging.common.jar}" />
-		<include name="${flex.messaging.core.jar}" />
-		<include name="${flex.messaging.opt.jar}" />
-		<include name="${flex.messaging.proxy.jar}" />
-		<include name="${flex.messaging.remoting.jar}" />
+		<include name="${backport.util.concurrent.jar}" />
+		<include name="${blazeds.cfgatewayadapter.jar}" />
+		<include name="${blazeds.commons.codec.jar}" />
+		<include name="${blazeds.commons.httpclient.jar}" />
+		<include name="${blazeds.commons.logging.jar}" />
+		<include name="${blazeds.flex.messaging.common.jar}" />
+		<include name="${blazeds.flex.messaging.core.jar}" />
+		<include name="${blazeds.flex.messaging.opt.jar}" />
+		<include name="${blazeds.flex.messaging.proxy.jar}" />
+		<include name="${blazeds.flex.messaging.remoting.jar}" />
+		<include name="${blazeds.flex.rds.server.jar}" />
 	</fileset>
 
 	<!-- Define classpath for compiling the source code -->
@@ -167,6 +175,5 @@
 		<fileset refid="jboss-lib-jar-fileset" />
 		<fileset refid="all-project-lib-jar-fileset" />
 	</path>
-
 
 </project>
