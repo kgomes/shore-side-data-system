@@ -39,6 +39,31 @@ import moos.ssds.metadata.util.MetadataValidator;
 public class CommentTag implements IMetadataObject {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(CommentTag.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the unique identifier of the <code>CommentTag</code>
+	 */
+	private Long id;
+
+	/**
+	 * This is the String that represents the indicator of a line of comments
+	 */
+	private String tagString;
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * This is the default (no argument) constructor
 	 */
 	public CommentTag() {
@@ -72,8 +97,7 @@ public class CommentTag implements IMetadataObject {
 
 	/**
 	 * These methods get and set the tag text that is in this
-	 * <code>CommentTag</code>. This comment tag must be less than 10
-	 * characters
+	 * <code>CommentTag</code>. This comment tag must be less than 10 characters
 	 * 
 	 * @hibernate.property length="10"
 	 * @return A <code>String</code> that is the text of the
@@ -96,8 +120,8 @@ public class CommentTag implements IMetadataObject {
 	 * dirty objects
 	 * 
 	 * @hibernate.version type=long
-	 * @return the <code>long</code> that is the version of the instance of
-	 *         the class
+	 * @return the <code>long</code> that is the version of the instance of the
+	 *         class
 	 */
 	public long getVersion() {
 		return version;
@@ -254,17 +278,34 @@ public class CommentTag implements IMetadataObject {
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
 		tagString = (String) in.readObject();
+		// Read in version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
 	 * The method for custom serialization of the object
+	 * 
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(id);
 		out.writeObject(tagString);
+		out.writeObject(version);
 	}
 
 	/**
@@ -296,30 +337,5 @@ public class CommentTag implements IMetadataObject {
 		logger.debug(clonedCommentTag.toStringRepresentation("|"));
 		return clonedCommentTag;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the unique identifier of the <code>CommentTag</code>
-	 */
-	private Long id;
-
-	/**
-	 * This is the String that represents the indicator of a line of comments
-	 */
-	private String tagString;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(CommentTag.class);
 
 }
