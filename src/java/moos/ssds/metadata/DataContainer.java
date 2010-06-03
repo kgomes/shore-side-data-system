@@ -47,6 +47,215 @@ public class DataContainer implements IMetadataObject, IDescription,
 		IResourceOwner, IDateRange {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(DataContainer.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is the arbitrary name given to the DataContainer
+	 */
+	private String name;
+
+	/**
+	 * The description of the DataContainer
+	 */
+	private String description;
+
+	/**
+	 * This is a string that categories the type of data container. It should
+	 * match one of the constants defined in this class.
+	 */
+	private String dataContainerType = DataContainer.TYPE_FILE;
+
+	/**
+	 * This is the <code>Date</code> that the earliest data in this
+	 * <code>DataContainer</code> applies to
+	 */
+	private Date startDate;
+
+	/**
+	 * This is the <code>Date</code> that the latest data in this
+	 * <code>DataContainer</code> applies to
+	 */
+	private Date endDate;
+
+	/**
+	 * This is an attribute that give the range of time that this
+	 * <code>DataContainer</code> covers
+	 */
+	private IDateRange dateRange = new DateRange(this);
+
+	/**
+	 * Flag to indicate if this instance was an 'original' dataset.
+	 */
+	private Boolean original = new Boolean(false);
+
+	/**
+	 * This is a <code>URI</code> that is the resource identifier
+	 */
+	private String uriString;
+
+	/**
+	 * This is the length of the <code>DataContainer</code> in bytes
+	 */
+	private Long contentLength;
+
+	/**
+	 * This is the MIME type that applies to this <code>DataContainer</code> (if
+	 * one applies).
+	 */
+	private String mimeType;
+
+	/**
+	 * This is the number of records that are stored in the
+	 * <code>DataContainer</code>.
+	 */
+	private Long numberOfRecords;
+
+	/**
+	 * This is a <code>boolean</code> that indicates whether or not the
+	 * <code>DataContainer</code> is available through a DODS server (via the
+	 * URI supplied)
+	 */
+	private Boolean dodsAccessible = new Boolean(false);
+
+	/**
+	 * This is a <code>String</code> that represents the <code>URL</code> where
+	 * the <code>DataContainer</code> can be read from an DODS (OPeNDAP) server.
+	 */
+	private String dodsUrlString;
+
+	/**
+	 * This is boolean to indicate whether or not the data system should try to
+	 * keep a parallel NetCDF file that contains the same data that is in the
+	 * container described here
+	 */
+	private Boolean noNetCDF = new Boolean(true);
+
+	/**
+	 * These six fields are the geospatial extents that are covered by the data
+	 * in the <code>DataContainer</code> (if applicable
+	 */
+	private Double minLatitude;
+	private Double maxLatitude;
+	private Double minLongitude;
+	private Double maxLongitude;
+	private Float minDepth;
+	private Float maxDepth;
+
+	/**
+	 * This is the <code>Person</code> that is normally thought of as the owner
+	 * of the <code>DataContainer</code> (or the point of contact)
+	 * 
+	 * @directed true
+	 * @label lazy
+	 */
+	private Person person;
+
+	/**
+	 * This is the <code>HeaderDescription</code> that is associated with the
+	 * <code>DataContainer</code>. It is meant to describe any header section
+	 * that is contained in the <code>DataContainer</code>
+	 * 
+	 * @directed true
+	 * @label lazy
+	 */
+	private HeaderDescription headerDescription;
+
+	/**
+	 * This is the <code>RecordDescription</code> that is associated with the
+	 * <code>DataContainer</code>. It is meant to describe the records in the
+	 * <code>DataContainer</code> so that it can be parsed automatically
+	 * 
+	 * @directed true
+	 * @label lazy & cascade all
+	 */
+	private RecordDescription recordDescription;
+
+	/**
+	 * This is a collection of <code>DataContainerGroup</code>s that are
+	 * associated with the <code>DataContainer</code>
+	 * 
+	 * @associates DataContainerGroup
+	 * @directed true
+	 * @label lazy
+	 */
+	private Collection<DataContainerGroup> dataContainerGroups = new HashSet<DataContainerGroup>();
+
+	/**
+	 * This is a collection of <code>Keyword</code> objects that can be used to
+	 * search for <code>DataContainer</code>s.
+	 * 
+	 * @associates Keyword
+	 * @directed true
+	 * @label lazy
+	 */
+	private Collection<Keyword> keywords = new HashSet<Keyword>();
+
+	/**
+	 * This is the <code>Collection</code> of <code>Resource</code>s that are
+	 * associated with the <code>DataContainer</code>
+	 * 
+	 * @associates Resource
+	 * @directed true
+	 * @label lazy
+	 */
+	private Collection<Resource> resources = new HashSet<Resource>();
+
+	/**
+	 * This is the <code>DataProducer</code> that created the data in this
+	 * container.
+	 * 
+	 * @directed true
+	 * @clientRole created data
+	 * @clientCardinality 0..*
+	 * @supplierRole creator
+	 * @supplierCardinality 1
+	 * @label lazy
+	 */
+	private DataProducer creator;
+
+	/**
+	 * A collection of <code>DataProducer</code>s that use this
+	 * <code>DataContainer<code> to create other <code>DataContainer</code>s.
+	 * 
+	 * @associates DataProducer
+	 * @directed true
+	 * @clientRole data for input
+	 * @clientCardinality 0..*
+	 * @supplierRole consumer
+	 * @supplierCardinality 0..*
+	 * @label lazy
+	 */
+	private Collection<DataProducer> consumers = new HashSet<DataProducer>();
+
+	/**
+	 * This is the Hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
+	 * A formatter for converting dates to and from XML format
+	 */
+	private transient XmlDateFormat xmlDateFormat = new XmlDateFormat();
+
+	/**
+	 * These are the "types" of DataContainers that exist.
+	 */
+	public static final String TYPE_FILE = "File";
+	public static final String TYPE_STREAM = "Stream";
+
+	/**
 	 * @see IMetadataObject#getId()
 	 * @hibernate.id generator-class="identity" type="long"
 	 */
@@ -580,9 +789,9 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * @return a <code>Collection</code> of <code>RecordVariable</code> (will
 	 *         return an empty collection if there are none).
 	 */
-	public Collection getRecordVariables() {
+	public Collection<RecordVariable> getRecordVariables() {
 		// Create and empty one so a null is not returned
-		Collection recordVariables = new HashSet();
+		Collection<RecordVariable> recordVariables = new HashSet<RecordVariable>();
 		// Now if the RD exists, get the RVs and return those
 		if (this.recordDescription != null) {
 			recordVariables = this.recordDescription.getRecordVariables();
@@ -640,11 +849,12 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * @return the <code>Collection</code> of <code>DataContainerGroup</code>s
 	 *         that have been associated to the <code>DataContainer</code>
 	 */
-	public Collection getDataContainerGroups() {
+	public Collection<DataContainerGroup> getDataContainerGroups() {
 		return dataContainerGroups;
 	}
 
-	public void setDataContainerGroups(Collection dataContainerGroups) {
+	public void setDataContainerGroups(
+			Collection<DataContainerGroup> dataContainerGroups) {
 		this.dataContainerGroups = dataContainerGroups;
 	}
 
@@ -662,7 +872,7 @@ public class DataContainer implements IMetadataObject, IDescription,
 
 		// Make sure collection exists
 		if (this.dataContainerGroups == null)
-			this.dataContainerGroups = new HashSet();
+			this.dataContainerGroups = new HashSet<DataContainerGroup>();
 
 		// Now add the DataContainerGroup to the collection
 		if (!this.dataContainerGroups.contains(dataContainerGroup)) {
@@ -709,11 +919,11 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 *                                    class="moos.ssds.metadata.Keyword"
 	 * @return the collection of <code>Keyword</code> objects.
 	 */
-	public Collection getKeywords() {
+	public Collection<Keyword> getKeywords() {
 		return keywords;
 	}
 
-	public void setKeywords(Collection keywords) {
+	public void setKeywords(Collection<Keyword> keywords) {
 		this.keywords = keywords;
 	}
 
@@ -731,7 +941,7 @@ public class DataContainer implements IMetadataObject, IDescription,
 
 		// Make sure the collection exists
 		if (this.keywords == null)
-			this.keywords = new HashSet();
+			this.keywords = new HashSet<Keyword>();
 
 		// Now add the Keyword to the collection
 		if (!this.keywords.contains(keyword)) {
@@ -774,11 +984,11 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * @return the <code>Collection</code> of <code>Resource</code>s that are
 	 *         associated with the <code>DataContainer</code>
 	 */
-	public Collection getResources() {
+	public Collection<Resource> getResources() {
 		return resources;
 	}
 
-	public void setResources(Collection resources) {
+	public void setResources(Collection<Resource> resources) {
 		this.resources = resources;
 	}
 
@@ -796,7 +1006,7 @@ public class DataContainer implements IMetadataObject, IDescription,
 
 		// Make sure collection exists
 		if (this.resources == null)
-			this.resources = new HashSet();
+			this.resources = new HashSet<Resource>();
 
 		// Now add the Resource to the collection
 		if (!this.resources.contains(resource)) {
@@ -859,11 +1069,11 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * @return a <code>Collection</code> of <code>DataProducer</code>s that use
 	 *         this <code>DataContainer</code> as input to their processing
 	 */
-	public Collection getConsumers() {
+	public Collection<DataProducer> getConsumers() {
 		return consumers;
 	}
 
-	public void setConsumers(Collection consumers) {
+	public void setConsumers(Collection<DataProducer> consumers) {
 		this.consumers = consumers;
 	}
 
@@ -881,7 +1091,7 @@ public class DataContainer implements IMetadataObject, IDescription,
 
 		// Make sure the collection exists
 		if (this.consumers == null)
-			this.consumers = new HashSet();
+			this.consumers = new HashSet<DataProducer>();
 
 		// Set the reverse relationship
 		if (!consumer.getInputs().contains(this)) {
@@ -916,7 +1126,7 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * and keep the integrity of the relationships intact.
 	 */
 	public void clearConsumers() {
-		Iterator consumerIter = this.consumers.iterator();
+		Iterator<DataProducer> consumerIter = this.consumers.iterator();
 		while (consumerIter.hasNext()) {
 			DataProducer tempConsumer = (DataProducer) consumerIter.next();
 			tempConsumer.getInputs().remove(this);
@@ -954,6 +1164,51 @@ public class DataContainer implements IMetadataObject, IDescription,
 						.equals(TYPE_STREAM)))) {
 			result = false;
 		}
+		return result;
+	}
+
+	/**
+	 * @see IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// First check to see if input is null
+		if (obj == null)
+			return false;
+
+		// Now check JVM identity
+		if (this == obj)
+			return true;
+
+		// Now check if it is the correct class
+		if (!(obj instanceof DataContainer))
+			return false;
+
+		// Cast to DataContainer object
+		final DataContainer that = (DataContainer) obj;
+
+		// Now check missing business key (URI)
+		if ((this.uriString == null) || (that.getUriString() == null))
+			return false;
+
+		// Now check hashcodes
+		if (this.hashCode() == that.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @see IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+		// Calculate the hashcode
+		int result = 62;
+
+		if (uriString != null)
+			result = result + uriString.hashCode();
+
+		// Now return it
 		return result;
 	}
 
@@ -1203,79 +1458,58 @@ public class DataContainer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * @see IMetadataObject#equals(Object)
-	 */
-	public boolean equals(Object obj) {
-		// First check to see if input is null
-		if (obj == null)
-			return false;
-
-		// Now check JVM identity
-		if (this == obj)
-			return true;
-
-		// Now check if it is the correct class
-		if (!(obj instanceof DataContainer))
-			return false;
-
-		// Cast to DataContainer object
-		final DataContainer that = (DataContainer) obj;
-
-		// Now check missing business key (URI)
-		if ((this.uriString == null) || (that.getUriString() == null))
-			return false;
-
-		// Now check hashcodes
-		if (this.hashCode() == that.hashCode()) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * @see IMetadataObject#hashCode()
-	 */
-	public int hashCode() {
-		// Calculate the hashcode
-		int result = 62;
-
-		if (uriString != null)
-			result = result + uriString.hashCode();
-
-		// Now return it
-		return result;
-	}
-
-	/**
 	 * This is the method for re-constituting a DataContainer object from a
 	 * serialized stream
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
+	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
-		description = (String) in.readObject();
-		dataContainerType = (String) in.readObject();
-		startDate = (Date) in.readObject();
-		endDate = (Date) in.readObject();
-		original = (Boolean) in.readObject();
-		uriString = (String) in.readObject();
+		consumers = (Collection<DataProducer>) in.readObject();
 		contentLength = (Long) in.readObject();
-		mimeType = (String) in.readObject();
-		numberOfRecords = (Long) in.readObject();
+		creator = (DataProducer) in.readObject();
+		dataContainerGroups = (Collection<DataContainerGroup>) in.readObject();
+		dataContainerType = (String) in.readObject();
+		dateRange = (IDateRange) in.readObject();
+		description = (String) in.readObject();
 		dodsAccessible = (Boolean) in.readObject();
 		dodsUrlString = (String) in.readObject();
-		noNetCDF = (Boolean) in.readObject();
-		minLatitude = (Double) in.readObject();
-		maxLatitude = (Double) in.readObject();
-		minLongitude = (Double) in.readObject();
-		maxLongitude = (Double) in.readObject();
-		minDepth = (Float) in.readObject();
+		endDate = (Date) in.readObject();
+		headerDescription = (HeaderDescription) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		keywords = (Collection<Keyword>) in.readObject();
 		maxDepth = (Float) in.readObject();
-
+		maxLatitude = (Double) in.readObject();
+		maxLongitude = (Double) in.readObject();
+		mimeType = (String) in.readObject();
+		minDepth = (Float) in.readObject();
+		minLatitude = (Double) in.readObject();
+		minLongitude = (Double) in.readObject();
+		name = (String) in.readObject();
+		noNetCDF = (Boolean) in.readObject();
+		numberOfRecords = (Long) in.readObject();
+		original = (Boolean) in.readObject();
+		person = (Person) in.readObject();
+		recordDescription = (RecordDescription) in.readObject();
+		resources = (Collection<Resource>) in.readObject();
+		startDate = (Date) in.readObject();
+		uriString = (String) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -1285,26 +1519,45 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(id);
-		out.writeObject(name);
-		out.writeObject(description);
-		out.writeObject(dataContainerType);
-		out.writeObject(startDate);
-		out.writeObject(endDate);
-		out.writeObject(original);
-		out.writeObject(uriString);
+		// Write out consumers (as null for now)
+		out.writeObject(null);
 		out.writeObject(contentLength);
-		out.writeObject(mimeType);
-		out.writeObject(numberOfRecords);
+		// Write out the creator (as null for now)
+		out.writeObject(null);
+		// Write out DataContainerGroups (as null for now)
+		out.writeObject(null);
+		out.writeObject(dataContainerType);
+		// Write out date range (as null for now)
+		out.writeObject(null);
+		out.writeObject(description);
 		out.writeObject(dodsAccessible);
 		out.writeObject(dodsUrlString);
-		out.writeObject(noNetCDF);
-		out.writeObject(minLatitude);
-		out.writeObject(maxLatitude);
-		out.writeObject(minLongitude);
-		out.writeObject(maxLongitude);
-		out.writeObject(minDepth);
+		out.writeObject(endDate);
+		// Write out the HeaderDescription (as null for now)
+		out.writeObject(null);
+		out.writeObject(id);
+		// Write out Keywords (as null for now)
+		out.writeObject(null);
 		out.writeObject(maxDepth);
+		out.writeObject(maxLatitude);
+		out.writeObject(maxLongitude);
+		out.writeObject(mimeType);
+		out.writeObject(minDepth);
+		out.writeObject(minLatitude);
+		out.writeObject(minLongitude);
+		out.writeObject(name);
+		out.writeObject(noNetCDF);
+		out.writeObject(numberOfRecords);
+		out.writeObject(original);
+		// Write out the person (as null for now)
+		out.writeObject(null);
+		// Write out the recordDescription (as null for now)
+		out.writeObject(null);
+		// Write out resources (as null for now)
+		out.writeObject(null);
+		out.writeObject(startDate);
+		out.writeObject(uriString);
+		out.writeObject(version);
 	}
 
 	/**
@@ -1398,8 +1651,9 @@ public class DataContainer implements IMetadataObject, IDescription,
 				&& (this.getDataContainerGroups().size() > 0)) {
 			logger.debug("There are " + this.getDataContainerGroups().size()
 					+ " DataContainerGroups to clone and attach.");
-			Collection dcgsToCopy = this.getDataContainerGroups();
-			Iterator dcgsIter = dcgsToCopy.iterator();
+			Collection<DataContainerGroup> dcgsToCopy = this
+					.getDataContainerGroups();
+			Iterator<DataContainerGroup> dcgsIter = dcgsToCopy.iterator();
 			while (dcgsIter.hasNext()) {
 				DataContainerGroup clonedDataContainerGroup = (DataContainerGroup) ((DataContainerGroup) dcgsIter
 						.next()).deepCopy();
@@ -1413,8 +1667,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 		if ((this.getKeywords() != null) && (this.getKeywords().size() > 0)) {
 			logger.debug("There are " + this.getKeywords().size()
 					+ " Keywords to clone and attach");
-			Collection keywordsToCopy = this.getKeywords();
-			Iterator keywordIter = keywordsToCopy.iterator();
+			Collection<Keyword> keywordsToCopy = this.getKeywords();
+			Iterator<Keyword> keywordIter = keywordsToCopy.iterator();
 			while (keywordIter.hasNext()) {
 				Keyword clonedKeyword = (Keyword) ((Keyword) keywordIter.next())
 						.deepCopy();
@@ -1426,8 +1680,8 @@ public class DataContainer implements IMetadataObject, IDescription,
 		if ((this.getResources() != null) && (this.getResources().size() > 0)) {
 			logger.debug("There are " + this.getResources().size()
 					+ " Resources to clone and add.");
-			Collection resourcesToCopy = this.getResources();
-			Iterator resourceIter = resourcesToCopy.iterator();
+			Collection<Resource> resourcesToCopy = this.getResources();
+			Iterator<Resource> resourceIter = resourcesToCopy.iterator();
 			while (resourceIter.hasNext()) {
 				Resource clonedResource = (Resource) ((Resource) resourceIter
 						.next()).deepCopy();
@@ -1438,214 +1692,5 @@ public class DataContainer implements IMetadataObject, IDescription,
 		}
 		return deepClone;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is the arbitrary name given to the DataContainer
-	 */
-	private String name;
-
-	/**
-	 * The description of the DataContainer
-	 */
-	private String description;
-
-	/**
-	 * This is a string that categories the type of data container. It should
-	 * match one of the constants defined in this class.
-	 */
-	private String dataContainerType = DataContainer.TYPE_FILE;
-
-	/**
-	 * This is the <code>Date</code> that the earliest data in this
-	 * <code>DataContainer</code> applies to
-	 */
-	private Date startDate;
-
-	/**
-	 * This is the <code>Date</code> that the latest data in this
-	 * <code>DataContainer</code> applies to
-	 */
-	private Date endDate;
-
-	/**
-	 * This is an attribute that give the range of time that this
-	 * <code>DataContainer</code> covers
-	 */
-	private IDateRange dateRange = new DateRange(this);
-
-	/**
-	 * Flag to indicate if this instance was an 'original' dataset.
-	 */
-	private Boolean original = new Boolean(false);
-
-	/**
-	 * This is a <code>URI</code> that is the resource identifier
-	 */
-	private String uriString;
-
-	/**
-	 * This is the length of the <code>DataContainer</code> in bytes
-	 */
-	private Long contentLength;
-
-	/**
-	 * This is the MIME type that applies to this <code>DataContainer</code> (if
-	 * one applies).
-	 */
-	private String mimeType;
-
-	/**
-	 * This is the number of records that are stored in the
-	 * <code>DataContainer</code>.
-	 */
-	private Long numberOfRecords;
-
-	/**
-	 * This is a <code>boolean</code> that indicates whether or not the
-	 * <code>DataContainer</code> is available through a DODS server (via the
-	 * URI supplied)
-	 */
-	private Boolean dodsAccessible = new Boolean(false);
-
-	/**
-	 * This is a <code>String</code> that represents the <code>URL</code> where
-	 * the <code>DataContainer</code> can be read from an DODS (OPeNDAP) server.
-	 */
-	private String dodsUrlString;
-
-	/**
-	 * This is boolean to indicate whether or not the data system should try to
-	 * keep a parallel NetCDF file that contains the same data that is in the
-	 * container described here
-	 */
-	private Boolean noNetCDF = new Boolean(true);
-
-	/**
-	 * These six fields are the geospatial extents that are covered by the data
-	 * in the <code>DataContainer</code> (if applicable
-	 */
-	private Double minLatitude;
-	private Double maxLatitude;
-	private Double minLongitude;
-	private Double maxLongitude;
-	private Float minDepth;
-	private Float maxDepth;
-
-	/**
-	 * This is the <code>Person</code> that is normally thought of as the owner
-	 * of the <code>DataContainer</code> (or the point of contact)
-	 * 
-	 * @directed true
-	 * @label lazy
-	 */
-	private Person person;
-
-	/**
-	 * This is the <code>HeaderDescription</code> that is associated with the
-	 * <code>DataContainer</code>. It is meant to describe any header section
-	 * that is contained in the <code>DataContainer</code>
-	 * 
-	 * @directed true
-	 * @label lazy
-	 */
-	private HeaderDescription headerDescription;
-
-	/**
-	 * This is the <code>RecordDescription</code> that is associated with the
-	 * <code>DataContainer</code>. It is meant to describe the records in the
-	 * <code>DataContainer</code> so that it can be parsed automatically
-	 * 
-	 * @directed true
-	 * @label lazy & cascade all
-	 */
-	private RecordDescription recordDescription;
-
-	/**
-	 * This is a collection of <code>DataContainerGroup</code>s that are
-	 * associated with the <code>DataContainer</code>
-	 * 
-	 * @associates DataContainerGroup
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection dataContainerGroups = new HashSet();
-
-	/**
-	 * This is a collection of <code>Keyword</code> objects that can be used to
-	 * search for <code>DataContainer</code>s.
-	 * 
-	 * @associates Keyword
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection keywords = new HashSet();
-
-	/**
-	 * This is the <code>Collection</code> of <code>Resource</code>s that are
-	 * associated with the <code>DataContainer</code>
-	 * 
-	 * @associates Resource
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection resources = new HashSet();
-
-	/**
-	 * This is the <code>DataProducer</code> that created the data in this
-	 * container.
-	 * 
-	 * @directed true
-	 * @clientRole created data
-	 * @clientCardinality 0..*
-	 * @supplierRole creator
-	 * @supplierCardinality 1
-	 * @label lazy
-	 */
-	private DataProducer creator;
-
-	/**
-	 * A collection of <code>DataProducer</code>s that use this
-	 * <code>DataContainer<code> to create other <code>DataContainer</code>s.
-	 * 
-	 * @associates DataProducer
-	 * @directed true
-	 * @clientRole data for input
-	 * @clientCardinality 0..*
-	 * @supplierRole consumer
-	 * @supplierCardinality 0..*
-	 * @label lazy
-	 */
-	private Collection consumers = new HashSet();
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * A formatter for converting dates to and from XML format
-	 */
-	private XmlDateFormat xmlDateFormat = new XmlDateFormat();
-
-	/**
-	 * These are the "types" of DataContainers that exist.
-	 */
-	public static final String TYPE_FILE = "File";
-	public static final String TYPE_STREAM = "Stream";
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(DataContainer.class);
 
 }

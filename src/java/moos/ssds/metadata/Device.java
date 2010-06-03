@@ -677,9 +677,11 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
+	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		// Read the first object
+		description = (String) in.readObject();
+		deviceType = (DeviceType) in.readObject();
 		Object idObject = in.readObject();
 		if (idObject instanceof Integer) {
 			Integer intId = (Integer) idObject;
@@ -687,13 +689,21 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 		} else if (idObject instanceof Long) {
 			id = (Long) idObject;
 		}
-		uuid = (String) in.readObject();
-		name = (String) in.readObject();
-		description = (String) in.readObject();
-		mfgName = (String) in.readObject();
-		mfgModel = (String) in.readObject();
-		mfgSerialNumber = (String) in.readObject();
 		infoUrlList = (String) in.readObject();
+		mfgModel = (String) in.readObject();
+		mfgName = (String) in.readObject();
+		mfgSerialNumber = (String) in.readObject();
+		name = (String) in.readObject();
+		person = (Person) in.readObject();
+		resources = (Collection<Resource>) in.readObject();
+		uuid = (String) in.readObject();
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -702,14 +712,18 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(id);
-		out.writeObject(uuid);
-		out.writeObject(name);
 		out.writeObject(description);
-		out.writeObject(mfgName);
-		out.writeObject(mfgModel);
-		out.writeObject(mfgSerialNumber);
+		out.writeObject(null);
+		out.writeObject(id);
 		out.writeObject(infoUrlList);
+		out.writeObject(mfgModel);
+		out.writeObject(mfgName);
+		out.writeObject(mfgSerialNumber);
+		out.writeObject(name);
+		out.writeObject(null);
+		out.writeObject(null);
+		out.writeObject(uuid);
+		out.writeObject(version);
 	}
 
 	/**

@@ -285,7 +285,7 @@ public class RecordDescription implements IMetadataObject {
 	 *                                   class="moos.ssds.metadata.RecordVariable"
 	 * @return A collection of the <code>RecordVariable<code>s
 	 */
-	public Collection getRecordVariables() {
+	public Collection<RecordVariable> getRecordVariables() {
 		return this.recordVariables;
 	}
 
@@ -721,7 +721,7 @@ public class RecordDescription implements IMetadataObject {
 	 * @directed true
 	 * @label unlazy & cascade all
 	 */
-	private Collection recordVariables = new HashSet();
+	private Collection<RecordVariable> recordVariables = new HashSet<RecordVariable>();
 
 	// Some constants
 	public static final String BUFFER_STYLE_ASCII = "ASCII";
