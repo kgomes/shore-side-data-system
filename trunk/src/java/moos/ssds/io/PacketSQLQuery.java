@@ -51,30 +51,27 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	/* ************************ */
 
 	/**
-	 * This is the counter for which row in the overall result set we are on
+	 * This is the counter for which row in the cache we are on. This means that
+	 * this row has already been returned through the nextElement() call.
 	 */
-	private int rowCounter = 0;
+	private int cacheRow = 0;
+
+	/**
+	 * This is the counter for which row in the overall result set we are on.
+	 * This means this row has already been returned from a nextElement() call.
+	 */
+	private int resultSetRow = 0;
 
 	/**
 	 * This is the size of the array of byte arrays that will be used to cache
 	 * query results
 	 */
-	private int pageSize = 50;
-
-	/**
-	 * This is the index into the current page we have read
-	 */
-	private int pageIndexCounter = 0;
+	private int cacheSize = 50;
 
 	/**
 	 * This array holds the results of the query for returning
 	 */
-	private Object[] resultsCache = new Object[pageSize];
-
-	/**
-	 * A boolean to indicate there is not more data
-	 */
-	private boolean noMoreData = false;
+	private Object[] resultsCache = new Object[cacheSize];
 
 	/**
 	 * This constructor takes in the DataSource that will be used to query data
@@ -218,17 +215,14 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 					+ "was specified on the PacketSQLQueryFactory "
 					+ "so no query could be run.");
 
-		// Clear the no more data flag
-		noMoreData = false;
+		// Reset the cache row counter
+		cacheRow = -1;
 
 		// Reset the row counter
-		rowCounter = 0;
-
-		// Reset the page index
-		pageIndexCounter = 0;
+		resultSetRow = -1;
 
 		// And a new cache
-		resultsCache = new Object[pageSize];
+		resultsCache = new Object[cacheSize];
 
 		// Call the method to fill the results cache
 		fillResultsCache();
@@ -275,8 +269,9 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 		logger.debug("SQL statement is: " + queryString.toString());
 
 		// The prepared statement that is created
-		PreparedStatement preparedStatement = connection
-				.prepareStatement(queryString.toString());
+		PreparedStatement preparedStatement = connection.prepareStatement(
+				queryString.toString(), ResultSet.TYPE_SCROLL_INSENSITIVE,
+				ResultSet.CONCUR_READ_ONLY);
 
 		// Make sure it looks OK
 		ResultSet resultSet = null;
@@ -294,14 +289,14 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 		if (resultSet != null) {
 
 			boolean moveToRowOK = true;
-			if (rowCounter > 0) {
-				logger.debug("Since row counter is " + rowCounter
+			if (resultSetRow > 0) {
+				logger.debug("Since row counter is " + resultSetRow
 						+ " going to try to move to that row in resultSet");
 				try {
-					resultSet.absolute(rowCounter);
+					resultSet.absolute(resultSetRow + 1);
 				} catch (Exception e) {
 					logger.error("Exception caught trying to move to row "
-							+ (rowCounter + 1) + " in the resultSet: "
+							+ (resultSetRow + 1) + " in the resultSet: "
 							+ e.getMessage());
 					moveToRowOK = false;
 				}
@@ -318,7 +313,7 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 						byteArrayOutputStream);
 
 				// Now iterate over the number of rows and fill the cache
-				for (int i = 0; i < pageSize; i++) {
+				for (int i = 0; i < cacheSize; i++) {
 					logger.debug("On page row " + i);
 					try {
 						// Advance cursor and see if there is something to
@@ -394,9 +389,9 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 										+ e.getMessage());
 					}
 				}
-				// Clear the page index
-				pageIndexCounter = 0;
 			}
+			// Reset the cache row counter
+			cacheRow = -1;
 		} else {
 			logger.error("ResultSet was NULL!");
 		}
@@ -461,11 +456,12 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	 *         <code>false</code>.
 	 */
 	public boolean hasMoreElements() {
-		logger.debug("hasMoreElements called with pageIndexCounter = "
-				+ pageIndexCounter + ", and noMoreData = " + noMoreData);
+		logger.debug("hasMoreElements called with cacheRow = " + cacheRow);
+		checkIfCacheNeedsRefresh();
+
 		// Set the return to false as the default
 		boolean ok = false;
-		if ((!noMoreData) && (resultsCache[pageIndexCounter] != null)) {
+		if (resultsCache[cacheRow + 1] != null) {
 			logger.debug("Will return true to indicate "
 					+ "there are more records available");
 			ok = true;
@@ -494,12 +490,32 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	 */
 	public byte[] nextElement() {
 
-		logger.debug("nextElement called, pageIndexCounter = "
-				+ pageIndexCounter + " and rowCounter = " + rowCounter);
+		logger.debug("nextElement called, cacheRow = " + cacheRow
+				+ " and resultSetRow = " + resultSetRow);
+
+		// Check if the cache needs refreshing
+		checkIfCacheNeedsRefresh();
+
+		// Now move the cacheRow and currentRow index
+		cacheRow++;
+		resultSetRow++;
+
+		// The byte array that will be returned will be the byte array at the
+		// current page index
+		byte[] byteArrayToReturn = (byte[]) resultsCache[cacheRow];
+
+		// Now return it
+		return byteArrayToReturn;
+	}
+
+	/**
+	 * 
+	 */
+	private void checkIfCacheNeedsRefresh() {
 		// The first thing to do is check that page counter is not past the end
 		// of the results cache
-		if (pageIndexCounter + 1 > pageSize) {
-			logger.debug("PageIndexCounter is " + pageIndexCounter
+		if (cacheRow + 1 >= cacheSize) {
+			logger.debug("ResultSetRow is " + resultSetRow
 					+ " which looks to be at the last "
 					+ "row of the page so we will need to refresh the cache.");
 			// We need to refresh the cache
@@ -510,73 +526,7 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 						+ "refresh the cache: " + e.getMessage());
 			}
 		}
-		// The byte array that will be returned will be the byte array at the
-		// current page index
-		byte[] byteArrayToReturn = (byte[]) resultsCache[pageIndexCounter];
-		if (byteArrayToReturn == null) {
-			logger.debug("The read byte array is null!");
-			noMoreData = true;
-		}
-
-		// Now move the pageCounter and resultsCounter index
-		rowCounter++;
-		pageIndexCounter++;
-
-		// Now return it
-		return byteArrayToReturn;
 	}
-
-	/**
-	 * This method is called to read a byte array from the stream
-	 * 
-	 * @return An byte array that is structured based on the query in the
-	 *         associated PacketSQLQueryFactory.
-	 */
-	// public byte[] readByteArray() {
-	//
-	// // Here are a couple of streaming support classes
-	// ByteArrayOutputStream byteArrayOutputStream = new
-	// ByteArrayOutputStream();
-	// DataOutputStream dataOutputStream = new DataOutputStream(
-	// byteArrayOutputStream);
-	//
-	// // The array of fields and their associated classes that will be read
-	// // from the result set
-	// try {
-	// // Advance cursor and see if there is something to return
-	// if (resultSet.next()) {
-	//
-	// // I need to loop over the fields that are in the
-	// // PacketSQLQueryFactory
-	// for (int i = 0; i < packetSQLQueryFactory.listReturnFields().length; i++)
-	// {
-	// Object columnResult = resultSet
-	// .getObject(packetSQLQueryFactory.listReturnFields()[i]);
-	// try {
-	// if (packetSQLQueryFactory.listReturnClasses()[i] == int.class) {
-	// dataOutputStream.writeInt((Integer) columnResult);
-	// } else if (packetSQLQueryFactory.listReturnClasses()[i] == long.class) {
-	// dataOutputStream.writeLong((Long) columnResult);
-	// } else if (packetSQLQueryFactory.listReturnClasses()[i] == byte[].class)
-	// {
-	// dataOutputStream.write((byte[]) columnResult);
-	// }
-	// } catch (IOException e) {
-	// logger.error("IOException caught trying to "
-	// + "write query results to DataOutputStream: "
-	// + e.getMessage());
-	// }
-	// }
-	// } else {
-	// noMoreData = true;
-	// }
-	// } catch (SQLException e) {
-	// logger.error("SQLException caught trying to readObject: "
-	// + e.getMessage());
-	// }
-	// // Return the object
-	// return byteArrayOutputStream.toByteArray();
-	// }
 
 	/**
 	 * The method that is called during garbage collection
