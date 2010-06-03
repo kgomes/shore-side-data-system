@@ -22,6 +22,16 @@
 	<!-- Define the Flex tasks -->
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
 
+	<!-- Define the GAS3 ant tasks -->
+	<taskdef name="gas3" classname="org.granite.generator.ant.AntJavaAs3Task">
+		<classpath>
+			<fileset dir="${gas3.path}">
+				<include name="*.jar" />
+			</fileset>
+			<fileset refid="jboss-client-jar-fileset" />
+		</classpath>
+	</taskdef>
+
 	<!-- This target checks to see if any dependencies are missing -->
 	<target name="check-dependencies">
 		<!-- Make sure the client metadata services jar exits -->
@@ -48,8 +58,20 @@
 
 	</target>
 
+	<!-- This is the target that generates the ActionScript classes to match the core Metadata classes -->
+	<target name="action-script-generation" depends="init">
+		<gas3 outputdir="${src.web}/src">
+			<classpath>
+				<pathelement location="${build.classes}" />
+			</classpath>
+			<fileset dir="${build.classes}">
+				<include name="moos/ssds/metadata/*.class" />
+			</fileset>
+		</gas3>
+	</target>
+
 	<!-- Compile the webapp source code -->
-	<target name="compile" depends="clean">
+	<target name="compile" depends="action-script-generation">
 		<!-- First compile the supporting ActionScript classes
 		<compc output="${project.build}/webapp/ssds.swc" include-classes="moos.ssds.metadata.Device moos.ssds.metadata.DataProducer">
 			<source-path path-element="${src.web}/src" />
