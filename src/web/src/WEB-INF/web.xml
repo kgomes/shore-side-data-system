@@ -55,7 +55,7 @@
 	<!-- Define the Administrator Role for the SSDS Web Application -->
 	<security-role>
 		<description>SSDS Administrator Role</description>
-		<role-name>SSDS_Admin</role-name>
+		<role-name>APP_SSDSAdmin</role-name>
 	</security-role>
 
 	<!-- Define the security contstraint for the login result page to force logins -->
@@ -76,7 +76,7 @@
 		</web-resource-collection>
 		<auth-constraint>
 			<!-- SSDS Administrators -->
-			<role-name>SSDS_Admin</role-name>
+			<role-name>APP_SSDSAdmin</role-name>
 		</auth-constraint>
 	</security-constraint>
 
@@ -88,7 +88,7 @@
 		</web-resource-collection>
 		<auth-constraint>
 			<!-- SSDS Administrators -->
-			<role-name>SSDS_Admin</role-name>
+			<role-name>APP_SSDSAdmin</role-name>
 		</auth-constraint>
 	</security-constraint>
 
