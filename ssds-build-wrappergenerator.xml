@@ -13,6 +13,25 @@
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
+ 
+ This particular build is used to generate the Perl module that can be
+ used to interface with the SSDS.  Several steps were performed before
+ this was possible.  First, the ANTLR v2 jar file was downloaded and put
+ in src/resources/build/antlr.  Then the two grammar definitions for the
+ Java 1.5 language were copied down to the same directory (java.g and
+ java.tree.g).  A command prompt was opened and I navigated to the directory
+ with those files.  I ran:
+ 
+ "java -cp antlr-2.7.5.jar antlr.Tool java.g"
+ and
+ "java -cp antlr-2.7.5.jar antlr.Tool java.tree.g"
+ 
+ This generated several files (some .java and .txt) and I moved the .java
+ files to the src/java/moos/ssds/wrappergenerator/parsers directory and
+ added the correct package definition to the files.  These are the classes
+ that are then used by the classes in src/java/moos/ssds/wrappergenerator
+ to translate the appropriate SSDS classes to Perl module in this build
+ script. 
 -->
 <project name="ssds-build-wrappergenerator" default="build">
 
