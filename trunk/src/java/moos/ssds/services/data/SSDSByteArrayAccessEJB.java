@@ -747,6 +747,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * @ejb.interface-method view-type="both"
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public Class[] listFieldClasses() {
 		return packetSQLQuery.listFieldClasses();
 	}
