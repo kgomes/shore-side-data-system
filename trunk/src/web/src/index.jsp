@@ -18,86 +18,89 @@
 <html>
 <head>
 <title>MBARI's Shore Side Data System</title>
-<!-- Include the stylesheets and java script -->
-<%@ include file="WEB-INF/fragments/head.jspf"%>
+    <!-- Meta tags -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <!-- Stylesheet information -->
+    <link rel="stylesheet" type="text/css" href="history/history.css" />
+    <script type="text/javascript" src="history/history.js"></script>
+    <script type="text/javascript" src="swfobject.js"></script>
+
 <!-- Include the mbari stylesheets -->
 <%@ include file="WEB-INF/fragments/mbari_styles.jspf"%>
+
+	<script type="text/javascript">
+    	<!-- For version detection, set to min. required Flash Player version, or 0 (or 0.0.0), for no version detection. --> 
+        var swfVersionStr = "10.0.0";
+        <!-- To use express install, set to playerProductInstall.swf, otherwise the empty string. -->
+        var xiSwfUrlStr = "";
+        var flashvars = {};
+        var params = {};
+        params.quality = "high";
+        params.bgcolor = "white";
+        params.allowscriptaccess = "sameDomain";
+        params.allowfullscreen = "true";
+        var attributes = {};
+        attributes.id = "explorer";
+        attributes.name = "explorer";
+        attributes.align = "middle";
+        swfobject.embedSWF(
+            "explorer.swf", "flashContent", 
+            "1024", "768", 
+            swfVersionStr, xiSwfUrlStr, 
+            flashvars, params, attributes);
+		<!-- JavaScript enabled so display the flashContent div in case it is not replaced with a swf object. -->
+		swfobject.createCSS("#flashContent", "display:block;text-align:left;");
+	</script>
 </head>
 
 <body>
 <%@ include file="WEB-INF/fragments/mbari_head.jspf"%>
-<script language="JavaScript" type="text/javascript">
-<!--
-// Version check for the Flash Player that has the ability to start Player Product Install (6.0r65)
-var hasProductInstall = DetectFlashVer(6, 0, 65);
-
-// Version check based upon the values defined in globals
-var hasRequestedVersion = DetectFlashVer(requiredMajorVersion, requiredMinorVersion, requiredRevision);
-
-if ( hasProductInstall && !hasRequestedVersion ) {
-	// DO NOT MODIFY THE FOLLOWING FOUR LINES
-	// Location visited after installation is complete if installation is required
-	var MMPlayerType = (isIE == true) ? "ActiveX" : "PlugIn";
-	var MMredirectURL = window.location;
-    document.title = document.title.slice(0, 47) + " - Flash Player Installation";
-    var MMdoctitle = document.title;
-
-	AC_FL_RunContent(
-		"src", "playerProductInstall",
-		"FlashVars", "MMredirectURL="+MMredirectURL+'&MMplayerType='+MMPlayerType+'&MMdoctitle='+MMdoctitle+"",
-		"width", "100%",
-		"height", "800px",
-		"align", "middle",
-		"id", "explorer",
-		"quality", "high",
-		"bgcolor", "#869ca7",
-		"name", "explorer",
-		"allowScriptAccess","sameDomain",
-		"type", "application/x-shockwave-flash",
-		"pluginspage", "http://www.adobe.com/go/getflashplayer"
-	);
-} else if (hasRequestedVersion) {
-	// if we've detected an acceptable version
-	// embed the Flash Content SWF when all tests are passed
-	AC_FL_RunContent(
-			"src", "explorer",
-			"width", "100%",
-			"height", "800px",
-			"align", "middle",
-			"id", "explorer",
-			"quality", "high",
-			"bgcolor", "#869ca7",
-			"name", "explorer",
-			"allowScriptAccess","sameDomain",
-			"type", "application/x-shockwave-flash",
-			"pluginspage", "http://www.adobe.com/go/getflashplayer"
-	);
-  } else {  // flash is too old or we can't detect the plugin
-    var alternateContent = 'Alternate HTML content should be placed here. '
-  	+ 'This content requires the Adobe Flash Player. '
-   	+ '<a href=http://www.be.com/go/getflash/>Get Flash</a>';
-    document.write(alternateContent);  // insert non-flash content
-  }
-// -->
-</script>
-<noscript>
-<object
-	classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" id="explorer"
-	width="100%" height="100%"
-	codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
-	<param name="movie" value="explorer.swf" />
-	<param name="quality" value="high" />
-	<param name="bgcolor" value="#869ca7" />
-	<param name="allowScriptAccess" value="sameDomain" />
-	<embed src="explorer.swf" quality="high" bgcolor="#869ca7" width="100%"
-		height="100%" name="explorer" align="middle" play="true" loop="false"
-		quality="high" allowScriptAccess="sameDomain"
-		type="application/x-shockwave-flash"
-		pluginspage="http://www.adobe.com/go/getflashplayer">
-	</embed>
-</object>
-</noscript>
-
+	<!-- SWFObject's dynamic embed method replaces this alternative HTML content with Flash content when enough 
+		 JavaScript and Flash plug-in support is available. The div is initially hidden so that it doesn't show
+		 when JavaScript is disabled.
+	-->
+    <div id="flashContent">
+     	<p>
+	       	To view this page ensure that Adobe Flash Player version 
+			10.0.0 or greater is installed. 
+		</p>
+		<script type="text/javascript"> 
+			var pageHost = ((document.location.protocol == "https:") ? "https://" :	"http://"); 
+			document.write("<a href='http://www.adobe.com/go/getflashplayer'><img src='" 
+							+ pageHost + "www.adobe.com/images/shared/download_buttons/get_flash_player.gif' alt='Get Adobe Flash player' /></a>" ); 
+		</script> 
+    </div>
+	   	
+    <noscript>
+        <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="100%" height="100%" id="explorer" align="middle">
+            <param name="movie" value="explorer.swf" />
+            <param name="quality" value="high" />
+            <param name="bgcolor" value="white" />
+            <param name="allowScriptAccess" value="sameDomain" />
+            <param name="allowFullScreen" value="true" />
+            <!--[if !IE]>-->
+            <object type="application/x-shockwave-flash" data="explorer.swf" width="100%" height="100%" align="middle">
+                <param name="quality" value="high" />
+                <param name="bgcolor" value="white" />
+                <param name="allowScriptAccess" value="sameDomain" />
+                <param name="allowFullScreen" value="true" />
+            <!--<![endif]-->
+            <!--[if gte IE 6]>-->
+            	<p> 
+               		Either scripts and active content are not permitted to run or Adobe Flash Player version
+               		10.0.0 or greater is not installed.
+               	</p>
+            <!--<![endif]-->
+                <a href="http://www.adobe.com/go/getflashplayer">
+                    <img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash Player" />
+                </a>
+            <!--[if !IE]>-->
+            </object>
+            <!--<![endif]-->
+        </object>
+	</noscript>		
+<!-- Include the MBARI footer -->
 <%@ include file="WEB-INF/fragments/mbari_footer.jspf"%>
 </body>
 </html>
