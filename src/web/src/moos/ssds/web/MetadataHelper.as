@@ -56,7 +56,7 @@ package moos.ssds.web
 					{"Attribute": "Z Offset", "Value": dp.zoffset},
 					{"Attribute": "Orientation Description", "Value": dp.orientationDescription},
 					{"Attribute": "X3D Orienation Text", "Value": dp.x3DOrientationText},
-					{"Attribute": "Hostname", "Value": dp.hostname}
+					{"Attribute": "HostName", "Value": dp.hostName}
 					);
 				acToReturn = new ArrayCollection(array);
 			}
