@@ -30,27 +30,27 @@
 		<ant dir="${project.dir}" antfile="ssds-build-transmogrify.xml" inheritAll="false" target="${target}" />
 	</target>
 
-	<target name="do-ingest">
+	<target name="do-ingest" depends="do-transmogrify">
 		<ant dir="${project.dir}" antfile="ssds-build-ingest.xml" inheritAll="false" target="${target}" />
 	</target>
 
-	<target name="do-ruminate">
+	<target name="do-ruminate" depends="do-ingest">
 		<ant dir="${project.dir}" antfile="ssds-build-ruminate.xml" inheritAll="false" target="${target}" />
 	</target>
 
-	<target name="do-core">
+	<target name="do-core" depends="do-ruminate">
 		<ant dir="${project.dir}" antfile="ssds-build-core.xml" inheritAll="false" target="${target}" />
 	</target>
 
-	<target name="do-webapp">
+	<target name="do-webapp" depends="do-core">
 		<ant dir="${project.dir}" antfile="ssds-build-webapp.xml" inheritAll="false" target="${target}" />
 	</target>
 
-	<target name="do-ssdsLoads">
+	<target name="do-ssdsLoads" depends="do-core">
 		<ant dir="${project.dir}" antfile="ssds-build-ssdsLoads.xml" inheritAll="false" target="${target}" />
 	</target>
 
-	<target name="do-wrappergenerator">
+	<target name="do-wrappergenerator" depends="do-core">
 		<ant dir="${project.dir}" antfile="ssds-build-wrappergenerator.xml" inheritAll="false" target="${target}" />
 	</target>
 
