@@ -390,6 +390,7 @@ public class PacketOutput {
 
 				// Write all this to a logger
 				// Debugging stuff
+				// TODO kgomes (I should look for outrageously big buffer here)
 				StringBuffer hexData = new StringBuffer();
 				ByteArrayInputStream byteArrayIS = new ByteArrayInputStream(
 						bufferBytes);
