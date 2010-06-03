@@ -217,6 +217,7 @@
 			<include name="test/moos/ssds/ClassPathHacker.java" />
 			<include name="test/moos/ssds/io/PacketSQLQueryFactoryTest.java" />
 			<include name="test/moos/ssds/io/TestPacketOutput.java" />
+			<include name="test/moos/ssds/ingest/IngestMDBTest.java" />
 			<classpath>
 				<pathelement location="${project.build}/classes" />
 				<pathelement location="${project.lib}/${junit.jar}" />
@@ -240,6 +241,7 @@
 				<fileset dir="${src.java}">
 					<include name="test/moos/ssds/io/PacketSQLQueryFactoryTest.java" />
 					<include name="test/moos/ssds/io/TestPacketOutput.java" />
+					<include name="test/moos/ssds/ingest/IngestMDBTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
