@@ -15,8 +15,6 @@
  */
 package moos.ssds.metadata;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -45,7 +43,293 @@ import org.apache.log4j.Logger;
 public class DataProducer implements IMetadataObject, IDescription,
 		IResourceOwner, IDateRange, Externalizable {
 
-	private PropertyChangeSupport changeSupport = null;
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(DataProducer.class);
+
+	/**
+	 * Some constants
+	 */
+	public static final String TYPE_DEPLOYMENT = "Deployment";
+	public static final String TYPE_PROCESS_RUN = "ProcessRun";
+
+	public static final String ROLE_SENSOR = "sensor";
+	public static final String ROLE_INSTRUMENT = "instrument";
+	public static final String ROLE_PLATFORM = "platform";
+	public static final String ROLE_OBSERVATORY = "observatory";
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is the arbitrary name given to the DataProducer
+	 */
+	private String name;
+
+	/**
+	 * The description of the DataProducer
+	 */
+	private String description;
+
+	/**
+	 * This is a string that categories the type of data producer. It should
+	 * match one of the constants defined in this class.
+	 */
+	private String dataProducerType = DataProducer.TYPE_DEPLOYMENT;
+
+	/**
+	 * This is the <code>Date</code> when the data producer started to produce
+	 * data
+	 */
+	private Date startDate;
+
+	/**
+	 * This is the <code>Date</code> when the data producer stopped sending data
+	 * (or it is the date of the last time it sent data). If this is not
+	 * defined, it usually means the data producer is still producing data
+	 */
+	private Date endDate;
+
+	/**
+	 * This is an attribute that gives the range of time that this
+	 * <code>DataProducer</code> produced data
+	 */
+	private IDateRange dateRange = new DateRange(this);
+
+	/**
+	 * This is the role that the <code>DataProducer</code> can take in its
+	 * production of data. It should match one of the constants defined in the
+	 * class
+	 */
+	private String role;
+
+	/**
+	 * This is a nominal latitude (decimal degrees) that can be assigned to the
+	 * producer of data. It gives the approximate geolocation of the producer
+	 * when it was producing data.
+	 */
+	private Double nominalLatitude = null;
+
+	/**
+	 * This is the accuracy that is to be expected in the latitude data
+	 */
+	private Float nominalLatitudeAccuracy = null;
+
+	/**
+	 * This is a nominal longitude (decimal degrees) that can be assigned to the
+	 * producer of data. It gives the approximate geolocation of the producer
+	 * when it was producing data.
+	 */
+	private Double nominalLongitude = null;
+
+	/**
+	 * This is the accuracy that is to be expected in the longitude data
+	 */
+	private Float nominalLongitudeAccuracy = null;
+
+	/**
+	 * This is a nominal depth (in meters) that can be assigned to the producer
+	 * of data. It gives the approximate geolocation of the producer when it was
+	 * producing data.
+	 */
+	private Float nominalDepth = null;
+
+	/**
+	 * This is the accuracy that is to be expected in the depth data
+	 */
+	private Float nominalDepthAccuracy = null;
+
+	/**
+	 * This is a nominal altitude (in meters) over the bottom that can be
+	 * assigned to the producer of data. It gives the approximate geolocation of
+	 * the producer when it was producing data.
+	 */
+	private Float nominalBenthicAltitude = null;
+
+	/**
+	 * This is the accuracy that is to be expected in the benthic altitude data
+	 */
+	private Float nominalBenthicAltitudeAccuracy = null;
+
+	/**
+	 * This is the distance (in meters) that the data producer is offset from
+	 * its parent (if applicable). This is the offset in a locally defined X
+	 * direction.
+	 * 
+	 * All lower case to prevent Hibernate PropertyNotFoundException with
+	 * access="field"
+	 */
+	private Float xoffset = null;
+
+	/**
+	 * This is the distance (in meters) that the data producer is offset from
+	 * its parent (if applicable). This is the offset in a locally defined Y
+	 * direction.
+	 * 
+	 * All lower case to prevent Hibernate PropertyNotFoundException with
+	 * access="field"
+	 */
+	private Float yoffset = null;
+
+	/**
+	 * This is the distance (in meters) that the data producer is offset from
+	 * its parent (if applicable). This is the offset in a locally defined Z
+	 * direction.
+	 * 
+	 * All lower case to prevent Hibernate PropertyNotFoundException with
+	 * access="field"
+	 */
+	private Float zoffset = null;
+
+	/**
+	 * This is a description of how the data producer was oriented when it was
+	 * producing data.
+	 */
+	private String orientationDescription = null;
+
+	/**
+	 * The X3D compliant orientation description
+	 */
+	private String x3DOrientationText = null;
+
+	/**
+	 * This the name of the host where the data was produced from.
+	 */
+	private String hostName;
+
+	/**
+	 * This is the <code>Person</code> that is the point of contact for the
+	 * <code>DataProducer</code>
+	 * 
+	 * @directed true
+	 * @label lazy
+	 */
+	private Person person;
+
+	/**
+	 * This is a <code>Device</code> that is associated with the production of
+	 * the data.
+	 * 
+	 * @directed true
+	 * @label unlazy
+	 */
+	private Device device;
+
+	/**
+	 * This is a <code>Software</code> that is associated with the production of
+	 * the data.
+	 * 
+	 * @directed true
+	 * @label lazy
+	 */
+	private Software software;
+
+	/**
+	 * This is a <code>DataProducer</code> that is considered to be the parent
+	 * of this <code>DataProducer</code> (supports nested data producers).
+	 * 
+	 * @directed true
+	 * @label lazy
+	 */
+	private DataProducer parentDataProducer;
+
+	/**
+	 * These are <code>DataProducer</code>s that are considered children of this
+	 * <code>DataProducer</code> (supports nested data producers).
+	 * 
+	 * @associates DataProducer
+	 * @directed true
+	 * @label lazy
+	 */
+	private Collection<DataProducer> childDataProducers = new HashSet<DataProducer>();
+
+	/**
+	 * This is a <code>Collection</code> of <code>DataProducerGroup</code>s that
+	 * this <code>DataProducer</code> belongs to
+	 * 
+	 * @associates DataProducerGroup
+	 * @directed true
+	 * @label lazy
+	 */
+	private Collection<DataProducerGroup> dataProducerGroups = new HashSet<DataProducerGroup>();
+
+	/**
+	 * These are the <code>DataContainer</code>s that were used by the
+	 * <code>DataProducer</code> to produce its outputs.
+	 * 
+	 * @associates DataContainer
+	 * @directed true
+	 * @label lazy
+	 * @clientRole reads inputs
+	 * @supplierRole data for input
+	 * @clientCardinality 0..*
+	 * @supplierCardinality 0..
+	 */
+	private Collection<DataContainer> inputs = new HashSet<DataContainer>();
+
+	/**
+	 * These are the output <code>DataContainer</code>s from this
+	 * <code>DataProducer</code>.
+	 * 
+	 * @associates DataContainer
+	 * @directed true
+	 * @clientRole creator of output
+	 * @clientCardinality 1
+	 * @supplierRole data output
+	 * @supplierCardinality 0..
+	 * @label unlazy
+	 */
+	private Collection<DataContainer> outputs = new HashSet<DataContainer>();
+
+	/**
+	 * These are any <code>Resource</code>s that are associated with the
+	 * <code>DataProducer</code>.
+	 * 
+	 * @associates Resource
+	 * @directed true
+	 * @label lazy
+	 */
+	private Collection<Resource> resources = new HashSet<Resource>();
+
+	/**
+	 * This is a collection of <code>Keyword</code> objects that can be used to
+	 * search for <code>DataContainer</code>s.
+	 * 
+	 * @associates Keyword
+	 * @directed true
+	 * @label lazy
+	 */
+	private Collection<Keyword> keywords = new HashSet<Keyword>();
+
+	/**
+	 * These are any <code>Event</code>s that have been linked to the
+	 * <code>DataProducer</code>.
+	 * 
+	 * @associates Event
+	 * @directed true
+	 * @label lazy
+	 */
+	private Collection<Event> events = new HashSet<Event>();
+
+	/**
+	 * A date formatter for convenience. This was marked transient so that when
+	 * the ActionScript generator operated on this, it was ignored. Should not
+	 * affect functionality
+	 */
+	private transient XmlDateFormat xmlDateFormat = new XmlDateFormat();
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
 
 	/**
 	 * @see IMetadataObject#getId()
@@ -77,9 +361,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	public void setName(String name) throws MetadataException {
 		MetadataValidator.isObjectNull(name);
 		MetadataValidator.isStringShorterThan(name, 2048);
-		String oldName = name;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("name", oldName, name);
 		this.name = name;
 	}
 
@@ -97,10 +378,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	public void setDescription(String description) throws MetadataException {
 		MetadataValidator.isStringShorterThan(description,
 				MetadataValidator.DESCRIPTION_LENGTH);
-		String oldDescription = this.description;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("description", oldDescription,
-					description);
 		this.description = description;
 	}
 
@@ -124,10 +401,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 			throw new MetadataException("The specified dataProducerType ("
 					+ dataProducerType
 					+ ") does not match a constant defined in the class");
-		String oldDataProducerType = this.dataProducerType;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("dataProducerType",
-					oldDataProducerType, dataProducerType);
 		this.dataProducerType = dataProducerType;
 	}
 
@@ -159,10 +432,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * @see IDateRange#setStartDate(Date)
 	 */
 	public void setStartDate(Date startDate) {
-		Date oldStartDate = this.startDate;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("startDate", oldStartDate,
-					startDate);
 		this.startDate = startDate;
 	}
 
@@ -178,9 +447,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * @see IDateRange#setEndDate(Date)
 	 */
 	public void setEndDate(Date endDate) {
-		Date oldEndDate = this.endDate;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("endDate", oldEndDate, endDate);
 		this.endDate = endDate;
 	}
 
@@ -207,9 +473,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 		if (!isValidRole(role))
 			throw new MetadataException("The role specified (" + role
 					+ ") does not match a constant defined in this class");
-		String oldRole = this.role;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("role", oldRole, role);
 		this.role = role;
 	}
 
@@ -229,10 +492,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 			throws MetadataException {
 		MetadataValidator.isValueBetween(nominalLatitude,
 				MetadataValidator.MIN_LATITUDE, MetadataValidator.MAX_LATITUDE);
-		Double oldNominalLatitude = this.nominalLatitude;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("nominalLatitude",
-					oldNominalLatitude, nominalLatitude);
 		this.nominalLatitude = nominalLatitude;
 	}
 
@@ -249,10 +508,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setNominalLatitudeAccuracy(Float nominalLatitudeAccuracy) {
-		Float oldNominalLatitudeAccuracy = this.nominalLatitudeAccuracy;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("nominalLatitudeAccuracy",
-					oldNominalLatitudeAccuracy, nominalLatitudeAccuracy);
 		this.nominalLatitudeAccuracy = nominalLatitudeAccuracy;
 	}
 
@@ -273,10 +528,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 		MetadataValidator.isValueBetween(nominalLongitude,
 				MetadataValidator.MIN_LONGITUDE,
 				MetadataValidator.MAX_LONGITUDE);
-		Double oldNominalLongitude = this.nominalLongitude;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("nominalLongitude",
-					oldNominalLongitude, nominalLongitude);
 		this.nominalLongitude = nominalLongitude;
 	}
 
@@ -293,10 +544,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setNominalLongitudeAccuracy(Float nominalLongitudeAccuracy) {
-		Float oldNominalLongitudeAccuracy = this.nominalLongitudeAccuracy;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("nominalLongitudeAccuracy",
-					oldNominalLongitudeAccuracy, nominalLongitudeAccuracy);
 		this.nominalLongitudeAccuracy = nominalLongitudeAccuracy;
 	}
 
@@ -312,10 +559,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setNominalDepth(Float nominalDepth) throws MetadataException {
-		Float oldNominalDepth = this.nominalDepth;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("nominalDepth", oldNominalDepth,
-					nominalDepth);
 		this.nominalDepth = nominalDepth;
 	}
 
@@ -331,10 +574,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setNominalDepthAccuracy(Float nominalDepthAccuracy) {
-		Float oldNominalDepthAccuracy = this.nominalDepthAccuracy;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("nominalDepthAccuracy",
-					oldNominalDepthAccuracy, nominalDepthAccuracy);
 		this.nominalDepthAccuracy = nominalDepthAccuracy;
 	}
 
@@ -352,10 +591,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setNominalBenthicAltitude(Float nominalBenthicAltitude) {
-		Float oldNominalBenthicAltitude = this.nominalBenthicAltitude;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("nominalBenthicAltitude",
-					oldNominalBenthicAltitude, nominalBenthicAltitude);
 		this.nominalBenthicAltitude = nominalBenthicAltitude;
 	}
 
@@ -373,11 +608,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 
 	public void setNominalBenthicAltitudeAccuracy(
 			Float nominalBenthicAltitudeAccuracy) {
-		Float oldNominalBenthicAltitudeAccuracy = this.nominalBenthicAltitudeAccuracy;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("nominalBenthicAltitudeAccuracy",
-					oldNominalBenthicAltitudeAccuracy,
-					nominalBenthicAltitudeAccuracy);
 		this.nominalBenthicAltitudeAccuracy = nominalBenthicAltitudeAccuracy;
 	}
 
@@ -395,9 +625,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setXoffset(Float xOffset) {
-		Float oldXoffset = this.xoffset;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("xoffset", oldXoffset, xOffset);
 		this.xoffset = xOffset;
 	}
 
@@ -415,9 +642,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setYoffset(Float yOffset) {
-		Float oldYoffset = yOffset;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("yoffset", oldYoffset, yOffset);
 		this.yoffset = yOffset;
 	}
 
@@ -435,9 +659,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setZoffset(Float zOffset) {
-		Float oldZoffset = this.zoffset;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("zoffset", oldZoffset, zOffset);
 		this.zoffset = zOffset;
 	}
 
@@ -455,10 +676,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setOrientationDescription(String orientationDescription) {
-		String oldOrientationDescription = this.orientationDescription;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("orientationDescription",
-					oldOrientationDescription, orientationDescription);
 		this.orientationDescription = orientationDescription;
 	}
 
@@ -482,10 +699,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setX3DOrientationText(String x3DOrientationText) {
-		String oldX3DOrientationText = this.x3DOrientationText;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("x3DOrientationText",
-					oldX3DOrientationText, x3DOrientationText);
 		this.x3DOrientationText = x3DOrientationText;
 	}
 
@@ -502,9 +715,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setHostName(String hostName) {
-		String oldHostName = this.hostName;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("hostName", oldHostName, hostName);
 		this.hostName = hostName;
 	}
 
@@ -525,9 +735,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setPerson(Person person) {
-		Person oldPerson = this.person;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("person", oldPerson, person);
 		this.person = person;
 	}
 
@@ -547,9 +754,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setDevice(Device device) {
-		Device oldDevice = this.device;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("device", oldDevice, device);
 		this.device = device;
 	}
 
@@ -569,9 +773,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setSoftware(Software software) {
-		Software oldSoftware = this.software;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("software", oldSoftware, software);
 		this.software = software;
 	}
 
@@ -593,10 +794,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	public void setParentDataProducer(DataProducer parentDataProducer) {
-		DataProducer oldParentDataProducer = this.parentDataProducer;
-		if (changeSupport != null)
-			changeSupport.firePropertyChange("parentDataProducer",
-					oldParentDataProducer, parentDataProducer);
 		this.parentDataProducer = parentDataProducer;
 	}
 
@@ -611,11 +808,12 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 *         are considered children of the <code>DataProducer</code> this
 	 *         method is called on.
 	 */
-	public Collection getChildDataProducers() {
+	public Collection<DataProducer> getChildDataProducers() {
 		return childDataProducers;
 	}
 
-	public void setChildDataProducers(Collection childDataProducers) {
+	public void setChildDataProducers(
+			Collection<DataProducer> childDataProducers) {
 		this.childDataProducers = childDataProducers;
 	}
 
@@ -668,7 +866,7 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * that are children and keep the integrity of the relationships intact.
 	 */
 	public void clearChildDataProducers() {
-		Iterator childIter = this.childDataProducers.iterator();
+		Iterator<DataProducer> childIter = this.childDataProducers.iterator();
 		while (childIter.hasNext()) {
 			DataProducer tempChild = (DataProducer) childIter.next();
 			tempChild.setParentDataProducer(null);
@@ -689,11 +887,12 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * @return the <code>Collection</code> of <code>DataProducerGroup</code>s
 	 *         that have been associated to the <code>DataProducer</code>
 	 */
-	public Collection getDataProducerGroups() {
+	public Collection<DataProducerGroup> getDataProducerGroups() {
 		return dataProducerGroups;
 	}
 
-	public void setDataProducerGroups(Collection dataProducerGroups) {
+	public void setDataProducerGroups(
+			Collection<DataProducerGroup> dataProducerGroups) {
 		this.dataProducerGroups = dataProducerGroups;
 	}
 
@@ -754,11 +953,11 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * @return the <code>Collection</code> of <code>DataContainer</code>s that
 	 *         are used for inputs
 	 */
-	public Collection getInputs() {
+	public Collection<DataContainer> getInputs() {
 		return inputs;
 	}
 
-	public void setInputs(Collection inputs) {
+	public void setInputs(Collection<DataContainer> inputs) {
 		this.inputs = inputs;
 	}
 
@@ -811,7 +1010,7 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * relationships intact
 	 */
 	public void clearInputs() {
-		Iterator inputIter = this.inputs.iterator();
+		Iterator<DataContainer> inputIter = this.inputs.iterator();
 		while (inputIter.hasNext()) {
 			DataContainer tempDC = (DataContainer) inputIter.next();
 			tempDC.getConsumers().remove(this);
@@ -832,11 +1031,11 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * @return the <code>Collection</code> of <code>DataContainer</code> that
 	 *         were created by the <code>DataProducer</code>
 	 */
-	public Collection getOutputs() {
+	public Collection<DataContainer> getOutputs() {
 		return outputs;
 	}
 
-	public void setOutputs(Collection outputs) {
+	public void setOutputs(Collection<DataContainer> outputs) {
 		this.outputs = outputs;
 	}
 
@@ -879,7 +1078,7 @@ public class DataProducer implements IMetadataObject, IDescription,
 	public void removeOutput(DataContainer dataContainer) {
 		if (dataContainer == null)
 			return;
-		// Clear the creator of the datacontainer
+		// Clear the creator of the DataContainer
 		dataContainer.setCreator(null);
 
 		if ((this.outputs != null) && (this.outputs.contains(dataContainer)))
@@ -894,7 +1093,7 @@ public class DataProducer implements IMetadataObject, IDescription,
 	public void clearOutputs() {
 		// Iterate over outputs
 		if (this.outputs != null) {
-			Iterator outputIter = this.outputs.iterator();
+			Iterator<DataContainer> outputIter = this.outputs.iterator();
 			while (outputIter.hasNext()) {
 				((DataContainer) outputIter.next()).setCreator(null);
 			}
@@ -916,11 +1115,11 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * @return the <code>Collection</code> of <code>Resource</code>s that are
 	 *         associated with the <code>DataProducer</code>
 	 */
-	public Collection getResources() {
+	public Collection<Resource> getResources() {
 		return resources;
 	}
 
-	public void setResources(Collection resources) {
+	public void setResources(Collection<Resource> resources) {
 		this.resources = resources;
 	}
 
@@ -977,11 +1176,11 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 *                                    class="moos.ssds.metadata.Keyword"
 	 * @return the collection of <code>Keyword</code> objects.
 	 */
-	public Collection getKeywords() {
+	public Collection<Keyword> getKeywords() {
 		return keywords;
 	}
 
-	public void setKeywords(Collection keywords) {
+	public void setKeywords(Collection<Keyword> keywords) {
 		this.keywords = keywords;
 	}
 
@@ -1037,11 +1236,11 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * @return the <code>Collection</code> of <code>Event</code>s that are
 	 *         associated with the <code>DataProducer</code>
 	 */
-	public Collection getEvents() {
+	public Collection<Event> getEvents() {
 		return events;
 	}
 
-	public void setEvents(Collection events) {
+	public void setEvents(Collection<Event> events) {
 		this.events = events;
 	}
 
@@ -1133,6 +1332,90 @@ public class DataProducer implements IMetadataObject, IDescription,
 				&& (!role.equals(ROLE_PLATFORM)) && (!role.equals(ROLE_SENSOR))) {
 			result = false;
 		}
+		return result;
+	}
+
+	/**
+	 * This equals method is more complex than most of the others due to the
+	 * complexity of the business key. The business key for
+	 * <code>DataProducer</code> is based on the data producer type being equal
+	 * as well as having an output in common. If both <code>DataProducer</code>s
+	 * are of the same type and have one output that they share, they are
+	 * considered equal.
+	 * 
+	 * @see IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// First check to see if input is null
+		if (obj == null)
+			return false;
+
+		// Now check JVM identity
+		if (this == obj)
+			return true;
+
+		// Now check if it is the correct class
+		if (!(obj instanceof DataProducer))
+			return false;
+
+		// Cast to DataProducer object
+		final DataProducer that = (DataProducer) obj;
+
+		// Now check business key which is type and output
+		if (!this.dataProducerType.equals(that.getDataProducerType())) {
+			return false;
+		}
+
+		// Now check for missing business keys (type and missing outputs)
+		if ((this.outputs == null) || (this.outputs.size() <= 0)
+				|| (that.getOutputs() == null)
+				|| (that.getOutputs().size() <= 0)
+				|| (this.dataProducerType == null)
+				|| (that.getDataProducerType() == null)) {
+			// Check for ID equality, otherwise, consider not equal
+			if ((this.getId() != null) && (that.getId() != null)
+					&& (this.getId().longValue() == that.getId().longValue()))
+				return true;
+
+			return false;
+		}
+
+		// Now check for hashcode equals
+		if (this.hashCode() == that.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	/**
+	 * @see IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+
+		// Create the hashcode
+		int result = 9;
+
+		// Now add the hashcode for the type
+		if (dataProducerType != null)
+			result = result + dataProducerType.hashCode();
+
+		// Now the name
+		// kgomes - After discussing this with Mike M, we thought name should be
+		// more flexible and not be part of the alternate key so I commented
+		// this out
+		// if (name != null)
+		// result = 7 * result + name.hashCode();
+
+		// Now all the hashcodes of the outputs
+		if ((outputs != null) && (outputs.size() > 0)) {
+			Iterator<DataContainer> outputIter = outputs.iterator();
+			while (outputIter.hasNext()) {
+				result = result + outputIter.next().hashCode();
+			}
+		}
+
 		return result;
 	}
 
@@ -1365,87 +1648,113 @@ public class DataProducer implements IMetadataObject, IDescription,
 	}
 
 	/**
-	 * This equals method is more complex than most of the others due to the
-	 * complexity of the business key. The business key for
-	 * <code>DataProducer</code> is based on the data producer type being equal
-	 * as well as having an output in common. If both <code>DataProducer</code>s
-	 * are of the same type and have one output that they share, they are
-	 * considered equal.
-	 * 
-	 * @see IMetadataObject#equals(Object)
+	 * This is the method that allows for custom de-serialization of a
+	 * <code>DataProducer</code>.
 	 */
-	public boolean equals(Object obj) {
-		// First check to see if input is null
-		if (obj == null)
-			return false;
-
-		// Now check JVM identity
-		if (this == obj)
-			return true;
-
-		// Now check if it is the correct class
-		if (!(obj instanceof DataProducer))
-			return false;
-
-		// Cast to DataProducer object
-		final DataProducer that = (DataProducer) obj;
-
-		// Now check business key which is type and output
-		if (!this.dataProducerType.equals(that.getDataProducerType())) {
-			return false;
+	@SuppressWarnings("unchecked")
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		childDataProducers = (Collection<DataProducer>) in.readObject();
+		dataProducerGroups = (Collection<DataProducerGroup>) in.readObject();
+		dataProducerType = (String) in.readObject();
+		dateRange = (IDateRange) in.readObject();
+		description = (String) in.readObject();
+		device = (Device) in.readObject();
+		endDate = (Date) in.readObject();
+		events = (Collection<Event>) in.readObject();
+		hostName = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
 		}
-
-		// Now check for missing business keys (type and missing outputs)
-		if ((this.outputs == null) || (this.outputs.size() <= 0)
-				|| (that.getOutputs() == null)
-				|| (that.getOutputs().size() <= 0)
-				|| (this.dataProducerType == null)
-				|| (that.getDataProducerType() == null)) {
-			// Check for ID equality, otherwise, consider not equal
-			if ((this.getId() != null) && (that.getId() != null)
-					&& (this.getId().longValue() == that.getId().longValue()))
-				return true;
-
-			return false;
+		inputs = (Collection<DataContainer>) in.readObject();
+		keywords = (Collection<Keyword>) in.readObject();
+		name = (String) in.readObject();
+		nominalBenthicAltitude = (Float) in.readObject();
+		nominalBenthicAltitudeAccuracy = (Float) in.readObject();
+		nominalDepth = (Float) in.readObject();
+		nominalDepthAccuracy = (Float) in.readObject();
+		nominalLatitude = (Double) in.readObject();
+		nominalLatitudeAccuracy = (Float) in.readObject();
+		nominalLongitude = (Double) in.readObject();
+		nominalLongitudeAccuracy = (Float) in.readObject();
+		orientationDescription = (String) in.readObject();
+		outputs = (Collection<DataContainer>) in.readObject();
+		parentDataProducer = (DataProducer) in.readObject();
+		person = (Person) in.readObject();
+		resources = (Collection<Resource>) in.readObject();
+		role = (String) in.readObject();
+		software = (Software) in.readObject();
+		startDate = (Date) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
 		}
-
-		// Now check for hashcode equals
-		if (this.hashCode() == that.hashCode()) {
-			return true;
-		} else {
-			return false;
-		}
-
+		x3DOrientationText = (String) in.readObject();
+		xoffset = (Float) in.readObject();
+		yoffset = (Float) in.readObject();
+		zoffset = (Float) in.readObject();
 	}
 
 	/**
-	 * @see IMetadataObject#hashCode()
+	 * This is the method that allows for custom serialization of a
+	 * <code>DataProducer</code>
 	 */
-	public int hashCode() {
-
-		// Create the hashcode
-		int result = 9;
-
-		// Now add the hashcode for the type
-		if (dataProducerType != null)
-			result = result + dataProducerType.hashCode();
-
-		// Now the name
-		// kgomes - After discussing this with Mike M, we thought name should be
-		// more flexible and not be part of the alternate key so I commented
-		// this out
-		// if (name != null)
-		// result = 7 * result + name.hashCode();
-
-		// Now all the hashcodes of the outputs
-		if ((outputs != null) && (outputs.size() > 0)) {
-			Iterator outputIter = outputs.iterator();
-			while (outputIter.hasNext()) {
-				result = result + outputIter.next().hashCode();
-			}
-		}
-
-		return result;
+	public void writeExternal(ObjectOutput out) throws IOException {
+		// Write out the child data producers (null for now)
+		out.writeObject(null);
+		// Write out data producer group (null for now)
+		out.writeObject(null);
+		out.writeObject(dataProducerType);
+		// Write the date range (null for now)
+		out.writeObject(null);
+		out.writeObject(description);
+		// Write out the device (null for now)
+		out.writeObject(null);
+		out.writeObject(endDate);
+		// Write out the event (null for now)
+		out.writeObject(null);
+		out.writeObject(hostName);
+		out.writeObject(id);
+		// Write out input (null for now)
+		out.writeObject(null);
+		// Write out the keywords (null for now)
+		out.writeObject(null);
+		out.writeObject(name);
+		out.writeObject(nominalBenthicAltitude);
+		out.writeObject(nominalBenthicAltitudeAccuracy);
+		out.writeObject(nominalDepth);
+		out.writeObject(nominalDepthAccuracy);
+		out.writeObject(nominalLatitude);
+		out.writeObject(nominalLatitudeAccuracy);
+		out.writeObject(nominalLongitude);
+		out.writeObject(nominalLongitudeAccuracy);
+		out.writeObject(orientationDescription);
+		// Write out the outputs (null for now)
+		out.writeObject(null);
+		// Write parent data producer (null for now)
+		out.writeObject(null);
+		// Write out the person (null for now)
+		out.writeObject(null);
+		// Write out the resources (null for now)
+		out.writeObject(null);
+		out.writeObject(role);
+		// Write out the software (null for now)
+		out.writeObject(null);
+		out.writeObject(startDate);
+		out.writeObject(version);
+		out.writeObject(x3DOrientationText);
+		out.writeObject(xoffset);
+		out.writeObject(yoffset);
+		out.writeObject(zoffset);
 	}
 
 	/**
@@ -1486,64 +1795,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 
 		// Now return the clone
 		return clone;
-	}
-
-	/**
-	 * This is the method that allows for custom deserialization of a
-	 * <code>DataProducer</code>.
-	 */
-	public void readExternal(ObjectInput in) throws IOException,
-			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
-		description = (String) in.readObject();
-		dataProducerType = (String) in.readObject();
-		startDate = (Date) in.readObject();
-		endDate = (Date) in.readObject();
-		role = (String) in.readObject();
-		nominalLatitude = (Double) in.readObject();
-		nominalLatitudeAccuracy = (Float) in.readObject();
-		nominalLongitude = (Double) in.readObject();
-		nominalLongitudeAccuracy = (Float) in.readObject();
-		nominalDepth = (Float) in.readObject();
-		nominalDepthAccuracy = (Float) in.readObject();
-		nominalBenthicAltitude = (Float) in.readObject();
-		nominalBenthicAltitudeAccuracy = (Float) in.readObject();
-		xoffset = (Float) in.readObject();
-		yoffset = (Float) in.readObject();
-		zoffset = (Float) in.readObject();
-		orientationDescription = (String) in.readObject();
-		x3DOrientationText = (String) in.readObject();
-		hostName = (String) in.readObject();
-	}
-
-	/**
-	 * This is the method that allows for custom serialization of a
-	 * <code>DataProducer</code>
-	 */
-	public void writeExternal(ObjectOutput out) throws IOException {
-		// Write out the properties
-		out.writeObject(id);
-		out.writeObject(name);
-		out.writeObject(description);
-		out.writeObject(dataProducerType);
-		out.writeObject(startDate);
-		out.writeObject(endDate);
-		out.writeObject(role);
-		out.writeObject(nominalLatitude);
-		out.writeObject(nominalLatitudeAccuracy);
-		out.writeObject(nominalLongitude);
-		out.writeObject(nominalLongitudeAccuracy);
-		out.writeObject(nominalDepth);
-		out.writeObject(nominalDepthAccuracy);
-		out.writeObject(nominalBenthicAltitude);
-		out.writeObject(nominalBenthicAltitudeAccuracy);
-		out.writeObject(xoffset);
-		out.writeObject(yoffset);
-		out.writeObject(zoffset);
-		out.writeObject(orientationDescription);
-		out.writeObject(x3DOrientationText);
-		out.writeObject(hostName);
 	}
 
 	/**
@@ -1604,8 +1855,10 @@ public class DataProducer implements IMetadataObject, IDescription,
 				&& (this.getChildDataProducers().size() > 0)) {
 			logger.debug("There are " + this.getChildDataProducers().size()
 					+ " child DataProducers to clone and attach");
-			Collection childDataProducersToCopy = this.getChildDataProducers();
-			Iterator childDPITer = childDataProducersToCopy.iterator();
+			Collection<DataProducer> childDataProducersToCopy = this
+					.getChildDataProducers();
+			Iterator<DataProducer> childDPITer = childDataProducersToCopy
+					.iterator();
 			while (childDPITer.hasNext()) {
 				DataProducer clonedChildDataProducer = (DataProducer) ((DataProducer) childDPITer
 						.next()).deepCopy();
@@ -1621,8 +1874,10 @@ public class DataProducer implements IMetadataObject, IDescription,
 				&& (this.getDataProducerGroups().size() > 0)) {
 			logger.debug("There are " + this.getDataProducerGroups().size()
 					+ " DataProducerGroups to clone and attach");
-			Collection dataProducerGroupToCopy = this.getDataProducerGroups();
-			Iterator dpgIter = dataProducerGroupToCopy.iterator();
+			Collection<DataProducerGroup> dataProducerGroupToCopy = this
+					.getDataProducerGroups();
+			Iterator<DataProducerGroup> dpgIter = dataProducerGroupToCopy
+					.iterator();
 			while (dpgIter.hasNext()) {
 				DataProducerGroup clonedDataProducerGroup = (DataProducerGroup) ((DataProducerGroup) dpgIter
 						.next()).deepCopy();
@@ -1636,8 +1891,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 		if ((this.getInputs() != null) && (this.getInputs().size() > 0)) {
 			logger.debug("There are " + this.getInputs().size()
 					+ " Inputs to clone and attach");
-			Collection inputs = this.getInputs();
-			Iterator inputIter = inputs.iterator();
+			Collection<DataContainer> inputs = this.getInputs();
+			Iterator<DataContainer> inputIter = inputs.iterator();
 			while (inputIter.hasNext()) {
 				DataContainer clonedDataContainer = (DataContainer) ((DataContainer) inputIter
 						.next()).deepCopy();
@@ -1649,8 +1904,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 		if ((this.getOutputs() != null) && (this.getOutputs().size() > 0)) {
 			logger.debug("There are " + this.getOutputs().size()
 					+ " Outputs to clone and attach");
-			Collection outputs = this.getOutputs();
-			Iterator outputIter = outputs.iterator();
+			Collection<DataContainer> outputs = this.getOutputs();
+			Iterator<DataContainer> outputIter = outputs.iterator();
 			while (outputIter.hasNext()) {
 				DataContainer clonedOutput = (DataContainer) ((DataContainer) outputIter
 						.next()).deepCopy();
@@ -1662,8 +1917,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 		if ((this.getResources() != null) && (this.getResources().size() > 0)) {
 			logger.debug("There are " + this.getResources().size()
 					+ " Resources to clone and attach");
-			Collection resourcesToCopy = this.getResources();
-			Iterator resourceIter = resourcesToCopy.iterator();
+			Collection<Resource> resourcesToCopy = this.getResources();
+			Iterator<Resource> resourceIter = resourcesToCopy.iterator();
 			while (resourceIter.hasNext()) {
 				Resource clonedResource = (Resource) ((Resource) resourceIter
 						.next()).deepCopy();
@@ -1675,8 +1930,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 		if ((this.getKeywords() != null) && (this.getKeywords().size() > 0)) {
 			logger.debug("There are " + this.getKeywords().size()
 					+ " Keywords to clone and attach");
-			Collection keywordsToCopy = this.getKeywords();
-			Iterator keywordIter = keywordsToCopy.iterator();
+			Collection<Keyword> keywordsToCopy = this.getKeywords();
+			Iterator<Keyword> keywordIter = keywordsToCopy.iterator();
 			while (keywordIter.hasNext()) {
 				Keyword clonedKeyword = (Keyword) ((Keyword) keywordIter.next())
 						.deepCopy();
@@ -1688,8 +1943,8 @@ public class DataProducer implements IMetadataObject, IDescription,
 		if ((this.getEvents() != null) && (this.getEvents().size() > 0)) {
 			logger.debug("There are " + this.getEvents().size()
 					+ " Events to clone and attach");
-			Collection events = this.getEvents();
-			Iterator eventsIter = events.iterator();
+			Collection<Event> events = this.getEvents();
+			Iterator<Event> eventsIter = events.iterator();
 			while (eventsIter.hasNext()) {
 				Event clonedEvent = (Event) ((Event) eventsIter.next())
 						.deepCopy();
@@ -1702,309 +1957,4 @@ public class DataProducer implements IMetadataObject, IDescription,
 		// Now return the deep copy
 		return deepClone;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is the arbitrary name given to the DataProducer
-	 */
-	private String name;
-
-	/**
-	 * The description of the DataProducer
-	 */
-	private String description;
-
-	/**
-	 * This is a string that categories the type of data producer. It should
-	 * match one of the constants defined in this class.
-	 */
-	private String dataProducerType = DataProducer.TYPE_DEPLOYMENT;
-
-	/**
-	 * This is the <code>Date</code> when the data producer started to produce
-	 * data
-	 */
-	private Date startDate;
-
-	/**
-	 * This is the <code>Date</code> when the data producer stopped sending data
-	 * (or it is the date of the last time it sent data). If this is not
-	 * defined, it usually means the data producer is still producing data
-	 */
-	private Date endDate;
-
-	/**
-	 * This is an attribute that gives the range of time that this
-	 * <code>DataProducer</code> produced data
-	 */
-	private IDateRange dateRange = new DateRange(this);
-
-	/**
-	 * This is the role that the <code>DataProducer</code> can take in its
-	 * production of data. It should match one of the constants defined in the
-	 * class
-	 */
-	private String role;
-
-	/**
-	 * This is a nominal lattitude (decimal degrees) that can be assigned to the
-	 * producer of data. It gives the approximate geolocation of the producer
-	 * when it was producing data.
-	 */
-	private Double nominalLatitude = null;
-
-	/**
-	 * This is the accuracy that is to be expected in the latitude data
-	 */
-	private Float nominalLatitudeAccuracy = null;
-
-	/**
-	 * This is a nominal longitude (decimal degrees) that can be assigned to the
-	 * producer of data. It gives the approximate geolocation of the producer
-	 * when it was producing data.
-	 */
-	private Double nominalLongitude = null;
-
-	/**
-	 * This is the accuracy that is to be expected in the longitude data
-	 */
-	private Float nominalLongitudeAccuracy = null;
-
-	/**
-	 * This is a nominal depth (in meters) that can be assigned to the producer
-	 * of data. It gives the approximate geolocation of the producer when it was
-	 * producing data.
-	 */
-	private Float nominalDepth = null;
-
-	/**
-	 * This is the accuracy that is to be expected in the depth data
-	 */
-	private Float nominalDepthAccuracy = null;
-
-	/**
-	 * This is a nominal altitude (in meters) over the bottom that can be
-	 * assigned to the producer of data. It gives the approximate geolocation of
-	 * the producer when it was producing data.
-	 */
-	private Float nominalBenthicAltitude = null;
-
-	/**
-	 * This is the accuracy that is to be expected in the benthic altitude data
-	 */
-	private Float nominalBenthicAltitudeAccuracy = null;
-
-	/**
-	 * This is the distance (in meters) that the data producer is offset from
-	 * its parent (if applicable). This is the offset in a locally defined X
-	 * direction.
-	 */
-	private Float xoffset = null; // All lower case to prevent Hibernate
-	// PropertyNotFoundException with access="field"
-
-	/**
-	 * This is the distance (in meters) that the data producer is offset from
-	 * its parent (if applicable). This is the offset in a locally defined Y
-	 * direction.
-	 */
-	private Float yoffset = null; // All lower case to prevent Hibernate
-	// PropertyNotFoundException with access="field"
-
-	/**
-	 * This is the distance (in meters) that the data producer is offset from
-	 * its parent (if applicable). This is the offset in a locally defined Z
-	 * direction.
-	 */
-	private Float zoffset = null; // All lower case to prevent Hibernate
-	// PropertyNotFoundException with access="field"
-
-	/**
-	 * This is a description of how the data producer was oriented when it was
-	 * producing data.
-	 */
-	private String orientationDescription = null;
-
-	/**
-	 * The X3D compliant orientation description
-	 */
-	private String x3DOrientationText = null;
-
-	/**
-	 * This the name of the host where the data was produced from.
-	 */
-	private String hostName;
-
-	/**
-	 * This is the <code>Person</code> that is the point of contact for the
-	 * <code>DataProducer</code>
-	 * 
-	 * @directed true
-	 * @label lazy
-	 */
-	private Person person;
-
-	/**
-	 * This is a <code>Device</code> that is associated with the production of
-	 * the data.
-	 * 
-	 * @directed true
-	 * @label unlazy
-	 */
-	private Device device;
-
-	/**
-	 * This is a <code>Software</code> that is associated with the production of
-	 * the data.
-	 * 
-	 * @directed true
-	 * @label lazy
-	 */
-	private Software software;
-
-	/**
-	 * This is a <code>DataProducer</code> that is considered to be the parent
-	 * of this <code>DataProducer</code> (supports nested data producers).
-	 * 
-	 * @directed true
-	 * @label lazy
-	 */
-	private DataProducer parentDataProducer;
-
-	/**
-	 * These are <code>DataProducer</code>s that are considered children of this
-	 * <code>DataProducer</code> (supports nested data producers).
-	 * 
-	 * @associates DataProducer
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection childDataProducers = new HashSet();
-
-	/**
-	 * This is a <code>Collection</code> of <code>DataProducerGroup</code>s that
-	 * this <code>DataProducer</code> belongs to
-	 * 
-	 * @associates DataProducerGroup
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection dataProducerGroups = new HashSet();
-
-	/**
-	 * These are the <code>DataContainer</code>s that were used by the
-	 * <code>DataProducer</code> to produce its outputs.
-	 * 
-	 * @associates DataContainer
-	 * @directed true
-	 * @label lazy
-	 * @clientRole reads inputs
-	 * @supplierRole data for input
-	 * @clientCardinality 0..*
-	 * @supplierCardinality 0..
-	 */
-	private Collection inputs = new HashSet();
-
-	/**
-	 * These are the output <code>DataContainer</code>s from this
-	 * <code>DataProducer</code>.
-	 * 
-	 * @associates DataContainer
-	 * @directed true
-	 * @clientRole creator of output
-	 * @clientCardinality 1
-	 * @supplierRole data output
-	 * @supplierCardinality 0..
-	 * @label unlazy
-	 */
-	private Collection outputs = new HashSet();
-
-	/**
-	 * These are any <code>Resource</code>s that are associated with the
-	 * <code>DataProducer</code>.
-	 * 
-	 * @associates Resource
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection resources = new HashSet();
-
-	/**
-	 * This is a collection of <code>Keyword</code> objects that can be used to
-	 * search for <code>DataContainer</code>s.
-	 * 
-	 * @associates Keyword
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection keywords = new HashSet();
-
-	/**
-	 * These are any <code>Event</code>s that have been linked to the
-	 * <code>DataProducer</code>.
-	 * 
-	 * @associates Event
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection events = new HashSet();
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * Some contants
-	 */
-	public static final String TYPE_DEPLOYMENT = "Deployment";
-	public static final String TYPE_PROCESS_RUN = "ProcessRun";
-
-	public static final String ROLE_SENSOR = "sensor";
-	public static final String ROLE_INSTRUMENT = "instrument";
-	public static final String ROLE_PLATFORM = "platform";
-	public static final String ROLE_OBSERVATORY = "observatory";
-
-	/**
-	 * A date formatter for convenience
-	 */
-	private XmlDateFormat xmlDateFormat = new XmlDateFormat();
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(DataProducer.class);
-
-	/**
-	 * Support for the Observer pattern.
-	 * 
-	 * @param listener
-	 */
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		if (listener != null) {
-			if (changeSupport == null)
-				changeSupport = new PropertyChangeSupport(this);
-			changeSupport.addPropertyChangeListener(listener);
-		}
-
-	}
-
-	/**
-	 * Support for the Observer pattern.
-	 * 
-	 * @param listener
-	 */
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		if (changeSupport != null && listener != null)
-			changeSupport.removePropertyChangeListener(listener);
-	}
-
 }

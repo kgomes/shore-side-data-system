@@ -321,9 +321,23 @@ public class DeviceType implements IMetadataObject, IDescription {
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
 		description = (String) in.readObject();
+		// Read the first object
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		name = (String) in.readObject();
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -332,9 +346,10 @@ public class DeviceType implements IMetadataObject, IDescription {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(description);
 		out.writeObject(id);
 		out.writeObject(name);
-		out.writeObject(description);
+		out.writeObject(version);
 	}
 
 	/**
