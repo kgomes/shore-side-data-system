@@ -708,8 +708,8 @@
 		<!-- Deploy the JDBC driver jar -->
 		<copy file="${project.lib}/${metadata.datasource.jdbc.jar}" todir="${jboss.home}/server/${jboss.server.type}/lib" />
 		<!-- Deploy the Flex Tomcat Security jars -->
-		<copy file="${project.lib}/${flex.tomcat.common.jar}" todir="${jboss.home}/server/${jboss.server.type}/lib" />
-		<copy file="${project.lib}/${flex.tomcat.server.jar}" todir="${jboss.home}/server/${jboss.server.type}/lib" />
+		<copy file="${project.lib}/${blazeds.flex.tomcat.common.jar}" todir="${jboss.home}/server/${jboss.server.type}/lib" />
+		<copy file="${project.lib}/${blazeds.flex.tomcat.server.jar}" todir="${jboss.home}/server/${jboss.server.type}/lib" />
 		<!-- Copy data DataSource xml configurations over -->
 		<copy file="${resources.build}/jboss/ssds-ds_template.xml" tofile="${jboss.home}/server/${jboss.server.type}/deploy/ssds-data-ds.xml" overwrite="true">
 			<filterset>
@@ -803,8 +803,8 @@
 		<delete file="${core.mail.deployment.location}/mail-service.xml" />
 		<!-- Remove the metadata jars and xml files -->
 		<delete file="${jboss.home}/server/${jboss.server.type}/lib/${metadata.datasource.jdbc.jar}" />
-		<delete file="${jboss.home}/server/${jboss.server.type}/lib/${flex.tomcat.common.jar}" />
-		<delete file="${jboss.home}/server/${jboss.server.type}/lib/${flex.tomcat.server.jar}" />
+		<delete file="${jboss.home}/server/${jboss.server.type}/lib/${blazeds.flex.tomcat.common.jar}" />
+		<delete file="${jboss.home}/server/${jboss.server.type}/lib/${blazeds.flex.tomcat.server.jar}" />
 		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/ssds-data-ds.xml" />
 		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/ssds-metadata-ds.xml" />
 		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/ssds.ear" />
