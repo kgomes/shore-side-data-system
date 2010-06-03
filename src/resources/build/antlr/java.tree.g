@@ -1,4 +1,4 @@
-/** Java 1.3 AST Recognizer Grammar
+/** Java 1.5 AST Recognizer Grammar
  *
  * Author: (see java.g preamble)
  *
@@ -17,16 +17,31 @@ compilationUnit
 	;
 
 packageDefinition
-	:	#( PACKAGE_DEF identifier )
+	:	#( PACKAGE_DEF annotations identifier )
 	;
 
 importDefinition
 	:	#( IMPORT identifierStar )
+	|	#( STATIC_IMPORT identifierStar )
 	;
 
 typeDefinition
-	:	#(CLASS_DEF modifiers IDENT extendsClause implementsClause objBlock )
-	|	#(INTERFACE_DEF modifiers IDENT extendsClause interfaceBlock )
+	:	#(CLASS_DEF modifiers IDENT (typeParameters)? extendsClause implementsClause objBlock )
+	|	#(INTERFACE_DEF modifiers IDENT (typeParameters)? extendsClause interfaceBlock )
+	|	#(ENUM_DEF modifiers IDENT implementsClause enumBlock )
+	|	#(ANNOTATION_DEF modifiers IDENT annotationBlock )
+	;
+
+typeParameters
+	:	#(TYPE_PARAMETERS (typeParameter)+)
+	;
+
+typeParameter
+	:	#(TYPE_PARAMETER IDENT (typeUpperBounds)?)
+	;
+
+typeUpperBounds
+	:	#(TYPE_UPPER_BOUNDS (classOrInterfaceType)+)
 	;
 
 typeSpec
@@ -38,48 +53,100 @@ typeSpecArray
 	|	type
 	;
 
-type:	identifier
+type
+	:	classOrInterfaceType
 	|	builtInType
 	;
 
+classOrInterfaceType
+	:	IDENT (typeArguments)?
+	|	#( DOT classOrInterfaceType )
+	;
+
+typeArguments
+	:	#(TYPE_ARGUMENTS (typeArgument)+)
+	;
+
+typeArgument
+	:	#(	TYPE_ARGUMENT
+			(	typeSpec
+			|	wildcardType
+			)
+		)
+	;
+
+wildcardType
+	:	#(WILDCARD_TYPE (typeArgumentBounds)?)
+	;
+
+typeArgumentBounds
+	:	#(TYPE_UPPER_BOUNDS (classOrInterfaceType)+)
+	|	#(TYPE_LOWER_BOUNDS (classOrInterfaceType)+)
+	;
+
 builtInType
-    :   "void"
-    |   "boolean"
-    |   "byte"
-    |   "char"
-    |   "short"
-    |   "int"
-    |   "float"
-    |   "long"
-    |   "double"
-    ;
+	:	"void"
+	|	"boolean"
+	|	"byte"
+	|	"char"
+	|	"short"
+	|	"int"
+	|	"float"
+	|	"long"
+	|	"double"
+	;
 
 modifiers
 	:	#( MODIFIERS (modifier)* )
 	;
 
 modifier
-    :   "private"
-    |   "public"
-    |   "protected"
-    |   "static"
-    |   "transient"
-    |   "final"
-    |   "abstract"
-    |   "native"
-    |   "threadsafe"
-    |   "synchronized"
-    |   "const"
-    |   "volatile"
+	:	"private"
+	|	"public"
+	|	"protected"
+	|	"static"
+	|	"transient"
+	|	"final"
+	|	"abstract"
+	|	"native"
+	|	"threadsafe"
+	|	"synchronized"
+	|	"const"
+	|	"volatile"
 	|	"strictfp"
-    ;
+	|	annotation
+	;
+
+annotations
+	:	#(ANNOTATIONS (annotation)* )
+	;
+
+annotation
+	:	#(ANNOTATION identifier (annotationMemberValueInitializer | (anntotationMemberValuePair)+)? )
+	;
+
+annotationMemberValueInitializer
+	:	conditionalExpr | annotation | annotationMemberArrayInitializer
+	;
+
+anntotationMemberValuePair
+	:	#(ANNOTATION_MEMBER_VALUE_PAIR IDENT annotationMemberValueInitializer)
+	;
+
+annotationMemberArrayInitializer
+	:	#(ANNOTATION_ARRAY_INIT (annotationMemberArrayValueInitializer)* )
+	;
+
+annotationMemberArrayValueInitializer
+	:	conditionalExpr | annotation
+	;
 
 extendsClause
-	:	#(EXTENDS_CLAUSE (identifier)* )
+	:	#(EXTENDS_CLAUSE (classOrInterfaceType)* )
 	;
 
 implementsClause
-	:	#(IMPLEMENTS_CLAUSE (identifier)* )
+	:	#(IMPLEMENTS_CLAUSE (classOrInterfaceType)* )
 	;
 
 
@@ -104,16 +171,40 @@ objBlock
 		)
 	;
 
+annotationBlock
+	:	#(	OBJBLOCK
+			(	annotationFieldDecl
+			|	variableDef
+			|	typeDefinition
+			)*
+		)
+	;
+
+enumBlock
+	:	#(	OBJBLOCK
+			(
+				enumConstantDef
+			)*
+			(	ctorDef
+			|	methodDef
+			|	variableDef
+			|	typeDefinition
+			|	#(STATIC_INIT slist)
+			|	#(INSTANCE_INIT slist)
+			)*
+		)
+	;
+
 ctorDef
-	:	#(CTOR_DEF modifiers methodHead (slist)?)
+	:	#(CTOR_DEF modifiers (typeParameters)? methodHead (slist)?)
 	;
 
 methodDecl
-	:	#(METHOD_DEF modifiers typeSpec methodHead)
+	:	#(METHOD_DEF modifiers (typeParameters)? typeSpec methodHead)
 	;
 
 methodDef
-	:	#(METHOD_DEF modifiers typeSpec methodHead (slist)?)
+	:	#(METHOD_DEF modifiers (typeParameters)? typeSpec methodHead (slist)?)
 	;
 
 variableDef
@@ -122,6 +213,28 @@ variableDef
 
 parameterDef
 	:	#(PARAMETER_DEF modifiers typeSpec IDENT )
+	;
+
+variableLengthParameterDef
+	:	#(VARIABLE_PARAMETER_DEF modifiers typeSpec IDENT )
+	;
+
+annotationFieldDecl
+	:	#(ANNOTATION_FIELD_DEF modifiers typeSpec IDENT (annotationMemberValueInitializer)?)
+	;
+
+enumConstantDef
+	:	#(ENUM_CONSTANT_DEF annotations IDENT (elist)? (enumConstantBlock)?)
+	;
+
+enumConstantBlock
+	:	#(	OBJBLOCK
+			(	methodDef
+			|	variableDef
+			|	typeDefinition
+			|	#(INSTANCE_INIT slist)
+			)*
+		)
 	;
 
 objectinitializer
@@ -152,7 +265,7 @@ methodHead
 	;
 
 throwsClause
-	:	#( "throws" (identifier)* )
+	:	#( "throws" (classOrInterfaceType)* )
 	;
 
 identifier
@@ -175,9 +288,13 @@ stat:	typeDefinition
 	|	#(LABELED_STAT IDENT stat)
 	|	#("if" expression stat (stat)? )
 	|	#(	"for"
-			#(FOR_INIT ((variableDef)+ | elist)?)
-			#(FOR_CONDITION (expression)?)
-			#(FOR_ITERATOR (elist)?)
+			(
+				#(FOR_INIT ((variableDef)+ | elist)?)
+				#(FOR_CONDITION (expression)?)
+				#(FOR_ITERATOR (elist)?)
+			|
+				#(FOR_EACH_CLAUSE parameterDef expression)
+			)
 			stat
 		)
 	|	#("while" expression stat)
@@ -190,8 +307,7 @@ stat:	typeDefinition
 	|	#("synchronized" expression stat)
 	|	tryBlock
 	|	slist // nested SLIST
-    // uncomment to make assert JDK 1.4 stuff work
-    // |   #("assert" expression (expression)?)
+	|	#("assert" expression (expression)?)
 	|	EMPTY_STAT
 	;
 
@@ -215,7 +331,8 @@ expression
 	:	#(EXPR expr)
 	;
 
-expr:	#(QUESTION expr expr expr)	// trinary operator
+expr
+	:	conditionalExpr
 	|	#(ASSIGN expr expr)			// binary operators...
 	|	#(PLUS_ASSIGN expr expr)
 	|	#(MINUS_ASSIGN expr expr)
@@ -228,6 +345,10 @@ expr:	#(QUESTION expr expr expr)	// trinary operator
 	|	#(BAND_ASSIGN expr expr)
 	|	#(BXOR_ASSIGN expr expr)
 	|	#(BOR_ASSIGN expr expr)
+	;
+
+conditionalExpr
+	:	#(QUESTION expr expr expr)	// trinary operator
 	|	#(LOR expr expr)
 	|	#(LAND expr expr)
 	|	#(BOR expr expr)
@@ -260,31 +381,32 @@ expr:	#(QUESTION expr expr expr)	// trinary operator
 	;
 
 primaryExpression
-    :   IDENT
-    |   #(	DOT
+	:	IDENT
+	|	#(	DOT
 			(	expr
 				(	IDENT
 				|	arrayIndex
 				|	"this"
 				|	"class"
-				|	#( "new" IDENT elist )
-				|   "super"
+				|	newExpression
+				|	"super"
+				|	(typeArguments)? // for generic methods calls
 				)
 			|	#(ARRAY_DECLARATOR typeSpecArray)
 			|	builtInType ("class")?
 			)
 		)
 	|	arrayIndex
-	|	#(METHOD_CALL primaryExpression elist)
+	|	#(METHOD_CALL primaryExpression (typeArguments)? elist)
 	|	ctorCall
 	|	#(TYPECAST typeSpec expr)
-	|   newExpression
-	|   constant
-    |   "super"
-    |   "true"
-    |   "false"
-    |   "this"
-    |   "null"
+	|	newExpression
+	|	constant
+	|	"super"
+	|	"true"
+	|	"false"
+	|	"this"
+	|	"null"
 	|	typeSpec // type name used with instanceof
 	;
 
@@ -302,16 +424,16 @@ arrayIndex
 	;
 
 constant
-    :   NUM_INT
-    |   CHAR_LITERAL
-    |   STRING_LITERAL
-    |   NUM_FLOAT
-    |   NUM_DOUBLE
-    |   NUM_LONG
-    ;
+	:	NUM_INT
+	|	CHAR_LITERAL
+	|	STRING_LITERAL
+	|	NUM_FLOAT
+	|	NUM_DOUBLE
+	|	NUM_LONG
+	;
 
 newExpression
-	:	#(	"new" type
+	:	#(	"new" (typeArguments)? type
 			(	newArrayDeclarator (arrayInitializer)?
 			|	elist (objBlock)?
 			)
