@@ -94,8 +94,8 @@ public class SessionRO {
 	 */
 	public Boolean isUserInRoleSSDSAdmin() {
 		logger.debug("isUserInRoleSSDSAdmin called " + " and will return "
-				+ session.isUserInRole("SSDS_Admin"));
-		return session.isUserInRole("SSDS_Admin");
+				+ session.isUserInRole("APP_SSDSAdmin"));
+		return session.isUserInRole("APP_SSDSAdmin");
 	}
 
 }
