@@ -28,7 +28,7 @@
 			<!-- By using Custom, it pushes the method to the container -->
 			<auth-method>Custom</auth-method>
 			<roles>
-				<role>SSDS_Admin</role>
+				<role>APP_SSDSAdmin</role>
 			</roles>
 		</security-constraint>
 	</security>
