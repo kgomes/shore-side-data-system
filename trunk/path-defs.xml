@@ -127,7 +127,7 @@
 		<include name="lib/${blazeds.flex.messaging.opt.jar}" />
 		<include name="lib/${blazeds.flex.messaging.proxy.jar}" />
 		<include name="lib/${blazeds.flex.messaging.remoting.jar}" />
-		<include name="lib/s${blazeds.flex.rds.server.jar}" />
+		<include name="lib/${blazeds.flex.rds.server.jar}" />
 	</fileset>
 
 	<!-- I also need the fileset without the 'lib' dir -->
