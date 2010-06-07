@@ -34,12 +34,12 @@
 		<ant dir="${project.dir}" antfile="ssds-build-ingest.xml" inheritAll="false" target="${target}" />
 	</target>
 
-	<target name="do-ruminate" depends="do-ingest">
-		<ant dir="${project.dir}" antfile="ssds-build-ruminate.xml" inheritAll="false" target="${target}" />
+	<target name="do-core" depends="do-ingest">
+		<ant dir="${project.dir}" antfile="ssds-build-core.xml" inheritAll="false" target="${target}" />
 	</target>
 
-	<target name="do-core" depends="do-ruminate">
-		<ant dir="${project.dir}" antfile="ssds-build-core.xml" inheritAll="false" target="${target}" />
+	<target name="do-ruminate" depends="do-core">
+		<ant dir="${project.dir}" antfile="ssds-build-ruminate.xml" inheritAll="false" target="${target}" />
 	</target>
 
 	<target name="do-webapp" depends="do-core">
