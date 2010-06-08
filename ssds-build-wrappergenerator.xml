@@ -89,9 +89,9 @@
 				<filter token="CLIENT_TOOL_PERL_MODULE_HTTP_SERVER_BASE" value="${client.tool.perl.module.http.server.base}" />
 			</filterset>
 		</copy>
-		<exec dir="${project.build}/perl/" executable="perl" os="Windows 2000,Mac OS X" output="${gen.test}/perl_module_test_results.txt">
+		<!-- <exec dir="${project.build}/perl/" executable="perl" os="Windows 2000,Mac OS X" output="${gen.test}/perl_module_test_results.txt">
 			<arg line=" testSSDS.pl" />
-		</exec>
+		</exec> -->
 	</target>
 
 	<target name="doc" depends="test">
