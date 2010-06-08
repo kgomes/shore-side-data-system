@@ -78,60 +78,10 @@ public class PacketSQLInput implements Enumeration<Object> {
 	private PacketSQLQuery packetSQLQuery = null;
 
 	/**
-	 * These variables are used to control the query
-	 */
-	// The ID of the device to find the data for
-	// private Long deviceID = null;
-	// // The start and end range of parent IDs
-	// private Long startParentID = null;
-	// private Long endParentID = null;
-	// // The start and end range of packetType
-	// private Integer startPacketType = null;
-	// private Integer endPacketType = null;
-	// // The start and end range of packetSubType
-	// private Long startPacketSubType = null;
-	// private Long endPacketSubType = null;
-	// // The start and end range of the DataDescriptionID
-	// private Long startDataDescriptionID = null;
-	// private Long endDataDescriptionID = null;
-	// // The start and end range of the DataDecriptionVersion
-	// private Long startDataDescriptionVersion = null;
-	// private Long endDataDescriptionVersion = null;
-	// // The start and end range of the TimestampSeconds
-	// private Long startTimestampSeconds = null;
-	// private Long endTimestampSeconds = null;
-	// // The start and end range of the TimestampNanoseconds
-	// private Long startTimestampNanoseconds = null;
-	// private Long endTimestampNanoseconds = null;
-	// // The start and end range of the SequenceNumber
-	// private Long startSequenceNumber = null;
-	// private Long endSequenceNumber = null;
-	// // This is the number of packets back that the selection is to grab
-	// private Long lastNumberOfPackets = null;
-	// // The latitude that the packet was acquired at
-	// private Double startLatitude = null;
-	// private Double endLatitude = null;
-	// // The longitude that the packet was acquired at
-	// private Double startLongitude = null;
-	// private Double endLongitude = null;
-	// // The depth the packet was acquired at
-	// private Float startDepth = null;
-	// private Float endDepth = null;
-
-	/**
 	 * This is the value that will be returned if any of the parameter objects
 	 * are null
 	 */
 	public static final int MISSING_VALUE = -999999;
-
-	/**
-	 * No argument constructor. If created with this you will need to call the
-	 * <code>setDataSource(DataSource dataSource)</code> method before calling
-	 * <code>readObject</code>
-	 */
-	// public PacketSQLInput() {
-	// this(null, PacketSQLInput.MISSING_VALUE, "`");
-	// }
 
 	/**
 	 * This constructor takes in the DataSource that will be used to query data
