@@ -1229,6 +1229,9 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 		// This is the TreeMap that will be returned
 		TreeMap treeMapToReturn = new TreeMap();
 
+		// Fire the query off
+		packetSQLInput.queryForData();
+
 		// Now start looking through the results
 		while (packetSQLInput.hasMoreElements()) {
 			SSDSGeoLocatedDevicePacket ssdsDevicePacket = (SSDSGeoLocatedDevicePacket) packetSQLInput
