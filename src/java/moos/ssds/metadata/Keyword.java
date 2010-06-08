@@ -19,13 +19,12 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Date;
 import java.util.StringTokenizer;
-
-import org.apache.log4j.Logger;
 
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
+
+import org.apache.log4j.Logger;
 
 /**
  * This is a class that represents a word that can be used to key into something
@@ -37,6 +36,36 @@ import moos.ssds.metadata.util.MetadataValidator;
  * @version : $Revision: 1.1.2.14 $
  */
 public class Keyword implements IMetadataObject, IDescription {
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(Keyword.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is the name that is a unique type (category) of resource type
+	 */
+	private String name;
+
+	/**
+	 * The description of that type
+	 */
+	private String description;
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
 
 	/**
 	 * @see IMetadataObject#getId()
@@ -104,6 +133,60 @@ public class Keyword implements IMetadataObject, IDescription {
 
 	public void setVersion(long version) {
 		this.version = version;
+	}
+
+	/**
+	 * This method overrides the default equals method and checks for to see if
+	 * the objects occupy the same memory space and if not, then it checks for
+	 * identical persistent identifiers and if those are not available, it
+	 * checks for equality of the business key which is the name
+	 * 
+	 * @see IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// First check to see if input is null
+		if (obj == null)
+			return false;
+
+		// Now check JVM identity
+		if (this == obj)
+			return true;
+
+		// Now check if it is the correct class
+		if (!(obj instanceof Keyword))
+			return false;
+
+		// Cast to KeyWord object
+		final Keyword that = (Keyword) obj;
+
+		// Now check for missing business key (name)
+		if ((this.name == null) || (that.getName() == null))
+			return false;
+
+		// Now compare hashcodes
+		if (this.hashCode() == that.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * This method overrides the default hashCode and had to be implemented
+	 * because we overrode the default equals method. They both should base
+	 * their calculation on the business key.
+	 * 
+	 * @see IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+		// Calculate hashcode
+		int result = 37;
+		if (name != null) {
+			result = 12 * result + name.hashCode();
+		}
+
+		// Now return it
+		return result;
 	}
 
 	/**
@@ -199,60 +282,6 @@ public class Keyword implements IMetadataObject, IDescription {
 	}
 
 	/**
-	 * This method overrides the default equals method and checks for to see if
-	 * the objects occupy the same memory space and if not, then it checks for
-	 * identical persistent identifiers and if those are not available, it
-	 * checks for equality of the business key which is the name
-	 * 
-	 * @see IMetadataObject#equals(Object)
-	 */
-	public boolean equals(Object obj) {
-		// First check to see if input is null
-		if (obj == null)
-			return false;
-
-		// Now check JVM identity
-		if (this == obj)
-			return true;
-
-		// Now check if it is the correct class
-		if (!(obj instanceof Keyword))
-			return false;
-
-		// Cast to KeyWord object
-		final Keyword that = (Keyword) obj;
-
-		// Now check for missing business key (name)
-		if ((this.name == null) || (that.getName() == null))
-			return false;
-
-		// Now compare hashcodes
-		if (this.hashCode() == that.hashCode()) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * This method overrides the default hashCode and had to be implemented
-	 * because we overrode the default equals method. They both should base
-	 * their calculation on the business key.
-	 * 
-	 * @see IMetadataObject#hashCode()
-	 */
-	public int hashCode() {
-		// Calculate hashcode
-		int result = 37;
-		if (name != null) {
-			result = 12 * result + name.hashCode();
-		}
-
-		// Now return it
-		return result;
-	}
-
-	/**
 	 * This is the method to re-consitutute and object from a custom
 	 * serialization form
 	 * 
@@ -260,9 +289,24 @@ public class Keyword implements IMetadataObject, IDescription {
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
 		description = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		name = (String) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -271,9 +315,10 @@ public class Keyword implements IMetadataObject, IDescription {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(description);
 		out.writeObject(id);
 		out.writeObject(name);
-		out.writeObject(description);
+		out.writeObject(version);
 	}
 
 	/**
@@ -305,35 +350,5 @@ public class Keyword implements IMetadataObject, IDescription {
 		logger.debug(clonedKeyword.toStringRepresentation("|"));
 		return clonedKeyword;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is the name that is a unique type (category) of resource type
-	 */
-	private String name;
-
-	/**
-	 * The description of that type
-	 */
-	private String description;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(Keyword.class);
 
 }

@@ -20,16 +20,15 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.log4j.Logger;
-
 import moos.ssds.metadata.util.MetadataException;
+
+import org.apache.log4j.Logger;
 
 /**
  * This class describes the records (variables) that are in a
@@ -42,6 +41,111 @@ import moos.ssds.metadata.util.MetadataException;
  * @version : $Revision: 1.1.2.20 $
  */
 public class RecordDescription implements IMetadataObject {
+
+	static Logger logger = Logger.getLogger(RecordDescription.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is an index to indicate which type of record this is describing. A
+	 * <code>DataProducer</code> can generate more than one type of record and
+	 * this indicates which record this description referrs to.
+	 */
+	private Long recordType = new Long(0);
+
+	/**
+	 * This is the style of buffer (ascii or binary)
+	 */
+	private String bufferStyle;
+
+	/**
+	 * Indicates how data can be parsed from buffer: &quot;FIXED_POSITION&qout;
+	 * buffers have items at the same offset from the start of buffer.
+	 * &quot;ORDERED_POSITION&quot; must be parsed according to the order in
+	 * which items appear, and may have tokens which precede or follow one or
+	 * more data items. &quot;UNIQUE_TOKEN&quot; buffer items do not appear in
+	 * any fixed order, but must be recognized by their attached token
+	 */
+	private String bufferParseType;
+
+	/**
+	 * For ASCII buffers, the entity that separates each buffer item from the
+	 * next. Strings can take the form of a single character separator (for
+	 * example, a comma or a space), or a symbolic name. Supported symbols
+	 * include 'space', 'tab', and 'whitespace' (all transformed to '\s+', as is
+	 * '' and ' ') and 'comma'.
+	 */
+	private String bufferItemSeparator;
+
+	/**
+	 * This describes the buffer length and whether it is variable of fixed. If
+	 * 'fixed', all valid packets will be of same length, and packets of other
+	 * lengths will be rejected. This characteristic can be used to optimize
+	 * random access to data within the saved set of raw packets (but will only
+	 * be used according to bufferParseType)
+	 */
+	private String bufferLengthType;
+
+	/**
+	 * The series of characters which terminate each ASCII record
+	 */
+	private String recordTerminator;
+
+	/**
+	 * Indicates whether this data format is regular enough to be parsed
+	 */
+	private Boolean parseable = new Boolean(false);
+
+	/**
+	 * Indicates endian-ness of byte sequences that make up numbers.
+	 * &quot;LITTLE_ENDIAN&quot; means the first byte is least significant,
+	 * &quot;BIG_ENDIAN&quot; means first byte is most significant (Intel x86
+	 * processors are little-endian, Sun SPARC and PowerPC big-endian). Default
+	 * endianness is according to the SSDS host(big, so far)
+	 */
+	private String endian = ENDIAN_LITTLE;
+
+	/**
+	 * This <code>String</code> allows a regular expression to be defined for an
+	 * entire record. This will allow parsers to use regular expressions to
+	 * parse out the variables from a data record. It will have precedence over
+	 * delimiters that may be defined.
+	 */
+	private String recordParseRegExp;
+
+	/**
+	 * This is the <code>Collection</code> of <code>RecordVariable</code>s that
+	 * make up this <code>RecordDescription</code>
+	 */
+	private Collection<RecordVariable> recordVariables = new HashSet<RecordVariable>();
+
+	// Some constants
+	public static final String BUFFER_STYLE_ASCII = "ASCII";
+	public static final String BUFFER_STYLE_BINARY = "binary";
+	public static final String BUFFER_STYLE_MULITPART_MIME = "mulitpart_mime";
+
+	public static final String BUFFER_LENGTH_TYPE_FIXED = "fixed";
+	public static final String BUFFER_LENGTH_TYPE_VARIABLE = "variable";
+
+	public static final String ENDIAN_BIG = "big";
+	public static final String ENDIAN_LITTLE = "little";
+
+	public static final String PARSE_TYPE_FIXED_POSITION = "fixed";
+	public static final String PARSE_TYPE_ORDERED_POSITION = "ordered";
+	public static final String PARSE_TYPE_UNIQUE_TOKEN = "unique_token";
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
 
 	/**
 	 * @see IMetadataObject#getId()
@@ -265,6 +369,7 @@ public class RecordDescription implements IMetadataObject {
 
 		// Validate that the reg exp will compile
 		try {
+			@SuppressWarnings("unused")
 			Pattern pattern = Pattern.compile(recordParseRegExp);
 		} catch (PatternSyntaxException e) {
 			throw new MetadataException("Pattern could not be compiled: "
@@ -289,7 +394,7 @@ public class RecordDescription implements IMetadataObject {
 		return this.recordVariables;
 	}
 
-	protected void setRecordVariables(Collection recordVariables) {
+	protected void setRecordVariables(Collection<RecordVariable> recordVariables) {
 		this.recordVariables = recordVariables;
 	}
 
@@ -396,6 +501,24 @@ public class RecordDescription implements IMetadataObject {
 			result = false;
 		}
 		return result;
+	}
+
+	/**
+	 * @see IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// Since there really is no uniqueness here, I will use the default
+		// implementation
+		return super.equals(obj);
+	}
+
+	/**
+	 * @see IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+		// Since there really is no uniqueness here, I will use the default
+		// implementation
+		return super.hashCode();
 	}
 
 	/**
@@ -516,41 +639,40 @@ public class RecordDescription implements IMetadataObject {
 	}
 
 	/**
-	 * @see IMetadataObject#equals(Object)
-	 */
-	public boolean equals(Object obj) {
-		// Since there really is no uniqueness here, I will use the default
-		// implementation
-		return super.equals(obj);
-	}
-
-	/**
-	 * @see IMetadataObject#hashCode()
-	 */
-	public int hashCode() {
-		// Since there really is no uniqueness here, I will use the default
-		// implementation
-		return super.hashCode();
-	}
-
-	/**
 	 * This is the method to re-consitutute and object from a custom
 	 * serialization form
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
+	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		recordType = (Long) in.readObject();
-		bufferStyle = (String) in.readObject();
-		bufferParseType = (String) in.readObject();
 		bufferItemSeparator = (String) in.readObject();
 		bufferLengthType = (String) in.readObject();
-		recordTerminator = (String) in.readObject();
-		parseable = (Boolean) in.readObject();
+		bufferParseType = (String) in.readObject();
+		bufferStyle = (String) in.readObject();
 		endian = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		parseable = (Boolean) in.readObject();
 		recordParseRegExp = (String) in.readObject();
+		recordTerminator = (String) in.readObject();
+		recordType = (Long) in.readObject();
+		recordVariables = (Collection<RecordVariable>) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -560,16 +682,19 @@ public class RecordDescription implements IMetadataObject {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(id);
-		out.writeObject(recordType);
-		out.writeObject(bufferStyle);
-		out.writeObject(bufferParseType);
 		out.writeObject(bufferItemSeparator);
 		out.writeObject(bufferLengthType);
-		out.writeObject(recordTerminator);
-		out.writeObject(parseable);
+		out.writeObject(bufferParseType);
+		out.writeObject(bufferStyle);
 		out.writeObject(endian);
+		out.writeObject(id);
+		out.writeObject(parseable);
 		out.writeObject(recordParseRegExp);
+		out.writeObject(recordTerminator);
+		out.writeObject(recordType);
+		// RecordVariables (null for now)
+		out.writeObject(null);
+		out.writeObject(version);
 	}
 
 	/**
@@ -615,8 +740,8 @@ public class RecordDescription implements IMetadataObject {
 				&& (this.getRecordVariables().size() > 0)) {
 			logger.debug("There are " + this.getRecordVariables().size()
 					+ " RecordVariables to clone and attach");
-			Collection rvs = this.getRecordVariables();
-			Iterator rvIter = rvs.iterator();
+			Collection<RecordVariable> rvs = this.getRecordVariables();
+			Iterator<RecordVariable> rvIter = rvs.iterator();
 			while (rvIter.hasNext()) {
 				RecordVariable clonedRecordVariable = (RecordVariable) ((RecordVariable) rvIter
 						.next()).deepCopy();
@@ -630,113 +755,4 @@ public class RecordDescription implements IMetadataObject {
 		// Now return the deep copy
 		return deepClone;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is an index to indicate which type of record this is describing. A
-	 * <code>DataProducer</code> can generate more than one type of record and
-	 * this indicates which record this description referrs to.
-	 */
-	private Long recordType = new Long(0);
-
-	/**
-	 * This is the style of buffer (ascii or binary)
-	 */
-	private String bufferStyle;
-
-	/**
-	 * Indicates how data can be parsed from buffer: &quot;FIXED_POSITION&qout;
-	 * buffers have items at the same offset from the start of buffer.
-	 * &quot;ORDERED_POSITION&quot; must be parsed according to the order in
-	 * which items appear, and may have tokens which precede or follow one or
-	 * more data items. &quot;UNIQUE_TOKEN&quot; buffer items do not appear in
-	 * any fixed order, but must be recognized by their attached token
-	 */
-	private String bufferParseType;
-
-	/**
-	 * For ASCII buffers, the entity that separates each buffer item from the
-	 * next. Strings can take the form of a single character separator (for
-	 * example, a comma or a space), or a symbolic name. Supported symbols
-	 * include 'space', 'tab', and 'whitespace' (all transformed to '\s+', as is
-	 * '' and ' ') and 'comma'.
-	 */
-	private String bufferItemSeparator;
-
-	/**
-	 * This describes the buffer length and whether it is variable of fixed. If
-	 * 'fixed', all valid packets will be of same length, and packets of other
-	 * lengths will be rejected. This characteristic can be used to optimize
-	 * random access to data within the saved set of raw packets (but will only
-	 * be used according to bufferParseType)
-	 */
-	private String bufferLengthType;
-
-	/**
-	 * The series of characters which terminate each ASCII record
-	 */
-	private String recordTerminator;
-
-	/**
-	 * Indicates whether this data format is regular enough to be parsed
-	 */
-	private Boolean parseable = new Boolean(false);
-
-	/**
-	 * Indicates endian-ness of byte sequences that make up numbers.
-	 * &quot;LITTLE_ENDIAN&quot; means the first byte is least significant,
-	 * &quot;BIG_ENDIAN&quot; means first byte is most significant (Intel x86
-	 * processors are little-endian, Sun SPARC and PowerPC big-endian). Default
-	 * endianness is according to the SSDS host(big, so far)
-	 */
-	private String endian = ENDIAN_LITTLE;
-
-	/**
-	 * This <code>String</code> allows a regular expression to be defined for an
-	 * entire record. This will allow parsers to use regular expressions to
-	 * parse out the variables from a data record. It will have precedence over
-	 * delimiters that may be defined.
-	 */
-	private String recordParseRegExp;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is the <code>Collection</code> of <code>RecordVariable</code>s that
-	 * make up this <code>RecordDescription</code>
-	 * 
-	 * @associates RecordVariable
-	 * @directed true
-	 * @label unlazy & cascade all
-	 */
-	private Collection<RecordVariable> recordVariables = new HashSet<RecordVariable>();
-
-	// Some constants
-	public static final String BUFFER_STYLE_ASCII = "ASCII";
-	public static final String BUFFER_STYLE_BINARY = "binary";
-	public static final String BUFFER_STYLE_MULITPART_MIME = "mulitpart_mime";
-
-	public static final String BUFFER_LENGTH_TYPE_FIXED = "fixed";
-	public static final String BUFFER_LENGTH_TYPE_VARIABLE = "variable";
-
-	public static final String ENDIAN_BIG = "big";
-	public static final String ENDIAN_LITTLE = "little";
-
-	public static final String PARSE_TYPE_FIXED_POSITION = "fixed";
-	public static final String PARSE_TYPE_ORDERED_POSITION = "ordered";
-	public static final String PARSE_TYPE_UNIQUE_TOKEN = "unique_token";
-
-	static Logger logger = Logger.getLogger(RecordDescription.class);
 }

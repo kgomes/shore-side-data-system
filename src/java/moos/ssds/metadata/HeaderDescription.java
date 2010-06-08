@@ -42,6 +42,49 @@ import moos.ssds.metadata.util.MetadataValidator;
 public class HeaderDescription implements IMetadataObject {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(HeaderDescription.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is a string that describes the <code>HeaderDescription</code>
+	 */
+	private String description;
+
+	/**
+	 * This is the number of bytes that the header is offset in the
+	 * <code>DataContainer</code>
+	 */
+	private long byteOffset = 0;
+
+	/**
+	 * This is the number of lines that make up the header section of the
+	 * <code>DataContainer</code>.
+	 */
+	private int numHeaderLines = 0;
+
+	/**
+	 * This is a collection that contains all the tags that signify comments in
+	 * the header description
+	 */
+	private Collection<CommentTag> commentTags = new HashSet<CommentTag>();
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * @see IMetadataObject#getId()
 	 * @hibernate.id generator-class="identity" type="long"
 	 */
@@ -163,7 +206,7 @@ public class HeaderDescription implements IMetadataObject {
 	 * @hibernate.collection-one-to-many class="moos.ssds.metadata.CommentTag"
 	 * @return A collection of the <code>CommentTag<code>s
 	 */
-	public Collection getCommentTags() {
+	public Collection<CommentTag> getCommentTags() {
 		return this.commentTags;
 	}
 
@@ -173,7 +216,7 @@ public class HeaderDescription implements IMetadataObject {
 	 * 
 	 * @param commentTags
 	 */
-	protected void setCommentTags(Collection commentTags) {
+	protected void setCommentTags(Collection<CommentTag> commentTags) {
 		this.commentTags = commentTags;
 	}
 
@@ -184,9 +227,9 @@ public class HeaderDescription implements IMetadataObject {
 	 * 
 	 * @return a <code>Collection</code> of <code>String</code>s.
 	 */
-	public Collection getCommentTagsAsStrings() {
-		Iterator i = commentTags.iterator();
-		HashSet al = new HashSet();
+	public Collection<String> getCommentTagsAsStrings() {
+		Iterator<CommentTag> i = commentTags.iterator();
+		HashSet<String> al = new HashSet<String>();
 		CommentTag ct = null;
 		while (i.hasNext()) {
 			ct = (CommentTag) i.next();
@@ -289,6 +332,24 @@ public class HeaderDescription implements IMetadataObject {
 
 	public void setVersion(long version) {
 		this.version = version;
+	}
+
+	/**
+	 * @see IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// Since there really is no uniqueness here, I will use the default
+		// implementation
+		return super.equals(obj);
+	}
+
+	/**
+	 * @see IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+		// Since there really is no uniqueness here, I will use the default
+		// implementation
+		return super.hashCode();
 	}
 
 	/**
@@ -404,35 +465,34 @@ public class HeaderDescription implements IMetadataObject {
 	}
 
 	/**
-	 * @see IMetadataObject#equals(Object)
-	 */
-	public boolean equals(Object obj) {
-		// Since there really is no uniqueness here, I will use the default
-		// implementation
-		return super.equals(obj);
-	}
-
-	/**
-	 * @see IMetadataObject#hashCode()
-	 */
-	public int hashCode() {
-		// Since there really is no uniqueness here, I will use the default
-		// implementation
-		return super.hashCode();
-	}
-
-	/**
 	 * This is the method to re-constitute an object from a custom serialization
 	 * form
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
+	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
+		byteOffset = (Long) in.readObject();
+		commentTags = (Collection<CommentTag>) in.readObject();
 		description = (String) in.readObject();
-		byteOffset = in.readLong();
-		numHeaderLines = in.readInt();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		numHeaderLines = (Integer) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -440,10 +500,13 @@ public class HeaderDescription implements IMetadataObject {
 	 * form
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(id);
+		out.writeObject(byteOffset);
+		// Write comment Tags (null for now)
+		out.writeObject(null);
 		out.writeObject(description);
-		out.writeLong(byteOffset);
-		out.writeInt(numHeaderLines);
+		out.writeObject(id);
+		out.writeObject(numHeaderLines);
+		out.writeObject(version);
 	}
 
 	/**
@@ -483,8 +546,8 @@ public class HeaderDescription implements IMetadataObject {
 				&& (this.getCommentTags().size() > 0)) {
 			logger.debug("There are " + this.getCommentTags().size()
 					+ " comment tags that will be cloned and attached");
-			Collection commentTags = this.getCommentTags();
-			Iterator commentTagIter = commentTags.iterator();
+			Collection<CommentTag> commentTags = this.getCommentTags();
+			Iterator<CommentTag> commentTagIter = commentTags.iterator();
 			while (commentTagIter.hasNext()) {
 				CommentTag clonedCommentTag = (CommentTag) ((CommentTag) commentTagIter
 						.next()).deepCopy();
@@ -497,53 +560,4 @@ public class HeaderDescription implements IMetadataObject {
 		// Now return the deep clone
 		return deepClone;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is a string that describes the <code>HeaderDescription</code>
-	 */
-	private String description;
-
-	/**
-	 * This is the number of bytes that the header is offset in the
-	 * <code>DataContainer</code>
-	 */
-	private long byteOffset = 0;
-
-	/**
-	 * This is the number of lines that make up the header section of the
-	 * <code>DataContainer</code>.
-	 */
-	private int numHeaderLines = 0;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a collection that contains all the tags that signify comments in
-	 * the header description
-	 * 
-	 * @associates CommentTag
-	 * @clientCardinality 1
-	 * @directed true
-	 * @supplierCardinality 0..*
-	 * @label unlazy & cascade all
-	 */
-	private Collection commentTags = new HashSet();
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(HeaderDescription.class);
 }

@@ -19,12 +19,11 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Date;
-
-import org.apache.log4j.Logger;
 
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
+
+import org.apache.log4j.Logger;
 
 /**
  * This class is simply a place to store a resource in the persistent store.
@@ -36,6 +35,41 @@ import moos.ssds.metadata.util.MetadataValidator;
  * @version : $Revision: 1.1.2.10 $
  */
 public class ResourceBLOB implements IMetadataObject, IDescription {
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(ResourceBLOB.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is the arbitrary name given to the DataProducer
+	 */
+	private String name;
+
+	/**
+	 * The description of the DataProducer
+	 */
+	private String description;
+
+	/**
+	 * This is the byte array that can store any resource in the form of bytes
+	 */
+	private byte[] byteArray;
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
 
 	/**
 	 * @see IMetadataObject#getId()
@@ -117,17 +151,6 @@ public class ResourceBLOB implements IMetadataObject, IDescription {
 		this.version = version;
 	}
 
-	public String toStringRepresentation(String delimiter) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setValuesFromStringRepresentation(String stringRepresentation,
-			String delimiter) throws MetadataException {
-		// TODO Auto-generated method stub
-
-	}
-
 	/**
 	 * @see IMetadataObject#equals(Object)
 	 */
@@ -146,6 +169,17 @@ public class ResourceBLOB implements IMetadataObject, IDescription {
 		return super.hashCode();
 	}
 
+	public String toStringRepresentation(String delimiter) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setValuesFromStringRepresentation(String stringRepresentation,
+			String delimiter) throws MetadataException {
+		// TODO Auto-generated method stub
+
+	}
+
 	/**
 	 * This is the method to re-consitutute and object from a custom
 	 * serialization form
@@ -154,12 +188,25 @@ public class ResourceBLOB implements IMetadataObject, IDescription {
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
+		byteArray = (byte[]) in.readObject();
 		description = (String) in.readObject();
-		int byteArrayLength = in.readInt();
-		byteArray = new byte[byteArrayLength];
-		in.read(byteArray);
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		name = (String) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -169,15 +216,11 @@ public class ResourceBLOB implements IMetadataObject, IDescription {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(byteArray);
+		out.writeObject(description);
 		out.writeObject(id);
 		out.writeObject(name);
-		out.writeObject(description);
-		if (byteArray == null || byteArray.length == 0) {
-			out.writeInt(0);
-		} else {
-			out.writeInt(byteArray.length);
-		}
-		out.write(byteArray);
+		out.writeObject(version);
 	}
 
 	/**
@@ -210,40 +253,4 @@ public class ResourceBLOB implements IMetadataObject, IDescription {
 		logger.debug(clonedResourceBLOB.toStringRepresentation("|"));
 		return clonedResourceBLOB;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is the arbitrary name given to the DataProducer
-	 */
-	private String name;
-
-	/**
-	 * The description of the DataProducer
-	 */
-	private String description;
-
-	/**
-	 * This is the byte array that can store any resource in the form of bytes
-	 */
-	private byte[] byteArray;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(ResourceBLOB.class);
-
 }

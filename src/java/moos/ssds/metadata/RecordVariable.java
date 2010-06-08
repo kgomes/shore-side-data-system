@@ -19,7 +19,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Date;
 import java.util.StringTokenizer;
 
 import moos.ssds.metadata.util.MetadataException;
@@ -37,6 +36,155 @@ import org.apache.log4j.Logger;
  * @version : $Revision: 1.1.2.16 $
  */
 public class RecordVariable implements IMetadataObject, IDescription {
+
+	/**
+	 * A log4J logger
+	 */
+	static Logger logger = Logger.getLogger(RecordVariable.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This unique persistence mechanism ID for the <code>RecordVariable</code>
+	 */
+	private Long id;
+
+	/**
+	 * The name of the <code>RecordVariable</code>
+	 */
+	private String name;
+
+	/**
+	 * The description of the <code>RecordVariable</code>
+	 */
+	private String description;
+
+	/**
+	 * The long name associated with the <code>RecordVariable</code>
+	 */
+	private String longName;
+
+	/**
+	 * The format of the <code>RecordVariable</code>
+	 */
+	private String format;
+
+	/**
+	 * A string representation of the units for the <code>RecordVariable</code>
+	 */
+	private String units;
+
+	/**
+	 * This is the column in a data record in which this
+	 * <code>RecordVariable</code> resides (used in parsing records)
+	 */
+	private long columnIndex = -1;
+
+	/**
+	 * This is the minimum value at which this <code>RecordVariable</code> is
+	 * considered valid
+	 */
+	private String validMin;
+
+	/**
+	 * This is the maximum value at which this <code>RecordVariable</code> is
+	 * considered valid
+	 */
+	private String validMax;
+
+	/**
+	 * This is the value that means the value for the
+	 * <code>RecordVariable</code> was not defined
+	 */
+	private String missingValue;
+
+	/**
+	 * This is the accuracy associated with the <code>RecordVariable</code>
+	 */
+	private String accuracy;
+
+	/**
+	 * This is the minimum value to be used when displaying data of this
+	 * <code>RecordVariable</code>
+	 */
+	private Double displayMin;
+
+	/**
+	 * This is them maximum value to be used when displaying data of this
+	 * <code>RecordVariable</code>
+	 */
+	private Double displayMax;
+
+	/**
+	 * The reference scale associated with this <code>RecordVariable</code>
+	 */
+	private String referenceScale;
+
+	/**
+	 * This is the scale of conversion for this <code>RecordVariable</code>
+	 */
+	private Double conversionScale;
+
+	/**
+	 * The offset to use in the conversion of this <code>RecordVariable</code>
+	 */
+	private Double conversionOffset;
+
+	/**
+	 * These are the units of the converted value of this
+	 * <code>RecordVariable</code>
+	 */
+	private String convertedUnits;
+
+	/**
+	 * This is the SSDS ID of the sensor that generates this
+	 * <code>RecordVariable</code>
+	 */
+	private Long sourceSensorID;
+
+	/**
+	 * The regular expression used to parse the data from the column in which it
+	 * is located in the data record
+	 */
+	private String parseRegExp;
+
+	/**
+	 * The <code>StandardVariable</code> that is associated with the
+	 * <code>RecordVariable</code>
+	 */
+	private StandardVariable standardVariable;
+
+	/**
+	 * The <code>StandardUnit</code> associated with the units of this
+	 * <code>RecordVariable</code>
+	 */
+	private StandardUnit standardUnit;
+
+	/**
+	 * The <code>StandardReferenceScale</code> associated with the
+	 * <code>RecordVariable</code>
+	 */
+	private StandardReferenceScale standardReferenceScale;
+
+	/**
+	 * The <code>StandardDomain</code> associated with the
+	 * <code>RecordVariable</code>
+	 */
+	private StandardDomain standardDomain;
+
+	/**
+	 * The <code>StandardKeyword</code> associated with the
+	 * <code>RecordVariable</code>
+	 */
+	private StandardKeyword standardKeyword;
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
 
 	/**
 	 * @see IMetadataObject#getId()
@@ -400,6 +548,24 @@ public class RecordVariable implements IMetadataObject, IDescription {
 	}
 
 	/**
+	 * @see IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// Since there really is no uniqueness here, I will use the default
+		// implementation
+		return super.equals(obj);
+	}
+
+	/**
+	 * @see IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+		// Since there really is no uniqueness here, I will use the default
+		// implementation
+		return super.hashCode();
+	}
+
+	/**
 	 * @see moos.ssds.model.ValueObject#toStringRepresentation(String)
 	 */
 	public String toStringRepresentation(String delimiter) {
@@ -557,50 +723,52 @@ public class RecordVariable implements IMetadataObject, IDescription {
 	}
 
 	/**
-	 * @see IMetadataObject#equals(Object)
-	 */
-	public boolean equals(Object obj) {
-		// Since there really is no uniqueness here, I will use the default
-		// implementation
-		return super.equals(obj);
-	}
-
-	/**
-	 * @see IMetadataObject#hashCode()
-	 */
-	public int hashCode() {
-		// Since there really is no uniqueness here, I will use the default
-		// implementation
-		return super.hashCode();
-	}
-
-	/**
-	 * This is the method to re-consitutute and object from a custom
+	 * This is the method to re-constitute and object from a custom
 	 * serialization form
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
-		description = (String) in.readObject();
-		longName = (String) in.readObject();
-		format = (String) in.readObject();
-		units = (String) in.readObject();
-		columnIndex = in.readLong();
-		validMin = (String) in.readObject();
-		validMax = (String) in.readObject();
-		missingValue = (String) in.readObject();
 		accuracy = (String) in.readObject();
-		displayMin = (Double) in.readObject();
-		displayMax = (Double) in.readObject();
-		referenceScale = (String) in.readObject();
-		conversionScale = (Double) in.readObject();
+		columnIndex = (Long) in.readObject();
 		conversionOffset = (Double) in.readObject();
+		conversionScale = (Double) in.readObject();
 		convertedUnits = (String) in.readObject();
-		sourceSensorID = (Long) in.readObject();
+		description = (String) in.readObject();
+		displayMax = (Double) in.readObject();
+		displayMin = (Double) in.readObject();
+		format = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		longName = (String) in.readObject();
+		missingValue = (String) in.readObject();
+		name = (String) in.readObject();
 		parseRegExp = (String) in.readObject();
+		referenceScale = (String) in.readObject();
+		sourceSensorID = (Long) in.readObject();
+		standardDomain = (StandardDomain) in.readObject();
+		standardKeyword = (StandardKeyword) in.readObject();
+		standardReferenceScale = (StandardReferenceScale) in.readObject();
+		standardUnit = (StandardUnit) in.readObject();
+		standardVariable = (StandardVariable) in.readObject();
+		units = (String) in.readObject();
+		validMax = (String) in.readObject();
+		validMin = (String) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -610,25 +778,36 @@ public class RecordVariable implements IMetadataObject, IDescription {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(id);
-		out.writeObject(name);
-		out.writeObject(description);
-		out.writeObject(longName);
-		out.writeObject(format);
-		out.writeObject(units);
-		out.writeLong(columnIndex);
-		out.writeObject(validMin);
-		out.writeObject(validMax);
-		out.writeObject(missingValue);
 		out.writeObject(accuracy);
-		out.writeObject(displayMin);
-		out.writeObject(displayMax);
-		out.writeObject(referenceScale);
-		out.writeObject(conversionScale);
+		out.writeObject(columnIndex);
 		out.writeObject(conversionOffset);
+		out.writeObject(conversionScale);
 		out.writeObject(convertedUnits);
-		out.writeObject(sourceSensorID);
+		out.writeObject(description);
+		out.writeObject(displayMax);
+		out.writeObject(displayMin);
+		out.writeObject(format);
+		out.writeObject(id);
+		out.writeObject(longName);
+		out.writeObject(missingValue);
+		out.writeObject(name);
 		out.writeObject(parseRegExp);
+		out.writeObject(referenceScale);
+		out.writeObject(sourceSensorID);
+		// StandardDomain (null for now)
+		out.writeObject(null);
+		// StandardKeyword (null for now)
+		out.writeObject(null);
+		// StandardReferenceScale (null for now)
+		out.writeObject(null);
+		// StandardUnit (null for now)
+		out.writeObject(null);
+		// StandardVarible (null for now)
+		out.writeObject(null);
+		out.writeObject(units);
+		out.writeObject(validMax);
+		out.writeObject(validMin);
+		out.writeObject(version);
 	}
 
 	/**
@@ -722,155 +901,4 @@ public class RecordVariable implements IMetadataObject, IDescription {
 		// Return the deep clone
 		return deepClone;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private Long id;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String name;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String description;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String longName;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String format;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String units;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private long columnIndex = -1;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String validMin;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String validMax;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String missingValue;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String accuracy;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private Double displayMin;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private Double displayMax;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String referenceScale;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private Double conversionScale;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private Double conversionOffset;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String convertedUnits;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private Long sourceSensorID;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String parseRegExp;
-
-	/**
-	 * TODO KJG - Document this
-	 * 
-	 * @directed true
-	 * @label unlazy
-	 */
-	private StandardVariable standardVariable;
-
-	/**
-	 * TODO KJG - Document this
-	 * 
-	 * @directed true
-	 * @label unlazy
-	 */
-	private StandardUnit standardUnit;
-
-	/**
-	 * TODO KJG - Document this
-	 * 
-	 * @directed true
-	 * @label unlazy
-	 */
-	private StandardReferenceScale standardReferenceScale;
-
-	/**
-	 * TODO KJG - Document this
-	 * 
-	 * @directed true
-	 * @label unlazy
-	 */
-	private StandardDomain standardDomain;
-
-	/**
-	 * TODO KJG - Document this
-	 * 
-	 * @directed true
-	 * @label unlazy
-	 */
-	private StandardKeyword standardKeyword;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * A log4J logger
-	 */
-	static Logger logger = Logger.getLogger(RecordVariable.class);
-
 }

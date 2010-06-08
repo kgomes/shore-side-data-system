@@ -20,15 +20,14 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
-
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
+
+import org.apache.log4j.Logger;
 
 /**
  * This class represents a person who is an actor or user of the system.
@@ -40,6 +39,112 @@ import moos.ssds.metadata.util.MetadataValidator;
  * @version : $Revision: 1.1.2.14 $
  */
 public class Person implements IMetadataObject {
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(Person.class);
+
+	/**
+	 * This is the <code>serialVersionUID</code> that is fixed to control
+	 * serialization versions of the class.
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier. It is used by the persistence
+	 * layer to identify which object in the data store corresponds to the
+	 * object.
+	 */
+	private Long id;
+
+	/**
+	 * This is the firstname of the person respresented by the instance
+	 */
+	private String firstname;
+
+	/**
+	 * This is the surname (or lastname) of the person represented by the
+	 * instance
+	 */
+	private String surname;
+
+	/**
+	 * This is the organization (name) that the person represents as an actor or
+	 * user of the system
+	 */
+	private String organization;
+
+	/**
+	 * This is the person's username in the system. It (by definition) must be
+	 * unique and not null.
+	 */
+	private String username;
+
+	/**
+	 * This is the person's password in the system.
+	 */
+	private transient String password;
+
+	/**
+	 * This is the email address of the person represented by the instance. This
+	 * is also a unique key for the <code>Person</code> class.
+	 */
+	private String email;
+
+	/**
+	 * This is the 10 digit phone number of the person
+	 */
+	private String phone;
+
+	/**
+	 * This is the first line of the person's address
+	 */
+	private String address1;
+
+	/**
+	 * This is the second line of the person's address
+	 */
+	private String address2;
+
+	/**
+	 * This is the city the person's address is in
+	 */
+	private String city;
+
+	/**
+	 * This is the state the person's address is in
+	 */
+	private String state;
+
+	/**
+	 * This is the zipcode of the person's address
+	 */
+	private String zipcode;
+
+	/**
+	 * This is the status of the person relative to the system. It is a free
+	 * text field, but often is used to determine if the person's account is
+	 * active or not.
+	 */
+	private String status = Person.STATUS_ACTIVE;
+
+	/**
+	 * This is the <code>Collection</code> of <code>UserGroup</code>s that are
+	 * associated with the <code>Person</code>
+	 */
+	private Collection<UserGroup> userGroups = new HashSet<UserGroup>();
+
+	/**
+	 * Some status constants
+	 */
+	public static final String STATUS_ACTIVE = "active";
+	public static final String STATUS_INACTIVE = "inactive";
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
 
 	/**
 	 * @see IMetadataObject#getId()
@@ -314,11 +419,11 @@ public class Person implements IMetadataObject {
 	 * @return the <code>Collection</code> of <code>UserGroup</code>s that are
 	 *         associated with the <code>Person</code>
 	 */
-	public Collection getUserGroups() {
+	public Collection<UserGroup> getUserGroups() {
 		return userGroups;
 	}
 
-	public void setUserGroups(Collection userGroups) {
+	public void setUserGroups(Collection<UserGroup> userGroups) {
 		this.userGroups = userGroups;
 	}
 
@@ -376,152 +481,6 @@ public class Person implements IMetadataObject {
 
 	public void setVersion(long version) {
 		this.version = version;
-	}
-
-	/**
-	 * The toString method is overridden to spit out the alternate primary key.
-	 * I did this so that we will always have something meaningful whenever
-	 * something tries to toString an object.
-	 */
-	public String toString() {
-		return this.username;
-	}
-
-	/**
-	 * Note that with this method, the person's password is not sent out. This
-	 * is consistent as the class is implemented so that the password is marked
-	 * as transient and will not be transferred anytime serialization of the
-	 * object occurs.
-	 * 
-	 * @see IMetadataObject#toStringRepresentation(String)
-	 */
-	public String toStringRepresentation(String delimiter) {
-		// If the delimiter is not specified, use a default one
-		if (delimiter == null)
-			delimiter = IMetadataObject.DEFAULT_DELIMITER;
-
-		// Create the string buffer and add all the appropriate attributes
-		StringBuffer sb = new StringBuffer();
-		sb.append("Person");
-		sb.append(delimiter + "id=" + this.getId());
-		sb.append(delimiter + "firstname=" + this.getFirstname());
-		sb.append(delimiter + "surname=" + this.getSurname());
-		sb.append(delimiter + "organization=" + this.getOrganization());
-		sb.append(delimiter + "username=" + this.getUsername());
-		sb.append(delimiter + "email=" + this.getEmail());
-		sb.append(delimiter + "phone=" + this.getPhone());
-		sb.append(delimiter + "address1=" + this.getAddress1());
-		sb.append(delimiter + "address2=" + this.getAddress2());
-		sb.append(delimiter + "city=" + this.getCity());
-		sb.append(delimiter + "state=" + this.getState());
-		sb.append(delimiter + "zipcode=" + this.getZipcode());
-		sb.append(delimiter + "status=" + this.getStatus());
-
-		// Now return it
-		return sb.toString();
-	}
-
-	/**
-	 * Note that with this method, if the person's password sent in, it will not
-	 * be deserialized into the object. This is consistent as the class is
-	 * implemented so that the password is marked as transient and will not be
-	 * transferred anytime serialization of the object occurs. In order to use
-	 * the class, you should first create an empty object, then call this
-	 * method, passing in the string representation. As an example:
-	 * 
-	 * <pre>
-	 * Person newPerson = new Person();
-	 * 
-	 * newPerson.setValuesFromStringRepresentation(
-	 * 		&quot;Person|firstname=John|surname=Doe|organization=MBARI&quot;, &quot;|&quot;);
-	 * </pre>
-	 * 
-	 * @see IMetadataObject#setValuesFromStringRepresentation
-	 */
-	public void setValuesFromStringRepresentation(String stringRepresentation,
-			String delimiter) throws MetadataException {
-
-		// If the delimiter is null, use the default delimiter
-		String delimiterToUse = delimiter;
-		if (delimiterToUse == null)
-			delimiterToUse = IMetadataObject.DEFAULT_DELIMITER;
-
-		// Create a string tokenizer that uses the delimiter specified (or the
-		// default)
-		StringTokenizer stok = new StringTokenizer(stringRepresentation,
-				delimiterToUse);
-
-		// Grab the first token, which should be the name of the metadata class
-		String firstToken = stok.nextToken();
-
-		// Check to make sure it matches this class and if not, throw an
-		// Exception
-		if ((!this.getClass().getName().equals(firstToken))
-				&& (!this.getClass().getName().equals(
-						"moos.ssds.metadata." + firstToken)))
-			throw new MetadataException(
-					"The class specified by the first token (" + firstToken
-							+ " does not match this class "
-							+ this.getClass().getName());
-
-		// Now loop over the attribute=value pairs to fill out the object
-		while (stok.hasMoreTokens()) {
-			// Grab the next pari
-			String tok = stok.nextToken();
-
-			// Split on the equals sign
-			int firstEquals = tok.indexOf("=");
-			String key = null;
-			String value = null;
-			if (firstEquals >= 0) {
-				key = tok.substring(0, firstEquals);
-				value = tok.substring(firstEquals + 1);
-			} else {
-				key = "";
-				value = "";
-			}
-
-			// Now look for a match on the key and then assign the value
-			if (key.equalsIgnoreCase("id")) {
-				try {
-					this.setId(new Long(value));
-				} catch (NumberFormatException e) {
-					throw new MetadataException(
-							"Could not convert the value for id (" + value
-									+ ") to a Long");
-				}
-			} else if (key.equalsIgnoreCase("firstname")) {
-				this.setFirstname(value);
-			} else if (key.equalsIgnoreCase("surname")) {
-				this.setSurname(value);
-			} else if (key.equalsIgnoreCase("organization")) {
-				this.setOrganization(value);
-			} else if (key.equalsIgnoreCase("username")) {
-				this.setUsername(value);
-			} else if (key.equalsIgnoreCase("password")) {
-				this.setPassword(value);
-			} else if (key.equalsIgnoreCase("email")) {
-				this.setEmail(value);
-			} else if (key.equalsIgnoreCase("phone")) {
-				this.setPhone(value);
-			} else if (key.equalsIgnoreCase("address1")) {
-				this.setAddress1(value);
-			} else if (key.equalsIgnoreCase("address2")) {
-				this.setAddress2(value);
-			} else if (key.equalsIgnoreCase("city")) {
-				this.setCity(value);
-			} else if (key.equalsIgnoreCase("state")) {
-				this.setState(value);
-			} else if (key.equalsIgnoreCase("zipcode")) {
-				this.setZipcode(value);
-			} else if (key.equalsIgnoreCase("status")) {
-				this.setStatus(value);
-			} else {
-				throw new MetadataException("The attribute specified by " + key
-						+ " is not a recognized field of "
-						+ this.getClass().getName());
-			}
-		}
 	}
 
 	/**
@@ -746,26 +705,189 @@ public class Person implements IMetadataObject {
 	}
 
 	/**
-	 * This is the method to re-consitutute and object from a custom
+	 * The toString method is overridden to spit out the alternate primary key.
+	 * I did this so that we will always have something meaningful whenever
+	 * something tries to toString an object.
+	 */
+	public String toString() {
+		return this.username;
+	}
+
+	/**
+	 * Note that with this method, the person's password is not sent out. This
+	 * is consistent as the class is implemented so that the password is marked
+	 * as transient and will not be transferred anytime serialization of the
+	 * object occurs.
+	 * 
+	 * @see IMetadataObject#toStringRepresentation(String)
+	 */
+	public String toStringRepresentation(String delimiter) {
+		// If the delimiter is not specified, use a default one
+		if (delimiter == null)
+			delimiter = IMetadataObject.DEFAULT_DELIMITER;
+
+		// Create the string buffer and add all the appropriate attributes
+		StringBuffer sb = new StringBuffer();
+		sb.append("Person");
+		sb.append(delimiter + "id=" + this.getId());
+		sb.append(delimiter + "firstname=" + this.getFirstname());
+		sb.append(delimiter + "surname=" + this.getSurname());
+		sb.append(delimiter + "organization=" + this.getOrganization());
+		sb.append(delimiter + "username=" + this.getUsername());
+		sb.append(delimiter + "email=" + this.getEmail());
+		sb.append(delimiter + "phone=" + this.getPhone());
+		sb.append(delimiter + "address1=" + this.getAddress1());
+		sb.append(delimiter + "address2=" + this.getAddress2());
+		sb.append(delimiter + "city=" + this.getCity());
+		sb.append(delimiter + "state=" + this.getState());
+		sb.append(delimiter + "zipcode=" + this.getZipcode());
+		sb.append(delimiter + "status=" + this.getStatus());
+
+		// Now return it
+		return sb.toString();
+	}
+
+	/**
+	 * Note that with this method, if the person's password sent in, it will not
+	 * be deserialized into the object. This is consistent as the class is
+	 * implemented so that the password is marked as transient and will not be
+	 * transferred anytime serialization of the object occurs. In order to use
+	 * the class, you should first create an empty object, then call this
+	 * method, passing in the string representation. As an example:
+	 * 
+	 * <pre>
+	 * Person newPerson = new Person();
+	 * 
+	 * newPerson.setValuesFromStringRepresentation(
+	 * 		&quot;Person|firstname=John|surname=Doe|organization=MBARI&quot;, &quot;|&quot;);
+	 * </pre>
+	 * 
+	 * @see IMetadataObject#setValuesFromStringRepresentation
+	 */
+	public void setValuesFromStringRepresentation(String stringRepresentation,
+			String delimiter) throws MetadataException {
+
+		// If the delimiter is null, use the default delimiter
+		String delimiterToUse = delimiter;
+		if (delimiterToUse == null)
+			delimiterToUse = IMetadataObject.DEFAULT_DELIMITER;
+
+		// Create a string tokenizer that uses the delimiter specified (or the
+		// default)
+		StringTokenizer stok = new StringTokenizer(stringRepresentation,
+				delimiterToUse);
+
+		// Grab the first token, which should be the name of the metadata class
+		String firstToken = stok.nextToken();
+
+		// Check to make sure it matches this class and if not, throw an
+		// Exception
+		if ((!this.getClass().getName().equals(firstToken))
+				&& (!this.getClass().getName().equals(
+						"moos.ssds.metadata." + firstToken)))
+			throw new MetadataException(
+					"The class specified by the first token (" + firstToken
+							+ " does not match this class "
+							+ this.getClass().getName());
+
+		// Now loop over the attribute=value pairs to fill out the object
+		while (stok.hasMoreTokens()) {
+			// Grab the next pari
+			String tok = stok.nextToken();
+
+			// Split on the equals sign
+			int firstEquals = tok.indexOf("=");
+			String key = null;
+			String value = null;
+			if (firstEquals >= 0) {
+				key = tok.substring(0, firstEquals);
+				value = tok.substring(firstEquals + 1);
+			} else {
+				key = "";
+				value = "";
+			}
+
+			// Now look for a match on the key and then assign the value
+			if (key.equalsIgnoreCase("id")) {
+				try {
+					this.setId(new Long(value));
+				} catch (NumberFormatException e) {
+					throw new MetadataException(
+							"Could not convert the value for id (" + value
+									+ ") to a Long");
+				}
+			} else if (key.equalsIgnoreCase("firstname")) {
+				this.setFirstname(value);
+			} else if (key.equalsIgnoreCase("surname")) {
+				this.setSurname(value);
+			} else if (key.equalsIgnoreCase("organization")) {
+				this.setOrganization(value);
+			} else if (key.equalsIgnoreCase("username")) {
+				this.setUsername(value);
+			} else if (key.equalsIgnoreCase("password")) {
+				this.setPassword(value);
+			} else if (key.equalsIgnoreCase("email")) {
+				this.setEmail(value);
+			} else if (key.equalsIgnoreCase("phone")) {
+				this.setPhone(value);
+			} else if (key.equalsIgnoreCase("address1")) {
+				this.setAddress1(value);
+			} else if (key.equalsIgnoreCase("address2")) {
+				this.setAddress2(value);
+			} else if (key.equalsIgnoreCase("city")) {
+				this.setCity(value);
+			} else if (key.equalsIgnoreCase("state")) {
+				this.setState(value);
+			} else if (key.equalsIgnoreCase("zipcode")) {
+				this.setZipcode(value);
+			} else if (key.equalsIgnoreCase("status")) {
+				this.setStatus(value);
+			} else {
+				throw new MetadataException("The attribute specified by " + key
+						+ " is not a recognized field of "
+						+ this.getClass().getName());
+			}
+		}
+	}
+
+	/**
+	 * This is the method to re-constitute and object from a custom
 	 * serialization form
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
+	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		firstname = (String) in.readObject();
-		surname = (String) in.readObject();
-		organization = (String) in.readObject();
-		username = (String) in.readObject();
-		email = (String) in.readObject();
-		phone = (String) in.readObject();
 		address1 = (String) in.readObject();
 		address2 = (String) in.readObject();
 		city = (String) in.readObject();
+		email = (String) in.readObject();
+		firstname = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		organization = (String) in.readObject();
+		phone = (String) in.readObject();
 		state = (String) in.readObject();
-		zipcode = (String) in.readObject();
 		status = (String) in.readObject();
+		surname = (String) in.readObject();
+		userGroups = (Collection<UserGroup>) in.readObject();
+		username = (String) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
+		zipcode = (String) in.readObject();
 	}
 
 	/**
@@ -774,19 +896,22 @@ public class Person implements IMetadataObject {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(id);
-		out.writeObject(firstname);
-		out.writeObject(surname);
-		out.writeObject(organization);
-		out.writeObject(username);
-		out.writeObject(email);
-		out.writeObject(phone);
 		out.writeObject(address1);
 		out.writeObject(address2);
 		out.writeObject(city);
+		out.writeObject(email);
+		out.writeObject(firstname);
+		out.writeObject(id);
+		out.writeObject(organization);
+		out.writeObject(phone);
 		out.writeObject(state);
-		out.writeObject(zipcode);
 		out.writeObject(status);
+		out.writeObject(surname);
+		// UserGroups (null for now)
+		out.writeObject(null);
+		out.writeObject(username);
+		out.writeObject(version);
+		out.writeObject(zipcode);
 	}
 
 	/**
@@ -832,8 +957,8 @@ public class Person implements IMetadataObject {
 		logger.debug(deepClone.toStringRepresentation("|"));
 
 		if ((this.getUserGroups() != null) && (this.getUserGroups().size() > 0)) {
-			Collection userGroups = this.getUserGroups();
-			Iterator userGroupsIter = userGroups.iterator();
+			Collection<UserGroup> userGroups = this.getUserGroups();
+			Iterator<UserGroup> userGroupsIter = userGroups.iterator();
 			while (userGroupsIter.hasNext()) {
 				UserGroup groupToClone = (UserGroup) userGroupsIter.next();
 				if (groupToClone != null) {
@@ -847,115 +972,4 @@ public class Person implements IMetadataObject {
 		// Now return the deep clone
 		return deepClone;
 	}
-
-	/**
-	 * This is the <code>serialVersionUID</code> that is fixed to control
-	 * serialization versions of the class.
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier. It is used by the persistence
-	 * layer to identify which object in the data store corresponds to the
-	 * object.
-	 */
-	private Long id;
-
-	/**
-	 * This is the firstname of the person respresented by the instance
-	 */
-	private String firstname;
-
-	/**
-	 * This is the surname (or lastname) of the person represented by the
-	 * instance
-	 */
-	private String surname;
-
-	/**
-	 * This is the organization (name) that the person represents as an actor or
-	 * user of the system
-	 */
-	private String organization;
-
-	/**
-	 * This is the person's username in the system. It (by definition) must be
-	 * unique and not null.
-	 */
-	private String username;
-
-	/**
-	 * This is the person's password in the system.
-	 */
-	private transient String password;
-
-	/**
-	 * This is the email address of the person represented by the instance. This
-	 * is also a unique key for the <code>Person</code> class.
-	 */
-	private String email;
-
-	/**
-	 * This is the 10 digit phone number of the person
-	 */
-	private String phone;
-
-	/**
-	 * This is the first line of the person's address
-	 */
-	private String address1;
-
-	/**
-	 * This is the second line of the person's address
-	 */
-	private String address2;
-
-	/**
-	 * This is the city the person's address is in
-	 */
-	private String city;
-
-	/**
-	 * This is the state the person's address is in
-	 */
-	private String state;
-
-	/**
-	 * This is the zipcode of the person's address
-	 */
-	private String zipcode;
-
-	/**
-	 * This is the status of the person relative to the system. It is a free
-	 * text field, but often is used to determine if the person's account is
-	 * active or not.
-	 */
-	private String status = Person.STATUS_ACTIVE;
-
-	/**
-	 * This is the <code>Collection</code> of <code>UserGroup</code>s that are
-	 * associated with the <code>Person</code>
-	 * 
-	 * @associates UserGroup
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection userGroups = new HashSet();
-
-	/**
-	 * Some status constants
-	 */
-	public static final String STATUS_ACTIVE = "active";
-	public static final String STATUS_INACTIVE = "inactive";
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(Person.class);
-
 }

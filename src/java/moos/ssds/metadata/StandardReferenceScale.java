@@ -38,6 +38,36 @@ import moos.ssds.metadata.util.MetadataValidator;
 public class StandardReferenceScale implements IMetadataObject {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(StandardReferenceScale.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is the name that is a unique type (category) of device
+	 */
+	private String name;
+
+	/**
+	 * The description of that type
+	 */
+	private String description;
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * @see moos.ssds.metadata.IMetadataObject#getId()
 	 * @hibernate.id generator-class="identity" type="long"
 	 */
@@ -103,6 +133,59 @@ public class StandardReferenceScale implements IMetadataObject {
 
 	public void setVersion(long version) {
 		this.version = version;
+	}
+
+	/**
+	 * This method overrides the default equals method and checks for to see if
+	 * the objects occupy the same memory space and if not, then it checks for
+	 * identical persistent identifiers and if those are not available, it
+	 * checks for equality of the business key which is the name
+	 * 
+	 * @see moos.ssds.metadata.IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// First check to see if input is null
+		if (obj == null)
+			return false;
+
+		// Now check JVM identity
+		if (this == obj)
+			return true;
+
+		// Now check if it is the correct class
+		if (!(obj instanceof StandardReferenceScale))
+			return false;
+
+		// Cast to StandardReferenceScale object
+		final StandardReferenceScale that = (StandardReferenceScale) obj;
+
+		// Now check for missing business key (name)
+		if ((this.name == null) || (that.getName() == null))
+			return false;
+
+		// Now compare hashcodes
+		if (this.hashCode() == that.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * This method overrides the default hashCode and had to be implemented
+	 * because we overrode the default equals method. They both should base
+	 * their calculation on the business key.
+	 * 
+	 * @see moos.ssds.metadata.IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+		// Calculate the hashcodes
+		int result = 4;
+		if (name != null) {
+			result = 17 * result + name.hashCode();
+		}
+		// Now return it
+		return result;
 	}
 
 	/**
@@ -196,69 +279,31 @@ public class StandardReferenceScale implements IMetadataObject {
 	}
 
 	/**
-	 * This method overrides the default equals method and checks for to see if
-	 * the objects occupy the same memory space and if not, then it checks for
-	 * identical persistent identifiers and if those are not available, it
-	 * checks for equality of the business key which is the name
-	 * 
-	 * @see moos.ssds.metadata.IMetadataObject#equals(Object)
-	 */
-	public boolean equals(Object obj) {
-		// First check to see if input is null
-		if (obj == null)
-			return false;
-
-		// Now check JVM identity
-		if (this == obj)
-			return true;
-
-		// Now check if it is the correct class
-		if (!(obj instanceof StandardReferenceScale))
-			return false;
-
-		// Cast to StandardReferenceScale object
-		final StandardReferenceScale that = (StandardReferenceScale) obj;
-
-		// Now check for missing business key (name)
-		if ((this.name == null) || (that.getName() == null))
-			return false;
-
-		// Now compare hashcodes
-		if (this.hashCode() == that.hashCode()) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * This method overrides the default hashCode and had to be implemented
-	 * because we overrode the default equals method. They both should base
-	 * their calculation on the business key.
-	 * 
-	 * @see moos.ssds.metadata.IMetadataObject#hashCode()
-	 */
-	public int hashCode() {
-		// Calculate the hashcodes
-		int result = 4;
-		if (name != null) {
-			result = 17 * result + name.hashCode();
-		}
-		// Now return it
-		return result;
-	}
-
-	/**
-	 * This is the method to re-consitutute and object from a custom
+	 * This is the method to re-constitute and object from a custom
 	 * serialization form
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
 		description = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		name = (String) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -268,9 +313,10 @@ public class StandardReferenceScale implements IMetadataObject {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(description);
 		out.writeObject(id);
 		out.writeObject(name);
-		out.writeObject(description);
+		out.writeObject(version);
 	}
 
 	/**
@@ -304,33 +350,4 @@ public class StandardReferenceScale implements IMetadataObject {
 		return clonedReferenceScale;
 	}
 
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is the name that is a unique type (category) of device
-	 */
-	private String name;
-
-	/**
-	 * The description of that type
-	 */
-	private String description;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(StandardReferenceScale.class);
 }

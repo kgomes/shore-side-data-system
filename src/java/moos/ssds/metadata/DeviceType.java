@@ -40,6 +40,36 @@ import moos.ssds.metadata.util.MetadataValidator;
 public class DeviceType implements IMetadataObject, IDescription {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(DeviceType.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is the name that is a unique type (category) of device
+	 */
+	private String name;
+
+	/**
+	 * The description of that type
+	 */
+	private String description;
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * @see moos.ssds.metadata.IMetadataObject#getId()
 	 * @hibernate.id generator-class="identity" type="long"
 	 */
@@ -114,96 +144,6 @@ public class DeviceType implements IMetadataObject, IDescription {
 	 */
 	public String toString() {
 		return this.name;
-	}
-
-	/**
-	 * @see IMetadataObject#toStringRepresentation(String)
-	 */
-	public String toStringRepresentation(String delimiter) {
-		if (delimiter == null)
-			delimiter = IMetadataObject.DEFAULT_DELIMITER;
-		StringBuffer sb = new StringBuffer();
-		sb.append("DeviceType");
-		sb.append(delimiter + "id=" + this.getId());
-		sb.append(delimiter + "name=" + this.getName());
-		sb.append(delimiter + "description=" + this.getDescription());
-		return sb.toString();
-	}
-
-	/**
-	 * In order to use the class, you should first create an empty object, then
-	 * call this method, passing in the string representation. As an example:
-	 * 
-	 * <pre>
-	 * DeviceType newDeviceType = new DeviceType();
-	 * 
-	 * newDeviceType.setValuesFromStringRepresentation(
-	 * 		&quot;DeviceType|name=CTD|description=CTD Types&quot;, &quot;|&quot;);
-	 * </pre>
-	 * 
-	 * @see IMetadataObject#setValuesFromStringRepresentation
-	 */
-	public void setValuesFromStringRepresentation(String stringRepresentation,
-			String delimiter) throws MetadataException {
-		// If the delimiter is null, use the default delimiter
-		String delimiterToUse = delimiter;
-		if (delimiterToUse == null)
-			delimiterToUse = IMetadataObject.DEFAULT_DELIMITER;
-
-		// Create a string tokenizer that uses the delimiter specified (or the
-		// default)
-		StringTokenizer stok = new StringTokenizer(stringRepresentation,
-				delimiterToUse);
-
-		// Grab the first token, which should be the name of the metadata class
-		String firstToken = stok.nextToken();
-
-		// Check to make sure it matches this class and if not, throw an
-		// Exception
-		if ((!this.getClass().getName().equals(firstToken))
-				&& (!this.getClass().getName().equals(
-						"moos.ssds.metadata." + firstToken)))
-			throw new MetadataException(
-					"The class specified by the first token (" + firstToken
-							+ " does not match this class "
-							+ this.getClass().getName());
-
-		// Now loop over the attribute=value pairs to fill out the object
-		while (stok.hasMoreTokens()) {
-			// Grab the next pair
-			String tok = stok.nextToken();
-
-			// Split on the equals sign
-			int firstEquals = tok.indexOf("=");
-			String key = null;
-			String value = null;
-			if (firstEquals >= 0) {
-				key = tok.substring(0, firstEquals);
-				value = tok.substring(firstEquals + 1);
-			} else {
-				key = "";
-				value = "";
-			}
-
-			// Now look for a match on the key and then assign the value
-			if (key.equalsIgnoreCase("id")) {
-				try {
-					this.setId(new Long(value));
-				} catch (NumberFormatException e) {
-					throw new MetadataException(
-							"Could not convert the value for id (" + value
-									+ ") to a Long");
-				}
-			} else if (key.equalsIgnoreCase("name")) {
-				this.setName(value);
-			} else if (key.equalsIgnoreCase("description")) {
-				this.setDescription(value);
-			} else {
-				throw new MetadataException("The attribute specified by " + key
-						+ " is not a recognized field of "
-						+ this.getClass().getName());
-			}
-		}
 	}
 
 	/**
@@ -314,6 +254,96 @@ public class DeviceType implements IMetadataObject, IDescription {
 	}
 
 	/**
+	 * @see IMetadataObject#toStringRepresentation(String)
+	 */
+	public String toStringRepresentation(String delimiter) {
+		if (delimiter == null)
+			delimiter = IMetadataObject.DEFAULT_DELIMITER;
+		StringBuffer sb = new StringBuffer();
+		sb.append("DeviceType");
+		sb.append(delimiter + "id=" + this.getId());
+		sb.append(delimiter + "name=" + this.getName());
+		sb.append(delimiter + "description=" + this.getDescription());
+		return sb.toString();
+	}
+
+	/**
+	 * In order to use the class, you should first create an empty object, then
+	 * call this method, passing in the string representation. As an example:
+	 * 
+	 * <pre>
+	 * DeviceType newDeviceType = new DeviceType();
+	 * 
+	 * newDeviceType.setValuesFromStringRepresentation(
+	 * 		&quot;DeviceType|name=CTD|description=CTD Types&quot;, &quot;|&quot;);
+	 * </pre>
+	 * 
+	 * @see IMetadataObject#setValuesFromStringRepresentation
+	 */
+	public void setValuesFromStringRepresentation(String stringRepresentation,
+			String delimiter) throws MetadataException {
+		// If the delimiter is null, use the default delimiter
+		String delimiterToUse = delimiter;
+		if (delimiterToUse == null)
+			delimiterToUse = IMetadataObject.DEFAULT_DELIMITER;
+
+		// Create a string tokenizer that uses the delimiter specified (or the
+		// default)
+		StringTokenizer stok = new StringTokenizer(stringRepresentation,
+				delimiterToUse);
+
+		// Grab the first token, which should be the name of the metadata class
+		String firstToken = stok.nextToken();
+
+		// Check to make sure it matches this class and if not, throw an
+		// Exception
+		if ((!this.getClass().getName().equals(firstToken))
+				&& (!this.getClass().getName().equals(
+						"moos.ssds.metadata." + firstToken)))
+			throw new MetadataException(
+					"The class specified by the first token (" + firstToken
+							+ " does not match this class "
+							+ this.getClass().getName());
+
+		// Now loop over the attribute=value pairs to fill out the object
+		while (stok.hasMoreTokens()) {
+			// Grab the next pair
+			String tok = stok.nextToken();
+
+			// Split on the equals sign
+			int firstEquals = tok.indexOf("=");
+			String key = null;
+			String value = null;
+			if (firstEquals >= 0) {
+				key = tok.substring(0, firstEquals);
+				value = tok.substring(firstEquals + 1);
+			} else {
+				key = "";
+				value = "";
+			}
+
+			// Now look for a match on the key and then assign the value
+			if (key.equalsIgnoreCase("id")) {
+				try {
+					this.setId(new Long(value));
+				} catch (NumberFormatException e) {
+					throw new MetadataException(
+							"Could not convert the value for id (" + value
+									+ ") to a Long");
+				}
+			} else if (key.equalsIgnoreCase("name")) {
+				this.setName(value);
+			} else if (key.equalsIgnoreCase("description")) {
+				this.setDescription(value);
+			} else {
+				throw new MetadataException("The attribute specified by " + key
+						+ " is not a recognized field of "
+						+ this.getClass().getName());
+			}
+		}
+	}
+
+	/**
 	 * This is the method that re-consititutes an object from a custom
 	 * serialization form
 	 * 
@@ -381,35 +411,4 @@ public class DeviceType implements IMetadataObject, IDescription {
 		logger.debug(clonedDeviceType.toStringRepresentation("|"));
 		return clonedDeviceType;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is the name that is a unique type (category) of device
-	 */
-	private String name;
-
-	/**
-	 * The description of that type
-	 */
-	private String description;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(DeviceType.class);
-
 }

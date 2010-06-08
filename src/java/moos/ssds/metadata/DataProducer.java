@@ -49,17 +49,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 	static Logger logger = Logger.getLogger(DataProducer.class);
 
 	/**
-	 * Some constants
-	 */
-	public static final String TYPE_DEPLOYMENT = "Deployment";
-	public static final String TYPE_PROCESS_RUN = "ProcessRun";
-
-	public static final String ROLE_SENSOR = "sensor";
-	public static final String ROLE_INSTRUMENT = "instrument";
-	public static final String ROLE_PLATFORM = "platform";
-	public static final String ROLE_OBSERVATORY = "observatory";
-
-	/**
 	 * This is the version that we can control for serialization purposes
 	 */
 	private static final long serialVersionUID = 1L;
@@ -208,114 +197,66 @@ public class DataProducer implements IMetadataObject, IDescription,
 	/**
 	 * This is the <code>Person</code> that is the point of contact for the
 	 * <code>DataProducer</code>
-	 * 
-	 * @directed true
-	 * @label lazy
 	 */
 	private Person person;
 
 	/**
 	 * This is a <code>Device</code> that is associated with the production of
 	 * the data.
-	 * 
-	 * @directed true
-	 * @label unlazy
 	 */
 	private Device device;
 
 	/**
 	 * This is a <code>Software</code> that is associated with the production of
 	 * the data.
-	 * 
-	 * @directed true
-	 * @label lazy
 	 */
 	private Software software;
 
 	/**
 	 * This is a <code>DataProducer</code> that is considered to be the parent
 	 * of this <code>DataProducer</code> (supports nested data producers).
-	 * 
-	 * @directed true
-	 * @label lazy
 	 */
 	private DataProducer parentDataProducer;
 
 	/**
 	 * These are <code>DataProducer</code>s that are considered children of this
 	 * <code>DataProducer</code> (supports nested data producers).
-	 * 
-	 * @associates DataProducer
-	 * @directed true
-	 * @label lazy
 	 */
 	private Collection<DataProducer> childDataProducers = new HashSet<DataProducer>();
 
 	/**
 	 * This is a <code>Collection</code> of <code>DataProducerGroup</code>s that
 	 * this <code>DataProducer</code> belongs to
-	 * 
-	 * @associates DataProducerGroup
-	 * @directed true
-	 * @label lazy
 	 */
 	private Collection<DataProducerGroup> dataProducerGroups = new HashSet<DataProducerGroup>();
 
 	/**
 	 * These are the <code>DataContainer</code>s that were used by the
 	 * <code>DataProducer</code> to produce its outputs.
-	 * 
-	 * @associates DataContainer
-	 * @directed true
-	 * @label lazy
-	 * @clientRole reads inputs
-	 * @supplierRole data for input
-	 * @clientCardinality 0..*
-	 * @supplierCardinality 0..
 	 */
 	private Collection<DataContainer> inputs = new HashSet<DataContainer>();
 
 	/**
 	 * These are the output <code>DataContainer</code>s from this
 	 * <code>DataProducer</code>.
-	 * 
-	 * @associates DataContainer
-	 * @directed true
-	 * @clientRole creator of output
-	 * @clientCardinality 1
-	 * @supplierRole data output
-	 * @supplierCardinality 0..
-	 * @label unlazy
 	 */
 	private Collection<DataContainer> outputs = new HashSet<DataContainer>();
 
 	/**
 	 * These are any <code>Resource</code>s that are associated with the
 	 * <code>DataProducer</code>.
-	 * 
-	 * @associates Resource
-	 * @directed true
-	 * @label lazy
 	 */
 	private Collection<Resource> resources = new HashSet<Resource>();
 
 	/**
 	 * This is a collection of <code>Keyword</code> objects that can be used to
 	 * search for <code>DataContainer</code>s.
-	 * 
-	 * @associates Keyword
-	 * @directed true
-	 * @label lazy
 	 */
 	private Collection<Keyword> keywords = new HashSet<Keyword>();
 
 	/**
 	 * These are any <code>Event</code>s that have been linked to the
 	 * <code>DataProducer</code>.
-	 * 
-	 * @associates Event
-	 * @directed true
-	 * @label lazy
 	 */
 	private Collection<Event> events = new HashSet<Event>();
 
@@ -325,6 +266,17 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * affect functionality
 	 */
 	private transient XmlDateFormat xmlDateFormat = new XmlDateFormat();
+
+	/**
+	 * Some constants
+	 */
+	public static final String TYPE_DEPLOYMENT = "Deployment";
+	public static final String TYPE_PROCESS_RUN = "ProcessRun";
+
+	public static final String ROLE_SENSOR = "sensor";
+	public static final String ROLE_INSTRUMENT = "instrument";
+	public static final String ROLE_PLATFORM = "platform";
+	public static final String ROLE_OBSERVATORY = "observatory";
 
 	/**
 	 * This is the hibernate version that is used to check for dirty objects

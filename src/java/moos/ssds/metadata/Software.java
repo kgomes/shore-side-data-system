@@ -23,15 +23,14 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
-
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataValidator;
+
+import org.apache.log4j.Logger;
 
 /**
  * This class represents a piece of software in the system.
@@ -43,6 +42,58 @@ import moos.ssds.metadata.util.MetadataValidator;
  * @version : $Revision: 1.1.2.16 $
  */
 public class Software implements IMetadataObject, IDescription, IResourceOwner {
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(Software.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is the arbitrary name given to the DataContainer
+	 */
+	private String name;
+
+	/**
+	 * The description of the DataContainer
+	 */
+	private String description;
+
+	/**
+	 * This is a <code>URI</code> that is the resource identifier
+	 */
+	private String uriString;
+
+	/**
+	 * This is the version of software
+	 */
+	private String softwareVersion;
+
+	/**
+	 * This is the <code>Person</code> that is normally thought of as the owner
+	 * of the software
+	 */
+	private Person person;
+
+	/**
+	 * This is a <code>Collection</code> of <code>Resource</code>s that are
+	 * associated with the <code>Software</code>
+	 */
+	private Collection<Resource> resources = new HashSet<Resource>();
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
 
 	/**
 	 * @see IMetadataObject#getId()
@@ -220,11 +271,11 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	 * @return the <code>Collection</code> of <code>Resource</code>s that are
 	 *         associated with the <code>Software</code>
 	 */
-	public Collection getResources() {
+	public Collection<Resource> getResources() {
 		return resources;
 	}
 
-	public void setResources(Collection resources) {
+	public void setResources(Collection<Resource> resources) {
 		this.resources = resources;
 	}
 
@@ -242,7 +293,7 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 
 		// Make sure the collection is there
 		if (this.resources == null)
-			this.resources = new HashSet();
+			this.resources = new HashSet<Resource>();
 
 		// Now add the Resource to the collection
 		if (!this.resources.contains(resource)) {
@@ -292,6 +343,63 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	 */
 	public void setVersion(long version) {
 		this.version = version;
+	}
+
+	/**
+	 * This method overrides the default equals method and checks for to see if
+	 * the objects occupy the same memory space and if not, then it checks for
+	 * identical persistent identifiers and if those are not available, it
+	 * checks for equality of the business key which is the name and version
+	 * 
+	 * @see IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// First check to see if input is null
+		if (obj == null)
+			return false;
+
+		// Now check JVM identity
+		if (this == obj)
+			return true;
+
+		// Now check if it is the correct class
+		if (!(obj instanceof Software))
+			return false;
+
+		// Cast to Software object
+		final Software that = (Software) obj;
+
+		// Now check for missing business key (name and software version)
+		if ((this.name == null) || (that.getName() == null)
+				|| (this.softwareVersion == null)
+				|| (that.getSoftwareVersion() == null))
+			return false;
+
+		// Now compare hashcodes
+		if (this.hashCode() == that.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * This method overrides the default hashCode and had to be implemented
+	 * because we overrode the default equals method. They both should base
+	 * their calculation on the business key.
+	 * 
+	 * @see moos.ssds.metadata.IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+		// Calculate the hashcode
+		int result = 14;
+		if (name != null) {
+			result = 7 * result + name.hashCode();
+		}
+		if (softwareVersion != null) {
+			result = 91 * result + softwareVersion.hashCode();
+		}
+		return result;
 	}
 
 	/**
@@ -395,75 +503,36 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	}
 
 	/**
-	 * This method overrides the default equals method and checks for to see if
-	 * the objects occupy the same memory space and if not, then it checks for
-	 * identical persistent identifiers and if those are not available, it
-	 * checks for equality of the business key which is the name and version
-	 * 
-	 * @see IMetadataObject#equals(Object)
-	 */
-	public boolean equals(Object obj) {
-		// First check to see if input is null
-		if (obj == null)
-			return false;
-
-		// Now check JVM identity
-		if (this == obj)
-			return true;
-
-		// Now check if it is the correct class
-		if (!(obj instanceof Software))
-			return false;
-
-		// Cast to Software object
-		final Software that = (Software) obj;
-
-		// Now check for missing business key (name and software version)
-		if ((this.name == null) || (that.getName() == null)
-				|| (this.softwareVersion == null)
-				|| (that.getSoftwareVersion() == null))
-			return false;
-
-		// Now compare hashcodes
-		if (this.hashCode() == that.hashCode()) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * This method overrides the default hashCode and had to be implemented
-	 * because we overrode the default equals method. They both should base
-	 * their calculation on the business key.
-	 * 
-	 * @see moos.ssds.metadata.IMetadataObject#hashCode()
-	 */
-	public int hashCode() {
-		// Calculate the hashcode
-		int result = 14;
-		if (name != null) {
-			result = 7 * result + name.hashCode();
-		}
-		if (softwareVersion != null) {
-			result = 91 * result + softwareVersion.hashCode();
-		}
-		return result;
-	}
-
-	/**
-	 * This is the method to re-consitutute and object from a custom
+	 * This is the method to re-constitute and object from a custom
 	 * serialization form
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
+	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
 		description = (String) in.readObject();
-		uriString = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		name = (String) in.readObject();
+		person = (Person) in.readObject();
+		resources = (Collection<Resource>) in.readObject();
 		softwareVersion = (String) in.readObject();
+		uriString = (String) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -472,11 +541,16 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(description);
 		out.writeObject(id);
 		out.writeObject(name);
-		out.writeObject(description);
-		out.writeObject(uriString);
+		// Person (null for now)
+		out.writeObject(null);
+		// Resources (null for now)
+		out.writeObject(null);
 		out.writeObject(softwareVersion);
+		out.writeObject(uriString);
+		out.writeObject(version);
 	}
 
 	/**
@@ -524,8 +598,8 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 		if ((this.getResources() != null) && (this.getResources().size() > 0)) {
 			logger.debug("There are " + this.getResources().size()
 					+ " Resources that will be cloned.");
-			Collection resourcesToCopy = this.getResources();
-			Iterator resourceIter = resourcesToCopy.iterator();
+			Collection<Resource> resourcesToCopy = this.getResources();
+			Iterator<Resource> resourceIter = resourcesToCopy.iterator();
 			while (resourceIter.hasNext()) {
 				Resource clonedResource = (Resource) ((Resource) resourceIter
 						.next()).deepCopy();
@@ -537,63 +611,4 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 		// Now return the deep copy
 		return deepClone;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is the arbitrary name given to the DataContainer
-	 */
-	private String name;
-
-	/**
-	 * The description of the DataContainer
-	 */
-	private String description;
-
-	/**
-	 * This is a <code>URI</code> that is the resource identifier
-	 */
-	private String uriString;
-
-	/**
-	 * This is the version of software
-	 */
-	private String softwareVersion;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is the <code>Person</code> that is normally thought of as the owner
-	 * of the software
-	 * 
-	 * @directed true
-	 * @label lazy
-	 */
-	private Person person;
-
-	/**
-	 * This is a <code>Collection</code> of <code>Resource</code>s that are
-	 * asscociated with the <code>Software</code>
-	 * 
-	 * @associates Resource
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection resources = new HashSet();
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(Software.class);
 }

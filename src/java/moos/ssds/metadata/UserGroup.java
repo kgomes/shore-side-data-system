@@ -38,6 +38,34 @@ import moos.ssds.metadata.util.MetadataValidator;
 public class UserGroup implements IMetadataObject {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(UserGroup.class);
+
+	/**
+	 * This is the <code>serialVersionUID</code> that is fixed to control
+	 * serialization versions of the class.
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier. It is used by the persistence
+	 * layer to identify which object in the data store corresponds to the
+	 * object.
+	 */
+	private Long id;
+
+	/**
+	 * This is the name of the user group to sort permissions for users
+	 */
+	private String groupName = null;
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * @see IMetadataObject#getId()
 	 * @see moos.ssds.metadata.IMetadataObject#getId()
 	 * @hibernate.id generator-class="identity" type="long"
@@ -84,89 +112,6 @@ public class UserGroup implements IMetadataObject {
 
 	public void setVersion(long version) {
 		this.version = version;
-	}
-
-	/**
-	 * @see IMetadataObject#toStringRepresentation(String)
-	 */
-	public String toStringRepresentation(String delimiter) {
-		// If the delimiter is not specified, use a default one
-		if (delimiter == null)
-			delimiter = IMetadataObject.DEFAULT_DELIMITER;
-
-		// Create the string buffer and add all the appropriate attributes
-		StringBuffer sb = new StringBuffer();
-		sb.append("UserGroup");
-		sb.append(delimiter + "id=" + this.getId());
-		sb.append(delimiter + "groupName=" + this.getGroupName());
-
-		// Now return it
-		return sb.toString();
-	}
-
-	/**
-	 * @see IMetadataObject#setValuesFromStringRepresentation
-	 */
-	public void setValuesFromStringRepresentation(String stringRepresentation,
-			String delimiter) throws MetadataException {
-
-		// If the delimiter is null, use the default delimiter
-		String delimiterToUse = delimiter;
-		if (delimiterToUse == null)
-			delimiterToUse = IMetadataObject.DEFAULT_DELIMITER;
-
-		// Create a string tokenizer that uses the delimiter specified (or the
-		// default)
-		StringTokenizer stok = new StringTokenizer(stringRepresentation,
-				delimiterToUse);
-
-		// Grab the first token, which should be the name of the metadata class
-		String firstToken = stok.nextToken();
-
-		// Check to make sure it matches this class and if not, throw an
-		// Exception
-		if ((!this.getClass().getName().equals(firstToken))
-				&& (!this.getClass().getName().equals(
-						"moos.ssds.metadata." + firstToken)))
-			throw new MetadataException(
-					"The class specified by the first token (" + firstToken
-							+ " does not match this class "
-							+ this.getClass().getName());
-
-		// Now loop over the attribute=value pairs to fill out the object
-		while (stok.hasMoreTokens()) {
-			// Grab the next pari
-			String tok = stok.nextToken();
-
-			// Split on the equals sign
-			int firstEquals = tok.indexOf("=");
-			String key = null;
-			String value = null;
-			if (firstEquals >= 0) {
-				key = tok.substring(0, firstEquals);
-				value = tok.substring(firstEquals + 1);
-			} else {
-				key = "";
-				value = "";
-			}
-
-			// Now look for a match on the key and then assign the value
-			if (key.equalsIgnoreCase("id")) {
-				try {
-					this.setId(new Long(value));
-				} catch (NumberFormatException e) {
-					throw new MetadataException(
-							"Could not convert the value for id (" + value
-									+ ") to a Long");
-				}
-			} else if (key.equalsIgnoreCase("groupName")) {
-				this.setGroupName(value);
-			} else {
-				throw new MetadataException("The attribute specified by " + key
-						+ " is not a recognized field of "
-						+ this.getClass().getName());
-			}
-		}
 	}
 
 	/**
@@ -259,15 +204,113 @@ public class UserGroup implements IMetadataObject {
 	}
 
 	/**
-	 * This is the method to re-consitutute and object from a custom
+	 * @see IMetadataObject#toStringRepresentation(String)
+	 */
+	public String toStringRepresentation(String delimiter) {
+		// If the delimiter is not specified, use a default one
+		if (delimiter == null)
+			delimiter = IMetadataObject.DEFAULT_DELIMITER;
+
+		// Create the string buffer and add all the appropriate attributes
+		StringBuffer sb = new StringBuffer();
+		sb.append("UserGroup");
+		sb.append(delimiter + "id=" + this.getId());
+		sb.append(delimiter + "groupName=" + this.getGroupName());
+
+		// Now return it
+		return sb.toString();
+	}
+
+	/**
+	 * @see IMetadataObject#setValuesFromStringRepresentation
+	 */
+	public void setValuesFromStringRepresentation(String stringRepresentation,
+			String delimiter) throws MetadataException {
+
+		// If the delimiter is null, use the default delimiter
+		String delimiterToUse = delimiter;
+		if (delimiterToUse == null)
+			delimiterToUse = IMetadataObject.DEFAULT_DELIMITER;
+
+		// Create a string tokenizer that uses the delimiter specified (or the
+		// default)
+		StringTokenizer stok = new StringTokenizer(stringRepresentation,
+				delimiterToUse);
+
+		// Grab the first token, which should be the name of the metadata class
+		String firstToken = stok.nextToken();
+
+		// Check to make sure it matches this class and if not, throw an
+		// Exception
+		if ((!this.getClass().getName().equals(firstToken))
+				&& (!this.getClass().getName().equals(
+						"moos.ssds.metadata." + firstToken)))
+			throw new MetadataException(
+					"The class specified by the first token (" + firstToken
+							+ " does not match this class "
+							+ this.getClass().getName());
+
+		// Now loop over the attribute=value pairs to fill out the object
+		while (stok.hasMoreTokens()) {
+			// Grab the next pari
+			String tok = stok.nextToken();
+
+			// Split on the equals sign
+			int firstEquals = tok.indexOf("=");
+			String key = null;
+			String value = null;
+			if (firstEquals >= 0) {
+				key = tok.substring(0, firstEquals);
+				value = tok.substring(firstEquals + 1);
+			} else {
+				key = "";
+				value = "";
+			}
+
+			// Now look for a match on the key and then assign the value
+			if (key.equalsIgnoreCase("id")) {
+				try {
+					this.setId(new Long(value));
+				} catch (NumberFormatException e) {
+					throw new MetadataException(
+							"Could not convert the value for id (" + value
+									+ ") to a Long");
+				}
+			} else if (key.equalsIgnoreCase("groupName")) {
+				this.setGroupName(value);
+			} else {
+				throw new MetadataException("The attribute specified by " + key
+						+ " is not a recognized field of "
+						+ this.getClass().getName());
+			}
+		}
+	}
+
+	/**
+	 * This is the method to re-constitute and object from a custom
 	 * serialization form
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
 		groupName = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -276,8 +319,9 @@ public class UserGroup implements IMetadataObject {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(id);
 		out.writeObject(groupName);
+		out.writeObject(id);
+		out.writeObject(version);
 	}
 
 	/**
@@ -308,32 +352,4 @@ public class UserGroup implements IMetadataObject {
 		logger.debug(clonedUserGroup.toStringRepresentation("|"));
 		return clonedUserGroup;
 	}
-
-	/**
-	 * This is the <code>serialVersionUID</code> that is fixed to control
-	 * serialization versions of the class.
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier. It is used by the persistence
-	 * layer to identify which object in the data store corresponds to the
-	 * object.
-	 */
-	private Long id;
-
-	/**
-	 * This is the name of the user group to sort permissions for users
-	 */
-	private String groupName = null;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(UserGroup.class);
 }

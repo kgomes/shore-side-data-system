@@ -156,9 +156,6 @@ public class DataContainer implements IMetadataObject, IDescription,
 	/**
 	 * This is the <code>Person</code> that is normally thought of as the owner
 	 * of the <code>DataContainer</code> (or the point of contact)
-	 * 
-	 * @directed true
-	 * @label lazy
 	 */
 	private Person person;
 
@@ -166,9 +163,6 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * This is the <code>HeaderDescription</code> that is associated with the
 	 * <code>DataContainer</code>. It is meant to describe any header section
 	 * that is contained in the <code>DataContainer</code>
-	 * 
-	 * @directed true
-	 * @label lazy
 	 */
 	private HeaderDescription headerDescription;
 
@@ -176,73 +170,38 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * This is the <code>RecordDescription</code> that is associated with the
 	 * <code>DataContainer</code>. It is meant to describe the records in the
 	 * <code>DataContainer</code> so that it can be parsed automatically
-	 * 
-	 * @directed true
-	 * @label lazy & cascade all
 	 */
 	private RecordDescription recordDescription;
 
 	/**
 	 * This is a collection of <code>DataContainerGroup</code>s that are
 	 * associated with the <code>DataContainer</code>
-	 * 
-	 * @associates DataContainerGroup
-	 * @directed true
-	 * @label lazy
 	 */
 	private Collection<DataContainerGroup> dataContainerGroups = new HashSet<DataContainerGroup>();
 
 	/**
 	 * This is a collection of <code>Keyword</code> objects that can be used to
 	 * search for <code>DataContainer</code>s.
-	 * 
-	 * @associates Keyword
-	 * @directed true
-	 * @label lazy
 	 */
 	private Collection<Keyword> keywords = new HashSet<Keyword>();
 
 	/**
 	 * This is the <code>Collection</code> of <code>Resource</code>s that are
 	 * associated with the <code>DataContainer</code>
-	 * 
-	 * @associates Resource
-	 * @directed true
-	 * @label lazy
 	 */
 	private Collection<Resource> resources = new HashSet<Resource>();
 
 	/**
 	 * This is the <code>DataProducer</code> that created the data in this
 	 * container.
-	 * 
-	 * @directed true
-	 * @clientRole created data
-	 * @clientCardinality 0..*
-	 * @supplierRole creator
-	 * @supplierCardinality 1
-	 * @label lazy
 	 */
 	private DataProducer creator;
 
 	/**
 	 * A collection of <code>DataProducer</code>s that use this
 	 * <code>DataContainer<code> to create other <code>DataContainer</code>s.
-	 * 
-	 * @associates DataProducer
-	 * @directed true
-	 * @clientRole data for input
-	 * @clientCardinality 0..*
-	 * @supplierRole consumer
-	 * @supplierCardinality 0..*
-	 * @label lazy
 	 */
 	private Collection<DataProducer> consumers = new HashSet<DataProducer>();
-
-	/**
-	 * This is the Hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
 
 	/**
 	 * A formatter for converting dates to and from XML format
@@ -254,6 +213,11 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 */
 	public static final String TYPE_FILE = "File";
 	public static final String TYPE_STREAM = "Stream";
+
+	/**
+	 * This is the Hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
 
 	/**
 	 * @see IMetadataObject#getId()
