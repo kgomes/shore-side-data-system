@@ -644,8 +644,8 @@
 					<!-- Test the data parsers -->
 					<include name="test/moos/ssds/data/parsers/**/*Test*.java" />
 
-					<!-- Test the services for the metadata classes -->
-					<include name="test/moos/ssds/services/metadata/**/*Test*.java" />
+					<!-- Test the services for the metadata classes
+					<include name="test/moos/ssds/services/metadata/**/*Test*.java" />  -->
 
 					<!-- Individual service tests (turn off if using the test in the previous line) -->
 					<!-- <include name="test/moos/ssds/services/metadata/TestDataContainerAccess.java" /> -->
@@ -657,11 +657,11 @@
 					<!-- <include name="test/moos/ssds/services/metadata/TestStandardUnitAccess.java" /> -->
 					<!-- <include name="test/moos/ssds/services/metadata/TestStandardVariableAccess.java" /> -->
 
-					<!-- Test the data services -->
-					<include name="test/moos/ssds/services/data/**/*Test*.java" />
+					<!-- Test the data services
+					<include name="test/moos/ssds/services/data/**/*Test*.java" /> -->
 
-					<!-- Utility tests -->
-					<include name="test/moos/ssds/util/**/*Test*.java" />
+					<!-- Utility tests
+					<include name="test/moos/ssds/util/**/*Test*.java" /> -->
 
 					<!-- Exclude the parent test class -->
 					<exclude name="test/moos/ssds/services/metadata/TestAccessCase.java" />
