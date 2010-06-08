@@ -174,16 +174,16 @@
 			<include name="test/moos/ssds/ruminate/TestRuminate.java" />
 			<classpath>
 				<pathelement location="${project.lib}/${junit.jar}" />
+				<pathelement location="${project.lib}/${siam.jar}" />
 				<pathelement location="${project.dist}/ssds-services-metadata-client.jar" />
 				<pathelement location="${project.dist}/ssds-transmogrify-pub.jar" />
 				<fileset refid="jboss-client-jar-fileset" />
 			</classpath>
 		</javac>
-		<junit printsummary="withOutAndErr" haltonfailure="no" errorProperty="test.failed" failureProperty="test.failed">
+		<!--		<junit printsummary="withOutAndErr" haltonfailure="no" errorProperty="test.failed" failureProperty="test.failed">
 			<jvmarg value="-Xms512m" />
 			<jvmarg value="-Xmx1024m" />
 			<classpath>
-				<!-- Include the publish client jar and the services client jar -->
 				<pathelement location="${project.lib}/${junit.jar}" />
 				<pathelement location="${project.build}/classes" />
 				<pathelement location="${project.build}/ruminate" />
@@ -204,7 +204,7 @@
 					<include name="test/moos/ssds/ruminate/TestRuminate.java" />
 				</fileset>
 			</batchtest>
-		</junit>
+		</junit> -->
 	</target>
 	<!-- Deploy the ingest component and configuration files -->
 	<target name="deploy" depends="dist">
