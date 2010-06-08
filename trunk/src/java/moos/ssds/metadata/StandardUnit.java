@@ -39,6 +39,51 @@ import moos.ssds.metadata.util.MetadataValidator;
 public class StandardUnit implements IMetadataObject, IDescription {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(StandardUnit.class);
+
+	/**
+	 * This is the <code>serialVersionUID</code> that is fixed to control
+	 * serialization versions of the class.
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the ID that is used by the persistence layer to identify specific
+	 * instances of the <code>StandardUnit</code>s.
+	 */
+	private Long id;
+
+	/**
+	 * This is the name of the <code>StandardUnit</code>. It is considered a
+	 * unique identifier (alternate primary key).
+	 */
+	private String name;
+
+	/**
+	 * This is the text description of the <code>StandardUnit</code>.
+	 */
+	private String description;
+
+	/**
+	 * This is the long name that give more information about the
+	 * <code>StandardUnit</code>.
+	 */
+	private String longName;
+
+	/**
+	 * This is a string that is defined as the symbol for the
+	 * <code>StandardUnit</code>.
+	 */
+	private String symbol;
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * This is the default constructor. It simply sets the Description to an
 	 * empty string
 	 */
@@ -352,11 +397,26 @@ public class StandardUnit implements IMetadataObject, IDescription {
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
 		description = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
 		longName = (String) in.readObject();
+		name = (String) in.readObject();
 		symbol = (String) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -366,11 +426,12 @@ public class StandardUnit implements IMetadataObject, IDescription {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(id);
-		out.writeObject(name);
 		out.writeObject(description);
+		out.writeObject(id);
 		out.writeObject(longName);
+		out.writeObject(name);
 		out.writeObject(symbol);
+		out.writeObject(version);
 	}
 
 	/**
@@ -404,50 +465,4 @@ public class StandardUnit implements IMetadataObject, IDescription {
 		logger.debug(clonedStandardUnit.toStringRepresentation("|"));
 		return clonedStandardUnit;
 	}
-
-	/**
-	 * This is the <code>serialVersionUID</code> that is fixed to control
-	 * serialization versions of the class.
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the ID that is used by the persistence layer to identify specific
-	 * instances of the <code>StandardUnit</code>s.
-	 */
-	private Long id;
-
-	/**
-	 * This is the name of the <code>StandardUnit</code>. It is considered a
-	 * unique identifier (alternate primary key).
-	 */
-	private String name;
-
-	/**
-	 * This is the text description of the <code>StandardUnit</code>.
-	 */
-	private String description;
-
-	/**
-	 * This is the long name that give more information about the
-	 * <code>StandardUnit</code>.
-	 */
-	private String longName;
-
-	/**
-	 * This is a string that is defined as the symbol for the
-	 * <code>StandardUnit</code>.
-	 */
-	private String symbol;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(StandardUnit.class);
-
 }

@@ -43,6 +43,80 @@ import org.doomdark.uuid.UUIDGenerator;
 public class Device implements IMetadataObject, IDescription, IResourceOwner {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(Device.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is a UUID that is assigned to the device
+	 */
+	private String uuid = null;
+
+	/**
+	 * This is the name of the device
+	 */
+	private String name;
+
+	/**
+	 * This is the description of the device
+	 */
+	private String description;
+
+	/**
+	 * This is the name of the manufacturer of the device
+	 */
+	private String mfgName;
+
+	/**
+	 * This is the manufacturer's model designator for the device
+	 */
+	private String mfgModel;
+
+	/**
+	 * This is the manufacturer's serial number assigned to the device
+	 */
+	private String mfgSerialNumber;
+
+	/**
+	 * This is a listing of URLs where information about this device can be
+	 * found
+	 */
+	private String infoUrlList;
+
+	/**
+	 * This is the <code>Person</code> that is normally thought of as the owner
+	 * of the device
+	 */
+	private Person person;
+
+	/**
+	 * This is the <code>DeviceType</code> that this <code>Device</code> is
+	 * categorized as
+	 */
+	private DeviceType deviceType;
+
+	/**
+	 * This is the <code>Collection</code> of <code>Resource</code>s that are
+	 * associated with the <code>Device</code>
+	 */
+	private Collection<Resource> resources = new HashSet<Resource>();
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * The default constructor for the Device object. NOTE: This constructor
 	 * will automatically generate a UUID. If you know the UUID, please use the
 	 * constructor that takes in the UUID.
@@ -334,11 +408,11 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	 * @return the <code>Collection</code> of <code>Resource</code>s that are
 	 *         associated with the <code>Device</code>
 	 */
-	public Collection getResources() {
+	public Collection<Resource> getResources() {
 		return resources;
 	}
 
-	public void setResources(Collection resources) {
+	public void setResources(Collection<Resource> resources) {
 		this.resources = resources;
 	}
 
@@ -396,116 +470,6 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 
 	public void setVersion(long version) {
 		this.version = version;
-	}
-
-	/**
-	 * @see IMetadataObject#toStringRepresentation(String)
-	 */
-	public String toStringRepresentation(String delimiter) {
-		// If the delimiter is not specified, use a default one
-		if (delimiter == null)
-			delimiter = IMetadataObject.DEFAULT_DELIMITER;
-
-		StringBuffer sb = new StringBuffer();
-		sb.append("Device");
-		sb.append(delimiter + "id=" + this.getId());
-		sb.append(delimiter + "uuid=" + this.getUuid());
-		sb.append(delimiter + "name=" + this.getName());
-		sb.append(delimiter + "description=" + this.getDescription());
-		sb.append(delimiter + "mfgName=" + this.getMfgName());
-		sb.append(delimiter + "mfgModel=" + this.getMfgModel());
-		sb.append(delimiter + "mfgSerialNumber=" + this.getMfgSerialNumber());
-		sb.append(delimiter + "infoUrlList=" + this.getInfoUrlList());
-		return sb.toString();
-	}
-
-	/**
-	 * In order to use the class, you should first create an empty object, then
-	 * call this method, passing in the string representation. As an example:
-	 * 
-	 * <pre>
-	 * Device newDevice = new Device();
-	 * 
-	 * newDevice
-	 * 		.setValuesFromStringRepresentation(
-	 * 				&quot;Device|name=CTD|description=A really cool CTD|mfgName=MBARI|mfgModel=CTD001|mfgSerialNumber=THX-1138&quot;,
-	 * 				&quot;|&quot;);
-	 * </pre>
-	 * 
-	 * @see IMetadataObject#setValuesFromStringRepresentation
-	 */
-	public void setValuesFromStringRepresentation(String stringRepresentation,
-			String delimiter) throws MetadataException {
-
-		// If the delimiter is null, use the default delimiter
-		String delimiterToUse = delimiter;
-		if (delimiterToUse == null)
-			delimiterToUse = IMetadataObject.DEFAULT_DELIMITER;
-
-		// Create a string tokenizer that uses the delimiter specified (or the
-		// default)
-		StringTokenizer stok = new StringTokenizer(stringRepresentation,
-				delimiterToUse);
-
-		// Grab the first token, which should be the name of the metadata class
-		String firstToken = stok.nextToken();
-
-		// Check to make sure it matches this class and if not, throw an
-		// Exception
-		if ((!this.getClass().getName().equals(firstToken))
-				&& (!this.getClass().getName().equals(
-						"moos.ssds.metadata." + firstToken)))
-			throw new MetadataException(
-					"The class specified by the first token (" + firstToken
-							+ " does not match this class "
-							+ this.getClass().getName());
-
-		// Now loop over the attribute=value pairs to fill out the object
-		while (stok.hasMoreTokens()) {
-			// Grab the next pair
-			String tok = stok.nextToken();
-
-			// Split on the equals sign
-			int firstEquals = tok.indexOf("=");
-			String key = null;
-			String value = null;
-			if (firstEquals >= 0) {
-				key = tok.substring(0, firstEquals);
-				value = tok.substring(firstEquals + 1);
-			} else {
-				key = "";
-				value = "";
-			}
-
-			// Now look for a match on the key and then assign the value
-			if (key.equalsIgnoreCase("id")) {
-				try {
-					this.setId(new Long(value));
-				} catch (NumberFormatException e) {
-					throw new MetadataException(
-							"Could not convert the value for id (" + value
-									+ ") to a Long");
-				}
-			} else if (key.equalsIgnoreCase("uuid")) {
-				this.setUuid(value);
-			} else if (key.equalsIgnoreCase("name")) {
-				this.setName(value);
-			} else if (key.equalsIgnoreCase("description")) {
-				this.setDescription(value);
-			} else if (key.equalsIgnoreCase("mfgName")) {
-				this.setMfgName(value);
-			} else if (key.equalsIgnoreCase("mfgModel")) {
-				this.setMfgModel(value);
-			} else if (key.equalsIgnoreCase("mfgSerialNumber")) {
-				this.setMfgSerialNumber(value);
-			} else if (key.equalsIgnoreCase("infoUrlList")) {
-				this.setInfoUrlList(value);
-			} else {
-				throw new MetadataException("The attribute specified by " + key
-						+ " is not a recognized field of "
-						+ this.getClass().getName());
-			}
-		}
 	}
 
 	/**
@@ -672,6 +636,116 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	}
 
 	/**
+	 * @see IMetadataObject#toStringRepresentation(String)
+	 */
+	public String toStringRepresentation(String delimiter) {
+		// If the delimiter is not specified, use a default one
+		if (delimiter == null)
+			delimiter = IMetadataObject.DEFAULT_DELIMITER;
+
+		StringBuffer sb = new StringBuffer();
+		sb.append("Device");
+		sb.append(delimiter + "id=" + this.getId());
+		sb.append(delimiter + "uuid=" + this.getUuid());
+		sb.append(delimiter + "name=" + this.getName());
+		sb.append(delimiter + "description=" + this.getDescription());
+		sb.append(delimiter + "mfgName=" + this.getMfgName());
+		sb.append(delimiter + "mfgModel=" + this.getMfgModel());
+		sb.append(delimiter + "mfgSerialNumber=" + this.getMfgSerialNumber());
+		sb.append(delimiter + "infoUrlList=" + this.getInfoUrlList());
+		return sb.toString();
+	}
+
+	/**
+	 * In order to use the class, you should first create an empty object, then
+	 * call this method, passing in the string representation. As an example:
+	 * 
+	 * <pre>
+	 * Device newDevice = new Device();
+	 * 
+	 * newDevice
+	 * 		.setValuesFromStringRepresentation(
+	 * 				&quot;Device|name=CTD|description=A really cool CTD|mfgName=MBARI|mfgModel=CTD001|mfgSerialNumber=THX-1138&quot;,
+	 * 				&quot;|&quot;);
+	 * </pre>
+	 * 
+	 * @see IMetadataObject#setValuesFromStringRepresentation
+	 */
+	public void setValuesFromStringRepresentation(String stringRepresentation,
+			String delimiter) throws MetadataException {
+
+		// If the delimiter is null, use the default delimiter
+		String delimiterToUse = delimiter;
+		if (delimiterToUse == null)
+			delimiterToUse = IMetadataObject.DEFAULT_DELIMITER;
+
+		// Create a string tokenizer that uses the delimiter specified (or the
+		// default)
+		StringTokenizer stok = new StringTokenizer(stringRepresentation,
+				delimiterToUse);
+
+		// Grab the first token, which should be the name of the metadata class
+		String firstToken = stok.nextToken();
+
+		// Check to make sure it matches this class and if not, throw an
+		// Exception
+		if ((!this.getClass().getName().equals(firstToken))
+				&& (!this.getClass().getName().equals(
+						"moos.ssds.metadata." + firstToken)))
+			throw new MetadataException(
+					"The class specified by the first token (" + firstToken
+							+ " does not match this class "
+							+ this.getClass().getName());
+
+		// Now loop over the attribute=value pairs to fill out the object
+		while (stok.hasMoreTokens()) {
+			// Grab the next pair
+			String tok = stok.nextToken();
+
+			// Split on the equals sign
+			int firstEquals = tok.indexOf("=");
+			String key = null;
+			String value = null;
+			if (firstEquals >= 0) {
+				key = tok.substring(0, firstEquals);
+				value = tok.substring(firstEquals + 1);
+			} else {
+				key = "";
+				value = "";
+			}
+
+			// Now look for a match on the key and then assign the value
+			if (key.equalsIgnoreCase("id")) {
+				try {
+					this.setId(new Long(value));
+				} catch (NumberFormatException e) {
+					throw new MetadataException(
+							"Could not convert the value for id (" + value
+									+ ") to a Long");
+				}
+			} else if (key.equalsIgnoreCase("uuid")) {
+				this.setUuid(value);
+			} else if (key.equalsIgnoreCase("name")) {
+				this.setName(value);
+			} else if (key.equalsIgnoreCase("description")) {
+				this.setDescription(value);
+			} else if (key.equalsIgnoreCase("mfgName")) {
+				this.setMfgName(value);
+			} else if (key.equalsIgnoreCase("mfgModel")) {
+				this.setMfgModel(value);
+			} else if (key.equalsIgnoreCase("mfgSerialNumber")) {
+				this.setMfgSerialNumber(value);
+			} else if (key.equalsIgnoreCase("infoUrlList")) {
+				this.setInfoUrlList(value);
+			} else {
+				throw new MetadataException("The attribute specified by " + key
+						+ " is not a recognized field of "
+						+ this.getClass().getName());
+			}
+		}
+	}
+
+	/**
 	 * This is the method that re-contitutes and object from a custom
 	 * serialization format
 	 * 
@@ -800,8 +874,8 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 		if ((this.getResources() != null) && (this.getResources().size() > 0)) {
 			logger.debug("Look like there are " + this.getResources().size()
 					+ " resource to clone as well.");
-			Collection resourcesToCopy = this.getResources();
-			Iterator resourceIter = resourcesToCopy.iterator();
+			Collection<Resource> resourcesToCopy = this.getResources();
+			Iterator<Resource> resourceIter = resourcesToCopy.iterator();
 			while (resourceIter.hasNext()) {
 				Resource resourceToClone = (Resource) resourceIter.next();
 				logger.debug("Will clone resource:");
@@ -813,89 +887,4 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 		// Now return the deep clone
 		return deepClone;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is a UUID that is assigned to the device
-	 */
-	private String uuid = null;
-
-	/**
-	 * This is the name of the device
-	 */
-	private String name;
-
-	/**
-	 * This is the description of the device
-	 */
-	private String description;
-
-	/**
-	 * This is the name of the manufacturer of the device
-	 */
-	private String mfgName;
-
-	/**
-	 * This is the manufacturer's model designator for the device
-	 */
-	private String mfgModel;
-
-	/**
-	 * This is the manufacturer's serial number assigned to the device
-	 */
-	private String mfgSerialNumber;
-
-	/**
-	 * This is a listing of URLs where information about this device can be
-	 * found
-	 */
-	private String infoUrlList;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is the <code>Person</code> that is normally thought of as the owner
-	 * of the device
-	 * 
-	 * @directed true
-	 * @label lazy
-	 */
-	private Person person;
-
-	/**
-	 * This is the <code>DeviceType</code> that this <code>Device</code> is
-	 * categorized as
-	 * 
-	 * @directed true
-	 * @label unlazy
-	 */
-	private DeviceType deviceType;
-
-	/**
-	 * This is the <code>Collection</code> of <code>Resource</code>s that are
-	 * associated with the <code>Device</code>
-	 * 
-	 * @associates Resource
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection resources = new HashSet();
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(Device.class);
-
 }

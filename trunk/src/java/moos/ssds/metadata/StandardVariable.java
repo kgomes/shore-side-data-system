@@ -43,6 +43,55 @@ import moos.ssds.metadata.util.MetadataValidator;
 public class StandardVariable implements IMetadataObject, IDescription {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(StandardVariable.class);
+
+	/**
+	 * This is the <code>serialVersionUID</code> that is fixed to control
+	 * serialization versions of the class.
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the unique identifier that is used by the persistent storage
+	 * mechanism
+	 */
+	private Long id;
+
+	/**
+	 * The name assigned to the <code>StandardVariable</code>
+	 */
+	private String name;
+
+	/**
+	 * This is the URI that serves to distinguish the namespace of the
+	 * StandardVariable
+	 */
+	private String namespaceUriString;
+
+	/**
+	 * The description of the <code>StandardVariable</code>
+	 */
+	private String description;
+
+	/**
+	 * The reference scale used for the <code>StandardVariable</code>
+	 */
+	private String referenceScale;
+
+	/**
+	 * The <code>Collection</code> of <code>StandardUnit</code>s linked to the
+	 * <code>StandardVariable</code>
+	 */
+	private Collection<StandardUnit> standardUnits = new HashSet<StandardUnit>();
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * Default constructor that creates an empty description string.
 	 */
 	public StandardVariable() {
@@ -209,7 +258,7 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	 * @return the <code>Collection</code> of <code>StandardUnit</code>s that
 	 *         are associated with the <code>StandardVariable</code>
 	 */
-	public Collection getStandardUnits() {
+	public Collection<StandardUnit> getStandardUnits() {
 		return standardUnits;
 	}
 
@@ -220,7 +269,7 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	 * @param standardUnits
 	 *            is the <code>Collection</code> that will be assigned
 	 */
-	public void setStandardUnits(Collection standardUnits) {
+	public void setStandardUnits(Collection<StandardUnit> standardUnits) {
 		this.standardUnits = standardUnits;
 	}
 
@@ -238,7 +287,7 @@ public class StandardVariable implements IMetadataObject, IDescription {
 
 		// Make sure the collection is there
 		if (this.standardUnits == null)
-			this.standardUnits = new HashSet();
+			this.standardUnits = new HashSet<StandardUnit>();
 
 		// Now add the StandardUnit to the collection
 		if (!this.standardUnits.contains(standardUnit)) {
@@ -457,13 +506,30 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
+	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
+		description = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
 		name = (String) in.readObject();
 		namespaceUriString = (String) in.readObject();
-		description = (String) in.readObject();
 		referenceScale = (String) in.readObject();
+		standardUnits = (Collection<StandardUnit>) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -473,11 +539,14 @@ public class StandardVariable implements IMetadataObject, IDescription {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(description);
 		out.writeObject(id);
 		out.writeObject(name);
 		out.writeObject(namespaceUriString);
-		out.writeObject(description);
 		out.writeObject(referenceScale);
+		// StandardUnits (null for now)
+		out.writeObject(null);
+		out.writeObject(version);
 	}
 
 	/**
@@ -517,8 +586,8 @@ public class StandardVariable implements IMetadataObject, IDescription {
 				&& (this.getStandardUnits().size() > 0)) {
 			logger.debug("There are " + this.getStandardUnits().size()
 					+ " StandardUnits to clone and attach");
-			Collection standardUnits = this.getStandardUnits();
-			Iterator suIter = standardUnits.iterator();
+			Collection<StandardUnit> standardUnits = this.getStandardUnits();
+			Iterator<StandardUnit> suIter = standardUnits.iterator();
 			while (suIter.hasNext()) {
 				StandardUnit clonedStandardUnit = (StandardUnit) ((StandardUnit) suIter
 						.next()).deepCopy();
@@ -532,57 +601,4 @@ public class StandardVariable implements IMetadataObject, IDescription {
 		// Now return the deep clone
 		return deepClone;
 	}
-
-	/**
-	 * This is the <code>serialVersionUID</code> that is fixed to control
-	 * serialization versions of the class.
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the unique identifier that is used by the persistent storage
-	 * mechanism
-	 */
-	private Long id;
-
-	/**
-	 * The name assigned to the <code>StandardVariable</code>
-	 */
-	private String name;
-
-	/**
-	 * This is the URI that serves to distinguish the namespace of the
-	 * StandardVariable
-	 */
-	private String namespaceUriString;
-
-	/**
-	 * The description of the <code>StandardVariable</code>
-	 */
-	private String description;
-
-	/**
-	 * The reference scale used for the <code>StandardVariable</code>
-	 */
-	private String referenceScale;
-
-	/**
-	 * The <code>Collection</code> of <code>StandardUnit</code>s linked to the
-	 * <code>StandardVariable</code>
-	 * 
-	 * @associates StandardUnit
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection standardUnits = new HashSet();
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(StandardVariable.class);
 }

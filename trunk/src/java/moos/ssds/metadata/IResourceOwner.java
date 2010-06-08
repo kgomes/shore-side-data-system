@@ -30,32 +30,32 @@ import java.util.Collection;
  */
 public interface IResourceOwner extends Serializable {
 
-    /**
-     * This method will return a <code>Collection</code> of
-     * <code>Resource</code>s that are owned by the object implemnting this
-     * interface
-     * 
-     * @return a <code>Collection</code> of <code>Resource</code>s
-     */
-    Collection getResources();
+	/**
+	 * This method will return a <code>Collection</code> of
+	 * <code>Resource</code>s that are owned by the object implemnting this
+	 * interface
+	 * 
+	 * @return a <code>Collection</code> of <code>Resource</code>s
+	 */
+	Collection<Resource> getResources();
 
-    /**
-     * This method adds a <code>Resource</code> to a <code>Collection</code>
-     * of <code>Resource</code>s that are owned by the object implementing
-     * this interface
-     * 
-     * @param resource
-     *            the <code>Resource</code> to be added
-     */
-    void addResource(Resource resource);
+	/**
+	 * This method adds a <code>Resource</code> to a <code>Collection</code> of
+	 * <code>Resource</code>s that are owned by the object implementing this
+	 * interface
+	 * 
+	 * @param resource
+	 *            the <code>Resource</code> to be added
+	 */
+	void addResource(Resource resource);
 
-    /**
-     * This method removes a <code>Resource</code> from a
-     * <code>Collection</code> of <code>Resource</code>s that are owned by
-     * the object implementing this interface
-     * 
-     * @param resource
-     *            the <code>Resource</code> to be removed
-     */
-    void removeResource(Resource resource);
+	/**
+	 * This method removes a <code>Resource</code> from a
+	 * <code>Collection</code> of <code>Resource</code>s that are owned by the
+	 * object implementing this interface
+	 * 
+	 * @param resource
+	 *            the <code>Resource</code> to be removed
+	 */
+	void removeResource(Resource resource);
 }

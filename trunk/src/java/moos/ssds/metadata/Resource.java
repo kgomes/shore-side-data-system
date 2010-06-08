@@ -48,6 +48,99 @@ import moos.ssds.util.XmlDateFormat;
 public class Resource implements IMetadataObject, IDescription, IDateRange {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(Resource.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the persistence layer identifier
+	 */
+	private Long id;
+
+	/**
+	 * This is the arbitrary name given to the DataContainer
+	 */
+	private String name;
+
+	/**
+	 * The description of the DataContainer
+	 */
+	private String description;
+
+	/**
+	 * This is the <code>Date</code> that the earliest data in this
+	 * <code>DataContainer</code> applies to
+	 */
+	private Date startDate;
+
+	/**
+	 * This is the <code>Date</code> that the latest data in this
+	 * <code>DataContainer</code> applies to
+	 */
+	private Date endDate;
+
+	/**
+	 * This is an attribute that give the range of time that this
+	 * <code>DataContainer</code> covers
+	 */
+	private IDateRange dateRange = new DateRange(this);
+
+	/**
+	 * This is a <code>URI</code> that is the resource identifier
+	 */
+	private String uriString;
+
+	/**
+	 * This is the length of the <code>DataContainer</code> in bytes
+	 */
+	private Long contentLength;
+
+	/**
+	 * This is the MIME type that applies to this <code>DataContainer</code> (if
+	 * one applies).
+	 */
+	private String mimeType;
+
+	/**
+	 * This is the <code>Person</code> that is normally thought of as the owner
+	 * of the resource
+	 */
+	private Person person;
+
+	/**
+	 * This is the <code>ResourceType</code> that this <code>Resource</code> is
+	 * categorized as
+	 */
+	private ResourceType resourceType;
+
+	/**
+	 * This is a <code>Collection</code> of <code>ResourceBLOB</code>s that can
+	 * be linked to the <code>Resource</code>
+	 */
+	private ResourceBLOB resourceBLOB;
+
+	/**
+	 * This is a collection of <code>Keyword</code> objects that can be used to
+	 * search for <code>DataContainer</code>s.
+	 */
+	private Collection<Keyword> keywords = new HashSet<Keyword>();
+
+	/**
+	 * This is a date formatting utility
+	 */
+	private transient XmlDateFormat xmlDateFormat = new XmlDateFormat();
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * A default constructor
 	 */
 	public Resource() {
@@ -341,11 +434,11 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 *                                    class="moos.ssds.metadata.Keyword"
 	 * @return the collection of <code>Keyword</code> objects.
 	 */
-	public Collection getKeywords() {
+	public Collection<Keyword> getKeywords() {
 		return keywords;
 	}
 
-	protected void setKeywords(Collection keywords) {
+	protected void setKeywords(Collection<Keyword> keywords) {
 		this.keywords = keywords;
 	}
 
@@ -409,6 +502,61 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 */
 	public void setVersion(long version) {
 		this.version = version;
+	}
+
+	/**
+	 * This method overrides the default equals method and checks for to see if
+	 * the objects occupy the same memory space and if not, then it checks for
+	 * identical persistent identifiers and if those are not available, it
+	 * checks for equality of the business key which is the URI (<b>NOTE: This
+	 * IS a case senstive comparison</b>)
+	 * 
+	 * @see IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// First check to see if input is null
+		if (obj == null)
+			return false;
+
+		// Now check JVM identity
+		if (this == obj)
+			return true;
+
+		// Now check if it is the correct class
+		if (!(obj instanceof Resource))
+			return false;
+
+		// Cast to Resource object
+		final Resource that = (Resource) obj;
+
+		// Now check for missing business key (URI)
+		if ((this.uriString == null) || (that.getUriString() == null))
+			return false;
+
+		// Now compare hashcodes
+		if (this.hashCode() == that.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * This method overrides the default hashCode and had to be implemented
+	 * because we overrode the default equals method. They both should base
+	 * their calculation on the business key.
+	 * 
+	 * @see IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+		// Calculate the hashcode
+		int result = 53;
+		if (uriString != null) {
+			result = 4 * result + uriString.hashCode();
+		}
+
+		// Now return it
+		return result;
 	}
 
 	/**
@@ -528,76 +676,42 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	}
 
 	/**
-	 * This method overrides the default equals method and checks for to see if
-	 * the objects occupy the same memory space and if not, then it checks for
-	 * identical persistent identifiers and if those are not available, it
-	 * checks for equality of the business key which is the URI (<b>NOTE: This
-	 * IS a case senstive comparison</b>)
-	 * 
-	 * @see IMetadataObject#equals(Object)
-	 */
-	public boolean equals(Object obj) {
-		// First check to see if input is null
-		if (obj == null)
-			return false;
-
-		// Now check JVM identity
-		if (this == obj)
-			return true;
-
-		// Now check if it is the correct class
-		if (!(obj instanceof Resource))
-			return false;
-
-		// Cast to Resource object
-		final Resource that = (Resource) obj;
-
-		// Now check for missing business key (URI)
-		if ((this.uriString == null) || (that.getUriString() == null))
-			return false;
-
-		// Now compare hashcodes
-		if (this.hashCode() == that.hashCode()) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * This method overrides the default hashCode and had to be implemented
-	 * because we overrode the default equals method. They both should base
-	 * their calculation on the business key.
-	 * 
-	 * @see IMetadataObject#hashCode()
-	 */
-	public int hashCode() {
-		// Calculate the hashcode
-		int result = 53;
-		if (uriString != null) {
-			result = 4 * result + uriString.hashCode();
-		}
-
-		// Now return it
-		return result;
-	}
-
-	/**
 	 * This is the method to re-consitutute and object from a custom
 	 * serialization form
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
+	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
-		description = (String) in.readObject();
-		startDate = (Date) in.readObject();
-		endDate = (Date) in.readObject();
-		uriString = (String) in.readObject();
 		contentLength = (Long) in.readObject();
+		dateRange = (DateRange) in.readObject();
+		description = (String) in.readObject();
+		endDate = (Date) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		keywords = (Collection<Keyword>) in.readObject();
 		mimeType = (String) in.readObject();
+		name = (String) in.readObject();
+		person = (Person) in.readObject();
+		resourceBLOB = (ResourceBLOB) in.readObject();
+		resourceType = (ResourceType) in.readObject();
+		startDate = (Date) in.readObject();
+		uriString = (String) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -606,14 +720,25 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(id);
-		out.writeObject(name);
-		out.writeObject(description);
-		out.writeObject(startDate);
-		out.writeObject(endDate);
-		out.writeObject(uriString);
 		out.writeObject(contentLength);
+		// DateRange (null for now)
+		out.writeObject(null);
+		out.writeObject(description);
+		out.writeObject(endDate);
+		out.writeObject(id);
+		// Keywords (null for now)
+		out.writeObject(null);
 		out.writeObject(mimeType);
+		out.writeObject(name);
+		// Person (null for now)
+		out.writeObject(null);
+		// ResourceBLOB (null for now)
+		out.writeObject(null);
+		// ResourceType (null for now)
+		out.writeObject(null);
+		out.writeObject(startDate);
+		out.writeObject(uriString);
+		out.writeObject(version);
 	}
 
 	/**
@@ -681,8 +806,8 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 		if ((this.getKeywords() != null) && (this.getKeywords().size() > 0)) {
 			logger.debug("There are " + this.getKeywords().size()
 					+ " that need cloning and attaching");
-			Collection keywordsToCopy = this.getKeywords();
-			Iterator keywordIter = keywordsToCopy.iterator();
+			Collection<Keyword> keywordsToCopy = this.getKeywords();
+			Iterator<Keyword> keywordIter = keywordsToCopy.iterator();
 			while (keywordIter.hasNext()) {
 				Keyword clonedKeyword = (Keyword) ((Keyword) keywordIter.next())
 						.deepCopy();
@@ -696,110 +821,4 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 		// Return the deep clone
 		return deepClone;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This is the persistence layer identifier
-	 */
-	private Long id;
-
-	/**
-	 * This is the arbitrary name given to the DataContainer
-	 */
-	private String name;
-
-	/**
-	 * The description of the DataContainer
-	 */
-	private String description;
-
-	/**
-	 * This is the <code>Date</code> that the earliest data in this
-	 * <code>DataContainer</code> applies to
-	 */
-	private Date startDate;
-
-	/**
-	 * This is the <code>Date</code> that the latest data in this
-	 * <code>DataContainer</code> applies to
-	 */
-	private Date endDate;
-
-	/**
-	 * This is an attribute that give the range of time that this
-	 * <code>DataContainer</code> covers
-	 */
-	private IDateRange dateRange = new DateRange(this);
-
-	/**
-	 * This is a <code>URI</code> that is the resource identifier
-	 */
-	private String uriString;
-
-	/**
-	 * This is the length of the <code>DataContainer</code> in bytes
-	 */
-	private Long contentLength;
-
-	/**
-	 * This is the MIME type that applies to this <code>DataContainer</code> (if
-	 * one applies).
-	 */
-	private String mimeType;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is the <code>Person</code> that is normally thought of as the owner
-	 * of the resource
-	 * 
-	 * @directed true
-	 * @label lazy
-	 */
-	private Person person;
-
-	/**
-	 * This is the <code>ResourceType</code> that this <code>Resource</code> is
-	 * categorized as
-	 * 
-	 * @directed true
-	 * @label unlazy
-	 */
-	private ResourceType resourceType;
-
-	/**
-	 * This is a <code>Collection</code> of <code>ResourceBLOB</code>s that can
-	 * be linked to the <code>Resource</code>
-	 * 
-	 * @directed true
-	 * @label lazy
-	 */
-	private ResourceBLOB resourceBLOB;
-
-	/**
-	 * This is a collection of <code>Keyword</code> objects that can be used to
-	 * search for <code>DataContainer</code>s.
-	 * 
-	 * @associates Keyword
-	 * @directed true
-	 * @label lazy
-	 */
-	private Collection keywords = new HashSet();
-
-	/**
-	 * This is a date formatting utility
-	 */
-	private XmlDateFormat xmlDateFormat = new XmlDateFormat();
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(Resource.class);
 }

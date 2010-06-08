@@ -39,6 +39,37 @@ import moos.ssds.metadata.util.MetadataValidator;
 public class DataProducerGroup implements IMetadataObject, IDescription {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(DataProducerGroup.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This unique persistence mechanism ID for the
+	 * <code>DataProducerGroup</code>
+	 */
+	private Long id;
+
+	/**
+	 * A name assigned to the <code>DataProducerGroup</code>
+	 */
+	private String name;
+
+	/**
+	 * A description of the <code>DataProducerGroup</code>
+	 */
+	private String description;
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * @see IMetadataObject#getId()
 	 * @hibernate.id generator-class="identity" type="long"
 	 */
@@ -102,6 +133,51 @@ public class DataProducerGroup implements IMetadataObject, IDescription {
 
 	public void setVersion(long version) {
 		this.version = version;
+	}
+
+	/**
+	 * @see IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// First check to see if input is null
+		if (obj == null)
+			return false;
+
+		// Now check JVM identity
+		if (this == obj)
+			return true;
+
+		// Now check if it is the correct class
+		if (!(obj instanceof DataProducerGroup))
+			return false;
+
+		// Cast to DataProducerGroup object
+		final DataProducerGroup that = (DataProducerGroup) obj;
+
+		// Now check for missing business key (name)
+		if ((this.name == null) || (that.getName() == null))
+			return false;
+
+		// Now check hashcodes
+		if (this.hashCode() == that.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @see IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+		// Create the hashcode
+		int result = 3;
+		if (name != null) {
+			result = 9 * result + name.hashCode();
+		}
+
+		// Now return it
+		return result;
 	}
 
 	/**
@@ -187,60 +263,30 @@ public class DataProducerGroup implements IMetadataObject, IDescription {
 	}
 
 	/**
-	 * @see IMetadataObject#equals(Object)
-	 */
-	public boolean equals(Object obj) {
-		// First check to see if input is null
-		if (obj == null)
-			return false;
-
-		// Now check JVM identity
-		if (this == obj)
-			return true;
-
-		// Now check if it is the correct class
-		if (!(obj instanceof DataProducerGroup))
-			return false;
-
-		// Cast to DataProducerGroup object
-		final DataProducerGroup that = (DataProducerGroup) obj;
-
-		// Now check for missing business key (name)
-		if ((this.name == null) || (that.getName() == null))
-			return false;
-
-		// Now check hashcodes
-		if (this.hashCode() == that.hashCode()) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * @see IMetadataObject#hashCode()
-	 */
-	public int hashCode() {
-		// Create the hashcode
-		int result = 3;
-		if (name != null) {
-			result = 9 * result + name.hashCode();
-		}
-
-		// Now return it
-		return result;
-	}
-
-	/**
 	 * This is the method to re-constitute an object from a customized format
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
 		description = (String) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		name = (String) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -249,9 +295,10 @@ public class DataProducerGroup implements IMetadataObject, IDescription {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(description);
 		out.writeObject(id);
 		out.writeObject(name);
-		out.writeObject(description);
+		out.writeObject(version);
 	}
 
 	/**
@@ -283,35 +330,4 @@ public class DataProducerGroup implements IMetadataObject, IDescription {
 		logger.debug(clonedDataProducerGroup.toStringRepresentation("|"));
 		return clonedDataProducerGroup;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * This unique persistence mechanism ID for the
-	 * <code>DataProducerGroup</code>
-	 */
-	private Long id;
-
-	/**
-	 * A name assigned to the <code>DataProducerGroup</code>
-	 */
-	private String name;
-
-	/**
-	 * A description of the <code>DataProducerGroup</code>
-	 */
-	private String description;
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(DataProducerGroup.class);
 }

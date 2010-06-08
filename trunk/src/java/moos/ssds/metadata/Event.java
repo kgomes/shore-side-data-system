@@ -41,6 +41,57 @@ import moos.ssds.util.XmlDateFormat;
 public class Event implements IMetadataObject, IDescription, IDateRange {
 
 	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(Event.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This unique persistence mechanism ID for the <code>Event</code>
+	 */
+	private Long id;
+
+	/**
+	 * This is the name associated with the <code>Event</code>
+	 */
+	private String name;
+
+	/**
+	 * A description of the <code>Event</code>
+	 */
+	private String description;
+
+	/**
+	 * The date the <code>Event</code> started
+	 */
+	private Date startDate;
+
+	/**
+	 * The date the <code>Event</code> ended
+	 */
+	private Date endDate;
+
+	/**
+	 * The <code>DateRange</code> associated with this <code>Event</code>
+	 */
+	private IDateRange dateRange = new DateRange(this);
+
+	/**
+	 * An <code>XmlDateFormate</code> to help with date and time parsing and
+	 * printing
+	 */
+	private transient XmlDateFormat xmlDateFormat = new XmlDateFormat();
+
+	/**
+	 * This is the hibernate version that is used to check for dirty objects
+	 */
+	private long version = -1;
+
+	/**
 	 * @see moos.ssds.metadata.IMetadataObject#getId()
 	 * @hibernate.id generator-class="identity" type="long"
 	 */
@@ -146,6 +197,68 @@ public class Event implements IMetadataObject, IDescription, IDateRange {
 	}
 
 	/**
+	 * @see IMetadataObject#equals(Object)
+	 */
+	public boolean equals(Object obj) {
+		// First check to see if input is null
+		if (obj == null)
+			return false;
+
+		// Now check JVM identity
+		if (this == obj)
+			return true;
+
+		// Now check if it is the correct class
+		if (!(obj instanceof Event))
+			return false;
+
+		// Cast to Event object
+		final Event that = (Event) obj;
+
+		// Now check for missing business keys (name and dates)
+		if ((this.name == null) || (that.getName() == null)
+				|| (this.startDate == null) || (that.getStartDate() == null)
+				|| (this.endDate == null) || (that.getEndDate() == null))
+			return false;
+
+		// Now compare hashcodes
+		if (this.hashCode() == that.hashCode()) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	/**
+	 * @see IMetadataObject#hashCode()
+	 */
+	public int hashCode() {
+
+		// Calculate the hashcode
+		int result = 3;
+		if (name != null) {
+			result = result + name.hashCode();
+		}
+		// Now truncate to seconds and get hashcode
+		if (startDate != null)
+			result = 3
+					* result
+					+ new String(DateUtils.roundDateDownToSeconds(startDate)
+							.getTime()
+							+ "").hashCode();
+		if (endDate != null)
+			result = 5
+					* result
+					+ new String(DateUtils.roundDateDownToSeconds(endDate)
+							.getTime()
+							+ "").hashCode();
+
+		// Now return it
+		return result;
+	}
+
+	/**
 	 * @see IMetadataObject#toStringRepresentation(String)
 	 */
 	public String toStringRepresentation(String delimiter) {
@@ -233,80 +346,34 @@ public class Event implements IMetadataObject, IDescription, IDateRange {
 	}
 
 	/**
-	 * @see IMetadataObject#equals(Object)
-	 */
-	public boolean equals(Object obj) {
-		// First check to see if input is null
-		if (obj == null)
-			return false;
-
-		// Now check JVM identity
-		if (this == obj)
-			return true;
-
-		// Now check if it is the correct class
-		if (!(obj instanceof Event))
-			return false;
-
-		// Cast to Event object
-		final Event that = (Event) obj;
-
-		// Now check for missing business keys (name and dates)
-		if ((this.name == null) || (that.getName() == null)
-				|| (this.startDate == null) || (that.getStartDate() == null)
-				|| (this.endDate == null) || (that.getEndDate() == null))
-			return false;
-
-		// Now compare hashcodes
-		if (this.hashCode() == that.hashCode()) {
-			return true;
-		} else {
-			return false;
-		}
-
-	}
-
-	/**
-	 * @see IMetadataObject#hashCode()
-	 */
-	public int hashCode() {
-
-		// Calculate the hashcode
-		int result = 3;
-		if (name != null) {
-			result = result + name.hashCode();
-		}
-		// Now truncate to seconds and get hashcode
-		if (startDate != null)
-			result = 3
-					* result
-					+ new String(DateUtils.roundDateDownToSeconds(startDate)
-							.getTime()
-							+ "").hashCode();
-		if (endDate != null)
-			result = 5
-					* result
-					+ new String(DateUtils.roundDateDownToSeconds(endDate)
-							.getTime()
-							+ "").hashCode();
-
-		// Now return it
-		return result;
-	}
-
-	/**
-	 * This is the method to re-consitutute and object from a custom
+	 * This is the method to re-constitute and object from a custom
 	 * serialization form
 	 * 
 	 * @see Externalizable#readExternal(ObjectInput)
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		id = (Long) in.readObject();
-		name = (String) in.readObject();
+		dateRange = (DateRange) in.readObject();
 		description = (String) in.readObject();
-		startDate = (Date) in.readObject();
 		endDate = (Date) in.readObject();
+		// Read in ID
+		Object idObject = in.readObject();
+		if (idObject instanceof Integer) {
+			Integer intId = (Integer) idObject;
+			id = new Long(intId.longValue());
+		} else if (idObject instanceof Long) {
+			id = (Long) idObject;
+		}
+		name = (String) in.readObject();
+		startDate = (Date) in.readObject();
+		// Read in the version
+		Object versionObject = in.readObject();
+		if (versionObject instanceof Integer) {
+			Integer intVersion = (Integer) versionObject;
+			version = new Long(intVersion.longValue());
+		} else if (versionObject instanceof Long) {
+			version = (Long) versionObject;
+		}
 	}
 
 	/**
@@ -315,11 +382,13 @@ public class Event implements IMetadataObject, IDescription, IDateRange {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(dateRange);
+		out.writeObject(description);
+		out.writeObject(endDate);
 		out.writeObject(id);
 		out.writeObject(name);
-		out.writeObject(description);
 		out.writeObject(startDate);
-		out.writeObject(endDate);
+		out.writeObject(version);
 	}
 
 	/**
@@ -353,55 +422,4 @@ public class Event implements IMetadataObject, IDescription, IDateRange {
 		logger.debug(clonedEvent.toStringRepresentation("|"));
 		return clonedEvent;
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private Long id;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String name;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private String description;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private Date startDate;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private Date endDate;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	private IDateRange dateRange = new DateRange(this);
-
-	/**
-	 * This is the hibernate version that is used to check for dirty objects
-	 */
-	private long version = -1;
-
-	/**
-	 * TODO KJG - Document this
-	 */
-	// private IDataProducer dataProducer;
-	private XmlDateFormat xmlDateFormat = new XmlDateFormat();
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(Event.class);
 }
