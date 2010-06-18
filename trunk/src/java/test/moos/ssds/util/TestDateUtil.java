@@ -34,64 +34,60 @@ import org.apache.log4j.PatternLayout;
  */
 public class TestDateUtil extends TestCase {
 
-    /**
-     * @param arg0
-     */
-    public TestDateUtil(String arg0) {
-        super(arg0);
-    }
+	/**
+	 * @param arg0
+	 */
+	public TestDateUtil(String arg0) {
+		super(arg0);
+	}
 
-    protected void setUp() {
-        BasicConfigurator.configure();
-        logger.setLevel(Level.DEBUG);
-        logger.addAppender(new ConsoleAppender(new PatternLayout(
-            "%d %-5p [%c %M %L] %m%n")));
-    }
+	protected void setUp() {
+	}
 
-    public void testEqualsWithinSeconds() {
-        Date date1 = new Date(10000L);
-        Date date2 = new Date(10050L);
+	public void testEqualsWithinSeconds() {
+		Date date1 = new Date(10000L);
+		Date date2 = new Date(10050L);
 
-        // First check to see if they are exactly equal
-        assertTrue("The two dates should not be equal by their native equals",
-            !date1.equals(date2));
-        assertTrue(
-            "The two dates should not be equal by seconds if seconds = 0",
-            !DateUtils.equalsWithinSeconds(date1, date2, 0));
-        assertTrue("They should be equal if window is 1 second", DateUtils
-            .equalsWithinSeconds(date1, date2, 1));
-    }
+		// First check to see if they are exactly equal
+		assertTrue("The two dates should not be equal by their native equals",
+				!date1.equals(date2));
+		assertTrue(
+				"The two dates should not be equal by seconds if seconds = 0",
+				!DateUtils.equalsWithinSeconds(date1, date2, 0));
+		assertTrue("They should be equal if window is 1 second", DateUtils
+				.equalsWithinSeconds(date1, date2, 1));
+	}
 
-    public void testRoundDateDownToSeconds() {
+	public void testRoundDateDownToSeconds() {
 
-        Date date1 = new Date(10000L);
-        Date date2 = new Date(10010L);
-        Date date3 = new Date(10999L);
-        Date date4 = new Date(11000L);
+		Date date1 = new Date(10000L);
+		Date date2 = new Date(10010L);
+		Date date3 = new Date(10999L);
+		Date date4 = new Date(11000L);
 
-        // Now round each one down
-        Date date1Round = DateUtils.roundDateDownToSeconds(date1);
-        Date date2Round = DateUtils.roundDateDownToSeconds(date2);
-        Date date3Round = DateUtils.roundDateDownToSeconds(date3);
-        Date date4Round = DateUtils.roundDateDownToSeconds(date4);
+		// Now round each one down
+		Date date1Round = DateUtils.roundDateDownToSeconds(date1);
+		Date date2Round = DateUtils.roundDateDownToSeconds(date2);
+		Date date3Round = DateUtils.roundDateDownToSeconds(date3);
+		Date date4Round = DateUtils.roundDateDownToSeconds(date4);
 
-        // Now test the results
-        assertTrue("date 1 and 2 before round should not be equal in millis",
-            date1.getTime() != date2.getTime());
-        assertTrue("date 1 and 23before round should not be equal in millis",
-            date1.getTime() != date3.getTime());
-        assertEquals("rounded date 1 and two should be equal in millis",
-            date1Round.getTime(), date2Round.getTime());
-        assertEquals("rounded date 1 and three should be equal in millis",
-            date1Round.getTime(), date3Round.getTime());
-        assertTrue("date 1 and four should not be equal before round", date1
-            .getTime() != date4.getTime());
-        assertTrue("date 1 and four should not be equal after rounding even",
-            date1Round.getTime() != date4Round.getTime());
-    }
+		// Now test the results
+		assertTrue("date 1 and 2 before round should not be equal in millis",
+				date1.getTime() != date2.getTime());
+		assertTrue("date 1 and 23before round should not be equal in millis",
+				date1.getTime() != date3.getTime());
+		assertEquals("rounded date 1 and two should be equal in millis",
+				date1Round.getTime(), date2Round.getTime());
+		assertEquals("rounded date 1 and three should be equal in millis",
+				date1Round.getTime(), date3Round.getTime());
+		assertTrue("date 1 and four should not be equal before round", date1
+				.getTime() != date4.getTime());
+		assertTrue("date 1 and four should not be equal after rounding even",
+				date1Round.getTime() != date4Round.getTime());
+	}
 
-    /**
-     * The logger for dumping information to
-     */
-    static Logger logger = Logger.getLogger(TestDateUtil.class);
+	/**
+	 * The logger for dumping information to
+	 */
+	static Logger logger = Logger.getLogger(TestDateUtil.class);
 }
