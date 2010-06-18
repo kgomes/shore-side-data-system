@@ -49,6 +49,12 @@
 		</classpath>
 	</taskdef>
 
+	<!-- Define the JiBX task -->
+	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask">
+		<classpath refid="jibx-classpath" />
+	</taskdef>
+
+
 	<!-- Do stuff that you want everytime ant is run -->
 	<target name="init">
 		<!-- Initialize the date/time -->
@@ -212,8 +218,16 @@
 		</javac>
 	</target>
 
+	<!-- Generate the JiBX products -->
+	<target name="jibx-gen" depends="compile">
+		<echo message="Running JiBX binding compiler" />
+		<bind binding="${project.src}/xml/binding.xml">
+			<classpath refid="jibx-classpath" />
+		</bind>
+	</target>
+
 	<!-- The target to build -->
-	<target name="build" depends="clean,compile" description="This will clean all the compiled classes, run all the necessary XDoclet tasks, and compile the source code" />
+	<target name="build" depends="clean,compile,jibx-gen" description="This will clean all the compiled classes, run all the necessary XDoclet tasks, and compile the source code" />
 
 	<!-- The distribution target -->
 	<target name="dist" depends="build,hibernate-doclet,web-doclet,web-services-doclet" description="This target runs the clean, compile and then builds this distributions">
@@ -632,39 +646,32 @@
 					<!-- Test the metadata classes -->
 					<include name="test/moos/ssds/metadata/**/*Test*.java" />
 
-					<!-- Individual metadata class tests (turn off if using the test in the previous line) -->
-					<!-- <include name="test/moos/ssds/metadata/TestDataContainer.java" /> -->
-					<!-- <include name="test/moos/ssds/metadata/TestDevice.java" /> -->
-					<!-- <include name="test/moos/ssds/metadata/TestDeviceType.java" /> -->
-					<!-- <include name="test/moos/ssds/metadata/TestPerson.java" /> -->
-					<!-- <include name="test/moos/ssds/metadata/TestStandardUnit.java" /> -->
-					<!-- <include name="test/moos/ssds/metadata/TestStandardVariable.java" /> -->
-					<!-- <include name="test/moos/ssds/metadata/util/TestObjectBuilder.java" /> -->
-
 					<!-- Test the data parsers -->
 					<include name="test/moos/ssds/data/parsers/**/*Test*.java" />
 
-					<!-- Test the services for the metadata classes
-					<include name="test/moos/ssds/services/metadata/**/*Test*.java" />  -->
+					<!-- Test the services for the metadata classes -->
+					<include name="test/moos/ssds/services/metadata/TestEventAccess.java" />
+					<include name="test/moos/ssds/services/metadata/TestKeywordAccess.java" />
+					<include name="test/moos/ssds/services/metadata/TestPersonAccess.java" />
+
+					<!-- <include name="test/moos/ssds/services/metadata/**/*Test*.java" />  -->
+					<!-- Exclude the parent test class
+					<exclude name="test/moos/ssds/services/metadata/TestAccessCase.java" /> -->
 
 					<!-- Individual service tests (turn off if using the test in the previous line) -->
 					<!-- <include name="test/moos/ssds/services/metadata/TestDataContainerAccess.java" /> -->
 					<!-- <include name="test/moos/ssds/services/metadata/TestDataProducerAccess.java" /> -->
 					<!-- <include name="test/moos/ssds/services/metadata/TestDeviceAccess.java" /> -->
 					<!-- <include name="test/moos/ssds/services/metadata/TestDeviceTypeAccess.java" /> -->
-					<!-- <include name="test/moos/ssds/services/metadata/TestEventAccess.java" /> -->
-					<!-- <include name="test/moos/ssds/services/metadata/TestPersonAccess.java" /> -->
 					<!-- <include name="test/moos/ssds/services/metadata/TestStandardUnitAccess.java" /> -->
 					<!-- <include name="test/moos/ssds/services/metadata/TestStandardVariableAccess.java" /> -->
 
 					<!-- Test the data services
 					<include name="test/moos/ssds/services/data/**/*Test*.java" /> -->
 
-					<!-- Utility tests
-					<include name="test/moos/ssds/util/**/*Test*.java" /> -->
+					<!-- Utility tests -->
+					<include name="test/moos/ssds/util/**/*Test*.java" />
 
-					<!-- Exclude the parent test class -->
-					<exclude name="test/moos/ssds/services/metadata/TestAccessCase.java" />
 				</fileset>
 			</batchtest>
 		</junit>
