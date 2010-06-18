@@ -52,6 +52,26 @@
 	<propertycopy name="io.storage.sql.lastnumber.preamble" from="io.storage.sql.${database.server.type}.lastnumber.preamble" silent="true" />
 	<propertycopy name="io.storage.sql.lastnumber.postamble" from="io.storage.sql.${database.server.type}.lastnumber.postamble" silent="true" />
 
+	<!-- Define a fileset for JiBX jars -->
+	<path id="jibx-classpath">
+		<fileset dir="${project.lib}">
+			<include name="${bcel.jar}" />
+			<include name="${jibx-bind.jar}" />
+			<include name="${jibx-extras.jar}" />
+			<include name="${jibx-run.jar}" />
+			<include name="${jibx-schema.jar}" />
+			<include name="${jibx-tools.jar}" />
+			<include name="${joda-time.jar}" />
+			<include name="${qdox.jar}" />
+			<include name="${stax-api.jar}" />
+			<include name="${wstx-asl.jar}" />
+			<include name="${xbis-jbix.jar}" />
+			<include name="${xmlpull.jar}" />
+			<include name="${xpp3.jar}" />
+		</fileset>
+		<pathelement location="${build.classes}" />
+	</path>
+
 	<!-- Define the fileset that includes the JBoss client lib jars that we need -->
 	<fileset id="publisher-client-jboss-libs" dir="${jboss.client.jar.directory}">
 		<include name="${log4j.jar}" />
@@ -61,6 +81,19 @@
 		<include name="${jbossmq-client.jar}" />
 		<include name="${jboss-system-client.jar}" />
 		<include name="${jnp-client.jar}" />
+		<include name="${bcel.jar}" />
+		<include name="${jibx-bind.jar}" />
+		<include name="${jibx-extras.jar}" />
+		<include name="${jibx-run.jar}" />
+		<include name="${jibx-schema.jar}" />
+		<include name="${jibx-tools.jar}" />
+		<include name="${joda-time.jar}" />
+		<include name="${qdox.jar}" />
+		<include name="${stax-api.jar}" />
+		<include name="${wstx-asl.jar}" />
+		<include name="${xbis-jbix.jar}" />
+		<include name="${xmlpull.jar}" />
+		<include name="${xpp3.jar}" />
 	</fileset>
 
 	<!-- Define the fileset that contains the JBoss client jars -->
@@ -80,6 +113,19 @@
 		<include name="${activation.jar}" />
 		<include name="${hibernate.client.commons.logging.jar}" />
 		<include name="${javassist.jar}" />
+		<include name="${bcel.jar}" />
+		<include name="${jibx-bind.jar}" />
+		<include name="${jibx-extras.jar}" />
+		<include name="${jibx-run.jar}" />
+		<include name="${jibx-schema.jar}" />
+		<include name="${jibx-tools.jar}" />
+		<include name="${joda-time.jar}" />
+		<include name="${qdox.jar}" />
+		<include name="${stax-api.jar}" />
+		<include name="${wstx-asl.jar}" />
+		<include name="${xbis-jbix.jar}" />
+		<include name="${xmlpull.jar}" />
+		<include name="${xpp3.jar}" />
 	</fileset>
 
 	<!-- Define the fileset that includes the JBoss server lib jars that we need -->
@@ -128,6 +174,19 @@
 		<include name="lib/${blazeds.flex.messaging.proxy.jar}" />
 		<include name="lib/${blazeds.flex.messaging.remoting.jar}" />
 		<include name="lib/${blazeds.flex.rds.server.jar}" />
+		<include name="lib/${bcel.jar}" />
+		<include name="lib/${jibx-bind.jar}" />
+		<include name="lib/${jibx-extras.jar}" />
+		<include name="lib/${jibx-run.jar}" />
+		<include name="lib/${jibx-schema.jar}" />
+		<include name="lib/${jibx-tools.jar}" />
+		<include name="lib/${joda-time.jar}" />
+		<include name="lib/${qdox.jar}" />
+		<include name="lib/${stax-api.jar}" />
+		<include name="lib/${wstx-asl.jar}" />
+		<include name="lib/${xbis-jbix.jar}" />
+		<include name="lib/${xmlpull.jar}" />
+		<include name="lib/${xpp3.jar}" />
 	</fileset>
 
 	<!-- I also need the fileset without the 'lib' dir -->
@@ -167,6 +226,19 @@
 		<include name="${blazeds.flex.messaging.proxy.jar}" />
 		<include name="${blazeds.flex.messaging.remoting.jar}" />
 		<include name="${blazeds.flex.rds.server.jar}" />
+		<include name="${bcel.jar}" />
+		<include name="${jibx-bind.jar}" />
+		<include name="${jibx-extras.jar}" />
+		<include name="${jibx-run.jar}" />
+		<include name="${jibx-schema.jar}" />
+		<include name="${jibx-tools.jar}" />
+		<include name="${joda-time.jar}" />
+		<include name="${qdox.jar}" />
+		<include name="${stax-api.jar}" />
+		<include name="${wstx-asl.jar}" />
+		<include name="${xbis-jbix.jar}" />
+		<include name="${xmlpull.jar}" />
+		<include name="${xpp3.jar}" />
 	</fileset>
 
 	<!-- Define classpath for compiling the source code -->
