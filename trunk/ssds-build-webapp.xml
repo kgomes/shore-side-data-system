@@ -63,9 +63,11 @@
 		<gas3 outputdir="${src.web}/src">
 			<classpath>
 				<pathelement location="${build.classes}" />
+				<path refid="jibx-classpath" />
 			</classpath>
 			<fileset dir="${build.classes}">
 				<include name="moos/ssds/metadata/*.class" />
+				<exclude name="moos/ssds/metadata/JiBX*.class" />
 			</fileset>
 		</gas3>
 	</target>
