@@ -46,6 +46,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.proxy.HibernateProxy;
 
 /**
  * This Data Access Object (DAO) provides methods for interacting with the
@@ -111,7 +112,7 @@ public class DeviceDAO extends MetadataDAO {
 
 		// Check for relationship initialization
 		if (returnFullObjectGraph)
-			initializeRelationships(deviceToReturn);
+			deviceToReturn = (Device) getRealObjectAndRelationships(deviceToReturn);
 
 		// OK, return the result
 		if (deviceToReturn != null)
@@ -196,7 +197,7 @@ public class DeviceDAO extends MetadataDAO {
 
 		// Check for relationship init
 		if (returnFullObjectGraph)
-			this.initializeRelationships(deviceToReturn);
+			deviceToReturn = (Device) getRealObjectAndRelationships(deviceToReturn);
 
 		// Return the result
 		return deviceToReturn;
@@ -240,7 +241,7 @@ public class DeviceDAO extends MetadataDAO {
 
 		// Check for relationship init
 		if (returnFullObjectGraph)
-			this.initializeRelationships(devicesToReturn);
+			devicesToReturn = getRealObjectsAndRelationships(devicesToReturn);
 
 		// Now return the results
 		if (devicesToReturn != null) {
@@ -438,7 +439,7 @@ public class DeviceDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			this.initializeRelationships(matchingDevices);
+			matchingDevices = getRealObjectsAndRelationships(matchingDevices);
 
 		// Return the result
 		return matchingDevices;
@@ -531,7 +532,7 @@ public class DeviceDAO extends MetadataDAO {
 
 		// Check relationship init
 		if (returnFullObjectGraph)
-			this.initializeRelationships(devices);
+			devices = getRealObjectsAndRelationships(devices);
 
 		// Now return the real objects
 		return devices;
@@ -597,7 +598,7 @@ public class DeviceDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			this.initializeRelationships(devices);
+			devices = getRealObjectsAndRelationships(devices);
 
 		// Now return the real objects
 		return devices;
@@ -852,7 +853,7 @@ public class DeviceDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			initializeRelationships(devices);
+			devices = getRealObjectsAndRelationships(devices);
 
 		return devices;
 	}
@@ -909,7 +910,7 @@ public class DeviceDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			initializeRelationships(devices);
+			devices = getRealObjectsAndRelationships(devices);
 
 		return devices;
 	}
@@ -973,7 +974,7 @@ public class DeviceDAO extends MetadataDAO {
 		results = query.list();
 
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		return results;
 	}
@@ -1030,7 +1031,7 @@ public class DeviceDAO extends MetadataDAO {
 		results = (Device) query.uniqueResult();
 
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = (Device) getRealObjectAndRelationships(results);
 
 		return results;
 	}
@@ -1581,25 +1582,36 @@ public class DeviceDAO extends MetadataDAO {
 	 * 
 	 * @param device
 	 */
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-
-		Device device = (Device) this
-				.checkIncomingMetadataObject(metadataObject);
-		if (device.getPerson() != null)
-			Hibernate.initialize(device.getPerson());
-		if (device.getPerson() != null
-				&& device.getPerson().getUserGroups() != null)
-			Hibernate.initialize(device.getPerson().getUserGroups());
-		if (device.getDeviceType() != null)
-			Hibernate.initialize(device.getDeviceType());
-		if ((device.getResources() != null)
-				&& (device.getResources().size() > 0)) {
-			Iterator resourceIter = device.getResources().iterator();
-			while (resourceIter.hasNext())
-				Hibernate.initialize((Resource) resourceIter.next());
-		}
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	//
+	// Device device = (Device) this
+	// .checkIncomingMetadataObject(metadataObject);
+	// // See if person exists
+	// if (device.getPerson() != null) {
+	// logger.debug("Person was found and will be initialized");
+	// Person person = device.getPerson();
+	// Hibernate.initialize(person);
+	// logger.debug("OK, initialized");
+	// if (person instanceof HibernateProxy) {
+	// logger.debug("An attempt will be made to "
+	// + "replace the proxy with the real person");
+	// device.setPerson((Person) ((HibernateProxy) person)
+	// .getHibernateLazyInitializer().getImplementation());
+	// }
+	// }
+	// if (device.getPerson() != null
+	// && device.getPerson().getUserGroups() != null)
+	// Hibernate.initialize(device.getPerson().getUserGroups());
+	// if (device.getDeviceType() != null)
+	// Hibernate.initialize(device.getDeviceType());
+	// if ((device.getResources() != null)
+	// && (device.getResources().size() > 0)) {
+	// Iterator resourceIter = device.getResources().iterator();
+	// while (resourceIter.hasNext())
+	// Hibernate.initialize((Resource) resourceIter.next());
+	// }
+	// }
 
 	/**
 	 * The Log4J Logger

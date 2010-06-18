@@ -271,10 +271,10 @@ public class StandardReferenceScaleDAO extends MetadataDAO {
 		return standardReferenceScale;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-
-	}
+//	protected void initializeRelationships(IMetadataObject metadataObject)
+//			throws MetadataAccessException {
+//
+//	}
 
 	/**
 	 * A log4j logger

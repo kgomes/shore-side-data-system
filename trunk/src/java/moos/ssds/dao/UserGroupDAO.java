@@ -91,7 +91,7 @@ public class UserGroupDAO extends MetadataDAO {
 
 		// Is a full object graph was requested, fill it out
 		if (returnFullObjectGraph)
-			initializeRelationships(userGroupToReturn);
+			userGroupToReturn = (UserGroup) getRealObjectAndRelationships(userGroupToReturn);
 
 		// Return the result of the search
 		return userGroupToReturn;
@@ -145,11 +145,11 @@ public class UserGroupDAO extends MetadataDAO {
 	 * @param groupName
 	 *            is the groupName to search for
 	 * @param exactMatch
-	 *            is whether to look for an exact match (<code>true</code>)
-	 *            or not
-	 * @return a <code>Collection</code> of <code>UserGroup</code>s that
-	 *         match the given groupName. It returns an empty collection if non
-	 *         were found
+	 *            is whether to look for an exact match (<code>true</code>) or
+	 *            not
+	 * @return a <code>Collection</code> of <code>UserGroup</code>s that match
+	 *         the given groupName. It returns an empty collection if non were
+	 *         found
 	 * @throws MetadataAccessException
 	 */
 	public Collection findByGroupName(String groupName, boolean exactMatch,
@@ -177,7 +177,7 @@ public class UserGroupDAO extends MetadataDAO {
 
 		// If the full object graph is requested, return it
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -193,8 +193,8 @@ public class UserGroupDAO extends MetadataDAO {
 	 * @param groupName
 	 *            is the groupName to search for
 	 * @param exactMatch
-	 *            is whether to look for an exact match (<code>true</code>)
-	 *            or not
+	 *            is whether to look for an exact match (<code>true</code>) or
+	 *            not
 	 * @return an integer count of the number of <code>UserGroup</code>s that
 	 *         match the query
 	 * @throws MetadataAccessException
@@ -230,8 +230,8 @@ public class UserGroupDAO extends MetadataDAO {
 	 * that are the groupNames of all the <code>UserGroup</code>s that are
 	 * registered in SSDS.
 	 * 
-	 * @return a <code>Collection</code> of <code>String</code>s that are
-	 *         the groupNames of all <code>UserGroup</code>s in SSDS.
+	 * @return a <code>Collection</code> of <code>String</code>s that are the
+	 *         groupNames of all <code>UserGroup</code>s in SSDS.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
@@ -492,10 +492,10 @@ public class UserGroupDAO extends MetadataDAO {
 		return criteria;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-		// There is nothing to do for UserGroup relationships
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	// // There is nothing to do for UserGroup relationships
+	// }
 
 	/**
 	 * The Log4J Logger

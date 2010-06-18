@@ -117,22 +117,23 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// Check for return full object graph
 		if (returnFullObjectGraph)
-			initializeRelationships(dataContainerToReturn);
+			dataContainerToReturn = (DataContainer) getRealObjectAndRelationships(dataContainerToReturn);
 
 		return dataContainerToReturn;
 	}
 
 	/**
-	 * This method returns a <code>Collection</code> of <code>Long</code>s
-	 * that are the IDs of all the dataContainers that are in SSDS.
+	 * This method returns a <code>Collection</code> of <code>Long</code>s that
+	 * are the IDs of all the dataContainers that are in SSDS.
 	 * 
-	 * @return a <code>Collection</code> of <code>Long</code>s that are the
-	 *         IDs of all dataContainers in SSDS.
+	 * @return a <code>Collection</code> of <code>Long</code>s that are the IDs
+	 *         of all dataContainers in SSDS.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllIDs() throws MetadataAccessException {
-		Collection dataContainerIDs = null;
+	@SuppressWarnings("unchecked")
+	public Collection<Long> findAllIDs() throws MetadataAccessException {
+		Collection<Long> dataContainerIDs = null;
 
 		// Create the query and run it
 		try {
@@ -140,7 +141,7 @@ public class DataContainerDAO extends MetadataDAO {
 					.createQuery(
 							"select distinct dataContainer.id from "
 									+ "DataContainer dataContainer order by dataContainer.id");
-			dataContainerIDs = query.list();
+			dataContainerIDs = (Collection<Long>) query.list();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e);
 		}
@@ -168,9 +169,9 @@ public class DataContainerDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method looks for all <code>DataContainer</code>s by their name.
-	 * If the <code>exactMatch</code> boolean is true, it will look for the
-	 * name exactly, otherwise it will perform a like search
+	 * This method looks for all <code>DataContainer</code>s by their name. If
+	 * the <code>exactMatch</code> boolean is true, it will look for the name
+	 * exactly, otherwise it will perform a like search
 	 * 
 	 * @param name
 	 *            is the name to search for
@@ -182,11 +183,11 @@ public class DataContainerDAO extends MetadataDAO {
 	 *            is a boolean that specifies if the caller wants the fully
 	 *            instantianted object graph (relationships) returned, or just
 	 *            the query object itself. If you want the full graph returned
-	 *            specify <code>true</code>, otherwise leave it false.
-	 *            <b>NOTE: By specifying true, you could be requesting a large
-	 *            object tree which will slow things down, so use sparingly</b>
-	 * @return a <code>Collection</code> of <code>DataContainer</code>s
-	 *         that have matching names
+	 *            specify <code>true</code>, otherwise leave it false. <b>NOTE:
+	 *            By specifying true, you could be requesting a large object
+	 *            tree which will slow things down, so use sparingly</b>
+	 * @return a <code>Collection</code> of <code>DataContainer</code>s that
+	 *         have matching names
 	 * @throws MetadataAccessException
 	 *             if something goes wrong.
 	 */
@@ -218,7 +219,7 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// Check to see if full object graphs were requested
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -263,8 +264,8 @@ public class DataContainerDAO extends MetadataDAO {
 	 * This method returns a <code>Collection</code> of <code>String</code>s
 	 * that are the names of all the dataContainers that are registered in SSDS.
 	 * 
-	 * @return a <code>Collection</code> of <code>String</code>s that are
-	 *         the names of all dataContainers in SSDS.
+	 * @return a <code>Collection</code> of <code>String</code>s that are the
+	 *         names of all dataContainers in SSDS.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
@@ -300,11 +301,11 @@ public class DataContainerDAO extends MetadataDAO {
 	 *            is a boolean that specifies if the caller wants the fully
 	 *            instantianted object graph (relationships) returned, or just
 	 *            the query object itself. If you want the full graph returned
-	 *            specify <code>true</code>, otherwise leave it false.
-	 *            <b>NOTE: By specifying true, you could be requesting a large
-	 *            object tree which will slow things down, so use sparingly</b>
-	 * @return a <code>Collection</code> of <code>DataContainer</code>s
-	 *         that match the type specified as the parameter.
+	 *            specify <code>true</code>, otherwise leave it false. <b>NOTE:
+	 *            By specifying true, you could be requesting a large object
+	 *            tree which will slow things down, so use sparingly</b>
+	 * @return a <code>Collection</code> of <code>DataContainer</code>s that
+	 *         match the type specified as the parameter.
 	 */
 	public Collection findByDataContainerTypeAndName(String dataContainerType,
 			String name, boolean exactMatch, String orderByPropertyName,
@@ -332,7 +333,7 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// Check if full object graphs were requested
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -372,21 +373,21 @@ public class DataContainerDAO extends MetadataDAO {
 	 * <code>DataContainer</code> does not have an end date, for example, the
 	 * end date will be assumed as infinite and so it will match all possible
 	 * queiries that supply a start date. Better?. Also the two booleans
-	 * indicate if the query is to only return <code>DataContainer</code>s
-	 * that have data inside the edges of the time window specified
+	 * indicate if the query is to only return <code>DataContainer</code>s that
+	 * have data inside the edges of the time window specified
 	 * 
 	 * @param startDate
 	 *            the start <code>Date</code> of the time window to search in
 	 * @param allDataAfterStartDate
-	 *            indicates if (<code>true</code>) the query is to only
-	 *            return <code>DataContainer</code>s that have all their data
-	 *            after the start date specified
+	 *            indicates if (<code>true</code>) the query is to only return
+	 *            <code>DataContainer</code>s that have all their data after the
+	 *            start date specified
 	 * @param endDate
 	 *            the end <code>Date</code> of the time window to search in
 	 * @param allDataBeforeEndDate
-	 *            indicates if (<code>true</code>) the query is to only
-	 *            return <code>DataContainer</code>s that have all their data
-	 *            before the end date specified.
+	 *            indicates if (<code>true</code>) the query is to only return
+	 *            <code>DataContainer</code>s that have all their data before
+	 *            the end date specified.
 	 * @return all <code>DataContainer</code>s that contains any data within
 	 *         that time window
 	 */
@@ -417,7 +418,7 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// Check if full object graphs were requested
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -464,8 +465,8 @@ public class DataContainerDAO extends MetadataDAO {
 	 * <code>DataContainer</code> with the specified URI string.
 	 * 
 	 * @param uriString
-	 *            is the URI (string form) of the <code>DataContainer</code>
-	 *            to search for
+	 *            is the URI (string form) of the <code>DataContainer</code> to
+	 *            search for
 	 * @return is the <code>DataContainer</code> that was found in the
 	 *         persistent store with the given URI string. If no
 	 *         <code>DataContainer</code> was found, null is returned.
@@ -494,7 +495,7 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// Check if full object graphs were requested
 		if (returnFullObjectGraph)
-			initializeRelationships(dataContainerToReturn);
+			dataContainerToReturn = (DataContainer) getRealObjectAndRelationships(dataContainerToReturn);
 
 		// Return the result
 		return dataContainerToReturn;
@@ -526,7 +527,7 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// Check if full object graphs were requested
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the result
 		return results;
@@ -575,8 +576,8 @@ public class DataContainerDAO extends MetadataDAO {
 	 * that are the URI strings of all the dataContainers that are registered in
 	 * SSDS.
 	 * 
-	 * @return a <code>Collection</code> of <code>String</code>s that are
-	 *         the URI strings of all dataContainers in SSDS.
+	 * @return a <code>Collection</code> of <code>String</code>s that are the
+	 *         URI strings of all dataContainers in SSDS.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
@@ -637,7 +638,7 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// Check if full object graphs were requested
 		if (returnFullObjectGraph)
-			initializeRelationships(dataContainerToReturn);
+			dataContainerToReturn = (DataContainer) getRealObjectAndRelationships(dataContainerToReturn);
 
 		// Return the result
 		return dataContainerToReturn;
@@ -670,7 +671,7 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// Check if full object graphs were requested
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the result
 		return results;
@@ -722,8 +723,8 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @param geospatialVerticalMax
 	 *            This is the maximum vertical value of the cube (the top of the
 	 *            cube).
-	 * @return A <code>Collection</code> of <code>DataContainer</code>s
-	 *         that have data within that cube.
+	 * @return A <code>Collection</code> of <code>DataContainer</code>s that
+	 *         have data within that cube.
 	 */
 	public Collection findWithinGeospatialCube(Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
@@ -749,7 +750,7 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// Check if full object graphs were requested
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the result
 		return results;
@@ -804,8 +805,8 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @param geospatialVerticalMax
 	 *            This is the maximum vertical value of the cube (the top of the
 	 *            cube).
-	 * @return A <code>Collection</code> of <code>DataContainer</code>s
-	 *         that have data within that cube.
+	 * @return A <code>Collection</code> of <code>DataContainer</code>s that
+	 *         have data within that cube.
 	 */
 	public Collection findWithinTimeAndGeospatialCube(Date startDate,
 			Date endDate, Double geospatialLatMin, Double geospatialLatMax,
@@ -832,7 +833,7 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// Check if full object graphs were requested
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the result
 		return results;
@@ -911,7 +912,7 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// If the full object graphs are requested
 		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataContainers);
+			dataContainers = getRealObjectsAndRelationships(dataContainers);
 		}
 
 		return dataContainers;
@@ -945,7 +946,7 @@ public class DataContainerDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			initializeRelationships(dataContainerToReturn);
+			dataContainerToReturn = (DataContainer) getRealObjectAndRelationships(dataContainerToReturn);
 
 		return dataContainerToReturn;
 
@@ -990,7 +991,7 @@ public class DataContainerDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			initializeRelationships(dataContainers);
+			dataContainers = getRealObjectsAndRelationships(dataContainers);
 
 		return dataContainers;
 	}
@@ -1041,7 +1042,7 @@ public class DataContainerDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			initializeRelationships(dataContainers);
+			dataContainers = getRealObjectsAndRelationships(dataContainers);
 
 		return dataContainers;
 	}
@@ -1089,9 +1090,8 @@ public class DataContainerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataContainersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataContainersToReturn = getRealObjectsAndRelationships(dataContainersToReturn);
 
 		// Now return the results
 		return dataContainersToReturn;
@@ -1112,23 +1112,23 @@ public class DataContainerDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method looks up all <code>DataContainer</code>s that have a
-	 * matching keyword with the name supplied. If the exactMatch boolean if
-	 * false, a like search will be used
+	 * This method looks up all <code>DataContainer</code>s that have a matching
+	 * keyword with the name supplied. If the exactMatch boolean if false, a
+	 * like search will be used
 	 * 
 	 * @param keywordName
 	 *            is the name of the <code>Keyword</code> to search for
 	 * @param exactMatch
 	 *            is a <code>boolean</code> that indicates if the name is to
-	 *            match the <code>Keyword</code> name exactly (<code>true</code>)
-	 *            or not (<code>false</code>)
+	 *            match the <code>Keyword</code> name exactly (<code>true</code>
+	 *            ) or not (<code>false</code>)
 	 * @param returnFullObjectGraph
 	 *            is a boolean that specifies if the caller wants the fully
 	 *            instantianted object graph (relationships) returned, or just
 	 *            the query object itself. If you want the full graph returned
-	 *            specify <code>true</code>, otherwise leave it false.
-	 *            <b>NOTE: By specifying true, you could be requesting a large
-	 *            object tree which will slow things down, so use sparingly</b>
+	 *            specify <code>true</code>, otherwise leave it false. <b>NOTE:
+	 *            By specifying true, you could be requesting a large object
+	 *            tree which will slow things down, so use sparingly</b>
 	 * @return
 	 * @throws MetadataAccessException
 	 *             if the incoming keywordName is not valid or something goes
@@ -1179,7 +1179,7 @@ public class DataContainerDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		return results;
 	}
@@ -1269,7 +1269,7 @@ public class DataContainerDAO extends MetadataDAO {
 		results = query.list();
 
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		return results;
 	}
@@ -1405,8 +1405,8 @@ public class DataContainerDAO extends MetadataDAO {
 	 *            must match a property name of <code>DataProducer</code>.
 	 * @param returnFullObjectGraphs
 	 *            If true then return populated object graphs
-	 * @return the <code>Collection</code> of <code>DataContainer</code>s
-	 *         that were consumed by the given dataProducer.
+	 * @return the <code>Collection</code> of <code>DataContainer</code>s that
+	 *         were consumed by the given dataProducer.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong
 	 */
@@ -1441,7 +1441,7 @@ public class DataContainerDAO extends MetadataDAO {
 		results = query.list();
 
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		return results;
 
@@ -1460,8 +1460,8 @@ public class DataContainerDAO extends MetadataDAO {
 	 *            must match a property name of <code>DataProducer</code>.
 	 * @param returnFullObjectGraphs
 	 *            If true then return populated object graphs
-	 * @return the <code>Collection</code> of <code>DataContainer</code>s
-	 *         that were created by the given dataProducer.
+	 * @return the <code>Collection</code> of <code>DataContainer</code>s that
+	 *         were created by the given dataProducer.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong
 	 */
@@ -1482,7 +1482,7 @@ public class DataContainerDAO extends MetadataDAO {
 			outputs = new HashSet(persistentDataProducer.getOutputs());
 
 		if (returnFullObjectGraph)
-			initializeRelationships(outputs);
+			outputs = getRealObjectsAndRelationships(outputs);
 
 		return outputs;
 
@@ -2550,80 +2550,80 @@ public class DataContainerDAO extends MetadataDAO {
 	/**
 	 * @see MetadataDAO#initializeRelationships(IMetadataObject)
 	 */
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-
-		// If the object is null, just return
-		if (metadataObject == null)
-			return;
-
-		// Convert to DataContainer
-		DataContainer dataContainer = this
-				.checkIncomingMetadataObject(metadataObject);
-
-		// Now initalize the appropriate relationships
-		if (dataContainer.getHeaderDescription() != null) {
-			Hibernate.initialize(dataContainer.getHeaderDescription());
-		}
-		if (dataContainer.getRecordDescription() != null) {
-			Hibernate.initialize(dataContainer.getRecordDescription());
-			if (dataContainer.getRecordDescription().getRecordVariables() != null) {
-				Iterator rvIter = dataContainer.getRecordDescription()
-						.getRecordVariables().iterator();
-				while (rvIter.hasNext()) {
-					RecordVariable rv = (RecordVariable) rvIter.next();
-					Hibernate.initialize(rv);
-					if (rv.getStandardUnit() != null) {
-						Hibernate.initialize(rv.getStandardUnit());
-					}
-					if (rv.getStandardVariable() != null) {
-						Hibernate.initialize(rv.getStandardVariable());
-					}
-					if (rv.getStandardDomain() != null) {
-						Hibernate.initialize(rv.getStandardDomain());
-					}
-					if (rv.getStandardKeyword() != null) {
-						Hibernate.initialize(rv.getStandardKeyword());
-					}
-					if (rv.getStandardReferenceScale() != null) {
-						Hibernate.initialize(rv.getStandardReferenceScale());
-					}
-				}
-			}
-		}
-		if (dataContainer.getPerson() != null)
-			Hibernate.initialize(dataContainer.getPerson());
-		if (dataContainer.getDataContainerGroups() != null) {
-			Iterator dataContainerGroupsIterator = dataContainer
-					.getDataContainerGroups().iterator();
-			while (dataContainerGroupsIterator.hasNext()) {
-				Hibernate
-						.initialize((DataContainerGroup) dataContainerGroupsIterator
-								.next());
-			}
-		}
-		if (dataContainer.getResources() != null) {
-			Iterator resourceIterator = dataContainer.getResources().iterator();
-			while (resourceIterator.hasNext()) {
-				Hibernate.initialize((Resource) resourceIterator.next());
-			}
-		}
-		if (dataContainer.getKeywords() != null) {
-			Iterator keywordIterator = dataContainer.getKeywords().iterator();
-			while (keywordIterator.hasNext()) {
-				Hibernate.initialize((Keyword) keywordIterator.next());
-			}
-		}
-		if (dataContainer.getCreator() != null) {
-			Hibernate.initialize(dataContainer.getCreator());
-		}
-		if (dataContainer.getConsumers() != null) {
-			Iterator consumerIterator = dataContainer.getConsumers().iterator();
-			while (consumerIterator.hasNext()) {
-				Hibernate.initialize((DataProducer) consumerIterator.next());
-			}
-		}
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	//
+	// // If the object is null, just return
+	// if (metadataObject == null)
+	// return;
+	//
+	// // Convert to DataContainer
+	// DataContainer dataContainer = this
+	// .checkIncomingMetadataObject(metadataObject);
+	//
+	// // Now initalize the appropriate relationships
+	// if (dataContainer.getHeaderDescription() != null) {
+	// Hibernate.initialize(dataContainer.getHeaderDescription());
+	// }
+	// if (dataContainer.getRecordDescription() != null) {
+	// Hibernate.initialize(dataContainer.getRecordDescription());
+	// if (dataContainer.getRecordDescription().getRecordVariables() != null) {
+	// Iterator rvIter = dataContainer.getRecordDescription()
+	// .getRecordVariables().iterator();
+	// while (rvIter.hasNext()) {
+	// RecordVariable rv = (RecordVariable) rvIter.next();
+	// Hibernate.initialize(rv);
+	// if (rv.getStandardUnit() != null) {
+	// Hibernate.initialize(rv.getStandardUnit());
+	// }
+	// if (rv.getStandardVariable() != null) {
+	// Hibernate.initialize(rv.getStandardVariable());
+	// }
+	// if (rv.getStandardDomain() != null) {
+	// Hibernate.initialize(rv.getStandardDomain());
+	// }
+	// if (rv.getStandardKeyword() != null) {
+	// Hibernate.initialize(rv.getStandardKeyword());
+	// }
+	// if (rv.getStandardReferenceScale() != null) {
+	// Hibernate.initialize(rv.getStandardReferenceScale());
+	// }
+	// }
+	// }
+	// }
+	// if (dataContainer.getPerson() != null)
+	// Hibernate.initialize(dataContainer.getPerson());
+	// if (dataContainer.getDataContainerGroups() != null) {
+	// Iterator dataContainerGroupsIterator = dataContainer
+	// .getDataContainerGroups().iterator();
+	// while (dataContainerGroupsIterator.hasNext()) {
+	// Hibernate
+	// .initialize((DataContainerGroup) dataContainerGroupsIterator
+	// .next());
+	// }
+	// }
+	// if (dataContainer.getResources() != null) {
+	// Iterator resourceIterator = dataContainer.getResources().iterator();
+	// while (resourceIterator.hasNext()) {
+	// Hibernate.initialize((Resource) resourceIterator.next());
+	// }
+	// }
+	// if (dataContainer.getKeywords() != null) {
+	// Iterator keywordIterator = dataContainer.getKeywords().iterator();
+	// while (keywordIterator.hasNext()) {
+	// Hibernate.initialize((Keyword) keywordIterator.next());
+	// }
+	// }
+	// if (dataContainer.getCreator() != null) {
+	// Hibernate.initialize(dataContainer.getCreator());
+	// }
+	// if (dataContainer.getConsumers() != null) {
+	// Iterator consumerIterator = dataContainer.getConsumers().iterator();
+	// while (consumerIterator.hasNext()) {
+	// Hibernate.initialize((DataProducer) consumerIterator.next());
+	// }
+	// }
+	// }
 
 	/**
 	 * The Log4J Logger

@@ -265,10 +265,10 @@ public class StandardKeywordDAO extends MetadataDAO {
 		return standardKeyword;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-
-	}
+//	protected void initializeRelationships(IMetadataObject metadataObject)
+//			throws MetadataAccessException {
+//
+//	}
 
 	/**
 	 * A log4j logger

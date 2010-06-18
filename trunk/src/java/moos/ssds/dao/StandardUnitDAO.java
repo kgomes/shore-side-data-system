@@ -538,10 +538,10 @@ public class StandardUnitDAO extends MetadataDAO {
 		return standardUnit;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-
-	}
+//	protected void initializeRelationships(IMetadataObject metadataObject)
+//			throws MetadataAccessException {
+//
+//	}
 
 	/**
 	 * A log4j logger

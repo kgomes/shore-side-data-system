@@ -101,7 +101,7 @@ public class DataContainerGroupDAO extends MetadataDAO {
 
 		// If the full return graph is requested, fill it out
 		if (returnFullObjectGraph)
-			initializeRelationships(dataContainerGroupToReturn);
+			dataContainerGroupToReturn = (DataContainerGroup) getRealObjectAndRelationships(dataContainerGroupToReturn);
 
 		// Now return the persistent object that is considered equivalent
 		return dataContainerGroupToReturn;
@@ -162,8 +162,8 @@ public class DataContainerGroupDAO extends MetadataDAO {
 	 * @param name
 	 *            is the name to search for
 	 * @param exactMatch
-	 *            is whether to look for an exact match (<code>true</code>)
-	 *            or not
+	 *            is whether to look for an exact match (<code>true</code>) or
+	 *            not
 	 * @return a <code>Collection</code> of <code>DataContainerGroup</code>s
 	 *         that match the given name. It returns an empty collection if non
 	 *         were found
@@ -197,7 +197,7 @@ public class DataContainerGroupDAO extends MetadataDAO {
 		// Now if the full object graph was requested, fill out the
 		// relationships
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -241,11 +241,11 @@ public class DataContainerGroupDAO extends MetadataDAO {
 
 	/**
 	 * This method returns a <code>Collection</code> of <code>String</code>s
-	 * that are the names of all the <code>DataContainerGroup</code>s that
-	 * are registered in SSDS.
+	 * that are the names of all the <code>DataContainerGroup</code>s that are
+	 * registered in SSDS.
 	 * 
-	 * @return a <code>Collection</code> of <code>String</code>s that are
-	 *         the names of all <code>DataContainerGroups</code> in SSDS.
+	 * @return a <code>Collection</code> of <code>String</code>s that are the
+	 *         names of all <code>DataContainerGroups</code> in SSDS.
 	 * @throws MetadataAccessException
 	 *             if something went wrong in the method call.
 	 */
@@ -297,11 +297,10 @@ public class DataContainerGroupDAO extends MetadataDAO {
 	 * 
 	 * @param dataContainer
 	 *            the <code>DataContainer</code> that is to use to look up
-	 *            <code>DataContainerGroup</code>s that are associated with
-	 *            it
+	 *            <code>DataContainerGroup</code>s that are associated with it
 	 * @return a <code>Collection</code> of <code>DataContainerGroup</code>s
-	 *         that are associated with the given <code>DataContainer</code>.
-	 *         It will return an empty collection if none are found
+	 *         that are associated with the given <code>DataContainer</code>. It
+	 *         will return an empty collection if none are found
 	 * @throws MetadataAccessException
 	 *             if something goes awry
 	 */
@@ -342,15 +341,15 @@ public class DataContainerGroupDAO extends MetadataDAO {
 
 		// If the full object graph is requested, fill out the relationships
 		if (returnFullObjectGraph)
-			initializeRelationships(dataContainerGroups);
+			dataContainerGroups = getRealObjectsAndRelationships(dataContainerGroups);
 
 		// Return the result
 		return dataContainerGroups;
 	}
 
 	/**
-	 * This method returns the number of <code>DataContainerGroup</code>s
-	 * that are associated with the given <code>DataContainer</code>.
+	 * This method returns the number of <code>DataContainerGroup</code>s that
+	 * are associated with the given <code>DataContainer</code>.
 	 * 
 	 * @see #findByDataContainer(DataContainer, boolean)
 	 * @param dataContainer
@@ -588,10 +587,10 @@ public class DataContainerGroupDAO extends MetadataDAO {
 		return criteria;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-		// For DataContainer Group, there is nothing to do
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	// // For DataContainer Group, there is nothing to do
+	// }
 
 	/**
 	 * The Log4J Logger

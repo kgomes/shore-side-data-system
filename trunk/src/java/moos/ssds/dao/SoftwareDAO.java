@@ -147,7 +147,7 @@ public class SoftwareDAO extends MetadataDAO {
 
 		// Check for full object graph
 		if ((softwareToReturn != null) && (returnFullObjectGraph))
-			this.initializeRelationships(softwareToReturn);
+			softwareToReturn = (Software) getRealObjectAndRelationships(softwareToReturn);
 
 		// Now return it
 		return softwareToReturn;
@@ -223,7 +223,7 @@ public class SoftwareDAO extends MetadataDAO {
 		results = query.list();
 
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		return results;
 	}
@@ -564,17 +564,17 @@ public class SoftwareDAO extends MetadataDAO {
 		return criteria;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-		if (metadataObject == null)
-			return;
-		Software software = (Software) this
-				.checkIncomingMetadataObject(metadataObject);
-		if (software.getPerson() != null)
-			Hibernate.initialize(software.getPerson());
-		if (software.getResources() != null)
-			software.getResources().size();
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	// if (metadataObject == null)
+	// return;
+	// Software software = (Software) this
+	// .checkIncomingMetadataObject(metadataObject);
+	// if (software.getPerson() != null)
+	// Hibernate.initialize(software.getPerson());
+	// if (software.getResources() != null)
+	// software.getResources().size();
+	// }
 
 	/**
 	 * The Log4J Logger

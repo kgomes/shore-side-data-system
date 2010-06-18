@@ -92,7 +92,7 @@ public class RecordVariableDAO extends MetadataDAO {
 
 		// Check to see if the graph is requested
 		if (returnFullObjectGraph)
-			this.initializeRelationships(recordVariableToReturn);
+			recordVariableToReturn = (RecordVariable) getRealObjectAndRelationships(recordVariableToReturn);
 
 		// Return the result
 		return recordVariableToReturn;
@@ -116,8 +116,8 @@ public class RecordVariableDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method returns all <code>RecordVariable</code>s that are
-	 * associated with the input <code>StandardUnit</code>
+	 * This method returns all <code>RecordVariable</code>s that are associated
+	 * with the input <code>StandardUnit</code>
 	 * 
 	 * @param standardUnit
 	 * @param orderByProperty
@@ -182,15 +182,15 @@ public class RecordVariableDAO extends MetadataDAO {
 
 		// Check for full graph request
 		if (returnFullObjectGraph)
-			initializeRelationships(recordVariablesByStandardUnit);
+			recordVariablesByStandardUnit = getRealObjectsAndRelationships(recordVariablesByStandardUnit);
 
 		// Now return the results
 		return recordVariablesByStandardUnit;
 	}
 
 	/**
-	 * This method returns all <code>RecordVariable</code>s that are
-	 * associated with the input <code>StandardVariable</code>
+	 * This method returns all <code>RecordVariable</code>s that are associated
+	 * with the input <code>StandardVariable</code>
 	 * 
 	 * @param standardVariable
 	 * @param orderByProperty
@@ -257,15 +257,15 @@ public class RecordVariableDAO extends MetadataDAO {
 
 		// Check for full graph request
 		if (returnFullObjectGraph)
-			initializeRelationships(recordVariablesByStandardVariable);
+			recordVariablesByStandardVariable = getRealObjectsAndRelationships(recordVariablesByStandardVariable);
 
 		// Now return the results
 		return recordVariablesByStandardVariable;
 	}
 
 	/**
-	 * This method returns all <code>RecordVariable</code>s that are
-	 * associated with the input <code>StandardDomain</code>
+	 * This method returns all <code>RecordVariable</code>s that are associated
+	 * with the input <code>StandardDomain</code>
 	 * 
 	 * @param standardDomain
 	 * @param orderByProperty
@@ -331,15 +331,15 @@ public class RecordVariableDAO extends MetadataDAO {
 
 		// Check for full graph request
 		if (returnFullObjectGraph)
-			initializeRelationships(recordVariablesByStandardDomain);
+			recordVariablesByStandardDomain = getRealObjectsAndRelationships(recordVariablesByStandardDomain);
 
 		// Now return the results
 		return recordVariablesByStandardDomain;
 	}
 
 	/**
-	 * This method returns all <code>RecordVariable</code>s that are
-	 * associated with the input <code>StandardReferenceScale</code>
+	 * This method returns all <code>RecordVariable</code>s that are associated
+	 * with the input <code>StandardReferenceScale</code>
 	 * 
 	 * @param standardReferenceScale
 	 * @param orderByProperty
@@ -409,15 +409,15 @@ public class RecordVariableDAO extends MetadataDAO {
 
 		// Check for full graph request
 		if (returnFullObjectGraph)
-			initializeRelationships(recordVariablesByStandardReferenceScale);
+			recordVariablesByStandardReferenceScale = getRealObjectsAndRelationships(recordVariablesByStandardReferenceScale);
 
 		// Now return the results
 		return recordVariablesByStandardReferenceScale;
 	}
 
 	/**
-	 * This method returns all <code>RecordVariable</code>s that are
-	 * associated with the input <code>StandardKeyword</code>
+	 * This method returns all <code>RecordVariable</code>s that are associated
+	 * with the input <code>StandardKeyword</code>
 	 * 
 	 * @param standardKeyword
 	 * @param orderByProperty
@@ -483,7 +483,7 @@ public class RecordVariableDAO extends MetadataDAO {
 
 		// Check for full graph request
 		if (returnFullObjectGraph)
-			initializeRelationships(recordVariablesByStandardKeyword);
+			recordVariablesByStandardKeyword = getRealObjectsAndRelationships(recordVariablesByStandardKeyword);
 
 		// Now return the results
 		return recordVariablesByStandardKeyword;
@@ -626,28 +626,28 @@ public class RecordVariableDAO extends MetadataDAO {
 	/**
 	 * @see MetadataDAO#initializeRelationships(IMetadataObject)
 	 */
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-		if (metadataObject == null)
-			return;
-
-		// Convert to RecordVariable
-		RecordVariable recordVariable = this
-				.checkIncomingMetadataObject(metadataObject);
-
-		// Initialize all the down-wind relationships
-		if (recordVariable.getStandardUnit() != null)
-			Hibernate.initialize(recordVariable.getStandardUnit());
-		if (recordVariable.getStandardVariable() != null)
-			Hibernate.initialize(recordVariable.getStandardVariable());
-		if (recordVariable.getStandardDomain() != null)
-			Hibernate.initialize(recordVariable.getStandardDomain());
-		if (recordVariable.getStandardReferenceScale() != null)
-			Hibernate.initialize(recordVariable.getStandardReferenceScale());
-		if (recordVariable.getStandardKeyword() != null)
-			Hibernate.initialize(recordVariable.getStandardKeyword());
-
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	// if (metadataObject == null)
+	// return;
+	//
+	// // Convert to RecordVariable
+	// RecordVariable recordVariable = this
+	// .checkIncomingMetadataObject(metadataObject);
+	//
+	// // Initialize all the down-wind relationships
+	// if (recordVariable.getStandardUnit() != null)
+	// Hibernate.initialize(recordVariable.getStandardUnit());
+	// if (recordVariable.getStandardVariable() != null)
+	// Hibernate.initialize(recordVariable.getStandardVariable());
+	// if (recordVariable.getStandardDomain() != null)
+	// Hibernate.initialize(recordVariable.getStandardDomain());
+	// if (recordVariable.getStandardReferenceScale() != null)
+	// Hibernate.initialize(recordVariable.getStandardReferenceScale());
+	// if (recordVariable.getStandardKeyword() != null)
+	// Hibernate.initialize(recordVariable.getStandardKeyword());
+	//
+	// }
 
 	/**
 	 * This method checks to make sure an incoming <code>MetadataObject</code>
@@ -685,8 +685,8 @@ public class RecordVariableDAO extends MetadataDAO {
 	 * This method returns a <code>Collection</code> of <code>String</code>s
 	 * that are the names of all the RecordVariables that are in SSDS.
 	 * 
-	 * @return a <code>Collection</code> of <code>String</code>s that are
-	 *         the names of all RecordVariables in SSDS.
+	 * @return a <code>Collection</code> of <code>String</code>s that are the
+	 *         names of all RecordVariables in SSDS.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
@@ -752,7 +752,7 @@ public class RecordVariableDAO extends MetadataDAO {
 
 		// Check for relationship init
 		if (returnFullObjectGraph)
-			this.initializeRelationships(recordVariablesToReturn);
+			this.getRealObjectsAndRelationships(recordVariablesToReturn);
 
 		// Now return the results
 		return recordVariablesToReturn;
