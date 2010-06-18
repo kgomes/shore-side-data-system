@@ -43,9 +43,11 @@ import org.hibernate.SessionFactory;
  *           extends="javax.ejb.EJBHome"
  * @ejb.interface create="true"
  *                local-class="moos.ssds.services.metadata.EventAccessLocal"
- *                local-extends="javax.ejb.EJBLocalObject,moos.ssds.services.metadata.IMetadataAccess"
+ *                local-extends=
+ *                "javax.ejb.EJBLocalObject,moos.ssds.services.metadata.IMetadataAccess"
  *                remote-class="moos.ssds.services.metadata.EventAccess"
- *                extends="javax.ejb.EJBObject,moos.ssds.services.metadata.IMetadataAccessRemote"
+ *                extends=
+ *                "javax.ejb.EJBObject,moos.ssds.services.metadata.IMetadataAccessRemote"
  * @ejb.util generate="physical"
  * @soap.service urn="EventAccess" scope="Request"
  * @axis.service urn="EventAccess" scope="Request"
@@ -55,136 +57,134 @@ import org.hibernate.SessionFactory;
  */
 public class EventAccessEJB extends AccessBean implements IMetadataAccess {
 
-    /**
-     * This is the ejb callback that the container calls when the EJB is first
-     * created. In this case it sets up the Hibernate session factory and sets
-     * the class that is associate with the bean
-     * 
-     * @throws CreateException
-     */
-    public void ejbCreate() throws CreateException {
-        logger.debug("ejbCreate called");
-        logger.debug("Going to read in the properties");
-        servicesMetadataProperties = new Properties();
-        try {
-            servicesMetadataProperties
-                .load(this.getClass().getResourceAsStream(
-                    "/moos/ssds/services/metadata/servicesMetadata.properties"));
-        } catch (Exception e) {
-            logger.error("Exception trying to read in properties file: "
-                + e.getMessage());
-        }
+	/**
+	 * A log4j logger
+	 */
+	static Logger logger = Logger.getLogger(EventAccessEJB.class);
 
-        // Make sure the properties were read from the JAR OK
-        if (servicesMetadataProperties != null) {
-            logger.debug("Loaded props OK");
-        } else {
-            logger.warn("Could not load the servicesMetadata.properties.");
-        }
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
 
-        // Now create the intial context for looking up the hibernate session
-        // factory and look up the session factory
-        try {
-            InitialContext initialContext = new InitialContext();
-            sessionFactory = (SessionFactory) initialContext
-                .lookup(servicesMetadataProperties
-                    .getProperty("metadata.hibernate.jndi.name"));
-        } catch (NamingException e) {
-            logger
-                .error("NamingException caught when trying to get hibernate's "
-                    + "SessionFactory from JNDI: " + e.getMessage());
-        }
+	/**
+	 * This is the EJB callback that the container calls when the EJB is first
+	 * created. In this case it sets up the Hibernate session factory and sets
+	 * the class that is associate with the bean
+	 * 
+	 * @throws CreateException
+	 */
+	public void ejbCreate() throws CreateException {
+		logger.debug("ejbCreate called");
+		logger.debug("Going to read in the properties");
+		servicesMetadataProperties = new Properties();
+		try {
+			servicesMetadataProperties
+					.load(this
+							.getClass()
+							.getResourceAsStream(
+									"/moos/ssds/services/metadata/servicesMetadata.properties"));
+		} catch (Exception e) {
+			logger.error("Exception trying to read in properties file: "
+					+ e.getMessage());
+		}
 
-        // Now set the super persistent class to DataContainer
-        super.setPersistentClass(Event.class);
-        // And the DAO
-        super.setDaoClass(EventDAO.class);
-    }
+		// Make sure the properties were read from the JAR OK
+		if (servicesMetadataProperties != null) {
+			logger.debug("Loaded props OK");
+		} else {
+			logger.warn("Could not load the servicesMetadata.properties.");
+		}
 
-    /**
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     * @param name
-     * @return
-     * @throws MetadataAccessException
-     */
-    public Collection findByName(String name) throws MetadataAccessException {
-        // Grab the DAO
-        EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
+		// Now create the intial context for looking up the hibernate session
+		// factory and look up the session factory
+		try {
+			InitialContext initialContext = new InitialContext();
+			sessionFactory = (SessionFactory) initialContext
+					.lookup(servicesMetadataProperties
+							.getProperty("metadata.hibernate.jndi.name"));
+		} catch (NamingException e) {
+			logger
+					.error("NamingException caught when trying to get hibernate's "
+							+ "SessionFactory from JNDI: " + e.getMessage());
+		}
 
-        // Now call the method
-        return eventDAO.findByName(name);
-    }
+		// Now set the super persistent class to DataContainer
+		super.setPersistentClass(Event.class);
+		// And the DAO
+		super.setDaoClass(EventDAO.class);
+	}
 
-    /**
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     * @param likeName
-     * @return
-     * @throws MetadataAccessException
-     */
-    public Collection findByLikeName(String likeName)
-        throws MetadataAccessException {
-        // Grab the DAO
-        EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
+	/**
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Required"
+	 */
+	public Collection<Event> findByName(String name, boolean exactMatch,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
+		// Grab the DAO
+		EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
 
-        // Now call the method
-        return eventDAO.findByLikeName(likeName);
-    }
+		// Now call the method
+		return eventDAO.findByName(name, exactMatch, orderByPropertyName,
+				ascendingOrDescending, returnFullObjectGraph);
+	}
 
-    /**
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     * @return
-     * @throws MetadataAccessException
-     */
-    public Event findByNameAndDates(String name, Date startDate, Date endDate)
-        throws MetadataAccessException {
-        // Grab the DAO
-        EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
+	/**
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Required"
+	 */
+	public Collection<Event> findByLikeName(String likeName,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
+		// Grab the DAO
+		EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
 
-        // Now call the method
-        return eventDAO.findByNameAndDates(name, startDate, endDate);
-    }
+		// Now call the method
+		return eventDAO.findByLikeName(likeName, orderByPropertyName,
+				ascendingOrDescending, returnFullObjectGraph);
+	}
 
-    /**
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     * @return
-     * @throws MetadataAccessException
-     */
-    public Collection findAllNames() throws MetadataAccessException {
-        // Grab the DAO
-        EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
+	/**
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Required"
+	 */
+	public Event findByNameAndDates(String name, Date startDate, Date endDate,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
+		// Grab the DAO
+		EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
 
-        // Now call the method
-        return eventDAO.findAllNames();
-    }
+		// Now call the method
+		return eventDAO.findByNameAndDates(name, startDate, endDate,
+				returnFullObjectGraph);
+	}
 
-    /**
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     * @param startDate
-     * @param endDate
-     * @return
-     * @throws MetadataAccessException
-     */
-    public Collection findWithinDateRange(Date startDate, Date endDate)
-        throws MetadataAccessException {
-        // Grab the DAO
-        EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
+	/**
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Required"
+	 */
+	public Collection<String> findAllNames() throws MetadataAccessException {
+		// Grab the DAO
+		EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
 
-        // Now call the method
-        return eventDAO.findWithinDateRange(startDate, endDate);
-    }
+		// Now call the method
+		return eventDAO.findAllNames();
+	}
 
-    /**
-     * This is the version that we can control for serialization purposes
-     */
-    private static final long serialVersionUID = 1L;
+	/**
+	 * @ejb.interface-method view-type="both"
+	 * @ejb.transaction type="Required"
+	 */
+	public Collection<Event> findWithinDateRange(Date startDate, Date endDate,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
+		// Grab the DAO
+		EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
 
-    /**
-     * A log4j logger
-     */
-    static Logger logger = Logger.getLogger(EventAccessEJB.class);
+		// Now call the method
+		return eventDAO.findWithinDateRange(startDate, endDate,
+				orderByPropertyName, ascendingOrDescending,
+				returnFullObjectGraph);
+	}
+
 }
