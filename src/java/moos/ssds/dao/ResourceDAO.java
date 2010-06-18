@@ -237,7 +237,7 @@ public class ResourceDAO extends MetadataDAO {
 
 		// Check for full object graphs
 		if (returnFullObjectGraph)
-			this.initializeRelationships(resources);
+			resources = getRealObjectsAndRelationships(resources);
 
 		// Now return the results
 		return resources;
@@ -278,7 +278,7 @@ public class ResourceDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		return results;
 	}
@@ -733,23 +733,23 @@ public class ResourceDAO extends MetadataDAO {
 		return resource;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-		if (metadataObject == null)
-			return;
-		Resource resource = this.checkIncomingMetadataObject(metadataObject);
-
-		if (resource.getPerson() != null)
-			Hibernate.initialize(resource.getPerson());
-		if (resource.getResourceBLOB() != null)
-			Hibernate.initialize(resource.getResourceBLOB());
-		if (resource.getResourceType() != null)
-			Hibernate.initialize(resource.getResourceType());
-		if (resource.getKeywords() != null) {
-			Hibernate.initialize(resource.getKeywords());
-			resource.getKeywords().size();
-		}
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	// if (metadataObject == null)
+	// return;
+	// Resource resource = this.checkIncomingMetadataObject(metadataObject);
+	//
+	// if (resource.getPerson() != null)
+	// Hibernate.initialize(resource.getPerson());
+	// if (resource.getResourceBLOB() != null)
+	// Hibernate.initialize(resource.getResourceBLOB());
+	// if (resource.getResourceType() != null)
+	// Hibernate.initialize(resource.getResourceType());
+	// if (resource.getKeywords() != null) {
+	// Hibernate.initialize(resource.getKeywords());
+	// resource.getKeywords().size();
+	// }
+	// }
 
 	/**
 	 * The Log4J Logger

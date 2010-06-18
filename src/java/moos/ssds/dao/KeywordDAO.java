@@ -86,7 +86,7 @@ public class KeywordDAO extends MetadataDAO {
 	/**
 	 * @see IMetadataDAO#findAllIDs()
 	 */
-	public Collection findAllIDs() throws MetadataAccessException {
+	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		Collection keywordIDs = null;
 
 		// Create the query and run it
@@ -124,17 +124,16 @@ public class KeywordDAO extends MetadataDAO {
 	/**
 	 * This method will return all the <code>Keyword</code>s that match the
 	 * supplied name. If you specify <code>true</code> for the exactMatch
-	 * parameter, only those <code>Keyword</code>s that exactly match the
-	 * given word will be returned. Otherwise, it will do a &quot;like&quot;
-	 * lookup.
+	 * parameter, only those <code>Keyword</code>s that exactly match the given
+	 * word will be returned. Otherwise, it will do a &quot;like&quot; lookup.
 	 * 
 	 * @param name
 	 *            is the name to search for
 	 * @param exactMatch
-	 *            is whether to look for an exact match (<code>true</code>)
-	 *            or not
-	 * @return a <code>Collection</code> of <code>Keyword</code>s that
-	 *         match the given name
+	 *            is whether to look for an exact match (<code>true</code>) or
+	 *            not
+	 * @return a <code>Collection</code> of <code>Keyword</code>s that match the
+	 *         given name
 	 * @throws MetadataAccessException
 	 */
 	public Collection findByName(String name, boolean exactMatch)
@@ -176,6 +175,21 @@ public class KeywordDAO extends MetadataDAO {
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e);
 		}
+		// Log any results
+		if (results != null && results.size() > 0) {
+			for (Iterator<Object> iterator = results.iterator(); iterator.hasNext();) {
+				Object object = (Object) iterator.next();
+				if (object instanceof Keyword) {
+					logger.debug("Matching Keyword: "
+							+ ((Keyword) object).toStringRepresentation("|"));
+				} else {
+					logger.debug("Matching object found, but not Keyword: "
+							+ object);
+				}
+			}
+		} else {
+			logger.debug("No matching keywords found");
+		}
 
 		// Return the results
 		return results;
@@ -185,8 +199,8 @@ public class KeywordDAO extends MetadataDAO {
 	 * This method returns a <code>Collection</code> of <code>String</code>s
 	 * that are the names of all the keywords that are registered in SSDS.
 	 * 
-	 * @return a <code>Collection</code> of <code>String</code>s that are
-	 *         the names of all keywords in SSDS.
+	 * @return a <code>Collection</code> of <code>String</code>s that are the
+	 *         names of all keywords in SSDS.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
@@ -213,8 +227,8 @@ public class KeywordDAO extends MetadataDAO {
 	 *            the <code>IMetadataObject</code> that is to use to look up
 	 *            keywords that are associated with it
 	 * @return a <code>Collection</code> of <code>Keyword</code>s that are
-	 *         associated to the <code>IMetadataObject</code>. It will return
-	 *         an empty collection if none are found
+	 *         associated to the <code>IMetadataObject</code>. It will return an
+	 *         empty collection if none are found
 	 * @throws MetadataAccessException
 	 */
 	public Collection findByMetadataObject(IMetadataObject metadataObject)
@@ -418,10 +432,10 @@ public class KeywordDAO extends MetadataDAO {
 		return keyword;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-
-	}
+//	protected void initializeRelationships(IMetadataObject metadataObject)
+//			throws MetadataAccessException {
+//
+//	}
 
 	/**
 	 * The Log4J Logger

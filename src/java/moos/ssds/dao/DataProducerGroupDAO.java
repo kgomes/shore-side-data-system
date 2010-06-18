@@ -76,7 +76,7 @@ public class DataProducerGroupDAO extends MetadataDAO {
 					.uniqueResult();
 		}
 		if (returnFullObjectGraph)
-			initializeRelationships(dataProducerGroupToReturn);
+			dataProducerGroupToReturn = (DataProducerGroup) getRealObjectAndRelationships(dataProducerGroupToReturn);
 
 		// Return the result
 		return dataProducerGroupToReturn;
@@ -132,11 +132,11 @@ public class DataProducerGroupDAO extends MetadataDAO {
 	 * @param name
 	 *            is the name to search for
 	 * @param exactMatch
-	 *            is whether to look for an exact match (<code>true</code>)
-	 *            or not
-	 * @return a <code>Collection</code> of <code>DataProducerGroup</code>s
-	 *         that match the given name. It returns an empty collection if non
-	 *         were found
+	 *            is whether to look for an exact match (<code>true</code>) or
+	 *            not
+	 * @return a <code>Collection</code> of <code>DataProducerGroup</code>s that
+	 *         match the given name. It returns an empty collection if non were
+	 *         found
 	 * @throws MetadataAccessException
 	 */
 	public Collection findByName(String name, boolean exactMatch,
@@ -155,7 +155,7 @@ public class DataProducerGroupDAO extends MetadataDAO {
 				exactMatch, orderByPropertyName, ascendingOrDescending);
 		results = criteria.list();
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 		// Return the results
 		return results;
 	}
@@ -185,8 +185,8 @@ public class DataProducerGroupDAO extends MetadataDAO {
 	 * that are the names of all the dataProducerGroups that are registered in
 	 * SSDS.
 	 * 
-	 * @return a <code>Collection</code> of <code>String</code>s that are
-	 *         the names of all dataProducerGroups in SSDS.
+	 * @return a <code>Collection</code> of <code>String</code>s that are the
+	 *         names of all dataProducerGroups in SSDS.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
@@ -229,9 +229,9 @@ public class DataProducerGroupDAO extends MetadataDAO {
 	 * @param dataProducer
 	 *            the <code>DataProducer</codFe> that is to use to look up
 	 *            dataProducerGroups that are associated with it
-	 * @return a <code>Collection</code> of <code>DataProducerGroup</code>s
-	 *         that are associated to the <code>DataProducer</code>. It will
-	 *         return an empty collection if none are found
+	 * @return a <code>Collection</code> of <code>DataProducerGroup</code>s that
+	 *         are associated to the <code>DataProducer</code>. It will return
+	 *         an empty collection if none are found
 	 * @throws MetadataAccessException
 	 */
 	public Collection findByDataProducer(DataProducer dataProducer,
@@ -254,7 +254,7 @@ public class DataProducerGroupDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			initializeRelationships(dataProducerGroups);
+			dataProducerGroups = getRealObjectsAndRelationships(dataProducerGroups);
 
 		// Return the result
 		return dataProducerGroups;
@@ -415,8 +415,7 @@ public class DataProducerGroupDAO extends MetadataDAO {
 	 * @param metadataObject
 	 *            the <code>MetadataObject</code> to check and return as a
 	 *            <code>DataProducerGroup</code>
-	 * @return a <code>DataProducerGroup</code> that is same object that came
-	 *         in
+	 * @return a <code>DataProducerGroup</code> that is same object that came in
 	 * @throws MetadataAccessException
 	 *             if something is wrong
 	 */
@@ -469,10 +468,10 @@ public class DataProducerGroupDAO extends MetadataDAO {
 		return criteria;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-		// For DataProducerGroup, there is nothing to do
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	// // For DataProducerGroup, there is nothing to do
+	// }
 
 	/**
 	 * The Log4J Logger

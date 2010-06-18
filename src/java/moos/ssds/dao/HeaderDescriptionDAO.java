@@ -88,8 +88,8 @@ public class HeaderDescriptionDAO extends MetadataDAO {
     /**
      * @see MetadataDAO#initializeRelationships(IMetadataObject)
      */
-    protected void initializeRelationships(IMetadataObject metadataObject)
-        throws MetadataAccessException {
-
-    }
+//    protected void initializeRelationships(IMetadataObject metadataObject)
+//        throws MetadataAccessException {
+//
+//    }
 }

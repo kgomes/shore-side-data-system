@@ -117,7 +117,7 @@ public class PersonDAO extends MetadataDAO {
 
 		// If the full object graph was requested, fill it out
 		if (returnFullObjectGraph)
-			initializeRelationships(personToReturn);
+			personToReturn = (Person) getRealObjectAndRelationships(personToReturn);
 
 		if (personToReturn != null) {
 			logger.debug("OK, returning the person: "
@@ -173,10 +173,10 @@ public class PersonDAO extends MetadataDAO {
 	 * address.
 	 * 
 	 * @param email
-	 *            is a <code>java.lang.String</code> that will be used to
-	 *            search for matches of a person's email address
-	 * @return a <code>Collection</code> of person objects that have that
-	 *         email address. If no matches were found, an empty collection is
+	 *            is a <code>java.lang.String</code> that will be used to search
+	 *            for matches of a person's email address
+	 * @return a <code>Collection</code> of person objects that have that email
+	 *         address. If no matches were found, an empty collection is
 	 *         returned
 	 * @throws MetadataAccessException
 	 *             if something goes wrong with the search
@@ -209,7 +209,7 @@ public class PersonDAO extends MetadataDAO {
 
 		// Check for relationship initialization
 		if (returnFullObjectGraph)
-			initializeRelationships(personsToReturn);
+			personsToReturn = getRealObjectsAndRelationships(personsToReturn);
 
 		// Return the collection
 		return personsToReturn;
@@ -219,11 +219,11 @@ public class PersonDAO extends MetadataDAO {
 	 * This method tries to look up and instantiate a user by their username
 	 * 
 	 * @param username
-	 *            is a <code>java.lang.String</code> that will be used to
-	 *            search for matches of a person's username
-	 * @return a <code>MetadataObject</code> of class <code>Person</code>
-	 *         that has a username that matches the one specified. If no matches
-	 *         were found, an empty collection is returned
+	 *            is a <code>java.lang.String</code> that will be used to search
+	 *            for matches of a person's username
+	 * @return a <code>MetadataObject</code> of class <code>Person</code> that
+	 *         has a username that matches the one specified. If no matches were
+	 *         found, an empty collection is returned
 	 * @throws MetadataAccessException
 	 *             if something goes wrong with the search
 	 */
@@ -256,19 +256,19 @@ public class PersonDAO extends MetadataDAO {
 
 		// Check for relationship initialization
 		if (returnFullObjectGraph)
-			initializeRelationships(personToReturn);
+			personToReturn = (Person) getRealObjectAndRelationships(personToReturn);
 
 		// Return the person
 		return personToReturn;
 	}
 
 	/**
-	 * This method returns a collection of <code>java.lang.String</code>s
-	 * that are all the usernames of people in the database
+	 * This method returns a collection of <code>java.lang.String</code>s that
+	 * are all the usernames of people in the database
 	 * 
-	 * @return a <code>Collection</code> of <code>java.lang.String</code>s
-	 *         that are all the usernames that are currently in the system. If
-	 *         there are no usernames and empty collection is returned
+	 * @return a <code>Collection</code> of <code>java.lang.String</code>s that
+	 *         are all the usernames that are currently in the system. If there
+	 *         are no usernames and empty collection is returned
 	 */
 	public Collection findAllUsernames() throws MetadataAccessException {
 
@@ -335,9 +335,8 @@ public class PersonDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(personsToReturn);
-		}
+		if (returnFullObjectGraph)
+			personsToReturn = getRealObjectsAndRelationships(personsToReturn);
 
 		// Now return the results
 		return personsToReturn;
@@ -348,8 +347,6 @@ public class PersonDAO extends MetadataDAO {
 	 */
 	public Long makePersistent(IMetadataObject metadataObject)
 			throws MetadataAccessException {
-
-		logger.debug("makePersistent called");
 
 		// This is a boolean to indicate if the object has been persisted before
 		boolean persistedBefore = false;
@@ -452,9 +449,11 @@ public class PersonDAO extends MetadataDAO {
 
 		// First make sure the usergroup relationship exists
 		if (person.getUserGroups() != null) {
+
 			// Now check to make sure it is initialized. If it is not, no
 			// changes have taken place and we don't need to do anything
 			if (Hibernate.isInitialized(person.getUserGroups())) {
+				logger.debug("UserGroups appear to be initialized");
 
 				// Grab the DAO for UserGroup
 				UserGroupDAO userGroupDAO = new UserGroupDAO(this.getSession());
@@ -467,6 +466,11 @@ public class PersonDAO extends MetadataDAO {
 					while (userGroupIter.hasNext()) {
 						UserGroup tempUserGroup = (UserGroup) userGroupIter
 								.next();
+						if (tempUserGroup != null)
+							logger
+									.debug("Will try to persist UserGroup: "
+											+ tempUserGroup
+													.toStringRepresentation("|"));
 						userGroupDAO.makePersistent(tempUserGroup);
 					}
 
@@ -523,6 +527,9 @@ public class PersonDAO extends MetadataDAO {
 						}
 					}
 				}
+			} else {
+				logger.debug("UserGroups do not appear to be "
+						+ "initialized, so will be ignored");
 			}
 		}
 
@@ -847,17 +854,23 @@ public class PersonDAO extends MetadataDAO {
 	/**
 	 * @see MetadataDAO#initializeRelationships(IMetadataObject)
 	 */
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-		// For persons we need to initialize the UserGroup relationship
-		Person person = this.checkIncomingMetadataObject(metadataObject);
-		if ((person.getUserGroups() != null)
-				&& (person.getUserGroups().size() > 0)) {
-			Iterator userGroupIter = person.getUserGroups().iterator();
-			while (userGroupIter.hasNext())
-				Hibernate.initialize((UserGroup) userGroupIter.next());
-		}
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	// // For persons we need to initialize the UserGroup relationship
+	// Person person = this.checkIncomingMetadataObject(metadataObject);
+	// logger.debug("person is " + person.toStringRepresentation("|"));
+	// if (person.getUserGroups() != null) {
+	// logger.debug("Person has a user group collection (size = "
+	// + person.getUserGroups().size() + ")");
+	// if (person.getUserGroups().size() > 0) {
+	// Iterator userGroupIter = person.getUserGroups().iterator();
+	// while (userGroupIter.hasNext())
+	// Hibernate.initialize((UserGroup) userGroupIter.next());
+	// } else {
+	// logger.debug("No entries in the collection however");
+	// }
+	// }
+	// }
 
 	/**
 	 * The Log4J Logger

@@ -90,17 +90,17 @@ public class RecordDescriptionDAO extends MetadataDAO {
     /**
      * @see MetadataDAO#initializeRelationships(IMetadataObject)
      */
-    protected void initializeRelationships(IMetadataObject metadataObject)
-        throws MetadataAccessException {
-        if (metadataObject == null)
-            return;
-        RecordDescription rd = this.checkIncomingMetadataObject(metadataObject);
-
-        if (rd.getRecordVariables() != null) {
-            Hibernate.initialize(rd.getRecordVariables());
-            rd.getRecordVariables().size();
-        }
-    }
+//    protected void initializeRelationships(IMetadataObject metadataObject)
+//        throws MetadataAccessException {
+//        if (metadataObject == null)
+//            return;
+//        RecordDescription rd = this.checkIncomingMetadataObject(metadataObject);
+//
+//        if (rd.getRecordVariables() != null) {
+//            Hibernate.initialize(rd.getRecordVariables());
+//            rd.getRecordVariables().size();
+//        }
+//    }
 
     /**
      * This method checks to make sure an incoming <code>MetadataObject</code>

@@ -353,10 +353,10 @@ public class ResourceTypeDAO extends MetadataDAO {
         return resourceType;
     }
 
-    protected void initializeRelationships(IMetadataObject metadataObject)
-        throws MetadataAccessException {
-
-    }
+//    protected void initializeRelationships(IMetadataObject metadataObject)
+//        throws MetadataAccessException {
+//
+//    }
 
     /**
      * The Log4J Logger

@@ -86,18 +86,18 @@ public class StandardVariableDAO extends MetadataDAO {
 
 		// Check for object graph
 		if (returnFullObjectGraph)
-			this.initializeRelationships(standardVariableToReturn);
+			standardVariableToReturn = (StandardVariable) getRealObjectAndRelationships(standardVariableToReturn);
 
 		// Return the answer
 		return standardVariableToReturn;
 	}
 
 	/**
-	 * This method returns a <code>Collection</code> of <code>Long</code>s
-	 * that are the IDs of all the standardVariables that are in SSDS.
+	 * This method returns a <code>Collection</code> of <code>Long</code>s that
+	 * are the IDs of all the standardVariables that are in SSDS.
 	 * 
-	 * @return a <code>Collection</code> of <code>Long</code>s that are the
-	 *         IDs of all standardVariables in SSDS.
+	 * @return a <code>Collection</code> of <code>Long</code>s that are the IDs
+	 *         of all standardVariables in SSDS.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
@@ -139,13 +139,13 @@ public class StandardVariableDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method looks for all <code>StandardVariable</code>s whose name is
-	 * an exact match of the name supplied.
+	 * This method looks for all <code>StandardVariable</code>s whose name is an
+	 * exact match of the name supplied.
 	 * 
 	 * @param name
 	 *            is the name that will be used to search for
-	 * @return a <code>Collection</code> of <code>StandardVariable</code>s
-	 *         whose names exactly match the one specified as the parameter.
+	 * @return a <code>Collection</code> of <code>StandardVariable</code>s whose
+	 *         names exactly match the one specified as the parameter.
 	 */
 	public Collection findByName(String name) throws MetadataAccessException {
 
@@ -180,8 +180,8 @@ public class StandardVariableDAO extends MetadataDAO {
 	 * @param likeName
 	 *            is the name that will be used to search for. In SQL terms, it
 	 *            will do a LIKE '%likeName%'
-	 * @return a <code>Collection</code> of <code>StandardVariable</code>s
-	 *         that have names like the one specified as the parameter.
+	 * @return a <code>Collection</code> of <code>StandardVariable</code>s that
+	 *         have names like the one specified as the parameter.
 	 */
 	public Collection findByLikeName(String likeName)
 			throws MetadataAccessException {
@@ -211,12 +211,11 @@ public class StandardVariableDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method returns a collection of <code>java.lang.String</code>s
-	 * that are all the names of the <code>StandardVariable</code>s in the
-	 * database
+	 * This method returns a collection of <code>java.lang.String</code>s that
+	 * are all the names of the <code>StandardVariable</code>s in the database
 	 * 
-	 * @return a <code>Collection</code> of <code>java.lang.String</code>s
-	 *         that are all the <code>StandardVariable</code> names that are
+	 * @return a <code>Collection</code> of <code>java.lang.String</code>s that
+	 *         are all the <code>StandardVariable</code> names that are
 	 *         currently in the system. If there are no names, an empty
 	 *         collection is returned
 	 */
@@ -241,17 +240,17 @@ public class StandardVariableDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method tries to look up all <code>StandardVariable</code>s by
-	 * their reference scale
+	 * This method tries to look up all <code>StandardVariable</code>s by their
+	 * reference scale
 	 * 
 	 * @param name
-	 *            is a <code>java.lang.String</code> that will be used to
-	 *            search for exact matches of a <code>StandardVariable</code>'s
+	 *            is a <code>java.lang.String</code> that will be used to search
+	 *            for exact matches of a <code>StandardVariable</code>'s
 	 *            reference scale (this is case in-sensitive)
-	 * @return a <code>Collection</code> of <code>StandardVariable</code>s
-	 *         that have a reference scale that exactly matches
-	 *         (case-insensitive) the one specified. If no matches were found,
-	 *         an empty collection is returned.
+	 * @return a <code>Collection</code> of <code>StandardVariable</code>s that
+	 *         have a reference scale that exactly matches (case-insensitive)
+	 *         the one specified. If no matches were found, an empty collection
+	 *         is returned.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong with the search
 	 */
@@ -293,9 +292,8 @@ public class StandardVariableDAO extends MetadataDAO {
 	 * @param likeReferenceScale
 	 *            is the referenceScale that will be used to search for. In SQL
 	 *            terms, it will do a LIKE '%likeReferenceScale%'
-	 * @return a <code>Collection</code> of <code>StandardVariable</code>s
-	 *         that have referenceScales like the one specified as the
-	 *         parameter.
+	 * @return a <code>Collection</code> of <code>StandardVariable</code>s that
+	 *         have referenceScales like the one specified as the parameter.
 	 */
 	public Collection findByLikeReferenceScale(String likeReferenceScale)
 			throws MetadataAccessException {
@@ -327,14 +325,14 @@ public class StandardVariableDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method returns a collection of <code>java.lang.String</code>s
-	 * that are all the referenceScales of the <code>StandardVariable</code>s
-	 * in the database
+	 * This method returns a collection of <code>java.lang.String</code>s that
+	 * are all the referenceScales of the <code>StandardVariable</code>s in the
+	 * database
 	 * 
-	 * @return a <code>Collection</code> of <code>java.lang.String</code>s
-	 *         that are all the <code>StandardVariable</code> referenceScales
-	 *         that are currently in the system. If there are no
-	 *         referenceScales, an empty collection is returned
+	 * @return a <code>Collection</code> of <code>java.lang.String</code>s that
+	 *         are all the <code>StandardVariable</code> referenceScales that
+	 *         are currently in the system. If there are no referenceScales, an
+	 *         empty collection is returned
 	 */
 	public Collection findAllReferenceScales() throws MetadataAccessException {
 
@@ -422,7 +420,7 @@ public class StandardVariableDAO extends MetadataDAO {
 
 		// Check for graph
 		if (returnFullObjectGraph)
-			this.initializeRelationships(standardVariableToReturn);
+			standardVariableToReturn = (StandardVariable) getRealObjectAndRelationships(standardVariableToReturn);
 
 		// Now return the result
 		return standardVariableToReturn;
@@ -433,17 +431,16 @@ public class StandardVariableDAO extends MetadataDAO {
 	 * <code>StandardVariable</code> by its name and reference scale
 	 * 
 	 * @param name
-	 *            is a <code>java.lang.String</code> that will be used to
-	 *            search for matches of a <code>StandardVariable</code>'s
-	 *            name
+	 *            is a <code>java.lang.String</code> that will be used to search
+	 *            for matches of a <code>StandardVariable</code>'s name
 	 * @param referenceScale
-	 *            is a <code>java.lang.String</code> that will be used to
-	 *            search for matches of a <code>StandardVariable</code>'s
-	 *            reference scale
+	 *            is a <code>java.lang.String</code> that will be used to search
+	 *            for matches of a <code>StandardVariable</code>'s reference
+	 *            scale
 	 * @return a <code>MetadataObject</code> of class
-	 *         <code>StandardVariable</code> that has a name and reference
-	 *         scale that matches the one specified. If no matches were found,
-	 *         and empty collection is returned
+	 *         <code>StandardVariable</code> that has a name and reference scale
+	 *         that matches the one specified. If no matches were found, and
+	 *         empty collection is returned
 	 * @throws MetadataAccessException
 	 *             if something goes wrong with the search
 	 */
@@ -489,14 +486,14 @@ public class StandardVariableDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method looks up the <code>StandardVariable</code> that is
-	 * associated with a <code>RecordVariable</code>.
+	 * This method looks up the <code>StandardVariable</code> that is associated
+	 * with a <code>RecordVariable</code>.
 	 * 
 	 * @param recordVariable
 	 *            is the <code>RecordVariable</code> to search for
-	 * @return is the <code>StandardVariable</code> that is linked to the
-	 *         given <code>RecordVariable</code>. Null will be returned if
-	 *         there is no association defined
+	 * @return is the <code>StandardVariable</code> that is linked to the given
+	 *         <code>RecordVariable</code>. Null will be returned if there is no
+	 *         association defined
 	 */
 	public StandardVariable findByRecordVariable(RecordVariable recordVariable)
 			throws MetadataAccessException {
@@ -584,7 +581,7 @@ public class StandardVariableDAO extends MetadataDAO {
 		results = query.list();
 
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		return results;
 	}
@@ -821,8 +818,7 @@ public class StandardVariableDAO extends MetadataDAO {
 	 * @param metadataObject
 	 *            the <code>MetadataObject</code> to check and return as a
 	 *            <code>StandardVariable</code>
-	 * @return a <code>StandardVariable</code> that is same object that came
-	 *         in
+	 * @return a <code>StandardVariable</code> that is same object that came in
 	 * @throws MetadataAccessException
 	 *             if something is wrong
 	 */
@@ -851,17 +847,17 @@ public class StandardVariableDAO extends MetadataDAO {
 		return standardVariable;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-
-		if (metadataObject == null)
-			return;
-
-		// For StandardVariables, you want to initialize StandardUnits
-		StandardVariable sv = this.checkIncomingMetadataObject(metadataObject);
-		if (sv.getStandardUnits() != null)
-			Hibernate.initialize(sv.getStandardUnits());
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	//
+	// if (metadataObject == null)
+	// return;
+	//
+	// // For StandardVariables, you want to initialize StandardUnits
+	// StandardVariable sv = this.checkIncomingMetadataObject(metadataObject);
+	// if (sv.getStandardUnits() != null)
+	// Hibernate.initialize(sv.getStandardUnits());
+	// }
 
 	/**
 	 * A log4j logger

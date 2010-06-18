@@ -109,7 +109,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// Check to see if the graph is requested
 		if (returnFullObjectGraph)
-			this.initializeRelationships(dataProducerToReturn);
+			dataProducerToReturn = (DataProducer) getRealObjectAndRelationships(dataProducerToReturn);
 
 		// Return the result
 		return dataProducerToReturn;
@@ -211,9 +211,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(results);
-		}
+		if (returnFullObjectGraph)
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -322,9 +321,9 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(results);
-		}
+		if (returnFullObjectGraph)
+			results = getRealObjectsAndRelationships(results);
+
 		// Return the results
 		return results;
 	}
@@ -415,9 +414,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(results);
-		}
+		if (returnFullObjectGraph)
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the result
 		return results;
@@ -489,9 +487,9 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(parentlessDeployments);
-		}
+		if (returnFullObjectGraph)
+			parentlessDeployments = getRealObjectsAndRelationships(parentlessDeployments);
+
 		return parentlessDeployments;
 	}
 
@@ -554,9 +552,9 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(parentlessDataProducers);
-		}
+		if (returnFullObjectGraph)
+			parentlessDataProducers = getRealObjectsAndRelationships(parentlessDataProducers);
+
 		return parentlessDataProducers;
 	}
 
@@ -656,7 +654,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// Check for object graph return
 		if (returnFullObjectGraph)
-			this.initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -740,7 +738,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// Check for object graph return
 		if (returnFullObjectGraph)
-			this.initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -836,7 +834,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// Check for object graph return
 		if (returnFullObjectGraph)
-			this.initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -935,7 +933,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// Check for object graph return
 		if (returnFullObjectGraph)
-			this.initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -1036,7 +1034,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// Check for object graph return
 		if (returnFullObjectGraph)
-			this.initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -1129,7 +1127,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// Check for object graph return
 		if (returnFullObjectGraph)
-			this.initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -1209,7 +1207,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// If the full object graphs are requested
 		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 		}
 
 		return dataProducersToReturn;
@@ -1295,9 +1293,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		return dataProducersToReturn;
 	}
@@ -1364,9 +1361,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(collectionToReturn);
-		}
+		if (returnFullObjectGraph)
+			collectionToReturn = getRealObjectsAndRelationships(collectionToReturn);
 
 		// Now return the results (if any)
 		return collectionToReturn;
@@ -1450,9 +1446,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		return dataProducersToReturn;
 	}
@@ -1484,9 +1479,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		// Now return it
 		return dataProducersToReturn;
@@ -1525,9 +1519,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		// Now return it
 		return dataProducersToReturn;
@@ -1558,9 +1551,8 @@ public class DataProducerDAO extends MetadataDAO {
 		dataProducersToReturn = criteria.list();
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		return dataProducersToReturn;
 
@@ -1610,9 +1602,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		return dataProducersToReturn;
 	}
@@ -1685,9 +1676,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		return dataProducersToReturn;
 	}
@@ -1741,9 +1731,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		return dataProducersToReturn;
 	}
@@ -1785,9 +1774,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		return dataProducersToReturn;
 	}
@@ -1841,7 +1829,7 @@ public class DataProducerDAO extends MetadataDAO {
 					}
 				}
 				if (returnFullObjectGraph) {
-					this.initializeRelationships(parentDataProducer);
+					parentDataProducer = (DataProducer) getRealObjectAndRelationships(parentDataProducer);
 				}
 			}
 			return parentDataProducer;
@@ -1946,7 +1934,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// Fill out graphs is asked for
 		if (returnFullObjectGraphs)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		return results;
 	}
@@ -2038,9 +2026,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			this.initializeRelationships(dataProducersToReturn);
-		}
+		if (returnFullObjectGraph)
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		return dataProducersToReturn;
 	}
@@ -2114,9 +2101,8 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		// If the full object graphs are requested
-		if (returnFullObjectGraph) {
-			initializeRelationships(results);
-		}
+		if (returnFullObjectGraph)
+			results = getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -2209,7 +2195,7 @@ public class DataProducerDAO extends MetadataDAO {
 		dataProducersToReturn = query.list();
 
 		if (returnFullObjectGraph)
-			initializeRelationships(dataProducersToReturn);
+			dataProducersToReturn = getRealObjectsAndRelationships(dataProducersToReturn);
 
 		return dataProducersToReturn;
 	}
@@ -2266,7 +2252,7 @@ public class DataProducerDAO extends MetadataDAO {
 		dataProducerToReturn = (DataProducer) query.uniqueResult();
 
 		if (returnFullObjectGraph)
-			initializeRelationships(dataProducerToReturn);
+			dataProducerToReturn = (DataProducer) getRealObjectAndRelationships(dataProducerToReturn);
 
 		return dataProducerToReturn;
 	}
@@ -2333,7 +2319,7 @@ public class DataProducerDAO extends MetadataDAO {
 		results = query.list();
 
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		return results;
 	}
@@ -2385,7 +2371,7 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			initializeRelationships(results);
+			results = getRealObjectsAndRelationships(results);
 
 		return results;
 	}
@@ -2429,9 +2415,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByEvent(Event event, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findByEvent(Event event,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		return new ArrayList();
 	}
 
@@ -2515,7 +2501,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// Check if the full object graph is to be returned
 		if (returnFullObjectGraph)
-			initializeRelationships(allDeployments);
+			allDeployments = getRealObjectsAndRelationships(allDeployments);
 
 		// Now return the results
 		return allDeployments;
@@ -4656,94 +4642,94 @@ public class DataProducerDAO extends MetadataDAO {
 		return criteria;
 	}
 
-	protected void initializeRelationships(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-
-		// If the object is null, just return
-		if (metadataObject == null)
-			return;
-
-		// First try to cast into DataProducer
-		DataProducer dataProducer = this
-				.checkIncomingMetadataObject(metadataObject);
-
-		if (dataProducer.getPerson() != null)
-			Hibernate.initialize(dataProducer.getPerson());
-		if (dataProducer.getDevice() != null)
-			Hibernate.initialize(dataProducer.getDevice());
-		if (dataProducer.getSoftware() != null)
-			Hibernate.initialize(dataProducer.getSoftware());
-		if (dataProducer.getParentDataProducer() != null)
-			Hibernate.initialize(dataProducer.getParentDataProducer());
-		if (dataProducer.getChildDataProducers() != null) {
-			logger.debug("There are "
-					+ dataProducer.getChildDataProducers().size()
-					+ " child data producers, so will initialize them");
-			Iterator childDataProducerIterator = dataProducer
-					.getChildDataProducers().iterator();
-			while (childDataProducerIterator.hasNext()) {
-				Hibernate.initialize((DataProducer) childDataProducerIterator
-						.next());
-				logger.debug("Initialized ...");
-			}
-		}
-		if (dataProducer.getDataProducerGroups() != null) {
-			Iterator dataProducerGroupsIterator = dataProducer
-					.getDataProducerGroups().iterator();
-			while (dataProducerGroupsIterator.hasNext()) {
-				Hibernate
-						.initialize((DataProducerGroup) dataProducerGroupsIterator
-								.next());
-			}
-		}
-		if (dataProducer.getInputs() != null) {
-			Iterator inputIterator = dataProducer.getInputs().iterator();
-			while (inputIterator.hasNext()) {
-				Hibernate.initialize((DataContainer) inputIterator.next());
-			}
-		}
-		if (dataProducer.getOutputs() != null) {
-			Iterator outputIterator = dataProducer.getOutputs().iterator();
-			while (outputIterator.hasNext()) {
-				DataContainer dcToInitialize = (DataContainer) outputIterator
-						.next();
-				Hibernate.initialize(dcToInitialize);
-				if (dcToInitialize.getRecordDescription() != null) {
-					Hibernate.initialize(dcToInitialize.getRecordDescription());
-				}
-				if (dcToInitialize.getRecordVariables() != null) {
-					Iterator rvIter = dcToInitialize.getRecordVariables()
-							.iterator();
-					while (rvIter.hasNext()) {
-						Hibernate.initialize((RecordVariable) rvIter.next());
-					}
-				}
-			}
-		}
-		if (dataProducer.getResources() != null) {
-			logger.debug("There are some resources to initialize ("
-					+ dataProducer.getResources().size() + " of them)");
-			Iterator resourceIterator = dataProducer.getResources().iterator();
-			while (resourceIterator.hasNext()) {
-				Resource resource = (Resource) resourceIterator.next();
-				logger.debug("Resource " + resource.toStringRepresentation("|")
-						+ " initialized");
-				Hibernate.initialize(resource);
-			}
-		}
-		if (dataProducer.getKeywords() != null) {
-			Iterator keywordIterator = dataProducer.getKeywords().iterator();
-			while (keywordIterator.hasNext()) {
-				Hibernate.initialize((Keyword) keywordIterator.next());
-			}
-		}
-		if (dataProducer.getEvents() != null) {
-			Iterator eventIterator = dataProducer.getEvents().iterator();
-			while (eventIterator.hasNext()) {
-				Hibernate.initialize((Event) eventIterator.next());
-			}
-		}
-	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	//
+	// // If the object is null, just return
+	// if (metadataObject == null)
+	// return;
+	//
+	// // First try to cast into DataProducer
+	// DataProducer dataProducer = this
+	// .checkIncomingMetadataObject(metadataObject);
+	//
+	// if (dataProducer.getPerson() != null)
+	// Hibernate.initialize(dataProducer.getPerson());
+	// if (dataProducer.getDevice() != null)
+	// Hibernate.initialize(dataProducer.getDevice());
+	// if (dataProducer.getSoftware() != null)
+	// Hibernate.initialize(dataProducer.getSoftware());
+	// if (dataProducer.getParentDataProducer() != null)
+	// Hibernate.initialize(dataProducer.getParentDataProducer());
+	// if (dataProducer.getChildDataProducers() != null) {
+	// logger.debug("There are "
+	// + dataProducer.getChildDataProducers().size()
+	// + " child data producers, so will initialize them");
+	// Iterator childDataProducerIterator = dataProducer
+	// .getChildDataProducers().iterator();
+	// while (childDataProducerIterator.hasNext()) {
+	// Hibernate.initialize((DataProducer) childDataProducerIterator
+	// .next());
+	// logger.debug("Initialized ...");
+	// }
+	// }
+	// if (dataProducer.getDataProducerGroups() != null) {
+	// Iterator dataProducerGroupsIterator = dataProducer
+	// .getDataProducerGroups().iterator();
+	// while (dataProducerGroupsIterator.hasNext()) {
+	// Hibernate
+	// .initialize((DataProducerGroup) dataProducerGroupsIterator
+	// .next());
+	// }
+	// }
+	// if (dataProducer.getInputs() != null) {
+	// Iterator inputIterator = dataProducer.getInputs().iterator();
+	// while (inputIterator.hasNext()) {
+	// Hibernate.initialize((DataContainer) inputIterator.next());
+	// }
+	// }
+	// if (dataProducer.getOutputs() != null) {
+	// Iterator outputIterator = dataProducer.getOutputs().iterator();
+	// while (outputIterator.hasNext()) {
+	// DataContainer dcToInitialize = (DataContainer) outputIterator
+	// .next();
+	// Hibernate.initialize(dcToInitialize);
+	// if (dcToInitialize.getRecordDescription() != null) {
+	// Hibernate.initialize(dcToInitialize.getRecordDescription());
+	// }
+	// if (dcToInitialize.getRecordVariables() != null) {
+	// Iterator rvIter = dcToInitialize.getRecordVariables()
+	// .iterator();
+	// while (rvIter.hasNext()) {
+	// Hibernate.initialize((RecordVariable) rvIter.next());
+	// }
+	// }
+	// }
+	// }
+	// if (dataProducer.getResources() != null) {
+	// logger.debug("There are some resources to initialize ("
+	// + dataProducer.getResources().size() + " of them)");
+	// Iterator resourceIterator = dataProducer.getResources().iterator();
+	// while (resourceIterator.hasNext()) {
+	// Resource resource = (Resource) resourceIterator.next();
+	// logger.debug("Resource " + resource.toStringRepresentation("|")
+	// + " initialized");
+	// Hibernate.initialize(resource);
+	// }
+	// }
+	// if (dataProducer.getKeywords() != null) {
+	// Iterator keywordIterator = dataProducer.getKeywords().iterator();
+	// while (keywordIterator.hasNext()) {
+	// Hibernate.initialize((Keyword) keywordIterator.next());
+	// }
+	// }
+	// if (dataProducer.getEvents() != null) {
+	// Iterator eventIterator = dataProducer.getEvents().iterator();
+	// while (eventIterator.hasNext()) {
+	// Hibernate.initialize((Event) eventIterator.next());
+	// }
+	// }
+	// }
 
 	/**
 	 * The Log4J Logger

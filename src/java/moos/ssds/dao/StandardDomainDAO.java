@@ -261,10 +261,10 @@ public class StandardDomainDAO extends MetadataDAO {
         return standardDomain;
     }
 
-    protected void initializeRelationships(IMetadataObject metadataObject)
-        throws MetadataAccessException {
-
-    }
+//    protected void initializeRelationships(IMetadataObject metadataObject)
+//        throws MetadataAccessException {
+//
+//    }
 
     /**
      * A log4j logger
