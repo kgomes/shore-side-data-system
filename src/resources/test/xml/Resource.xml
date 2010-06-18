@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://localhost:8080/ssds-docs/xml/schema/SSDS_Metadata.xsd">
+    <Resource id="1" contentLength="100" startDate="2000-01-02T03:04:05Z"
+        endDate="2006-07-08T09:10:11Z" mimeType="Test Resource MimeType" name="Test Resource Name"
+        uri="http://test.resource.uri" url="http://test.resource.uri">
+        <description>Test Resource Description</description>
+        <Keyword id="1" name="Test Keyword 1">
+            <description>Test Keyword 1 Description</description>
+        </Keyword>
+        <Keyword id="2" name="Test Keyword 2">
+            <description>Test Keyword 2 Description</description>
+        </Keyword>
+        <Keyword id="3" name="Test Keyword 3">
+            <description>Test Keyword 3 Description</description>
+        </Keyword>
+        <Keyword id="4" name="Test Keyword 4">
+            <description>Test Keyword 4 Description</description>
+        </Keyword>
+        <ResourceBLOB id="1" name="Test ResourceBLOB" byteArray="SGVsbG8gd29ybGQ=">
+            <description>Test ResourceBLOB Description</description>
+        </ResourceBLOB>
+        <ResourceType id="1" name="Test ResourceType">
+            <description>Test ResourceType Description</description>
+        </ResourceType>
+    </Resource>
+</Metadata>
