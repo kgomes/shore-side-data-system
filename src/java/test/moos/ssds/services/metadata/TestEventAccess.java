@@ -16,21 +16,16 @@
 package test.moos.ssds.services.metadata;
 
 import java.rmi.RemoteException;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
-
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
 
 import moos.ssds.dao.util.MetadataAccessException;
 import moos.ssds.metadata.Event;
-import moos.ssds.metadata.util.MetadataException;
-import moos.ssds.metadata.util.MetadataFactory;
-import moos.ssds.services.metadata.EventAccess;
-import moos.ssds.services.metadata.EventAccessHome;
-import moos.ssds.services.metadata.EventAccessUtil;
 
 import org.apache.log4j.Logger;
+import org.hibernate.loader.CollectionAliases;
 
 /**
  * This class tests the EventAccess service EJB to make sure all is well. There
@@ -42,291 +37,452 @@ import org.apache.log4j.Logger;
  */
 public class TestEventAccess extends TestAccessCase {
 
-    /**
-     * A constructor
-     * 
-     * @param name
-     */
-    public TestEventAccess(String name) {
-        super(name);
-    }
+	/**
+	 * A log4J logger
+	 */
+	static Logger logger = Logger.getLogger(TestEventAccess.class);
 
-    /**
-     * Sets up the fixture, for example, open a network connection. This method
-     * is called before a test is executed.
-     */
-    protected void setUp() {
+	/**
+	 * A constructor
+	 * 
+	 * @param name
+	 */
+	public TestEventAccess(String name) {
+		super(name);
+	}
 
-        // Setup the super class
-        super.setUp();
+	/**
+	 * Sets up the fixture, for example, open a network connection. This method
+	 * is called before a test is executed.
+	 */
+	protected void setUp() {
 
-        // Grab a event facade
-        try {
-            eventAccessHome = EventAccessUtil.getHome();
-        } catch (NamingException ex) {
-            logger
-                .error("NamingException caught while getting eventAccessHome from app server: "
-                    + ex.getMessage());
-        }
-        try {
-            eventAccess = eventAccessHome.create();
-        } catch (RemoteException e) {
-            logger
-                .error("RemoteException caught while creating eventAccess interface: "
-                    + e.getMessage());
-        } catch (CreateException e) {
-            logger
-                .error("CreateException caught while creating eventAccess interface: "
-                    + e.getMessage());
-        }
-    }
+		// Setup the super class
+		super.setUp();
+	}
 
-    /**
-     * Run suite of tests on event one
-     */
-    public void testOne() {
-        this.setupObjects();
-        logger.debug("Event one is " + eventOne.toStringRepresentation("|"));
-        this.eventTest(eventOne);
-        logger.debug("Done with test one");
-    }
+	/**
+	 * Run suite of tests on event one
+	 */
+	public void testOne() {
+		logger.debug("Event one is " + EVENT_ONE.toStringRepresentation("|"));
+		this.eventTest(EVENT_ONE);
+		logger.debug("Done with test one");
+	}
 
-    /**
-     * Run suite of tests on event two
-     */
-    public void testTwo() {
-        this.setupObjects();
-        logger.debug("Event two is " + eventTwo.toStringRepresentation("|"));
-        eventTest(eventTwo);
-        logger.debug("Done with test two");
-    }
+	/**
+	 * Run suite of tests on event two
+	 */
+	public void testTwo() {
+		logger.debug("Event two is " + EVENT_TWO.toStringRepresentation("|"));
+		eventTest(EVENT_TWO);
+		logger.debug("Done with test two");
+	}
 
-    /**
-     * This method checks all the "findBy*" methods
-     */
-    public void testFindBys() {
-        this.setupObjects();
-        logger.debug("testFindBys starting");
-        // We will insert both events and then see if we can find them using
-        // the find by methods
-        Long eventOneId = null;
-        Long eventTwoId = null;
-        try {
-            eventOneId = eventAccess.insert(eventOne);
-            eventTwoId = eventAccess.insert(eventTwo);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException was thrown: " + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue("MetadataException was thrown: " + e.getMessage(), false);
-        }
+	/**
+	 * This method checks all the "findBy*" methods
+	 */
+	@SuppressWarnings("unchecked")
+	public void testFindBys() {
 
-        // Make sure the returned ids are real
-        assertNotNull(eventOneId);
-        assertNotNull(eventTwoId);
-        logger.debug("EventOneId = " + eventOneId);
-        logger.debug("EventTwoId = " + eventTwoId);
+		// Some initial statistics before testing
+		int initialEventCount = -9999;
+		try {
+			initialEventCount = EVENT_ACCESS.countFindAllIDs();
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
 
-        // OK both should be inserted. Excercise some of the findBys
-        Event foundOne = null;
-        try {
-            foundOne = (Event) eventAccess.findById(eventOneId, false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException was thrown: " + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue("MetadataException was thrown: " + e.getMessage(), false);
-        }
-        assertNotNull("The findById(Long) should have returned something",
-            foundOne);
-        assertEquals(
-            "The foundOne (by Long) should be equal to the local eventOne",
-            foundOne, eventOne);
+		// Make sure count is zero or greater
+		assertTrue("Initial count should be zero or more",
+				initialEventCount >= 0);
 
-        // Clear and try with different find by
-        foundOne = null;
-        try {
-            foundOne = (Event) eventAccess.findById(eventOneId.longValue(),
-                false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException was thrown: " + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue("MetadataException was thrown: " + e.getMessage(), false);
-        }
-        assertNotNull("The findById(long) should have returned something",
-            foundOne);
-        assertEquals(
-            "The foundOne (by long) should be equal to the local eventOne",
-            foundOne, eventOne);
+		logger.debug("testFindBys starting");
+		// We will insert both events and then see if we can find them using
+		// the find by methods
+		Long eventOneId = null;
+		Long eventTwoId = null;
+		try {
+			eventOneId = EVENT_ACCESS.insert(EVENT_ONE);
+			eventTwoId = EVENT_ACCESS.insert(EVENT_TWO);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
 
-        // Clear and try again
-        foundOne = null;
-        try {
-            foundOne = (Event) eventAccess.findById(eventOneId.toString(),
-                false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException was thrown: " + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue("MetadataException was thrown: " + e.getMessage(), false);
-        }
-        assertNotNull("The findById(String) should have returned something",
-            foundOne);
-        assertEquals(
-            "The foundOne (by String) should be equal to the local eventOne",
-            foundOne, eventOne);
+		// Make sure the returned ids are real
+		assertNotNull(eventOneId);
+		assertNotNull(eventTwoId);
+		logger.debug("EventOneId = " + eventOneId);
+		logger.debug("EventTwoId = " + eventTwoId);
 
-        // OK, find by local event and check against ID
-        Long foundOneId = null;
-        try {
-            foundOneId = eventAccess.findId(eventOne);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException was thrown: " + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue("MetadataException was thrown: " + e.getMessage(), false);
-        }
-        assertNotNull("foundOneId should not be null", foundOneId);
-        assertEquals("ID from insert and returned ID should be the same.",
-            foundOneId.longValue(), eventOneId.longValue());
+		// OK both should be inserted. Exercise some of the findBys
+		Event foundOne = null;
+		try {
+			foundOne = (Event) EVENT_ACCESS.findById(eventOneId, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertNotNull("The findById(Long) should have returned something",
+				foundOne);
+		assertEquals(
+				"The foundOne (by Long) should be equal to the local EVENT_ONE",
+				foundOne, EVENT_ONE);
 
-        // Now check find all
-        Collection allEvents = null;
-        try {
-            allEvents = eventAccess.findAll(null, null, false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException was thrown: " + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue("MetadataException was thrown: " + e.getMessage(), false);
-        }
-        assertNotNull("Collection returned by findAll should not be null",
-            allEvents);
-        assertTrue("Collection should contain local event one", allEvents
-            .contains(eventOne));
-        assertTrue("Collection should contain local event two", allEvents
-            .contains(eventTwo));
-        logger.debug("allEvents = " + allEvents);
+		// Clear and try with different find by
+		foundOne = null;
+		try {
+			foundOne = (Event) EVENT_ACCESS.findById(eventOneId.longValue(),
+					false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertNotNull("The findById(long) should have returned something",
+				foundOne);
+		assertEquals(
+				"The foundOne (by long) should be equal to the local EVENT_ONE",
+				foundOne, EVENT_ONE);
 
-        // Now test the findEquivalent persistent object
-        Event persistentOne = null;
-        try {
-            Long equivalentId = eventAccess.findId(eventOne);
-            persistentOne = (Event) eventAccess.findById(equivalentId, false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException was thrown: " + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue("MetadataException was thrown: " + e.getMessage(), false);
-        }
-        assertNotNull(
-            "persistent object that matches eventOne should not be null",
-            persistentOne);
-        assertEquals(
-            "Persistent and local objects for eventOne should be equal",
-            persistentOne, eventOne);
-        assertEquals("The inserted ID and the persistent ID should be equal",
-            eventOneId.longValue(), persistentOne.getId().longValue());
+		// Clear and try again
+		foundOne = null;
+		try {
+			foundOne = (Event) EVENT_ACCESS.findById(eventOneId.toString(),
+					false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertNotNull("The findById(String) should have returned something",
+				foundOne);
+		assertEquals(
+				"The foundOne (by String) should be equal to the local EVENT_ONE",
+				foundOne, EVENT_ONE);
 
-    }
+		// OK, find by local event and check against ID
+		Long foundOneId = null;
+		try {
+			foundOneId = EVENT_ACCESS.findId(EVENT_ONE);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertNotNull("foundOneId should not be null", foundOneId);
+		assertEquals("ID from insert and returned ID should be the same.",
+				foundOneId.longValue(), eventOneId.longValue());
 
-    /**
-     * This is the suite of tests to run on a event
-     * 
-     * @param event
-     */
-    private void eventTest(Event event) {
+		// Now check find all
+		Collection<Event> allEvents = null;
+		try {
+			allEvents = EVENT_ACCESS.findAll(null, null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertNotNull("Collection returned by findAll should not be null",
+				allEvents);
+		assertTrue("Collection should contain local event one", allEvents
+				.contains(EVENT_ONE));
+		assertTrue("Collection should contain local event two", allEvents
+				.contains(EVENT_TWO));
+		logger.debug("allEvents = " + allEvents);
 
-        // The ID of the event
-        Long eventId = null;
-        eventId = testInsert(event, eventAccess);
+		// Now test the findEquivalent persistent object
+		Event persistentOne = null;
+		try {
+			Long equivalentId = EVENT_ACCESS.findId(EVENT_ONE);
+			persistentOne = (Event) EVENT_ACCESS.findById(equivalentId, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertNotNull(
+				"persistent object that matches EVENT_ONE should not be null",
+				persistentOne);
+		assertEquals(
+				"Persistent and local objects for EVENT_ONE should be equal",
+				persistentOne, EVENT_ONE);
+		assertEquals("The inserted ID and the persistent ID should be equal",
+				eventOneId.longValue(), persistentOne.getId().longValue());
 
-        // Now query back by ID and make sure all attributes are equal
-        Event persistedEvent = null;
+		// Test the find by name
+		Collection<Event> eventsByName = null;
+		try {
+			eventsByName = EVENT_ACCESS.findByName(EVENT_ONE.getName(), true,
+					null, null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("Collection should contain local event one", eventsByName
+				.contains(EVENT_ONE));
+		assertTrue("Collection should NOT contain local event two",
+				!eventsByName.contains(EVENT_TWO));
 
-        try {
-            persistedEvent = (Event) eventAccess.findById(eventId, false);
-        } catch (RemoteException e1) {
-            logger.error("RemoteException caught during findById: "
-                + e1.getMessage());
-        } catch (MetadataAccessException e1) {
-            logger.error("MetadataAccessException caught during findById: "
-                + e1.getMessage());
-        }
+		try {
+			eventsByName = EVENT_ACCESS.findByName(EVENT_TWO.getName(), true,
+					null, null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("Collection should NOT contain local event one",
+				!eventsByName.contains(EVENT_ONE));
+		assertTrue("Collection should contain local event two", eventsByName
+				.contains(EVENT_TWO));
 
-        // Now check that they are equal
-        assertEquals("The two events should be considered equal", event,
-            persistedEvent);
+		// Make sure all IDs are found
+		Collection<Long> allIds = null;
+		try {
+			allIds = EVENT_ACCESS.findAllIDs();
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("All IDs should contain ID one", allIds.contains(eventOneId));
+		assertTrue("All IDs should contain ID two", allIds.contains(eventTwoId));
 
-        // Check all the getter methods are equal
-        testEqualityOfAllGetters(event, persistedEvent);
+		// Count all the IDs and it should be 2 more than the original numbers
+		int newCountIds = -99;
+		try {
+			newCountIds = EVENT_ACCESS.countFindAllIDs();
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("newCountIds is equal to or greater than zero",
+				newCountIds >= 0);
+		assertTrue("newCountIds is two more than the original count",
+				newCountIds == (initialEventCount + 2));
 
-        // Create a map with the values to update
-        HashMap variablesToUpdate = new HashMap();
+		// Find by like name
+		Collection<Event> likeNamedEvents = null;
+		try {
+			likeNamedEvents = EVENT_ACCESS.findByLikeName("est Event O", null,
+					null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("LikeNamedEvents contains event one", likeNamedEvents
+				.contains(EVENT_ONE));
+		assertTrue("LikeNamedEvents does not containe event two",
+				!likeNamedEvents.contains(EVENT_TWO));
 
-        // Change the description
-        Object[] variable1 = new Object[1];
-        variable1[0] = new String("Updated Description");
-        variablesToUpdate.put("Description", variable1);
+		// Find by like name but happens to match exactly
+		likeNamedEvents = null;
+		try {
+			likeNamedEvents = EVENT_ACCESS.findByLikeName(EVENT_ONE.getName(),
+					null, null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("LikeNamedEvents contains event one", likeNamedEvents
+				.contains(EVENT_ONE));
+		assertTrue("LikeNamedEvents does not containe event two",
+				!likeNamedEvents.contains(EVENT_TWO));
 
-        testUpdate(persistedEvent, variablesToUpdate, eventAccess);
+		// Find all names
+		Collection<String> allNames = null;
+		try {
+			allNames = EVENT_ACCESS.findAllNames();
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("All names contains event one name", allNames
+				.contains(EVENT_ONE.getName()));
+		assertTrue("All names contains event two name", allNames
+				.contains(EVENT_TWO.getName()));
 
-        testDelete(persistedEvent, eventAccess);
-    }
+		// By name and dates
+		Event byNameAndDates = null;
+		try {
+			byNameAndDates = EVENT_ACCESS.findByNameAndDates(EVENT_ONE
+					.getName(), EVENT_ONE.getStartDate(), EVENT_ONE
+					.getEndDate(), false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertNotNull("byNameAndDates should not be null", byNameAndDates);
+		assertEquals("EventOne and byNameAndDates should be equal", EVENT_ONE,
+				byNameAndDates);
+		assertTrue("EventTow and byNameAndDates should not be equals",
+				EVENT_TWO != byNameAndDates);
 
-    /**
-     * Tears down the fixture, for example, close a network connection. This
-     * method is called after a test is executed.
-     */
-    protected void tearDown() {
-        this.cleanObjectFromDB();
-    }
+		// Change the end date and should get null
+		byNameAndDates = null;
+		try {
+			byNameAndDates = EVENT_ACCESS.findByNameAndDates(EVENT_ONE
+					.getName(), EVENT_ONE.getStartDate(), new Date(), false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertNull("byNameAndDates should be null", byNameAndDates);
 
-    /**
-     * This method instantiates clean data producers and data containers from
-     * the string representations
-     */
-    private void setupObjects() {
-        try {
-            eventOne = (Event) MetadataFactory
-                .createMetadataObjectFromStringRepresentation(
-                    eventOneStringRep, delimiter);
-            eventTwo = (Event) MetadataFactory
-                .createMetadataObjectFromStringRepresentation(
-                    eventTwoStringRep, delimiter);
-        } catch (MetadataException e) {
-            logger.error("MetadataException caught trying to create objects: "
-                + e.getMessage());
-        } catch (ClassCastException cce) {
-            logger.error("ClassCastException caught trying to create objects: "
-                + cce.getMessage());
-        }
-    }
+		// Find within date range
+		Calendar cal1 = Calendar.getInstance();
+		Calendar cal2 = Calendar.getInstance();
+		Calendar cal3 = Calendar.getInstance();
+		Calendar cal4 = Calendar.getInstance();
+		Calendar cal5 = Calendar.getInstance();
 
-    private void cleanObjectFromDB() {
-        this.setupObjects();
-        // Delete any dataProducer objects as we don't want any leftover's if a
-        // test fails
-        try {
-            eventAccess.delete(eventOne);
-        } catch (RemoteException e) {} catch (MetadataAccessException e) {}
-        try {
-            eventAccess.delete(eventTwo);
-        } catch (RemoteException e) {} catch (MetadataAccessException e) {}
-    }
+		// Set cal1 to before start of event one
+		cal1.setTimeInMillis(EVENT_ONE.getStartDate().getTime());
+		cal1.add(Calendar.HOUR, -96);
+		// Set cal2 to in between dates for startdate
+		cal2.setTimeInMillis(EVENT_ONE.getStartDate().getTime());
+		cal2.add(Calendar.HOUR, 96);
+		// Set cal3 to just before event one end
+		cal3.setTimeInMillis(EVENT_ONE.getEndDate().getTime());
+		cal3.add(Calendar.HOUR, -96);
+		// Set cal4 to just after event one end
+		cal4.setTimeInMillis(EVENT_ONE.getEndDate().getTime());
+		cal4.add(Calendar.HOUR, 96);
+		// Set cal 5 to after event two end date
+		cal5.setTimeInMillis(EVENT_TWO.getEndDate().getTime());
+		cal5.add(Calendar.HOUR, 96);
 
-    // The connection to the service classes
-    EventAccessHome eventAccessHome = null;
-    EventAccess eventAccess = null;
+		// Find event one
+		Collection<Event> foundEvents = null;
+		try {
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal1.getTime(), cal2
+					.getTime(), null, null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("Should contain event one", foundEvents.contains(EVENT_ONE));
+		assertTrue("Should not contain event two", !foundEvents
+				.contains(EVENT_TWO));
 
-    // The test Events
-    Event eventOne = null;
-    Event eventTwo = null;
-    String eventOneStringRep = "Event|" + "name=EventOne|"
-        + "description=EventOne Description|"
-        + "startDate=2004-07-02T01:00:00Z|" + "endDate=2004-07-02T01:00:10Z";
-    String eventTwoStringRep = "Event|" + "name=EventTwo|"
-        + "description=EventTwo Description|"
-        + "startDate=2004-07-04T09:00:00Z|" + "endDate=2004-07-04T10:00:10Z";
+		foundEvents = null;
+		try {
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal1.getTime(), cal3
+					.getTime(), null, null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("Should contain event one", foundEvents.contains(EVENT_ONE));
+		assertTrue("Should contain event two", foundEvents.contains(EVENT_TWO));
 
-    String delimiter = "|";
+		foundEvents = null;
+		try {
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal2.getTime(), cal3
+					.getTime(), null, null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("Should contain event one", foundEvents.contains(EVENT_ONE));
+		assertTrue("Should contain event two", foundEvents.contains(EVENT_TWO));
 
-    /**
-     * A log4J logger
-     */
-    static Logger logger = Logger.getLogger(TestEventAccess.class);
+		foundEvents = null;
+		try {
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal2.getTime(), cal5
+					.getTime(), null, null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("Should contain event one", foundEvents.contains(EVENT_ONE));
+		assertTrue("Should contain event two", foundEvents.contains(EVENT_TWO));
+
+		foundEvents = null;
+		try {
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal1.getTime(), cal5
+					.getTime(), null, null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("Should contain event one", foundEvents.contains(EVENT_ONE));
+		assertTrue("Should contain event two", foundEvents.contains(EVENT_TWO));
+
+		foundEvents = null;
+		try {
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal4.getTime(), cal5
+					.getTime(), null, null, false);
+		} catch (RemoteException e) {
+			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
+		}
+		assertTrue("Should not contain event one", !foundEvents
+				.contains(EVENT_ONE));
+		assertTrue("Should contain event two", foundEvents.contains(EVENT_TWO));
+	}
+
+	/**
+	 * This is the suite of tests to run on a event
+	 * 
+	 * @param event
+	 */
+	private void eventTest(Event event) {
+
+		// The ID of the event
+		Long eventId = null;
+		eventId = testInsert(event, EVENT_ACCESS);
+
+		// Now query back by ID and make sure all attributes are equal
+		Event persistedEvent = null;
+
+		try {
+			persistedEvent = (Event) EVENT_ACCESS.findById(eventId, false);
+		} catch (RemoteException e1) {
+			logger.error("RemoteException caught during findById: "
+					+ e1.getMessage());
+		} catch (MetadataAccessException e1) {
+			logger.error("MetadataAccessException caught during findById: "
+					+ e1.getMessage());
+		}
+
+		// Now check that they are equal
+		assertEquals("The two events should be considered equal", event,
+				persistedEvent);
+
+		// Check all the getter methods are equal
+		testEqualityOfAllGetters(event, persistedEvent);
+
+		// Create a map with the values to update
+		HashMap<String, Object[]> variablesToUpdate = new HashMap<String, Object[]>();
+
+		// Change the description
+		Object[] variable1 = new Object[1];
+		variable1[0] = new String("Updated Description");
+		variablesToUpdate.put("Description", variable1);
+
+		testUpdate(persistedEvent, variablesToUpdate, EVENT_ACCESS);
+
+		testDelete(persistedEvent, EVENT_ACCESS);
+	}
+
 }

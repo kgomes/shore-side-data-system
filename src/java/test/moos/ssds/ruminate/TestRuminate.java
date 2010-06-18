@@ -37,7 +37,6 @@ import moos.ssds.metadata.DataProducer;
 import moos.ssds.services.metadata.DataProducerAccess;
 import moos.ssds.services.metadata.DataProducerAccessHome;
 import moos.ssds.services.metadata.DataProducerAccessUtil;
-import moos.ssds.transmogrify.TransmogrifyMDB;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
