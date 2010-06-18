@@ -1117,16 +1117,7 @@
 								</xs:restriction>
 							</xs:simpleType>
 						</xs:attribute>
-						<xs:attribute name="byteArray" use="optional">
-							<xs:annotation>
-								<xs:documentation>This is the binary payload</xs:documentation>
-							</xs:annotation>
-							<xs:simpleType>
-								<xs:restriction base="xs:hexBinary">
-									<xs:maxLength value="2048"/>
-								</xs:restriction>
-							</xs:simpleType>
-						</xs:attribute>
+						<xs:attribute type="xs:base64Binary" name="byteArray" use="optional"/>
 					</xs:complexType>
 				</xs:element>
 				<xs:element name="ResourceType" minOccurs="0">
