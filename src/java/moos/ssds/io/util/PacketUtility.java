@@ -730,6 +730,7 @@ public class PacketUtility {
 	 * @return byte array in SSDS format, returns null if the incoming array is
 	 *         empty
 	 */
+	@SuppressWarnings("unused")
 	public static byte[] convertSIAMByteArrayToVersion3SSDSByteArray(
 			byte[] siamByteArray, boolean logSIAMByteArray,
 			boolean convertBuffersToASCIIInSIAMLogEntry,
@@ -762,13 +763,11 @@ public class PacketUtility {
 		// append to the log message
 		try {
 			// Read in the StreamID, SSDS basically ignores this
-			@SuppressWarnings("unused")
 			short streamID = dis.readShort();
 
 			// Read in the devicePacketVersion
 			// As of now, this is he class version ID in SIAM and it is always
 			// 0, SSDS ignores it
-			@SuppressWarnings("unused")
 			long devicePacketVersion = dis.readLong();
 
 			// Read in the sourceID
@@ -795,7 +794,6 @@ public class PacketUtility {
 			// Read packet Version
 			// As of this writing, this is always the same as the class version
 			// ID of the DevicePacket in SIAM which is always 0, SSDS ignores it
-			@SuppressWarnings("unused")
 			long secondPacketVersion = dis.readLong();
 
 			// Read in the first data buffer length
