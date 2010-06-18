@@ -435,9 +435,14 @@ public class Person implements IMetadataObject {
 	 *            the <code>UserGroup</code> to add
 	 */
 	public void addUserGroup(UserGroup userGroup) {
+
 		// If null was passed in, just return
 		if (userGroup == null)
 			return;
+
+		// Make sure we have a userGroup set
+		if (this.userGroups == null)
+			this.userGroups = new HashSet<UserGroup>();
 
 		// Now add the UserGroup to the collection
 		if (!this.userGroups.contains(userGroup)) {
@@ -464,7 +469,11 @@ public class Person implements IMetadataObject {
 	 * keep the integrity of the relationships intact.
 	 */
 	public void clearUserGroups() {
-		this.userGroups.clear();
+		// Make sure there is a usergroup set
+		if (this.userGroups == null)
+			this.userGroups = new HashSet<UserGroup>();
+		if (this.userGroups != null)
+			this.userGroups.clear();
 	}
 
 	/**
@@ -907,8 +916,7 @@ public class Person implements IMetadataObject {
 		out.writeObject(state);
 		out.writeObject(status);
 		out.writeObject(surname);
-		// UserGroups (null for now)
-		out.writeObject(null);
+		out.writeObject(userGroups);
 		out.writeObject(username);
 		out.writeObject(version);
 		out.writeObject(zipcode);

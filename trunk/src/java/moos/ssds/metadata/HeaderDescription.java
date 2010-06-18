@@ -501,8 +501,8 @@ public class HeaderDescription implements IMetadataObject {
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(byteOffset);
-		// Write comment Tags (null for now)
-		out.writeObject(null);
+		// Write comment Tags
+		out.writeObject(commentTags);
 		out.writeObject(description);
 		out.writeObject(id);
 		out.writeObject(numHeaderLines);

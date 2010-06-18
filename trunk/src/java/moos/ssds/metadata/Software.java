@@ -544,10 +544,10 @@ public class Software implements IMetadataObject, IDescription, IResourceOwner {
 		out.writeObject(description);
 		out.writeObject(id);
 		out.writeObject(name);
-		// Person (null for now)
-		out.writeObject(null);
-		// Resources (null for now)
-		out.writeObject(null);
+		// Person
+		out.writeObject(person);
+		// Resources
+		out.writeObject(resources);
 		out.writeObject(softwareVersion);
 		out.writeObject(uriString);
 		out.writeObject(version);

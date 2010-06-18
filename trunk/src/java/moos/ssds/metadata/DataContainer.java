@@ -93,7 +93,7 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * This is an attribute that give the range of time that this
 	 * <code>DataContainer</code> covers
 	 */
-	private IDateRange dateRange = new DateRange(this);
+	private transient IDateRange dateRange = new DateRange(this);
 
 	/**
 	 * Flag to indicate if this instance was an 'original' dataset.
@@ -1435,7 +1435,6 @@ public class DataContainer implements IMetadataObject, IDescription,
 		creator = (DataProducer) in.readObject();
 		dataContainerGroups = (Collection<DataContainerGroup>) in.readObject();
 		dataContainerType = (String) in.readObject();
-		dateRange = (IDateRange) in.readObject();
 		description = (String) in.readObject();
 		dodsAccessible = (Boolean) in.readObject();
 		dodsUrlString = (String) in.readObject();
@@ -1483,25 +1482,23 @@ public class DataContainer implements IMetadataObject, IDescription,
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		// Write out consumers (as null for now)
-		out.writeObject(null);
+		// Write out consumers
+		out.writeObject(consumers);
 		out.writeObject(contentLength);
-		// Write out the creator (as null for now)
-		out.writeObject(null);
-		// Write out DataContainerGroups (as null for now)
-		out.writeObject(null);
+		// Write out the creator
+		out.writeObject(creator);
+		// Write out DataContainerGroups
+		out.writeObject(dataContainerGroups);
 		out.writeObject(dataContainerType);
-		// Write out date range (as null for now)
-		out.writeObject(null);
 		out.writeObject(description);
 		out.writeObject(dodsAccessible);
 		out.writeObject(dodsUrlString);
 		out.writeObject(endDate);
-		// Write out the HeaderDescription (as null for now)
-		out.writeObject(null);
+		// Write out the HeaderDescription
+		out.writeObject(headerDescription);
 		out.writeObject(id);
-		// Write out Keywords (as null for now)
-		out.writeObject(null);
+		// Write out Keywords
+		out.writeObject(keywords);
 		out.writeObject(maxDepth);
 		out.writeObject(maxLatitude);
 		out.writeObject(maxLongitude);
@@ -1513,12 +1510,12 @@ public class DataContainer implements IMetadataObject, IDescription,
 		out.writeObject(noNetCDF);
 		out.writeObject(numberOfRecords);
 		out.writeObject(original);
-		// Write out the person (as null for now)
-		out.writeObject(null);
-		// Write out the recordDescription (as null for now)
-		out.writeObject(null);
-		// Write out resources (as null for now)
-		out.writeObject(null);
+		// Write out the person
+		out.writeObject(person);
+		// Write out the recordDescription
+		out.writeObject(recordDescription);
+		// Write out resources
+		out.writeObject(resources);
 		out.writeObject(startDate);
 		out.writeObject(uriString);
 		out.writeObject(version);

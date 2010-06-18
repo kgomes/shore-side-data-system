@@ -359,6 +359,7 @@ public class RecordDescription implements IMetadataObject {
 		return recordParseRegExp;
 	}
 
+	@SuppressWarnings("unused")
 	public void setRecordParseRegExp(String recordParseRegExp)
 			throws MetadataException {
 
@@ -369,7 +370,6 @@ public class RecordDescription implements IMetadataObject {
 
 		// Validate that the reg exp will compile
 		try {
-			@SuppressWarnings("unused")
 			Pattern pattern = Pattern.compile(recordParseRegExp);
 		} catch (PatternSyntaxException e) {
 			throw new MetadataException("Pattern could not be compiled: "
@@ -692,8 +692,8 @@ public class RecordDescription implements IMetadataObject {
 		out.writeObject(recordParseRegExp);
 		out.writeObject(recordTerminator);
 		out.writeObject(recordType);
-		// RecordVariables (null for now)
-		out.writeObject(null);
+		// RecordVariables
+		out.writeObject(recordVariables);
 		out.writeObject(version);
 	}
 

@@ -138,15 +138,6 @@ public class DeviceType implements IMetadataObject, IDescription {
 	}
 
 	/**
-	 * The toString method is overridden to spit out the alternate primary key.
-	 * I did this so that we will always have something meaningful whenever
-	 * something tries to toString an object.
-	 */
-	public String toString() {
-		return this.name;
-	}
-
-	/**
 	 * This method overrides the default equals method and checks for to see if
 	 * the objects occupy the same memory space and if not, then it checks for
 	 * identical persistent identifiers and if those are not available, it
@@ -251,6 +242,15 @@ public class DeviceType implements IMetadataObject, IDescription {
 
 		// Now return it
 		return result;
+	}
+
+	/**
+	 * The toString method is overridden to spit out the alternate primary key.
+	 * I did this so that we will always have something meaningful whenever
+	 * something tries to toString an object.
+	 */
+	public String toString() {
+		return this.name;
 	}
 
 	/**
