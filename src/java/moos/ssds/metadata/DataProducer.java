@@ -91,7 +91,7 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * This is an attribute that gives the range of time that this
 	 * <code>DataProducer</code> produced data
 	 */
-	private IDateRange dateRange = new DateRange(this);
+	private transient IDateRange dateRange = new DateRange(this);
 
 	/**
 	 * This is the role that the <code>DataProducer</code> can take in its
@@ -1609,7 +1609,6 @@ public class DataProducer implements IMetadataObject, IDescription,
 		childDataProducers = (Collection<DataProducer>) in.readObject();
 		dataProducerGroups = (Collection<DataProducerGroup>) in.readObject();
 		dataProducerType = (String) in.readObject();
-		dateRange = (IDateRange) in.readObject();
 		description = (String) in.readObject();
 		device = (Device) in.readObject();
 		endDate = (Date) in.readObject();
@@ -1661,25 +1660,23 @@ public class DataProducer implements IMetadataObject, IDescription,
 	 * <code>DataProducer</code>
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		// Write out the child data producers (null for now)
-		out.writeObject(null);
-		// Write out data producer group (null for now)
-		out.writeObject(null);
+		// Write out the child data producers
+		out.writeObject(childDataProducers);
+		// Write out data producer group
+		out.writeObject(dataProducerGroups);
 		out.writeObject(dataProducerType);
-		// Write the date range (null for now)
-		out.writeObject(null);
 		out.writeObject(description);
-		// Write out the device (null for now)
-		out.writeObject(null);
+		// Write out the device
+		out.writeObject(device);
 		out.writeObject(endDate);
-		// Write out the event (null for now)
-		out.writeObject(null);
+		// Write out the events
+		out.writeObject(events);
 		out.writeObject(hostName);
 		out.writeObject(id);
-		// Write out input (null for now)
-		out.writeObject(null);
-		// Write out the keywords (null for now)
-		out.writeObject(null);
+		// Write out inputs
+		out.writeObject(inputs);
+		// Write out the keywords
+		out.writeObject(keywords);
 		out.writeObject(name);
 		out.writeObject(nominalBenthicAltitude);
 		out.writeObject(nominalBenthicAltitudeAccuracy);
@@ -1690,17 +1687,17 @@ public class DataProducer implements IMetadataObject, IDescription,
 		out.writeObject(nominalLongitude);
 		out.writeObject(nominalLongitudeAccuracy);
 		out.writeObject(orientationDescription);
-		// Write out the outputs (null for now)
-		out.writeObject(null);
-		// Write parent data producer (null for now)
-		out.writeObject(null);
-		// Write out the person (null for now)
-		out.writeObject(null);
-		// Write out the resources (null for now)
-		out.writeObject(null);
+		// Write out the outputs
+		out.writeObject(outputs);
+		// Write parent data producer
+		out.writeObject(parentDataProducer);
+		// Write out the person
+		out.writeObject(person);
+		// Write out the resources
+		out.writeObject(resources);
 		out.writeObject(role);
-		// Write out the software (null for now)
-		out.writeObject(null);
+		// Write out the software
+		out.writeObject(software);
 		out.writeObject(startDate);
 		out.writeObject(version);
 		out.writeObject(x3DOrientationText);

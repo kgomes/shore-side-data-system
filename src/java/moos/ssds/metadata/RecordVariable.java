@@ -794,16 +794,16 @@ public class RecordVariable implements IMetadataObject, IDescription {
 		out.writeObject(parseRegExp);
 		out.writeObject(referenceScale);
 		out.writeObject(sourceSensorID);
-		// StandardDomain (null for now)
-		out.writeObject(null);
-		// StandardKeyword (null for now)
-		out.writeObject(null);
-		// StandardReferenceScale (null for now)
-		out.writeObject(null);
-		// StandardUnit (null for now)
-		out.writeObject(null);
-		// StandardVarible (null for now)
-		out.writeObject(null);
+		// StandardDomain
+		out.writeObject(standardDomain);
+		// StandardKeyword
+		out.writeObject(standardKeyword);
+		// StandardReferenceScale
+		out.writeObject(standardReferenceScale);
+		// StandardUnit
+		out.writeObject(standardUnit);
+		// StandardVarible
+		out.writeObject(standardVariable);
 		out.writeObject(units);
 		out.writeObject(validMax);
 		out.writeObject(validMin);

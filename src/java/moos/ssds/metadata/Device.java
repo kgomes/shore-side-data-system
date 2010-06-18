@@ -472,6 +472,10 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 		this.version = version;
 	}
 
+	public Device unproxy() {
+		return this;
+	}
+
 	/**
 	 * This method overrides the default equals method and checks for to see if
 	 * the objects occupy the same memory space and if not, then it checks for
@@ -787,15 +791,15 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(description);
-		out.writeObject(null);
+		out.writeObject(deviceType);
 		out.writeObject(id);
 		out.writeObject(infoUrlList);
 		out.writeObject(mfgModel);
 		out.writeObject(mfgName);
 		out.writeObject(mfgSerialNumber);
 		out.writeObject(name);
-		out.writeObject(null);
-		out.writeObject(null);
+		out.writeObject(person);
+		out.writeObject(resources);
 		out.writeObject(uuid);
 		out.writeObject(version);
 	}

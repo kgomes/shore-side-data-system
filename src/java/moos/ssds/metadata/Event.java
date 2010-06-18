@@ -78,7 +78,7 @@ public class Event implements IMetadataObject, IDescription, IDateRange {
 	/**
 	 * The <code>DateRange</code> associated with this <code>Event</code>
 	 */
-	private IDateRange dateRange = new DateRange(this);
+	private transient IDateRange dateRange = new DateRange(this);
 
 	/**
 	 * An <code>XmlDateFormate</code> to help with date and time parsing and
@@ -353,7 +353,6 @@ public class Event implements IMetadataObject, IDescription, IDateRange {
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		dateRange = (DateRange) in.readObject();
 		description = (String) in.readObject();
 		endDate = (Date) in.readObject();
 		// Read in ID
@@ -382,7 +381,6 @@ public class Event implements IMetadataObject, IDescription, IDateRange {
 	 * @see Externalizable#writeExternal(ObjectOutput)
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(dateRange);
 		out.writeObject(description);
 		out.writeObject(endDate);
 		out.writeObject(id);

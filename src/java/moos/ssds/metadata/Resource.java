@@ -88,7 +88,7 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 * This is an attribute that give the range of time that this
 	 * <code>DataContainer</code> covers
 	 */
-	private IDateRange dateRange = new DateRange(this);
+	private transient IDateRange dateRange = new DateRange(this);
 
 	/**
 	 * This is a <code>URI</code> that is the resource identifier
@@ -291,6 +291,19 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	}
 
 	/**
+	 * This is a special method that is used by JiBX to unmarshall the URI
+	 * element.
+	 * 
+	 * @param uri
+	 * @throws MetadataException
+	 */
+	public void unmarshallUri(URI uri) throws MetadataException {
+		if (uri != null) {
+			this.setUri(uri);
+		}
+	}
+
+	/**
 	 * This method returns a <code>URL</code> that is created from the
 	 * <code>URI</code> that was specified for this <code>Resource</code>.
 	 * 
@@ -320,6 +333,18 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 */
 	public void setUrl(URL url) throws MetadataException {
 		this.setUriString(url.toExternalForm());
+	}
+
+	/**
+	 * This is a special method that is used by JiBX to unmarshall the URL
+	 * element.
+	 * 
+	 * @param url
+	 * @throws MetadataException
+	 */
+	public void unmarshallUrl(URL url) throws MetadataException {
+		if (url != null)
+			this.setUrl(url);
 	}
 
 	/**
@@ -685,7 +710,6 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		contentLength = (Long) in.readObject();
-		dateRange = (DateRange) in.readObject();
 		description = (String) in.readObject();
 		endDate = (Date) in.readObject();
 		// Read in ID
@@ -721,21 +745,19 @@ public class Resource implements IMetadataObject, IDescription, IDateRange {
 	 */
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(contentLength);
-		// DateRange (null for now)
-		out.writeObject(null);
 		out.writeObject(description);
 		out.writeObject(endDate);
 		out.writeObject(id);
-		// Keywords (null for now)
-		out.writeObject(null);
+		// Keywords
+		out.writeObject(keywords);
 		out.writeObject(mimeType);
 		out.writeObject(name);
-		// Person (null for now)
-		out.writeObject(null);
-		// ResourceBLOB (null for now)
-		out.writeObject(null);
-		// ResourceType (null for now)
-		out.writeObject(null);
+		// Person
+		out.writeObject(person);
+		// ResourceBLOB
+		out.writeObject(resourceBLOB);
+		// ResourceType
+		out.writeObject(resourceType);
 		out.writeObject(startDate);
 		out.writeObject(uriString);
 		out.writeObject(version);

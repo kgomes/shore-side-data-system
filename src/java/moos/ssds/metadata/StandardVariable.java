@@ -544,8 +544,8 @@ public class StandardVariable implements IMetadataObject, IDescription {
 		out.writeObject(name);
 		out.writeObject(namespaceUriString);
 		out.writeObject(referenceScale);
-		// StandardUnits (null for now)
-		out.writeObject(null);
+		// StandardUnits
+		out.writeObject(standardUnits);
 		out.writeObject(version);
 	}
 
