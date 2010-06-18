@@ -188,6 +188,19 @@
 				<include name="META-INF/*.xml" />
 			</fileset>
 			<fileset dir="${project.dir}" includes="lib/${siam.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${bcel.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${jibx-bind.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${jibx-extras.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${jibx-run.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${jibx-schema.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${jibx-tools.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${joda-time.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${qdox.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${stax-api.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${wstx-asl.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${xbis-jbix.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${xmlpull.jar}" />
+			<fileset dir="${project.dir}" includes="lib/${xpp3.jar}" />
 		</jar>
 
 		<!-- Build up the jar file that will allow people to publish to the topic ingest is listening to -->
