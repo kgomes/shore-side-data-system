@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE policy PUBLIC "-//JBoss/DTD JBOSS Security Config 3.0//EN" "http://www.jboss.org/j2ee/dtd/security_config.dtd">
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<policy>
+    <application-policy name="ssds">
+        <authentication>
+            <login-module flag="required" code="org.jboss.security.auth.spi.LdapExtLoginModule">
+                <module-option name="java.naming.factory.initial">@JAVA_NAMING_FACTORY_INITIAL@</module-option>
+                <module-option name="java.naming.provider.url">@JAVA_NAMING_PROVIDER_URL@</module-option>
+                <module-option name="java.naming.security.authentication">@JAVA_NAMING_SECURITY_AUTHENTICATION@</module-option>
+                <module-option name="bindDN">@BINDDN@</module-option>
+                <module-option name="bindCredential">@BINDCREDENTIAL@</module-option>
+                <module-option name="baseCtxDN">@BASECTXDN@</module-option>
+                <module-option name="baseFilter">@BASEFILTER@</module-option>
+                <module-option name="rolesCtxDN">@ROLESCTXDN@</module-option>
+                <module-option name="roleFilter">@ROLEFILTER@</module-option>
+                <module-option name="roleAttributeID">@ROLEATTRIBUTEID@</module-option>
+                <module-option name="roleAttributeIsDN">@ROLEATTRIBUTEISDN@</module-option>
+                <module-option name="roleNameAttributeID">@ROLENAMEATTRIBUTEID@</module-option>
+                <module-option name="roleRecursion">@ROLERECURSION@</module-option>
+                <module-option name="searchScope">@SEARCHSCOPE@</module-option>
+                <module-option name="allowEmptyPasswords">@ALLOWEMPTYPASSWORDS@</module-option>
+            </login-module>
+        </authentication>
+    </application-policy>
+</policy>

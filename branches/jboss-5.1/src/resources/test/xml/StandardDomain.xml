@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://localhost:8080/ssds-docs/xml/schema/SSDS_Metadata.xsd">
+    <StandardDomain id="1" name="Test StandardDomain">
+        <description>Test StandardDomain Description</description>
+    </StandardDomain>
+</Metadata>

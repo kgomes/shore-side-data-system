@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://localhost:8080/ssds-docs/xml/schema/SSDS_Metadata.xsd">
+    <Person id="10" firstname="Test Firstname" surname="Test Surname"
+        organization="Test Organization" username="testUsername@org.com" password="Test password"
+        email="test.email@org.com" phone="123-456-7890" address1="Test Address 1"
+        address2="Test Address 2" city="Test City" state="TS" zipcode="12345" status="active">
+        <UserGroup id="1" groupName="Test UserGroup 1"/>
+        <UserGroup id="2" groupName="Test UserGroup 2"/>
+        <UserGroup id="3" groupName="Test UserGroup 3"/>
+        <UserGroup id="4" groupName="Test UserGroup 4"/>
+    </Person>
+</Metadata>

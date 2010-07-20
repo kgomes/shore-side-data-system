@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<Metadata>
+	<Deployment endDate="1987-07-02T23:59:59Z" name="Platform Deployment for JUnit Test"
+		role="platform" nominalDepth="999" nominalDepthAccuracy="1" nominalLatitude="32.456"
+		nominalLatitudeAccuracy="0.001" nominalLongitude="122.31" nominalLongitudeAccuracy="0.001"
+		nominalBenthicAltitude="1400.00" nominalBenthicAltitudeAccuracy="0.5" xOffset="0.5"
+		yOffset="0.4" zOffset="0.1" orientationDescription="@TEXT_TO_CHANGE@"
+		x3DOrientationText="x3DOrientationText for JUnit Test" hostName="ThisDoesNotApply"
+		startDate="1987-07-02T00:00:00Z">
+		<Deployment role="instrument" name="Instrument Two Deployment for JUnit Test" xOffset="0.7"
+			yOffset="0.8" zOffset="0.9">
+			<Deployment role="sensor">
+				<Device id="1023"/>
+			</Deployment>
+			<description>Deployment description for Instrument One Deployment for JUnit Test</description>
+			<Device id="1022"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="text/plain"
+					uri="http://junit.shore.mbari.org/junit/test/dataFile1.txt"
+					dodsAccessible="false" name="JUnitTestDataFileOne" original="true">
+					<description>Device Two's Data File</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<commentTag>$</commentTag>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="voltage_0" columnIndex="2" format="double"
+							longName="Battery number 0 nominal voltage" units="Volts"/>
+						<RecordVariable name="current_0" columnIndex="3" format="double"
+							longName="Battery number 0 nominal current" units="Amps"/>
+						<RecordVariable name="temp_0" columnIndex="4" format="double"
+							longName="Battery number 0 internal temp" units="Celsius"/>
+						<RecordVariable name="minvoltage_0" columnIndex="5" format="double"
+							longName="Battery number 0 minimum cell brick voltage" units="Volts"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<Deployment role="instrument" name="Instrument Three Deployment for JUnit Test">
+			<description>Deployment information for crossbow.log</description>
+			<Device id="1024"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="text/xml"
+					uri="http://junit.shore.mbari.org/junit/xml/thirdDataFile.xml"
+					dodsAccessible="false" name="ThirdDataFile.xml" original="true">
+					<description>Data from Third Device</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="//"/>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="ascii"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="mRollCB" columnIndex="2" format="double"
+							longName="Roll" units="Degrees"/>
+						<RecordVariable name="mOmega_xCB" columnIndex="3" format="double"
+							longName="Roll rate" units="Degrees/second"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<description>JUnit deployment test description, just so we know the description takes</description>
+		<Device id="1021"/>
+		<Person firstname="Kevin" surname="Gomes" email="kgomes@mbari.org"/>
+		<Resource name="ResourceForJUnitTest"
+			uri="http://junit.shore.mbari.org/junit/test/url/resource.txt" mimeType="text/plain"
+			startDate="1987-07-02T00:00:00Z" endDate="1987-07-02T00:00:00Z" contentLength="10">
+			<description>JUnit Resource Description</description>
+		</Resource>
+	</Deployment>
+</Metadata>

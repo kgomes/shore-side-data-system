@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!--
+ Copyright 2009 MBARI
+ 
+ Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+ (the "License"); you may not use this file except in compliance 
+ with the License. You may obtain a copy of the License at
+ 
+ http://www.gnu.org/copyleft/lesser.html
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<!-- This build file is used to manage the building and configuration of the SSDS software -->
+<project name="SSDS" default="do-all" basedir=".">
+
+	<!-- Import some path definitions -->
+	<import file="path-defs.xml" />
+
+	<target name="check-target-property" unless="target">
+	  <echo message="You did not specify a target with -Dtarget=XXXXXX, so we will assume the build target."/>
+	  <property name="target" value="build"/>
+	</target>
+	
+	<target name="do-transmogrify">
+		<ant dir="${project.dir}" antfile="ssds-build-transmogrify.xml" inheritAll="false" target="${target}" />
+	</target>
+
+	<target name="do-ingest" depends="do-transmogrify">
+		<ant dir="${project.dir}" antfile="ssds-build-ingest.xml" inheritAll="false" target="${target}" />
+	</target>
+
+	<target name="do-core" depends="do-ingest">
+		<ant dir="${project.dir}" antfile="ssds-build-core.xml" inheritAll="false" target="${target}" />
+	</target>
+
+	<target name="do-ruminate" depends="do-core">
+		<ant dir="${project.dir}" antfile="ssds-build-ruminate.xml" inheritAll="false" target="${target}" />
+	</target>
+
+	<target name="do-webapp" depends="do-core">
+		<ant dir="${project.dir}" antfile="ssds-build-webapp.xml" inheritAll="false" target="${target}" />
+	</target>
+
+	<target name="do-ssdsLoads" depends="do-core">
+		<ant dir="${project.dir}" antfile="ssds-build-ssdsLoads.xml" inheritAll="false" target="${target}" />
+	</target>
+
+	<target name="do-wrappergenerator" depends="do-core">
+		<ant dir="${project.dir}" antfile="ssds-build-wrappergenerator.xml" inheritAll="false" target="${target}" />
+	</target>
+
+	<target name="do-docs">
+		<ant dir="${project.dir}" antfile="ssds-build-docs.xml" inheritAll="false" target="${target}" />
+	</target>
+	
+	<!-- The default target -->
+	<target name="do-all" depends="check-target-property,do-core,do-transmogrify,do-ruminate,do-ingest,do-ssdsLoads,do-wrappergenerator,do-webapp,do-docs" />
+
+</project>

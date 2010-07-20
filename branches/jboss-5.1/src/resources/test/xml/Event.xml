@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://localhost:8080/ssds-docs/xml/schema/SSDS_Metadata.xsd">
+    <Event id="1" name="Test Event" startDate="2000-01-02T03:04:05Z" endDate="2006-07-08T09:10:11Z">
+        <description>Test Event Description</description>
+    </Event>
+</Metadata>

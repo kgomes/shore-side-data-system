@@ -1,0 +1,100 @@
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<Metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://ssds.shore.mbari.org/ssdsdata/config/schema/2004cimt/SSDS_Metadata.xsd"
+    majorVersion="1" minorVersion="5" lastAuthor="$Author: kgomes $" lastUpdate="$Date: 2006/04/06 16:16:37 $" >
+
+	<Deployment role="instrument" orientationDescription="@TEXT_TO_CHANGE@">
+		<Device	id="1277" name="CTD" type="CTD" mfgName="Seabird" 
+			mfgModel="37SM" mfgSerialNumber="37SM26805-2004"
+			preferredDeploymentRole="Instrument">
+			<description>Seabird MicroCAT CTD Recorder</description>
+			<Person	firstname="Kevin" surname="Gomes" organization="MBARI"
+			email="kgomes@mbari.org" phone="831-775-2098"/>
+		</Device>
+	
+		<output>
+			<DataStream>
+				<description>CTD data stream</description>
+				<!-- Comments:
+				-->
+				<RecordDescription bufferStyle="ASCII"
+				bufferParseType="ordered"
+				bufferItemSeparator=","
+				bufferLengthType="variable"
+				parseable="true" recordType="1">
+					<!-- COMMAND Sent:
+					-->
+					<!-- Sample Record:
+						22.9091, 0.00004,   -0.052, 30 Apr 2004, 22:52:25
+					-->
+					<!-- Accuracy:
+					-->
+					<!--
+						Comments:
+							This XML assumes one data record per packet.
+					-->
+					<RecordVariable
+						name="Temperature"
+						longName="Water Temperature"
+						units="deg C"	referenceScale="TBD"
+						columnIndex="1"
+						format="float" >
+							<description>water temperature</description>
+							<StandardVariable name="temperature"/>
+					</RecordVariable>
+					<RecordVariable
+						name="Conductivity"
+						longName="Conductivity"
+						units="S/m"	referenceScale="TBD"
+						columnIndex="2"
+						format="float" >
+							<description>sea water conductivity</description>
+							<StandardVariable name="conductivity"/>
+					</RecordVariable>
+					<RecordVariable
+						name="Pressure"
+						longName="Pressure"
+						units="decibars"	referenceScale="TBD"
+						columnIndex="3"
+						format="float" >
+							<description>pressure of sea water</description>
+							<StandardVariable name="pressure"/>
+					</RecordVariable>
+					<RecordVariable
+						name="Date"
+						longName="Date of Sample"
+						units="dd_MMM_yyyy"	referenceScale="TBD"
+						columnIndex="4"
+						format="string"	>
+							<description>date in 'dd MMM yyyy' format</description>
+							<StandardVariable name="date"/>
+					</RecordVariable>
+					<RecordVariable
+						name="Time"
+						longName="Time of Day"
+						units="hh-mm-ss"	referenceScale="TBD"
+						columnIndex="5"
+						format="string"	>
+							<description>time of day in hh:mm:ss format</description>
+							<StandardVariable name="time"/>
+					</RecordVariable>
+
+				</RecordDescription>
+			</DataStream>
+		</output>
+	</Deployment>
+</Metadata>

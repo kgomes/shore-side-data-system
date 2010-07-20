@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" minWidth="600" minHeight="400" 
+	title="Device Inspector for Device XXXX" preinitialize="preinitializeHandler()" 
+	showCloseButton="true" close="PopUpManager.removePopUp(this);" xmlns:local="*" width="600" height="600">
+	<mx:Script>
+		<![CDATA[
+			import moos.ssds.web.MetadataHelper;
+			import mx.controls.Alert;
+			import mx.events.ListEvent;
+			import moos.ssds.web.SmallGoogleZoomControl;
+			import com.google.maps.overlays.Marker;
+			import com.google.maps.styles.FillStyle;
+			import com.google.maps.styles.StrokeStyle;
+			import com.google.maps.overlays.MarkerOptions;
+			import moos.ssds.metadata.DataProducer;
+			import mx.controls.treeClasses.DefaultDataDescriptor;
+			import mx.controls.treeClasses.ITreeDataDescriptor;
+			import com.google.maps.controls.NavigationControl;
+			import com.google.maps.controls.ControlPosition;
+			import com.google.maps.controls.ZoomControl;
+			import com.google.maps.LatLng;
+			import com.google.maps.MapType;
+			import com.google.maps.MapOptions;
+			import mx.managers.PopUpManager;
+			import moos.ssds.web.GoogleMapHelper;
+			import mx.rpc.events.ResultEvent;
+			import mx.collections.ArrayCollection;
+			import mx.rpc.remoting.mxml.RemoteObject;
+			import moos.ssds.metadata.Device;
+			import moos.ssds.web.UserInformation;
+		
+		// The user information associated with the current instance of the application
+		[Bindable]
+		public var userInformationObject:UserInformation = UserInformation.getInstance();
+		
+		// The device ID that is currently being inspected
+		[Bindable]
+		private var inspectedDevice:Device;
+		 
+		[Bindable]
+		// This is the collection of deployments of the device
+		private var deviceDeployments:ArrayCollection = new ArrayCollection(new Array());
+
+		[Bindable]
+		// This is the array that is used to associate Deployments with GoogleMap LatLngs
+		private var deploymentLatLngMap:ArrayCollection = new ArrayCollection(new Array());
+		
+		[Bindable]
+		// This is the ArrayCollection that will be used as the data provider for the details tree
+		private var deviceDetailsTreeProvider:ArrayCollection = new ArrayCollection([{name:"Deployments", children:deviceDeployments}]);
+		
+		// This is the DataProducerAccessEJB RemoteObject
+		public var dataProducerAccessRO:RemoteObject = new RemoteObject();
+		
+//		[Bindable]
+//		// The array collection of Data Streams for the tree
+//		private var dataStreams:ArrayCollection = new ArrayCollection(new Array());
+//		
+//		[Bindable]
+//		// The array collection of Data Products for the tree
+//		private var dataProducts:ArrayCollection = new ArrayCollection(new Array());
+//		
+//		[Bindable]
+//		// The array collection of Processing Chains for the tree
+//		private var processingChains:ArrayCollection = new ArrayCollection(new Array());
+//		
+//		[Bindable]
+//		// The array collection of Resources for the tree
+//		private var resources:ArrayCollection = new ArrayCollection(new Array());
+		
+		// This is the handler for when the preinitialize on the component is called
+		private function preinitializeHandler():void {
+			
+			// Construct the data provider model to back the tree
+			constructDeviceDetailsTree();
+			
+			// Configure the DataProducerAccessRemoteObject and add method handlers
+			dataProducerAccessRO.destination = "data-producer-access-ejb";
+			dataProducerAccessRO.findByDevice.addEventListener("result",dataProducerAccessFindByDeviceEJBResultsHandler);
+			dataProducerAccessRO.findClosestParentDataProducerLatitude.addEventListener("result",dataProducerAccessFindByDeviceEJBResultsHandler);
+		}
+		
+		// The event handler for calling the method to find the deployments of the device
+		private function dataProducerAccessFindByDeviceEJBResultsHandler(event:ResultEvent):void {
+			
+			// Grab the collection returned by the call
+			var returnedDeviceDeployments:ArrayCollection = event.result as ArrayCollection;
+			
+			// Create the object to contain the options for the markers on the map
+			var newMarkerOptions:MarkerOptions = new MarkerOptions();
+						
+			// Set the line stroke style 
+			newMarkerOptions.strokeStyle = new StrokeStyle({color: 0x04549a});
+						
+			// Loop over the resulting collection
+			for (var count:int=0; count < returnedDeviceDeployments.length; count++) {
+				// Grab the next one
+				var tempDataProducer:DataProducer = returnedDeviceDeployments.getItemAt(count,0) as DataProducer;
+
+				// Check to see if it exists
+				if (!deviceDeployments.contains(tempDataProducer)) {
+					// Add it
+					deviceDeployments.addItem(tempDataProducer);
+					
+					// Create a LatLng for the google map
+					var dataProducerLatLng:LatLng = new LatLng(tempDataProducer.nominalLatitude,tempDataProducer.nominalLongitude);
+					
+					// Add them to the map
+					deploymentLatLngMap.addItem({deployment:tempDataProducer,latLng:dataProducerLatLng});
+					
+					// Create a Marker and if the deployment is current, color it green, otherwise grey it out
+					if (tempDataProducer.endDate == null) {
+						newMarkerOptions.fillStyle = new FillStyle({color: 0x00ff00, alpha: 0.8});
+					} else {
+						newMarkerOptions.fillStyle = new FillStyle({color: 0xaaaaaa, alpha: 0.8});
+					}
+						
+					// Set the size based on parameter passed in
+					newMarkerOptions.radius = 5;
+
+					// Same with shadow
+					newMarkerOptions.hasShadow = true;
+
+					// Set the tool tip to the name
+					newMarkerOptions.tooltip = tempDataProducer.name;
+						
+					// Add it to the map
+					deviceLocationMap.addOverlay(new Marker(dataProducerLatLng, newMarkerOptions));
+				}
+			}
+
+			// Now put them on the map
+//			GoogleMapHelper.mapDeployments(deviceLocationMap,deviceDeployments,5,true);
+			
+		}
+		
+		// This is the handler that deals with returns from calls to findClosestParentDataProducerLatitude
+		private function dataProducerAccessFindClosestParentDataProducerLatitudeResultsHandler(event:ResultEvent):void {
+			// The result should be a double
+			var closestParentLatitude:Number = event.result as Number;
+		} 
+		
+		// The handler for clicks on the tree control
+		private function treeClickHandler(event:ListEvent):void {
+
+			// First we need to figure out what was clicked on exactly
+			var currentTarget:Object = event.currentTarget;
+			if (currentTarget is Tree) {
+
+				// Grab the selected object
+				var tempTree:Tree = currentTarget as Tree;
+				var selectedObject:Object = tempTree.selectedItem;
+
+				// Check to see if it is a Deployment
+				if (selectedObject is DataProducer) {
+
+					// Cast it
+					var selectedDeployment:DataProducer = selectedObject as DataProducer;
+					// Check to see if it is a deployment
+					if (selectedDeployment.dataProducerType == "Deployment" || 
+						selectedDeployment.dataProducerType == "deployment") {
+							
+						// Now add a new Deployment editor
+						var deploymentForm:DeploymentForm = new DeploymentForm();
+						deploymentForm.setDeployment(selectedDeployment);
+						// Set percentages
+						deploymentForm.percentHeight=100;
+						deploymentForm.percentWidth=75;
+
+						// Put new Form on GUI
+						detailsHBox.removeChildAt(1);
+						detailsHBox.addChildAt(deploymentForm,1);			
+					}
+				}
+				// Set the component data provider
+				//metadataObjectEditor.setMetadataObject(selectedObject);
+			}
+		}
+		
+		// The function to handle the preinitialization of the GoogleMap
+		private function onMapPreInit(event:Event):void {
+			// Create a new MapOptions
+			var ssdsMapOptions:MapOptions = new MapOptions();
+			ssdsMapOptions.mapType = MapType.SATELLITE_MAP_TYPE;
+			deviceLocationMap.setInitOptions(ssdsMapOptions);
+		}
+			
+		// The function to be called after the GoogleMap is ready
+		private function onMapReady(event:Event):void {
+			deviceLocationMap.addControl(new SmallGoogleZoomControl());
+		}
+			
+		// This is the function to set the device to be inspected
+		public function setDevice(device:Device):void {
+			// Set the local ID of the device
+			this.inspectedDevice = device;
+			
+			// Set the title of the window
+			this.title = "Device Inspector for " + device.name + " (ID = " + device.id.toString() + ")";
+			
+			// Look up all the deployments of the device
+			dataProducerAccessRO.findByDevice(device,'startDate','DESC',false);
+		}
+		
+		/**
+		 * This method builds an ArrayCollection that will be used as the model
+		 * for the tree view of details
+		 */
+		private function constructDeviceDetailsTree():void {
+			
+			// Create a new ArrayCollection from a new array
+//			deviceDetailsTreeProvider = new ArrayCollection(new Array());
+
+			// Add nodes to the array collection
+//			var deviceStatsObject:Object = new Object();
+//			deviceStatsObject.name = "Current Stats";
+//			deviceDetailsTreeProvider.addItem(deviceStatsObject);
+			
+			// Add the array collection of deployments
+//			var deviceDeploymentsNode:Object = new Object();
+//			deviceDeploymentsNode.name = "Deployments";
+//			deviceDeploymentsNode.children = deviceDeployments.toArray();
+//			deviceDetailsTreeProvider.addItem(deviceDeploymentsNode);
+			
+			// Add the node for DataStreams
+//			var dataStreamsNode:Object = new Object();
+//			dataStreamsNode.name = "Data Streams";
+//			dataStreamsNode.children = dataStreams.toArray();
+//			deviceDetailsTreeProvider.addItem(dataStreamsNode);
+			
+			// Add the node for Data Products
+//			var dataProductsNode:Object = new Object();
+//			dataProductsNode.name = "Data Products";
+//			dataProductsNode.children = dataProducts.toArray();
+//			deviceDetailsTreeProvider.addItem(dataProductsNode);
+			
+			// Add the node for Processing Chains
+//			var processingChainsNode:Object = new Object();
+//			processingChainsNode.name = "Processing Chains";
+//			processingChainsNode.children = processingChains.toArray();
+//			deviceDetailsTreeProvider.addItem(processingChainsNode);
+			
+			// Add the node for Resources
+//			var resourcesNode:Object = new Object();
+//			resourcesNode.name = "Resources";
+//			resourcesNode.children = resources.toArray();
+//			deviceDetailsTreeProvider.addItem(resourcesNode);
+
+			// Add nodes for the XML Template
+//			var xmlTemplateNode:Object = new Object();
+//			xmlTemplateNode.name = "XML Template";
+//			deviceDetailsTreeProvider.addItem(xmlTemplateNode);
+		}
+		]]>
+	</mx:Script>
+		<mx:HDividedBox height="25%" width="100%">
+			<mx:DataGrid width="40%" height="100%">
+				<mx:columns>
+					<mx:DataGridColumn headerText="Property" dataField="col1" width="85"/>
+					<mx:DataGridColumn headerText="Value" dataField="col2"/>
+				</mx:columns>
+				<mx:dataProvider>
+					<mx:Object col1="SSDS ID" col2="{inspectedDevice.id}"/>
+					<mx:Object col1="Name" col2="{inspectedDevice.name}"/>
+					<mx:Object col1="Description" col2="{inspectedDevice.description}"/>
+					<mx:Object col1="Manufacturer" col2="{inspectedDevice.mfgName}"/>
+					<mx:Object col1="Model" col2="{inspectedDevice.mfgModel}"/>
+				</mx:dataProvider>
+			</mx:DataGrid>
+			<maps:Map xmlns:maps="com.google.maps.*" id="deviceLocationMap"
+				key="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAbpLh8fM7nHiIzQAWH2GowRT_DWIyulZ4MpcR0nASrHLf47xRSBSAQAca7XHGhdqDXb7uziq2fKEufg" mapevent_mappreinitialize="onMapPreInit(event)" 
+						mapevent_mapready="onMapReady(event)" width="60%" height="100%"/>
+		</mx:HDividedBox>
+		<mx:HDividedBox id="detailsHBox" height="75%" width="100%">
+			<mx:Tree id="deviceInspectionTree" showRoot="false" dataProvider="{deviceDetailsTreeProvider}" labelField="name" itemClick="treeClickHandler(event)" horizontalScrollPolicy="on" verticalScrollPolicy="auto" width="25%" height="100%"/>
+			<mx:Form id="objectEditorForm" height="100%" width="75%"/>
+		</mx:HDividedBox>
+</mx:TitleWindow>

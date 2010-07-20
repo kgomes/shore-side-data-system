@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
+<mx:Script>
+	<![CDATA[
+		import moos.ssds.web.MetadataHelper;
+		import mx.events.ListEvent;
+		import mx.collections.ArrayCollection;
+		import mx.rpc.events.FaultEvent;
+		import mx.controls.Alert;
+		import mx.rpc.events.ResultEvent;
+		import moos.ssds.metadata.DataProducer;
+
+		// This is totally hackish, but I had to put this in here to foce the
+		// compiler to include the DataProducer class in the build process
+		[Bindable]
+		public var selectedDataProducer:DataProducer = new DataProducer();
+		
+		// This is the listing of the DataProducers that are being explored in the application
+		[Bindable]
+		public var selectedDataProducers:ArrayCollection;
+
+		public function dataProducerAccessFindByNameEJBResultsHandler(event:ResultEvent):void {
+			// Take the return of the call on the remote object and assign it to the tree
+			selectedDataProducers = event.result as ArrayCollection;
+		}
+		
+		public function ejbFaultHandler (event:FaultEvent):void {
+			Alert.show(event.fault.faultString, 'Error');
+		}
+		
+		private function treeClickHandler(event:ListEvent):void {
+			// First we need to figure out what was clicked on exactly
+			var currentTarget:Object = event.currentTarget;
+			if (currentTarget is Tree) {
+				// Grab the selected object
+				var tempTree:Tree = currentTarget as Tree;
+				var selectedObject:Object = tempTree.selectedItem;
+				
+				// Now build the ArrayCollection to use for the Grid
+				selectedObjectDetailsGrid.dataProvider = MetadataHelper.getPropertyArrayCollection(selectedObject);				
+			}
+		}
+
+	]]>
+</mx:Script>
+	<mx:RemoteObject id="dataProducerAccessRemoteObject" endpoint="../servlet/messagebroker/ssds"
+		destination="data-producer-access-ejb"
+		fault="ejbFaultHandler(event);" showBusyCursor="true">
+		<mx:method name="findByName" result="dataProducerAccessFindByNameEJBResultsHandler(event)"/>
+	</mx:RemoteObject>
+	<mx:HDividedBox label="Deployments" width="100%" height="100%">
+		<mx:VBox width="30%" height="100%">
+			<mx:Form width="100%" height="30%">
+				<mx:FormHeading label="Query"/>
+				<mx:FormItem label="Name">
+					<mx:TextInput width="150" id="deploymentNameTextInput" enter="dataProducerAccessRemoteObject.findByName(deploymentNameTextInput.text, false, 'name', 'ASC', false);"/>
+				</mx:FormItem>
+			</mx:Form>
+			<mx:Tree dataProvider="{selectedDataProducers}" iconField="icon" labelField="name" id="dataProducerTree" height="70%" width="100%" itemClick="treeClickHandler(event)"></mx:Tree>
+		</mx:VBox>
+		<mx:DataGrid id="selectedObjectDetailsGrid" width="70%" height="100%"/>
+	</mx:HDividedBox>
+</mx:Canvas>

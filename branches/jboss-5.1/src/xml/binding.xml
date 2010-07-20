@@ -1,0 +1,476 @@
+<binding name="binding" package="moos.ssds.metadata" trim-whitespace="true">
+  <mapping class="moos.ssds.metadata.Metadata" name="Metadata">
+    <!--
+    <collection item-type="moos.ssds.metadata.DataContainer" get-method="getDataContainers" set-method="setDataContainers" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.DataContainerGroup" get-method="getDataContainerGroups" set-method="setDataContainerGroups" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.DataProducer" get-method="getDataProducers" set-method="setDataProducers" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.DataProducerGroup" get-method="getDataProducerGroups" set-method="setDataProducerGroups" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.Deployment" get-method="getDeployments" set-method="setDeployments" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.Device" get-method="getDevices" set-method="setDevices" create-type="java.util.ArrayList"/>
+    -->
+    <collection item-type="moos.ssds.metadata.Event" get-method="getEvents" set-method="setEvents"
+      create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.Keyword" get-method="getKeywords"
+      set-method="setKeywords" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.Person" get-method="getPersons"
+      set-method="setPersons" create-type="java.util.ArrayList"/>
+    <!--    <collection item-type="moos.ssds.metadata.ProcessRun" get-method="getProcessRuns" set-method="setProcessRuns" create-type="java.util.ArrayList"/> -->
+    <collection item-type="moos.ssds.metadata.Resource" get-method="getResources"
+      set-method="setResources" create-type="java.util.ArrayList"/>
+    <!--    <collection item-type="moos.ssds.metadata.Software" get-method="getSoftwares" set-method="setSoftwares" create-type="java.util.ArrayList"/> -->
+    <collection item-type="moos.ssds.metadata.StandardDomain" get-method="getStandardDomains"
+      set-method="setStandardDomains" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.StandardKeyword" get-method="getStandardKeywords"
+      set-method="setStandardKeywords" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.StandardReferenceScale"
+      get-method="getStandardReferenceScales" set-method="setStandardReferenceScales"
+      create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.StandardUnit" get-method="getStandardUnits"
+      set-method="setStandardUnits" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.StandardVariable" get-method="getStandardVariables"
+      set-method="setStandardVariables" create-type="java.util.ArrayList"/>
+  </mapping>
+  <!-- 
+    <mapping class="moos.ssds.metadata.DataContainer" name="DataContainer">
+    <format type="moos.ssds.metadata.DataContainer$DataContainerType" enum-value-method="toString"/>
+    <collection item-type="moos.ssds.metadata.Consumer" get-method="getConsumers" set-method="setConsumers" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.DataContainerGroup" get-method="getDataContainerGroups" set-method="setDataContainerGroups" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.HeaderDescription" get-method="getHeaderDescription" set-method="setHeaderDescription" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Keyword" get-method="getKeywords" set-method="setKeywords" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Person" get-method="getPerson" set-method="setPerson" usage="optional"/>
+    <structure type="moos.ssds.metadata.RecordDescription" get-method="getRecordDescription" set-method="setRecordDescription" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Resource" get-method="getResources" set-method="setResources" create-type="java.util.ArrayList"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName" usage="optional"/>
+    <value style="attribute" name="dataContainerType" get-method="getDataContainerType" set-method="setDataContainerType"/>
+    <value style="attribute" name="startDate" get-method="getStartDate" set-method="setStartDate" usage="optional"/>
+    <value style="attribute" name="endDate" get-method="getEndDate" set-method="setEndDate" usage="optional"/>
+    <value style="attribute" name="original" get-method="getOriginal" set-method="setOriginal" usage="optional"/>
+    <value style="attribute" name="uri" get-method="getUri" set-method="setUri"/>
+    <value style="attribute" name="contentLength" get-method="getContentLength" set-method="setContentLength" usage="optional"/>
+    <value style="attribute" name="mimeType" get-method="getMimeType" set-method="setMimeType" usage="optional"/>
+    <value style="attribute" name="numberOfRecords" get-method="getNumberOfRecords" set-method="setNumberOfRecords" usage="optional"/>
+    <value style="attribute" name="dodsAccessible" get-method="getDodsAccessible" set-method="setDodsAccessible" usage="optional"/>
+    <value style="attribute" name="dodsUrl" get-method="getDodsUrl" set-method="setDodsUrl" usage="optional"/>
+    <value style="attribute" name="noNetCDF" get-method="getNoNetCDF" set-method="setNoNetCDF" usage="optional"/>
+    <value style="attribute" name="minLatitude" get-method="getMinLatitude" set-method="setMinLatitude" usage="optional"/>
+    <value style="attribute" name="maxLatitude" get-method="getMaxLatitude" set-method="setMaxLatitude" usage="optional"/>
+    <value style="attribute" name="minLongitude" get-method="getMinLongitude" set-method="setMinLongitude" usage="optional"/>
+    <value style="attribute" name="maxLongitude" get-method="getMaxLongitude" set-method="setMaxLongitude" usage="optional"/>
+    <value style="attribute" name="minDepth" get-method="getMinDepth" set-method="setMinDepth" usage="optional"/>
+    <value style="attribute" name="maxDepth" get-method="getMaxDepth" set-method="setMaxDepth" usage="optional"/>
+  </mapping>
+  -->
+  <!--
+  <mapping class="moos.ssds.metadata.DataContainerGroup" name="DataContainerGroup">
+    <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.DataProducer" name="DataProducer">
+    <format type="moos.ssds.metadata.DataProducer$DataProducerType" enum-value-method="toString"/>
+    <format type="moos.ssds.metadata.DataProducer$Role" enum-value-method="toString"/>
+    <collection item-type="moos.ssds.metadata.DataProducer" get-method="getDataProducers" set-method="setDataProducers" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.DataProducerGroup" get-method="getDataProducerGroups" set-method="setDataProducerGroups" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+    <structure type="moos.ssds.metadata.Device" get-method="getDevice" set-method="setDevice" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Event" get-method="getEvents" set-method="setEvents" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.Input" get-method="getInputs" set-method="setInputs" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.Keyword" get-method="getKeywords" set-method="setKeywords" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.Output" get-method="getOutputs" set-method="setOutputs" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Person" get-method="getPerson" set-method="setPerson" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Resource" get-method="getResources" set-method="setResources" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Software" get-method="getSoftware" set-method="setSoftware" usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+    <value style="attribute" name="dataProducerType" get-method="getDataProducerType" set-method="setDataProducerType"/>
+    <value style="attribute" name="startDate" get-method="getStartDate" set-method="setStartDate" usage="optional"/>
+    <value style="attribute" name="endDate" get-method="getEndDate" set-method="setEndDate" usage="optional"/>
+    <value style="attribute" name="role" get-method="getRole" set-method="setRole" usage="optional"/>
+    <value style="attribute" name="nominalLatitude" get-method="getNominalLatitude" set-method="setNominalLatitude" usage="optional"/>
+    <value style="attribute" name="nominalLatitudeAccuracy" get-method="getNominalLatitudeAccuracy" set-method="setNominalLatitudeAccuracy" usage="optional"/>
+    <value style="attribute" name="nominalLongitude" get-method="getNominalLongitude" set-method="setNominalLongitude" usage="optional"/>
+    <value style="attribute" name="nominalLongitudeAccuracy" get-method="getNominalLongitudeAccuracy" set-method="setNominalLongitudeAccuracy" usage="optional"/>
+    <value style="attribute" name="nominalDepth" get-method="getNominalDepth" set-method="setNominalDepth" usage="optional"/>
+    <value style="attribute" name="nominalDepthAccuracy" get-method="getNominalDepthAccuracy" set-method="setNominalDepthAccuracy" usage="optional"/>
+    <value style="attribute" name="nominalBenthicAltitude" get-method="getNominalBenthicAltitude" set-method="setNominalBenthicAltitude" usage="optional"/>
+    <value style="attribute" name="nominalBenthicAltitudeAccuracy" get-method="getNominalBenthicAltitudeAccuracy" set-method="setNominalBenthicAltitudeAccuracy" usage="optional"/>
+    <value style="attribute" name="xOffset" get-method="getXOffset" set-method="setXOffset" usage="optional"/>
+    <value style="attribute" name="yOffset" get-method="getYOffset" set-method="setYOffset" usage="optional"/>
+    <value style="attribute" name="zOffset" get-method="getZOffset" set-method="setZOffset" usage="optional"/>
+    <value style="attribute" name="orientationDescription" get-method="getOrientationDescription" set-method="setOrientationDescription" usage="optional"/>
+    <value style="attribute" name="x3DOrientationText" get-method="getX3DOrientationText" set-method="setX3DOrientationText" usage="optional"/>
+    <value style="attribute" name="hostName" get-method="getHostName" set-method="setHostName" usage="optional"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.DataProducerGroup" name="DataProducerGroup">
+    <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+    <structure type="moos.ssds.metadata.Deployment" get-method="getDeployment" set-method="setDeployment" usage="optional"/>
+    <structure type="moos.ssds.metadata.ProcessRun" get-method="getProcessRun" set-method="setProcessRun" usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.Device" name="Device">
+    <format type="moos.ssds.metadata.Device$DeviceType$DefaultDeploymentRole" enum-value-method="toString"/>
+    <format type="moos.ssds.metadata.Device$PreferredDeploymentRole" enum-value-method="toString"/>
+    <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+    <structure get-method="getDeviceType" set-method="setDeviceType" usage="optional" name="DeviceType">
+      <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+      <value style="attribute" name="id" get-method="getId" set-method="setId"/>
+      <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+      <value style="attribute" name="defaultDeploymentRole" get-method="getDefaultDeploymentRole" set-method="setDefaultDeploymentRole" usage="optional"/>
+      <value style="attribute" name="displayInDeviceTypesPicklist" get-method="getDisplayInDeviceTypesPicklist" set-method="setDisplayInDeviceTypesPicklist" usage="optional"/>
+    </structure>
+    <structure type="moos.ssds.metadata.Person" get-method="getPerson" set-method="setPerson" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Resource" get-method="getResources" set-method="setResources" create-type="java.util.ArrayList"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName" usage="optional"/>
+    <value style="attribute" name="uuid" get-method="getUuid" set-method="setUuid" usage="optional"/>
+    <value style="attribute" name="mfgName" get-method="getMfgName" set-method="setMfgName" usage="optional"/>
+    <value style="attribute" name="mfgModel" get-method="getMfgModel" set-method="setMfgModel" usage="optional"/>
+    <value style="attribute" name="mfgSerialNumber" get-method="getMfgSerialNumber" set-method="setMfgSerialNumber" usage="optional"/>
+    <value style="attribute" name="infoUrlList" get-method="getInfoUrlList" set-method="setInfoUrlList" usage="optional"/>
+    <value style="attribute" name="type" get-method="getType" set-method="setType" usage="optional"/>
+    <value style="attribute" name="preferredDeploymentRole" get-method="getPreferredDeploymentRole" set-method="setPreferredDeploymentRole" usage="optional"/>
+  </mapping>
+  -->
+
+  <!-- Events -->
+  <mapping class="moos.ssds.metadata.Event" name="Event">
+    <value name="description" get-method="getDescription" set-method="setDescription"
+      usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+    <value style="attribute" name="startDate" get-method="getStartDate" set-method="setStartDate"/>
+    <value style="attribute" name="endDate" get-method="getEndDate" set-method="setEndDate"/>
+  </mapping>
+
+  <!--  
+   <mapping class="moos.ssds.metadata.HeaderDescription" name="HeaderDescription">
+    <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+    <collection get-method="getCommentTags" set-method="setCommentTags" create-type="java.util.ArrayList">
+      <structure type="moos.ssds.metadata.HeaderDescription$CommentTag" name="commentTag">
+        <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+        <value style="attribute" name="tagString" get-method="getTagString" set-method="setTagString" usage="optional"/>
+      </structure>
+    </collection>
+    <collection get-method="getCommentTag1s" set-method="setCommentTag1s" create-type="java.util.ArrayList">
+      <structure type="moos.ssds.metadata.HeaderDescription$CommentTag1" name="CommentTag">
+        <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+        <value style="attribute" name="tagString" get-method="getTagString" set-method="setTagString"/>
+      </structure>
+    </collection>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="numHeaderLines" get-method="getNumHeaderLines" set-method="setNumHeaderLines" usage="optional"/>
+    <value style="attribute" name="byteOffset" get-method="getByteOffset" set-method="setByteOffset" usage="optional"/>
+  </mapping>
+  -->
+
+  <!-- Keywords -->
+  <mapping class="moos.ssds.metadata.Keyword" name="Keyword">
+    <value name="description" get-method="getDescription" set-method="setDescription"
+      usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+  </mapping>
+
+  <!-- Persons with associated UserGroups -->
+  <mapping class="moos.ssds.metadata.Person" name="Person">
+    <collection get-method="getUserGroups" set-method="setUserGroups"
+      create-type="java.util.HashSet">
+      <structure type="moos.ssds.metadata.UserGroup" name="UserGroup">
+        <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+        <value style="attribute" name="groupName" get-method="getGroupName"
+          set-method="setGroupName"/>
+      </structure>
+    </collection>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="firstname" get-method="getFirstname" set-method="setFirstname"
+      usage="optional"/>
+    <value style="attribute" name="surname" get-method="getSurname" set-method="setSurname"
+      usage="optional"/>
+    <value style="attribute" name="organization" get-method="getOrganization"
+      set-method="setOrganization" usage="optional"/>
+    <value style="attribute" name="username" get-method="getUsername" set-method="setUsername"
+      usage="optional"/>
+    <value style="attribute" name="password" get-method="getPassword" set-method="setPassword"
+      usage="optional"/>
+    <value style="attribute" name="email" get-method="getEmail" set-method="setEmail"
+      usage="optional"/>
+    <value style="attribute" name="phone" get-method="getPhone" set-method="setPhone"
+      usage="optional"/>
+    <value style="attribute" name="address1" get-method="getAddress1" set-method="setAddress1"
+      usage="optional"/>
+    <value style="attribute" name="address2" get-method="getAddress2" set-method="setAddress2"
+      usage="optional"/>
+    <value style="attribute" name="city" get-method="getCity" set-method="setCity" usage="optional"/>
+    <value style="attribute" name="state" get-method="getState" set-method="setState"
+      usage="optional"/>
+    <value style="attribute" name="zipcode" get-method="getZipcode" set-method="setZipcode"
+      usage="optional"/>
+    <value style="attribute" name="status" get-method="getStatus" set-method="setStatus"
+      usage="optional"/>
+  </mapping>
+  <!-- 
+  <mapping class="moos.ssds.metadata.RecordDescription" name="RecordDescription">
+    <format type="moos.ssds.metadata.RecordDescription$BufferStyle" enum-value-method="toString"/>
+    <format type="moos.ssds.metadata.RecordDescription$BufferParseType" enum-value-method="toString"/>
+    <format type="moos.ssds.metadata.RecordDescription$BufferLengthType" enum-value-method="toString"/>
+    <format type="moos.ssds.metadata.RecordDescription$Parseable" enum-value-method="toString"/>
+    <format type="moos.ssds.metadata.RecordDescription$Endian" enum-value-method="toString"/>
+    <collection get-method="getRecordVariables" set-method="setRecordVariables" create-type="java.util.ArrayList">
+      <structure type="moos.ssds.metadata.RecordDescription$RecordVariable" name="RecordVariable">
+        <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+        <structure type="moos.ssds.metadata.StandardDomain" get-method="getStandardDomain" set-method="setStandardDomain" usage="optional"/>
+        <structure type="moos.ssds.metadata.StandardKeyword" get-method="getStandardKeyword" set-method="setStandardKeyword" usage="optional"/>
+        <structure type="moos.ssds.metadata.StandardReferenceScale" get-method="getStandardReferenceScale" set-method="setStandardReferenceScale" usage="optional"/>
+        <structure type="moos.ssds.metadata.StandardUnit" get-method="getStandardUnit" set-method="setStandardUnit" usage="optional"/>
+        <structure type="moos.ssds.metadata.StandardVariable" get-method="getStandardVariable" set-method="setStandardVariable" usage="optional"/>
+        <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+        <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+        <value style="attribute" name="columnIndex" get-method="getColumnIndex" set-method="setColumnIndex" usage="optional"/>
+        <value style="attribute" name="format" get-method="getFormat" set-method="setFormat" usage="optional"/>
+        <value style="attribute" name="longName" get-method="getLongName" set-method="setLongName" usage="optional"/>
+        <value style="attribute" name="units" get-method="getUnits" set-method="setUnits" usage="optional"/>
+        <value style="attribute" name="missingValue" get-method="getMissingValue" set-method="setMissingValue" usage="optional"/>
+        <value style="attribute" name="accuracy" get-method="getAccuracy" set-method="setAccuracy" usage="optional"/>
+        <value style="attribute" name="validMin" get-method="getValidMin" set-method="setValidMin" usage="optional"/>
+        <value style="attribute" name="validMax" get-method="getValidMax" set-method="setValidMax" usage="optional"/>
+        <value style="attribute" name="displayMin" get-method="getDisplayMin" set-method="setDisplayMin" usage="optional"/>
+        <value style="attribute" name="displayMax" get-method="getDisplayMax" set-method="setDisplayMax" usage="optional"/>
+        <value style="attribute" name="parseRegExp" get-method="getParseRegExp" set-method="setParseRegExp" usage="optional"/>
+        <value style="attribute" name="referenceScale" get-method="getReferenceScale" set-method="setReferenceScale" usage="optional"/>
+        <value style="attribute" name="conversionScale" get-method="getConversionScale" set-method="setConversionScale" usage="optional"/>
+        <value style="attribute" name="conversionOffset" get-method="getConversionOffset" set-method="setConversionOffset" usage="optional"/>
+        <value style="attribute" name="convertedUnits" get-method="getConvertedUnits" set-method="setConvertedUnits" usage="optional"/>
+        <value style="attribute" name="sourceSensorID" get-method="getSourceSensorID" set-method="setSourceSensorID" usage="optional"/>
+      </structure>
+    </collection>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="recordType" get-method="getRecordType" set-method="setRecordType"/>
+    <value style="attribute" name="bufferStyle" get-method="getBufferStyle" set-method="setBufferStyle" usage="optional"/>
+    <value style="attribute" name="bufferParseType" get-method="getBufferParseType" set-method="setBufferParseType" usage="optional"/>
+    <value style="attribute" name="bufferItemSeparator" get-method="getBufferItemSeparator" set-method="setBufferItemSeparator" usage="optional"/>
+    <value style="attribute" name="bufferLengthType" get-method="getBufferLengthType" set-method="setBufferLengthType" usage="optional"/>
+    <value style="attribute" name="recordTerminator" get-method="getRecordTerminator" set-method="setRecordTerminator" usage="optional"/>
+    <value style="attribute" name="parseable" get-method="getParseable" set-method="setParseable" usage="optional"/>
+    <value style="attribute" name="endian" get-method="getEndian" set-method="setEndian" usage="optional"/>
+    <value style="attribute" name="recordParseRegExp" get-method="getRecordParseRegExp" set-method="setRecordParseRegExp" usage="optional"/>
+    </mapping> -->
+  
+  <!-- Resources with associated ResourceTypes -->
+  <mapping class="moos.ssds.metadata.Resource" name="Resource">
+    <value name="description" get-method="getDescription" set-method="setDescription"
+      usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Keyword" get-method="getKeywords"
+      set-method="setKeywords" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Person" get-method="getPerson" set-method="setPerson"
+      usage="optional"/>
+    <structure get-method="getResourceBLOB" set-method="setResourceBLOB" usage="optional"
+      name="ResourceBLOB">
+      <value name="description" get-method="getDescription" set-method="setDescription"
+        usage="optional"/>
+      <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+      <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+      <value style="attribute" name="byteArray" get-method="getByteArray" set-method="setByteArray"
+        usage="optional"/>
+    </structure>
+    <structure get-method="getResourceType" set-method="setResourceType" usage="optional"
+      name="ResourceType">
+      <value name="description" get-method="getDescription" set-method="setDescription"
+        usage="optional"/>
+      <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+      <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+    </structure>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName" usage="optional"/>
+    <value style="attribute" name="startDate" get-method="getStartDate" set-method="setStartDate"
+      usage="optional"/>
+    <value style="attribute" name="endDate" get-method="getEndDate" set-method="setEndDate"
+      usage="optional"/>
+    <value style="attribute" name="uri" get-method="getUri" set-method="unmarshallUri"
+      usage="optional"/>
+    <value style="attribute" name="url" get-method="getUrl" set-method="unmarshallUrl"
+      usage="optional"/>
+    <value style="attribute" name="contentLength" get-method="getContentLength"
+      set-method="setContentLength" usage="optional"/>
+    <value style="attribute" name="mimeType" get-method="getMimeType" set-method="setMimeType"
+      usage="optional"/>
+  </mapping>
+  <!--  
+  <mapping class="moos.ssds.metadata.Software" name="Software">
+    <value name="description" get-method="getDescription" set-method="setDescription"
+      usage="optional"/>
+    <structure type="moos.ssds.metadata.Person" get-method="getPerson" set-method="setPerson" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Resource" get-method="getResources" set-method="setResources" create-type="java.util.ArrayList"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+    <value style="attribute" name="uri" get-method="getUriString" set-method="setUriString" usage="optional"/>
+    <value style="attribute" name="url" get-method="getUriString" set-method="setUriString" usage="optional"/>
+    <value style="attribute" name="softwareVersion" get-method="getSoftwareVersion" set-method="setSoftwareVersion"/>
+    <value style="attribute" name="version" get-method="getVersion" set-method="setVersion" usage="optional"/>
+  </mapping>
+  -->
+  <mapping class="moos.ssds.metadata.StandardDomain" name="StandardDomain">
+    <value name="description" get-method="getDescription" set-method="setDescription"
+      usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+  </mapping>
+  <mapping class="moos.ssds.metadata.StandardKeyword" name="StandardKeyword">
+    <value name="description" get-method="getDescription" set-method="setDescription"
+      usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+  </mapping>
+  <mapping class="moos.ssds.metadata.StandardReferenceScale" name="StandardReferenceScale">
+    <value name="description" get-method="getDescription" set-method="setDescription"
+      usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+  </mapping>
+  <mapping class="moos.ssds.metadata.StandardUnit" name="StandardUnit">
+    <value name="description" get-method="getDescription" set-method="setDescription"
+      usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+    <value style="attribute" name="longName" get-method="getLongName" set-method="setLongName"
+      usage="optional"/>
+    <value style="attribute" name="symbol" get-method="getSymbol" set-method="setSymbol"
+      usage="optional"/>
+  </mapping>
+  <mapping class="moos.ssds.metadata.StandardVariable" name="StandardVariable">
+    <value name="description" get-method="getDescription" set-method="setDescription"
+      usage="optional"/>
+    <collection item-type="moos.ssds.metadata.StandardUnit" get-method="getStandardUnits"
+      set-method="setStandardUnits" create-type="java.util.ArrayList"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName"/>
+    <value style="attribute" name="namespaceUriString" get-method="getNamespaceUriString"
+      set-method="setNamespaceUriString"/>
+    <value style="attribute" name="referenceScale" get-method="getReferenceScale"
+      set-method="setReferenceScale" usage="optional"/>
+  </mapping>
+  <!--
+  <mapping class="moos.ssds.metadata.Consumer" name="consumer">
+    <structure type="moos.ssds.metadata.DataProducer" get-method="getDataProducer" set-method="setDataProducer" usage="optional"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.Description" name="description">
+    <value style="text" get-method="getDescription" set-method="setDescription"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.Input" name="input">
+    <collection item-type="moos.ssds.metadata.DataContainer" get-method="getDataContainers" set-method="setDataContainers" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.DataFile" get-method="getDataFiles" set-method="setDataFiles" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.DataStream" get-method="getDataStreams" set-method="setDataStreams" create-type="java.util.ArrayList"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.Output" name="output">
+    <collection item-type="moos.ssds.metadata.DataContainer" get-method="getDataContainers" set-method="setDataContainers" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.DataFile" get-method="getDataFiles" set-method="setDataFiles" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.DataStream" get-method="getDataStreams" set-method="setDataStreams" create-type="java.util.ArrayList"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.DataFile" name="DataFile">
+    <collection item-type="moos.ssds.metadata.Destiny" get-method="getDestinies" set-method="setDestinies" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Person" get-method="getPerson" set-method="setPerson" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Resource" get-method="getResources" set-method="setResources" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.HeaderDescription" get-method="getHeaderDescription" set-method="setHeaderDescription" usage="optional"/>
+    <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+    <structure type="moos.ssds.metadata.RecordDescription" get-method="getRecordDescription" set-method="setRecordDescription" usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="url" get-method="getUrl" set-method="setUrl"/>
+    <value style="attribute" name="startDate" get-method="getStartDate" set-method="setStartDate" usage="optional"/>
+    <value style="attribute" name="endDate" get-method="getEndDate" set-method="setEndDate" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName" usage="optional"/>
+    <value style="attribute" name="original" get-method="getOriginal" set-method="setOriginal" usage="optional"/>
+    <value style="attribute" name="dodsAccessible" get-method="getDodsAccessible" set-method="setDodsAccessible" usage="optional"/>
+    <value style="attribute" name="contentType" get-method="getContentType" set-method="setContentType" usage="optional"/>
+    <value style="attribute" name="mimeType" get-method="getMimeType" set-method="setMimeType" usage="optional"/>
+    <value style="attribute" name="fileName" get-method="getFileName" set-method="setFileName" usage="optional"/>
+    <value style="attribute" name="contentLength" get-method="getContentLength" set-method="setContentLength" usage="optional"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.DataStream" name="DataStream">
+    <collection item-type="moos.ssds.metadata.Destiny" get-method="getDestinies" set-method="setDestinies" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Person" get-method="getPerson" set-method="setPerson" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Resource" get-method="getResources" set-method="setResources" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+    <structure type="moos.ssds.metadata.RecordDescription" get-method="getRecordDescription" set-method="setRecordDescription" usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="url" get-method="getUrl" set-method="setUrl" usage="optional"/>
+    <value style="attribute" name="startDate" get-method="getStartDate" set-method="setStartDate" usage="optional"/>
+    <value style="attribute" name="endDate" get-method="getEndDate" set-method="setEndDate" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName" usage="optional"/>
+    <value style="attribute" name="original" get-method="getOriginal" set-method="setOriginal" usage="optional"/>
+    <value style="attribute" name="contentType" get-method="getContentType" set-method="setContentType" usage="optional"/>
+    <value style="attribute" name="mimeType" get-method="getMimeType" set-method="setMimeType" usage="optional"/>
+    <value style="attribute" name="contentLength" get-method="getContentLength" set-method="setContentLength" usage="optional"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.Deployment" name="Deployment">
+    <format type="moos.ssds.metadata.Deployment$Role" enum-value-method="toString"/>
+    <structure type="moos.ssds.metadata.Device" get-method="getDevice" set-method="setDevice"/>
+    <collection item-type="moos.ssds.metadata.Deployment" get-method="getDeployments" set-method="setDeployments" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Person" get-method="getPerson" set-method="setPerson" usage="optional"/>
+    <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+    <structure type="moos.ssds.metadata.Input" get-method="getInput" set-method="setInput" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Resource" get-method="getResources" set-method="setResources" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.Event" get-method="getEvents" set-method="setEvents" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.Output" get-method="getOutputs" set-method="setOutputs" create-type="java.util.ArrayList"/>
+    <value style="attribute" name="role" get-method="getRole" set-method="setRole"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName" usage="optional"/>
+    <value style="attribute" name="startDate" get-method="getStartDate" set-method="setStartDate" usage="optional"/>
+    <value style="attribute" name="endDate" get-method="getEndDate" set-method="setEndDate" usage="optional"/>
+    <value style="attribute" name="nominalLongitude" get-method="getNominalLongitude" set-method="setNominalLongitude" usage="optional"/>
+    <value style="attribute" name="nominalLongitudeAccuracy" get-method="getNominalLongitudeAccuracy" set-method="setNominalLongitudeAccuracy" usage="optional"/>
+    <value style="attribute" name="nominalLatitude" get-method="getNominalLatitude" set-method="setNominalLatitude" usage="optional"/>
+    <value style="attribute" name="nominalLatitudeAccuracy" get-method="getNominalLatitudeAccuracy" set-method="setNominalLatitudeAccuracy" usage="optional"/>
+    <value style="attribute" name="nominalDepth" get-method="getNominalDepth" set-method="setNominalDepth" usage="optional"/>
+    <value style="attribute" name="nominalDepthAccuracy" get-method="getNominalDepthAccuracy" set-method="setNominalDepthAccuracy" usage="optional"/>
+    <value style="attribute" name="nominalBenthicAltitude" get-method="getNominalBenthicAltitude" set-method="setNominalBenthicAltitude" usage="optional"/>
+    <value style="attribute" name="nominalBenthicAltitudeAccuracy" get-method="getNominalBenthicAltitudeAccuracy" set-method="setNominalBenthicAltitudeAccuracy" usage="optional"/>
+    <value style="attribute" name="xOffset" get-method="getXOffset" set-method="setXOffset" usage="optional"/>
+    <value style="attribute" name="yOffset" get-method="getYOffset" set-method="setYOffset" usage="optional"/>
+    <value style="attribute" name="zOffset" get-method="getZOffset" set-method="setZOffset" usage="optional"/>
+    <value style="attribute" name="orientationDescription" get-method="getOrientationDescription" set-method="setOrientationDescription" usage="optional"/>
+    <value style="attribute" name="x3DOrientationText" get-method="getX3DOrientationText" set-method="setX3DOrientationText" usage="optional"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.ProcessRun" name="ProcessRun">
+    <structure type="moos.ssds.metadata.Description" get-method="getDescription" set-method="setDescription" usage="optional"/>
+    <structure type="moos.ssds.metadata.Person" get-method="getPerson" set-method="setPerson" usage="optional"/>
+    <structure type="moos.ssds.metadata.Software" get-method="getSoftware" set-method="setSoftware" usage="optional"/>
+    <collection item-type="moos.ssds.metadata.Resource" get-method="getResources" set-method="setResources" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.Event" get-method="getEvents" set-method="setEvents" create-type="java.util.ArrayList"/>
+    <structure type="moos.ssds.metadata.Input" get-method="getInput" set-method="setInput" usage="optional"/>
+    <structure type="moos.ssds.metadata.Output" get-method="getOutput" set-method="setOutput" usage="optional"/>
+    <value style="attribute" name="startDate" get-method="getStartDate" set-method="setStartDate" usage="optional"/>
+    <value style="attribute" name="endDate" get-method="getEndDate" set-method="setEndDate" usage="optional"/>
+    <value style="attribute" name="name" get-method="getName" set-method="setName" usage="optional"/>
+    <value style="attribute" name="id" get-method="getId" set-method="setId" usage="optional"/>
+    <value style="attribute" name="hostName" get-method="getHostName" set-method="setHostName" usage="optional"/>
+  </mapping>
+  -->
+  <!--
+    <mapping class="moos.ssds.metadata.Destiny" name="destiny">
+    <collection item-type="moos.ssds.metadata.Deployment" get-method="getDeployments" set-method="setDeployments" create-type="java.util.ArrayList"/>
+    <collection item-type="moos.ssds.metadata.ProcessRun" get-method="getProcessRuns" set-method="setProcessRuns" create-type="java.util.ArrayList"/>
+  </mapping>
+  -->
+</binding>

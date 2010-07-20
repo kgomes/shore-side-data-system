@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>SSDS Transmogrify Client Library README</title>
+</head>
+<body>
+<h1>Usage of SSDS Transmogrify Publisher JAR</h1>
+Welcome to the transmogrify publisher libraries for the Shore-Side Data System. For your 
+convenience all the jar files that you need to publish JMS packets <b>in SIAM format</b> to
+SSDS are included in this zip file.  You need to make sure that you include
+all these jars in your Java project and MORE IMPORTANTLY, make sure they
+are in the correct classpath order.  The correct class path order is:
+<pre>@TRANSMOGRIFY_CLASSPATH@</pre>
+
+<p>There are two classes in these jar files that can be used for publishing SIAM formatted packets 
+to the transmogrify component of the SSDS.  They are <code>moos.ssds.jms.PacketGenerator</code> 
+and <code>moos.ssds.jms.PublisherComponent</code></p>
+
+<h3>PacketGenerator</h3>
+<p>This class is intended to be used from the command line and is helpful in publishing small numbers
+of packets.  Packets that are sent to SSDS basically have a couple of byte payloads and a handful of
+parameters that tell SSDS where this packet is coming from.  In order to use the PacketGenerator, make
+a copy of the packet-generator-transmogrify-template.properties file and then edit that copy to
+setup all the properties as you need to.  The template file documents the properties pretty well and
+you can just consult the template file for instructions on how to fill out the various properties.
+</p>
+
+<p>After constructing the properties files and any other files that will be used for payloads, run the PacketGenerator
+in the following manner from the command line</p>
+<pre>
+prompt&gt; java -cp @TRANSMOGRIFY_CLASSPATH@ moos.ssds.jms.PacketGenerator packet.properties
+</pre>
+<p>
+where the packet.properites files is the file that you generated from the template.
+</p>
+<h3>PublisherComponent</h3>
+<p>This class is used within Java code to help you in sending <b>SIAM formatted</b> byte arrays to the SSDS transmogrify component.  You must use the classpath specified above in your code.  An example of a class that publishes a packet to SSDS in SIAM format is shown here (source is included in zip as well):</p>
+<pre>
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.Date;
+
+import moos.ssds.jms.PublisherComponent;
+
+import org.mbari.siam.distributed.MetadataPacket;
+import org.mbari.siam.distributed.SensorDataPacket;
+import org.mbari.siam.operations.utils.ExportablePacket;
+
+public class ExampleSSDSClientPublisher {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// Create the SSDS publisher component
+		PublisherComponent publisherComponent = new PublisherComponent();
+
+		// Create the output stream to help export the SIAM packet
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+
+		// Create the ExportablePacket to use to wrap and export a SIAM packet
+		ExportablePacket exportablePacket = new ExportablePacket();
+
+		// Here is an example of a metadata packet
+		MetadataPacket metadataPacket = new MetadataPacket(101, ("Cause")
+				.getBytes(), ("Buffer bytes").getBytes());
+		metadataPacket.setMetadataRef(0);
+		metadataPacket.setParentId(100);
+		metadataPacket.setRecordType(0);
+		metadataPacket.setSequenceNo(1);
+		metadataPacket.setSystemTime(new Date().getTime());
+
+		// Wrap and export
+		exportablePacket.wrapPacket(metadataPacket);
+		try {
+			exportablePacket.export(dos);
+		} catch (IOException e) {
+		}
+
+		// Now publish the SIAM formatted byte array to the TransmogrifyMDB
+		// input topic
+		publisherComponent.publishBytes(bos.toByteArray());
+
+		// Now for a Data packet
+		SensorDataPacket sensorDataPacket = new SensorDataPacket(101,
+				"Sensor Data Packet Payload".getBytes().length);
+		sensorDataPacket.setMetadataRef(0);
+		sensorDataPacket.setParentId(100);
+		sensorDataPacket.setRecordType(1);
+		sensorDataPacket.setSequenceNo(2);
+		sensorDataPacket.setDataBuffer("Sensor Data Packet Payload".getBytes());
+		sensorDataPacket.setSystemTime(new Date().getTime());
+
+		// Create the output stream to help export the SIAM packet
+		bos = new ByteArrayOutputStream();
+		dos = new DataOutputStream(bos);
+
+		// Create the ExportablePacket to use to wrap and export a SIAM packet
+		exportablePacket = new ExportablePacket();
+
+		// Wrap and export
+		exportablePacket.wrapPacket(sensorDataPacket);
+		try {
+			exportablePacket.export(dos);
+		} catch (IOException e) {
+		}
+
+		// Now publish the SIAM formatted byte array to the TransmogrifyMDB
+		// input topic
+		publisherComponent.publishBytes(bos.toByteArray());
+
+	}
+
+}
+</pre>
+<p> If you have any questions, please contact ssds@mbari.org.<br/>
+</p>
+<p>
+  Enjoy,
+</p>
+<p>
+The SSDS Development Team
+</p>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<Metadata>
+	<Deployment endDate="2003-10-22T00:00:01Z" id="1" name="Deployment1" nominalDepth="10"
+		nominalLatitude="32.456" nominalLongitude="122.31" role="platform"
+		startDate="2003-10-22T00:00:00Z">
+		<Deployment role="instrument" name="bluefinBattlog">
+			<Deployment role="sensor">
+				<Device id="1262"/>
+			</Deployment>
+			<description>Deployment information for bluefinBattlog.log</description>
+			<Device name="bluefinBattlog" id="1237"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/bluefinBattlog.log"
+					dodsAccessible="false" name="bluefinBattlog.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<commentTag>$</commentTag>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="voltage_0" columnIndex="2" format="double"
+							longName="Battery number 0 nominal voltage" units="Volts"/>
+						<RecordVariable name="current_0" columnIndex="3" format="double"
+							longName="Battery number 0 nominal current" units="Amps"/>
+						<RecordVariable name="temp_0" columnIndex="4" format="double"
+							longName="Battery number 0 internal temp" units="Celsius"/>
+						<RecordVariable name="minvoltage_0" columnIndex="5" format="double"
+							longName="Battery number 0 minimum cell brick voltage" units="Volts"/>
+						<RecordVariable name="maxvoltage_0" columnIndex="6" format="double"
+							longName="Battery number 0 maximum cell brick voltage" units="Volts"/>
+						<RecordVariable name="waterleak_0" columnIndex="7" format="integer"
+							longName="Battery number 0 water leak code" units="Unitless"/>
+						<RecordVariable name="capacity_0" columnIndex="8" format="double"
+							longName="Battery number 0 remaining capacity" units="Watt-hours"/>
+						<RecordVariable name="voltage_1" columnIndex="9" format="double"
+							longName="Battery number 1 nominal voltage" units="Volts"/>
+						<RecordVariable name="current_1" columnIndex="10" format="double"
+							longName="Battery number 1 nominal current" units="Amps"/>
+						<RecordVariable name="temp_1" columnIndex="11" format="double"
+							longName="Battery number 1 internal temp" units="Celsius"/>
+						<RecordVariable name="minvoltage_1" columnIndex="12" format="double"
+							longName="Battery number 1 minimum cell brick voltage" units="Volts"/>
+						<RecordVariable name="maxvoltage_1" columnIndex="13" format="double"
+							longName="Battery number 1 maximum cell brick voltage" units="Volts"/>
+						<RecordVariable name="waterleak_1" columnIndex="14" format="integer"
+							longName="Battery number 1 water leak code" units="Unitless"/>
+						<RecordVariable name="capacity_1" columnIndex="15" format="double"
+							longName="Battery number 1 remaining capacity" units="Watt-hours"/>
+						<RecordVariable name="voltage_2" columnIndex="16" format="double"
+							longName="Battery number 2 nominal voltage" units="Volts"/>
+						<RecordVariable name="current_2" columnIndex="17" format="double"
+							longName="Battery number 2 nominal current" units="Amps"/>
+						<RecordVariable name="temp_2" columnIndex="18" format="double"
+							longName="Battery number 2 internal temp" units="Celsius"/>
+						<RecordVariable name="minvoltage_2" columnIndex="19" format="double"
+							longName="Battery number 2 minimum cell brick voltage" units="Volts"/>
+						<RecordVariable name="maxvoltage_2" columnIndex="20" format="double"
+							longName="Battery number 2 maximum cell brick voltage" units="Volts"/>
+						<RecordVariable name="waterleak_2" columnIndex="21" format="integer"
+							longName="Battery number 2 water leak code" units="Unitless"/>
+						<RecordVariable name="capacity_2" columnIndex="22" format="double"
+							longName="Battery number 2 remaining capacity" units="Watt-hours"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<Deployment role="instrument" name="crossbow">
+			<description>Deployment information for crossbow.log</description>
+			<Device name="crossbow" id="1226"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/crossbow.log"
+					dodsAccessible="false" name="crossbow.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="//"/>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="mRollCB" columnIndex="2" format="double"
+							longName="Roll" units="Degrees"/>
+						<RecordVariable name="mOmega_xCB" columnIndex="3" format="double"
+							longName="Roll rate" units="Degrees/second"/>
+						<RecordVariable name="mPitchCB" columnIndex="4" format="double"
+							longName="Pitch" units="Degrees"/>
+						<RecordVariable name="mOmega_yCB" columnIndex="5" format="double"
+							longName="Pitch rate" units="Degrees/second"/>
+						<RecordVariable name="mYawCB" columnIndex="6" format="double" longName="Yaw"
+							units="Degrees"/>
+						<RecordVariable name="mOmega_zCB" columnIndex="7" format="double"
+							longName="Yaw rate" units="Degrees/second"/>
+						<RecordVariable name="mAccel_xCB" columnIndex="8" format="double"
+							longName="Acceleration along vehicle x-axis" units="G"/>
+						<RecordVariable name="mAccel_yCB" columnIndex="9" format="double"
+							longName="Acceleration along vehicle y-axis" units="G"/>
+						<RecordVariable name="mAccel_zCB" columnIndex="10" format="double"
+							longName="Acceleration along vehicle z-axis" units="G"/>
+						<RecordVariable name="mMag_xCB" columnIndex="11" format="double"
+							longName="Magnetic field along vehicle x-axis" units="Gauss"/>
+						<RecordVariable name="mMag_yCB" columnIndex="12" format="double"
+							longName="Magnetic field along vehicle y-axis" units="Gauss"/>
+						<RecordVariable name="mMag_zCB" columnIndex="13" format="double"
+							longName="Magnetic field along vehicle z-axis" units="Gauss"/>
+						<RecordVariable name="mTempCB" columnIndex="14" format="double"
+							longName="Crossbow internal temperature" units="Celsius"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<Deployment role="instrument" name="ctdDriver">
+			<Deployment role="sensor">
+				<Device id="1257"/>
+			</Deployment>
+			<description>Deployment information for ctdDriver.log</description>
+			<Device name="ctdDriver" id="1225"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/ctdDriver.log"
+					dodsAccessible="false" name="ctdDriver.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="!!"/>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="conductivity" columnIndex="2" format="double"
+							longName="Conductivity" units="Siemens/meter"/>
+						<RecordVariable name="temperature" columnIndex="3" format="double"
+							longName="Temperature" units="Celsius"/>
+						<RecordVariable name="cond_frequency" columnIndex="4" format="double"
+							longName="Conductivity frequency" units="Hertz"/>
+						<RecordVariable name="temp_frequency" columnIndex="5" format="double"
+							longName="Temperature frequency" units="Hertz"/>
+						<RecordVariable name="spare" columnIndex="6" format="double" longName="Spare
+							Analog Voltage Channel" units="Volts"/>
+						<RecordVariable name="spare" columnIndex="7" format="double" longName="Spare
+							Analog Voltage Channel" units="Volts"/>
+						<RecordVariable name="humidity" columnIndex="8" format="double"
+							longName="Humidity Sensor Voltage" units="Volts"/>
+						<RecordVariable name="flow1" columnIndex="9" format="double" longName="Flow
+							Sensor 1 Voltage" units="Volts"/>
+						<RecordVariable name="OBS" columnIndex="10" format="double"
+							longName="Optical Backscatter Sensor Voltage" units="Volts"/>
+						<RecordVariable name="dissolvedO2" columnIndex="11" format="double"
+							longName="Dissovled Oxygen Sensor Voltage" units="Volts"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+			<Resource name="ctdDriver.cfg"
+				uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/ctdDriver.cfg"
+				resourceType="undefined">
+				<description>Undescribed resource</description>
+			</Resource>
+		</Deployment>
+		<Deployment role="instrument" name="ctdDriver2">
+			<Deployment role="sensor">
+				<Device id="1258"/>
+			</Deployment>
+			<description>Deployment information for ctdDriver2.log</description>
+			<Device name="ctdDriver2" id="1256"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/ctdDriver2.log"
+					dodsAccessible="false" name="ctdDriver2.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="#"/>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="conductivity" columnIndex="2" format="double"
+							longName="Conductivity" units="Siemens/meter"/>
+						<RecordVariable name="temperature" columnIndex="3" format="double"
+							longName="Temperature" units="Celsius"/>
+						<RecordVariable name="cond_frequency" columnIndex="4" format="double"
+							longName="Conductivity frequency" units="Hertz"/>
+						<RecordVariable name="temp_frequency" columnIndex="5" format="double"
+							longName="Temperature frequency" units="Hertz"/>
+						<RecordVariable name="spare" columnIndex="6" format="double" longName="Spare
+							Analog Voltage Channel" units="Volts"/>
+						<RecordVariable name="spare" columnIndex="7" format="double" longName="Spare
+							Analog Voltage Channel" units="Volts"/>
+						<RecordVariable name="spare" columnIndex="8" format="double"
+							longName="Humidity Sensor Voltage" units="Volts"/>
+						<RecordVariable name="flow2" columnIndex="9" format="double" longName="Flow
+							Sensor 1 Voltage" units="Volts"/>
+						<RecordVariable name="spare" columnIndex="10" format="double"
+							longName="Optical Backscatter Sensor Voltage" units="Volts"/>
+						<RecordVariable name="spare" columnIndex="11" format="double"
+							longName="Dissovled Oxygen Sensor Voltage" units="Volts"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<Deployment role="instrument" name="dvl">
+			<description>Deployment information for dvl.log</description>
+			<Device name="dvl" id="1220"/>
+			<Resource name="dvl.cfg"
+				uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/dvl.cfg"
+				resourceType="undefined">
+				<description>Undescribed resource</description>
+			</Resource>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/dvl.log"
+					dodsAccessible="false" name="dvl.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="/*"/>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="dvlBotVelx" columnIndex="2" format="double"
+							longName="Velocity component along x-axis with respect to the bottom"
+							units="meters/second"/>
+						<RecordVariable name="dvlBotVely" columnIndex="3" format="double"
+							longName="Velocity component along y-axis with respect to the bottom"
+							units="meters/second"/>
+						<RecordVariable name="dvlBotVelz" columnIndex="4" format="double"
+							longName="Velocity component along z-axis with respect to the bottom"
+							units="meters/second"/>
+						<RecordVariable name="dvlBotVele" columnIndex="5" format="double"
+							longName="Velocity error component with respect to the bottom"
+							units="meters/second"/>
+						<RecordVariable name="dvlBotVelStat" columnIndex="6" format="short"
+							longName="Status code for velocity with respect to the bottom"
+							units="Unitless"/>
+						<RecordVariable name="dvlWatVelx" columnIndex="7" format="double"
+							longName="Velocity component along x-axis with respect to a water layer"
+							units="meters/second"/>
+						<RecordVariable name="dvlWatVely" columnIndex="8" format="double"
+							longName="Velocity component along y-axis with respect to a water layer"
+							units="meters/second"/>
+						<RecordVariable name="dvlWatVelz" columnIndex="9" format="double"
+							longName="Velocity component along z-axis with respect to a water layer"
+							units="meters/second"/>
+						<RecordVariable name="dvlWatVele" columnIndex="10" format="double"
+							longName="Velocity error component with respect to a water layer"
+							units="meters/second"/>
+						<RecordVariable name="dvlWatVelStat" columnIndex="11" format="short"
+							longName="Status code for velocity with respect to the water"
+							units="Unitless"/>
+						<RecordVariable name="dvlTemp" columnIndex="12" format="double"
+							longName="DVL internal temperature" units="Celsius"/>
+						<RecordVariable name="dvlPitch" columnIndex="13" format="double"
+							longName="DVL Pitch" units="Degrees"/>
+						<RecordVariable name="dvlRoll" columnIndex="14" format="double"
+							longName="DVL Roll" units="Degrees"/>
+						<RecordVariable name="dvlHeading" columnIndex="15" format="double"
+							longName="DVL Heading" units="Degrees"/>
+						<RecordVariable name="dvlRange" columnIndex="16" format="double"
+							longName="DVL altitude above bottom" units="meters"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<Deployment role="instrument" name="gps">
+			<description>Deployment information for gps.log</description>
+			<Device name="gps" id="1221"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/gps.log"
+					dodsAccessible="false" name="gps.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="#"/>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="UTCTime" columnIndex="2" format="integer"
+							longName="UTC time from GPS" units="Seconds since 01-01-1970"/>
+						<RecordVariable name="latitude" columnIndex="3" format="double"
+							longName="Vehicle latitude" units="Degrees"/>
+						<RecordVariable name="longitude" columnIndex="4" format="double"
+							longName="Vehicle longitude" units="Degrees"/>
+						<RecordVariable name="quality" columnIndex="5" format="short" longName="GPS
+							quality code" units="Unitless"/>
+						<RecordVariable name="numberOfSatellites" columnIndex="6" format="short"
+							longName="Number of satellites visible" units="Unitless"/>
+						<RecordVariable name="hdop" columnIndex="7" format="double"
+							longName="Horizontal dilution of precision" units="Unitless"/>
+						<RecordVariable name="antennaHeight" columnIndex="8" format="double"
+							longName="Altitude of GPS antenna above mean sea level" units="meters"/>
+						<RecordVariable name="geoHeight" columnIndex="9" format="double"
+							longName="Geoidal separation" units="meters"/>
+						<RecordVariable name="dgpsDataAge" columnIndex="10" format="short"
+							longName="Age of differential GPS correction" units="seconds"/>
+						<RecordVariable name="dgpsRSID" columnIndex="11" format="short"
+							longName="Differential reference station ID" units="Unitless"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<Deployment role="instrument" name="hydroscatlog">
+			<description>Deployment information for hydroscatlog.log</description>
+			<Device name="hydroscatlog" id="1261"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/hydroscatlog.log"
+					dodsAccessible="false" name="hydroscatlog.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="/*"/>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="Seconds" columnIndex="2" format="integer"
+							longName="Hydroscat system integer time" units="Seconds since
+							01-01-1970"/>
+						<RecordVariable name="HundrethsOfSeconds" columnIndex="3" format="integer"
+							longName="Hydroscat system fractional time" units="1x10^-2 Seconds"/>
+						<RecordVariable name="Snorm1" columnIndex="4" format="integer"
+							longName="Signal to noise ratio for channel 1" units="Unitless"/>
+						<RecordVariable name="Snorm2" columnIndex="5" format="integer"
+							longName="Signal to noise ratio for channel 2" units="Unitless"/>
+						<RecordVariable name="Snorm3" columnIndex="6" format="integer"
+							longName="Signal to noise ratio for channel 3" units="Unitless"/>
+						<RecordVariable name="Gain_Status_1" columnIndex="7" format="integer"
+							longName="Gain and status code for channel 1" units="Unitless"/>
+						<RecordVariable name="Gain_Status_2" columnIndex="8" format="integer"
+							longName="Gain and status code for channel 1" units="Unitless"/>
+						<RecordVariable name="Gain_Status_3" columnIndex="9" format="integer"
+							longName="Gain and status code for channel 1" units="Unitless"/>
+						<RecordVariable name="RawDepthValue" columnIndex="10" format="integer"
+							longName="Raw depth sensor value" units="counts"/>
+						<RecordVariable name="RawTempValue" columnIndex="11" format="integer"
+							longName="Raw temperature sensor value" units="counts"/>
+						<RecordVariable name="Temperature" columnIndex="12" format="double"
+							longName="Hydroscat Internal Instrument Temperature" units="Celsius"/>
+						<RecordVariable name="ErrorValue" columnIndex="13" format="integer"
+							longName="Error value code" units="Unitless"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<Deployment role="instrument" name="isuslog">
+			<description>Deployment information for isuslog.log</description>
+			<Device name="isuslog" id="1235"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/isuslog.log"
+					dodsAccessible="false" name="isuslog.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="//"/>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="isusNitrate" columnIndex="2" format="double"
+							longName="Nitrate Concentration" units="microMoles/liter"/>
+						<RecordVariable name="isusTemp" columnIndex="3" format="double"
+							longName="Isus Internal Temperature" units="Celsius"/>
+						<RecordVariable name="isusQuality" columnIndex="4" format="double"
+							longName="Fit Residuals" units="Unitless"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<Deployment role="instrument" name="navigation">
+			<Deployment role="sensor">
+				<Device id="1220"/>
+			</Deployment>
+			<description>Deployment information for navigation.log</description>
+			<Device name="navigation" id="1236"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/navigation.log"
+					dodsAccessible="false" name="navigation.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="#"/>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="mPos_x" columnIndex="2" format="double"
+							longName="mPos_x" units="UNKNOWN"/>
+						<RecordVariable name="mPos_y" columnIndex="3" format="double"
+							longName="mPos_y" units="UNKNOWN"/>
+						<RecordVariable name="mDepth" columnIndex="4" format="double"
+							longName="mDepth" units="UNKNOWN"/>
+						<RecordVariable name="mGpsNorth" columnIndex="5" format="double"
+							longName="mGpsNorth" units="UNKNOWN"/>
+						<RecordVariable name="mGpsEast" columnIndex="6" format="double"
+							longName="mGpsEast" units="UNKNOWN"/>
+						<RecordVariable name="mGpsValid" columnIndex="7" format="integer"
+							longName="mGpsValid" units="UNKNOWN"/>
+						<RecordVariable name="mPhi" columnIndex="8" format="double" longName="mPhi"
+							units="UNKNOWN"/>
+						<RecordVariable name="mTheta" columnIndex="9" format="double"
+							longName="mTheta" units="UNKNOWN"/>
+						<RecordVariable name="mPsi" columnIndex="10" format="double" longName="mPsi"
+							units="UNKNOWN"/>
+						<RecordVariable name="mOmega_x" columnIndex="11" format="double"
+							longName="mOmega_x" units="UNKNOWN"/>
+						<RecordVariable name="mOmega_y" columnIndex="12" format="double"
+							longName="mOmega_y" units="UNKNOWN"/>
+						<RecordVariable name="mOmega_z" columnIndex="13" format="double"
+							longName="mOmega_z" units="UNKNOWN"/>
+						<RecordVariable name="mPsaRange" columnIndex="14" format="double"
+							longName="mPsaRange" units="UNKNOWN"/>
+						<RecordVariable name="mAltitude" columnIndex="15" format="double"
+							longName="mAltitude" units="UNKNOWN"/>
+						<RecordVariable name="mWaterSpeed" columnIndex="16" format="double"
+							longName="mWaterSpeed" units="UNKNOWN"/>
+						<RecordVariable name="nfix" columnIndex="17" format="double" longName="nfix"
+							units="UNKNOWN"/>
+						<RecordVariable name="efix" columnIndex="18" format="double" longName="efix"
+							units="UNKNOWN"/>
+						<RecordVariable name="filter_north" columnIndex="19" format="double"
+							longName="filter_north" units="UNKNOWN"/>
+						<RecordVariable name="filter_east" columnIndex="20" format="double"
+							longName="filter_east" units="UNKNOWN"/>
+						<RecordVariable name="filter_depth" columnIndex="21" format="double"
+							longName="filter_depth" units="UNKNOWN"/>
+						<RecordVariable name="north_current" columnIndex="22" format="double"
+							longName="north_current" units="UNKNOWN"/>
+						<RecordVariable name="east_current" columnIndex="23" format="double"
+							longName="east_current" units="UNKNOWN"/>
+						<RecordVariable name="speed_bias" columnIndex="24" format="double"
+							longName="speed_bias" units="UNKNOWN"/>
+						<RecordVariable name="heading_bias" columnIndex="25" format="double"
+							longName="heading_bias" units="UNKNOWN"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<Deployment role="instrument" name="parosci">
+			<description>Deployment information for parosci.log</description>
+			<Device name="parosci" id="1223"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/parosci.log"
+					dodsAccessible="false" name="parosci.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="/*"/>
+					</HeaderDescription>
+					<RecordDescription bufferStyle="binary" recordType="1" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="depth" columnIndex="2" format="double"
+							longName="Depth" units="Meters"/>
+						<RecordVariable name="temp" columnIndex="3" format="double"
+							longName="Pressure Sensor Internal Temp" units="Celsius"/>
+						<RecordVariable name="pressure" columnIndex="4" format="double"
+							longName="Pressure" units="Bars"/>
+						<RecordVariable name="temp_period" columnIndex="5" format="double"
+							longName="Temperature Period" units="Microseconds"/>
+						<RecordVariable name="pres_period" columnIndex="6" format="double"
+							longName="Pressure Period" units="Microseconds"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<Deployment role="instrument" name="tailCone">
+			<description>Deployment information for tailCone.log</description>
+			<Device name="tailCone" id="1219" type="Test Type"/>
+			<output>
+				<DataFile noNetCDF="true" mimeType="undefined"
+					uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/tailCone.log"
+					dodsAccessible="false" name="tailCone.log" original="true">
+					<description>AUV data</description>
+					<HeaderDescription numHeaderLines="0" byteOffset="0">
+						<CommentTag tagString="//"/>
+					</HeaderDescription>
+					<RecordDescription bufferStyle="binary" recordType="1" endian="little"
+						bufferLengthType="fixed" parseable="true">
+						<RecordVariable name="time" columnIndex="1" format="double" longName="Time
+							(GMT)" units="seconds since 1970-01-01 00:00:00"/>
+						<RecordVariable name="status" columnIndex="2" format="integer"
+							longName="status" units="UNKNOWN"/>
+						<RecordVariable name="elevatorCurrent" columnIndex="3" format="integer"
+							longName="elevatorCurrent" units="UNKNOWN"/>
+						<RecordVariable name="rudderCurrent" columnIndex="4" format="integer"
+							longName="rudderCurrent" units="UNKNOWN"/>
+						<RecordVariable name="propCurrent1" columnIndex="5" format="float"
+							longName="propCurrent1" units="UNKNOWN"/>
+						<RecordVariable name="propCurrent2" columnIndex="6" format="integer"
+							longName="propCurrent2" units="UNKNOWN"/>
+						<RecordVariable name="propRpm" columnIndex="7" format="integer"
+							longName="propRpm" units="UNKNOWN"/>
+						<RecordVariable name="elevatorAngle" columnIndex="8" format="float"
+							longName="elevatorAngle" units="UNKNOWN"/>
+						<RecordVariable name="rudderAngle" columnIndex="9" format="float"
+							longName="rudderAngle" units="UNKNOWN"/>
+						<RecordVariable name="propPwm" columnIndex="10" format="integer"
+							longName="propPwm" units="UNKNOWN"/>
+						<RecordVariable name="propTemp" columnIndex="11" format="integer"
+							longName="propTemp" units="UNKNOWN"/>
+					</RecordDescription>
+				</DataFile>
+			</output>
+		</Deployment>
+		<description>AUV mission generated from information in the directory 2003.216.03. WARNING!!!
+			Metadata in missing from he mission directory.</description>
+		<Device id="1" mfgModel="Device1ManufacturerModel" mfgName="Device1ManufacturerName"
+			mfgSerialNumber="Device1ManufacturerSerialNumber" name="Device1"
+			preferredDeploymentRole="Device1PreferredDeploymentRole" type="Device1Type">
+			<description>Device1Description</description>
+		</Device>
+		<Person firstname="Kevin" surname="Gomes" email="kgomes@mbari.org" status="active"/>
+		<Resource name="devices.cfg"
+			uri="http://prey.shore.mbari.org/auvctd/AUVCTD2003216/2003.216.03/devices.cfg"
+			resourceType="undefined">
+			<description>Undescribed resource</description>
+		</Resource>
+	</Deployment>
+</Metadata>

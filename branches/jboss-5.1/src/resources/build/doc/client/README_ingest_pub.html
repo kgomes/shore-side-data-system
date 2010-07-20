@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>SSDS Ingest Client Library README</title>
+</head>
+<body>
+<h1>Usage of SSDS Ingest Publisher JAR</h1>
+Welcome to the ingest publisher libraries for the Shore-Side Data System. For your 
+convenience all the jar files that you need to publish JMS packets <b>in SSDS format</b> to
+SSDS are included in this zip file.  You need to make sure that you include
+all these jars in your Java project and MORE IMPORTANTLY, make sure they
+are in the correct classpath order.  The correct class path order is:
+<pre>@INGEST_CLASSPATH@</pre>
+
+<p>There are two classes in these jar files that can be used for publishing SSDS formatted packets 
+to the ingest component of the SSDS.  They are <code>moos.ssds.jms.PacketGenerator</code> 
+and <code>moos.ssds.jms.PublisherComponent</code></p>
+
+<h3>PacketGenerator</h3>
+<p>This class is intended to be used from the command line and is helpful in publishing small numbers
+of packets.  Packets that are sent to SSDS basically have a couple of byte payloads and a handful of
+parameters that tell SSDS where this packet is coming from.  In order to use the PacketGenerator, make
+a copy of the packet-generator-ingest-template.properties file and then edit that copy to
+setup all the properties as you need to.  The template file documents the properties pretty well and
+you can just consult the template file for instructions on how to fill out the various properties.
+</p>
+
+<p>After constructing the properties files and any other files that will be used for payloads, run the PacketGenerator
+in the following manner from the command line</p>
+<pre>
+prompt&gt; java -cp @INGEST_CLASSPATH@ moos.ssds.jms.PacketGenerator packet.properties
+</pre>
+<p>
+where the packet.properites files is the file that you generated from the template.
+</p>
+<h3>PublisherComponent</h3>
+<p>This class is used within Java code to help you in sending <b>SSDS formatted</b> byte arrays to the SSDS ingest component.  You must use the classpath specified above in your code.  An example of a class that publishes a packet to SSDS in SSDS format is shown here (source is included in zip as well):</p>
+<pre>
+import java.util.Date;
+
+import moos.ssds.io.util.PacketUtility;
+import moos.ssds.jms.PublisherComponent;
+
+public class ExampleSSDSIngestClientPublisher {
+
+	public static void main(String[] args) {
+		// The component for publishing to SSDS
+		PublisherComponent publisherComponent = new PublisherComponent();
+		// Create the various parameters for the packet
+		long sourceID = 101;
+		long parentID = 100;
+		// The type of packet to be sent Data = 0, Metadata = 1, Device Message
+		// = 4
+		int packetType = 0;
+		// This is the record type
+		long packetSubType = 1;
+		long metadataSequenceNumber = 0;
+		long dataDescriptionVersion = 0;
+		Date now = new Date();
+		// TODO kgomes this needs to be change after but SSDS-77 is fixed
+		long timestampSeconds = now.getTime() / 1000;
+		long timestampNanoseconds = (now.getTime() % 1000) * 1000;
+		long sequenceNumber = 1;
+		byte[] firstBuffer = "Sensor Data First Buffer".getBytes();
+		byte[] secondBuffer = "SensorData Second Buffer (ignored)".getBytes();
+
+		// Create and publish the byte array in SSDS format
+		publisherComponent.publishBytes(PacketUtility
+				.createSSDSFormatByteArray(sourceID, parentID, packetType,
+						packetSubType, metadataSequenceNumber,
+						dataDescriptionVersion, timestampSeconds,
+						timestampNanoseconds, sequenceNumber, firstBuffer,
+						secondBuffer));
+	}
+}
+</pre>
+<p> If you have any questions, please contact ssds@mbari.org.<br/>
+</p>
+<p>
+  Enjoy,
+</p>
+<p>
+The SSDS Development Team
+</p>
+</body>
+</html>

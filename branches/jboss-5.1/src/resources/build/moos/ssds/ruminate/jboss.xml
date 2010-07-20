@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jboss PUBLIC "-//JBoss//DTD JBOSS 4.0//EN" "http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd">
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<jboss>
+    <enterprise-beans>
+        <!--
+            To add beans that you have deployment descriptor info for, add
+            a file to your XDoclet merge directory called jboss-beans.xml that contains
+            the <session></session>, <entity></entity> and <message-driven></message-driven>
+            markup for those beans.
+        -->
+        <message-driven>
+            <ejb-name>Ruminate</ejb-name>
+            <destination-jndi-name>topic/@RUMINATE_TOPIC_NAME@</destination-jndi-name>
+            <invoker-bindings>
+                <invoker>
+                    <invoker-proxy-binding-name>ruminate-mdb-invoker</invoker-proxy-binding-name>
+                </invoker>
+            </invoker-bindings>
+        </message-driven>
+        <!--
+            write a merge file jboss-webservices.ent for webservice-description 
+        -->
+    </enterprise-beans>
+    <!--
+        To specify your own assembly descriptor info here, add a file to your
+        XDoclet merge directory called jboss-assembly-descriptor.xml that contains
+        the <assembly-descriptor></assembly-descriptor> markup.
+    -->
+    <assembly-descriptor>
+        <!-- message destinations -->
+        <!--
+            To specify additional message-destination elements, add a file in the merge
+            directory called jboss-message-destinations.ent that contains them.
+        -->
+    </assembly-descriptor>
+    <resource-managers> </resource-managers>
+    <!--
+        | for container settings, you can merge in jboss-container.xml
+        | this can contain <invoker-proxy-bindings/> and <container-configurations/>
+    -->
+    <invoker-proxy-bindings>
+        <invoker-proxy-binding>
+            <name>ruminate-mdb-invoker</name>
+            <invoker-mbean>does-not-matter</invoker-mbean>
+            <proxy-factory>org.jboss.ejb.plugins.jms.JMSContainerInvoker</proxy-factory>
+            <proxy-factory-config>
+                <JMSProviderAdapterJNDI>@JMS_PROVIDER_ADAPTER_JNDI@</JMSProviderAdapterJNDI>
+                <ServerSessionPoolFactoryJNDI>StdJMSPool</ServerSessionPoolFactoryJNDI>
+                <MinimumSize>1</MinimumSize>
+                <KeepAliveMillis>30000</KeepAliveMillis>
+                <MaximumSize>1</MaximumSize>
+                <MaxMessages>1</MaxMessages>
+                <MDBConfig>
+                    <ReconnectIntervalSec>10</ReconnectIntervalSec>
+                    <DLQConfig>
+                        <DestinationQueue>queue/DLQ</DestinationQueue>
+                        <MaxTimesRedelivered>10</MaxTimesRedelivered>
+                        <TimeToLive>0</TimeToLive>
+                    </DLQConfig>
+                </MDBConfig>
+            </proxy-factory-config>
+        </invoker-proxy-binding>
+    </invoker-proxy-bindings>
+</jboss>

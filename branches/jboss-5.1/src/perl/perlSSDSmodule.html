@@ -1,0 +1,1484 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+  Copyright 2009 MBARI
+	
+  Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 
+  (the "License"); you may not use this file except in compliance 
+  with the License. You may obtain a copy of the License at
+
+  http://www.gnu.org/copyleft/lesser.html
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>SSDS.pm</title>
+<link rev="made" href="mailto:" />
+</head>
+
+<body style="background-color: white">
+
+<p><a name="__index__"></a></p>
+<!-- INDEX BEGIN -->
+
+<ul>
+
+	<li><a href="#ssds">SSDS</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<ul>
+
+		<li><a href="#base_class_with_private_methods">Base class with private methods</a></li>
+		<ul>
+
+			<li><a href="#objectcreator">ObjectCreator</a></li>
+		</ul>
+
+		<li><a href="#value_and_dataaccessobject_classes">Value and DataAccessObject classes</a></li>
+		<ul>
+
+			<li><a href="#deployment">Deployment</a></li>
+			<li><a href="#deploymentaccess">DeploymentAccess</a></li>
+			<li><a href="#device">Device</a></li>
+			<li><a href="#deviceaccess">DeviceAccess</a></li>
+			<li><a href="#datafile">DataFile</a></li>
+			<li><a href="#datafileaccess">DataFileAccess</a></li>
+			<li><a href="#datastream">DataStream</a></li>
+			<li><a href="#datastreamaccess">DataStreamAccess</a></li>
+			<li><a href="#devicetype">DeviceType</a></li>
+			<li><a href="#devicetypeaccess">DeviceTypeAccess</a></li>
+			<li><a href="#recorddescription">RecordDescription</a></li>
+			<li><a href="#recorddescriptionaccess">RecordDescriptionAccess</a></li>
+			<li><a href="#recordvariable">RecordVariable</a></li>
+			<li><a href="#recordvariableaccess">RecordVariableAccess</a></li>
+			<li><a href="#standardvariable">StandardVariable</a></li>
+			<li><a href="#standardvariableaccess">StandardVariableAccess</a></li>
+			<li><a href="#standardunit">StandardUnit</a></li>
+			<li><a href="#standardunitaccess">StandardUnitAccess</a></li>
+			<li><a href="#processrun">ProcessRun</a></li>
+			<li><a href="#processrunaccess">ProcessRunAccess</a></li>
+		</ul>
+
+	</ul>
+
+	<li><a href="#examples">EXAMPLES</a></li>
+	<li><a href="#see_also">SEE ALSO</a></li>
+	<li><a href="#bugs">BUGS </a></li>
+	<li><a href="#author">AUTHOR</a></li>
+</ul>
+<!-- INDEX END -->
+
+<hr />
+<p>
+</p>
+<h1><a name="ssds">SSDS</a></h1>
+<p>SSDS.pm - Access SSDS Metadata</p>
+<p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<pre>
+        use SSDS;
+        
+        my $ssds = new SSDS();
+        my $ssds-&gt;ssdsServer(&quot;<a href="http://ssds.shore.mbari.org:8080/&quot">http://ssds.shore.mbari.org:8080/&quot</a>;);
+        
+        my $deplAccess = new SSDS::DeploymentAccess();
+        my @deplAttr = (${$depls}[0]-&gt;get_attribute_names());
+        my $depls = $deplAccess-&gt;findByName(&quot;CIMT Mooring Deployment&quot;);
+        foreach my $d (@{$depls}) {
+                foreach my $a (@deplAttr) {
+                        next unless $depl-&gt;$a;
+                        print &quot;  $a = &quot; . $depl-&gt;$a . &quot;\n&quot;;
+                }       
+        }
+                
+        Will print out:
+        
+          id = 2356
+          name = CIMT Mooring Deployment
+          startDate = Tue May 18 15:30:00 PDT 2004
+          role = platform</pre>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>The SSDS class provides a Perl interface to the SSDS metadata services
+provided by the SSDS Web Services.  Much of the Java interface to 
+the SSDS model and service objects is implemented here.  This module 
+was written to make it easy to write external data processing scripts 
+for SSDS data.</p>
+<p>The syntax used to derefernce the return values from the Access methods
+looks a little hairy, but it's really not that bad.  If the method is designed
+to return a single object (such as <a href="#item_findbypk"><code>findByPK()</code></a>) then the return value will 
+be an object which you may immediatley use to call its attributes.  
+If the method returns multiple objects (such as
+<a href="#item_listoutputs"><code>listOutputs()</code></a>) then the return value will be a reference to a list of
+objects, which you must dereference with a '$' or '@' before using it.  
+Plenty of examples are provided in the method descriptions of this document.</p>
+<p><code>$Id: perlSSDSmodule.html,v 1.12 2005/02/19 00:53:29 mccann Exp $</code></p>
+<p>The SSDS package contains these methods which are inherited by all the SSDS objects declared in the other packages.</p>
+<ul>
+<li></li>
+ssdsServer - set to base SSDS server, e.g. ``http://ssds.shore.mbari.org:8080/''
+<p></p>
+<li></li>
+baseServlet - set to the MetadataAccessServlet, e.g. 'access/MetadataAccessServlet?replyInHTML=false&amp;';
+<p></p>
+<li></li>
+baseUrl - the concatenation of ssdsServer and baseServlet
+<p></p>
+<li></li>
+delim - the Delimiter to use for field separation of HTTP responses from SSDS, e.g. '|';
+<p></p>
+<li></li>
+debug - set it to 1 for ERROR, 2 for WARN, 3 for INFO, 0 for no output (the default).
+It's a good idea to run with debug set to 2, then set it to 0 when put into production.
+<p></p></ul>
+<p>
+</p>
+<h2><a name="base_class_with_private_methods">Base class with private methods</a></h2>
+<p>
+</p>
+<h3><a name="objectcreator">ObjectCreator</a></h3>
+<p>ObjectCreator - Contains private support methods to create SSDS objects.  The methods below are inherited by all the SSDS objects declared in the child packages.</p>
+<dl>
+<dt><strong><a name="item_new"><strong>new()</strong></a></strong><br />
+</dt>
+<dt><strong><a name="item__buildhash"><strong>_buildHash()</strong></a></strong><br />
+</dt>
+<dd>
+<pre>
+
+Function to parse return of MetadataAccessServlet into a single (key, value) hash list.</pre>
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my ($returnedObject, $oHash) = $obj-&gt;_buildHash($obj-&gt;delim, $data);</pre>
+</dd>
+<dt><strong><a name="item__buildhashes"><strong>_buildHashes()</strong></a></strong><br />
+</dt>
+<dd>
+Function to parse return of MetadataAccessServlet into a list of (key, value) hashes list.
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my ($returnedObject, $oHashes) = $obj-&gt;_buildHashes($obj-&gt;delim, $data);</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item__createssdsobject"><strong>_createSSDSobject()</strong></a></strong><br />
+</dt>
+<dd>
+Build and return an SSDS object given a URL to a MetadataAccessServlet call.
+If a second argument is given then that SSDS object will be instantiated rather than the object returned from
+the MetadataAccessServlet.  If the types do not match a warning message will be printed.
+</dd>
+<dd>
+<p>Examples:</p>
+</dd>
+<dd>
+<pre>
+        # Request and return a Device object
+        my $url = $obj-&gt;baseUrl . &quot;className=DeviceTypeAccess&amp;methodName=findByPK&amp;param1Type=Long&amp;param1Value=&quot; . $pk;  
+        return $obj-&gt;_createSSDSobject($url);
+        
+        # Request a DataStream and return a DataFile object
+        my $url = $obj-&gt;baseUrl . &quot;className=DataStreamAccess&amp;methodName=findByPK&amp;param1Type=Long&amp;param1Value=&quot; . $pk;  
+        return $obj-&gt;_createSSDSobject($url, 'DataFile');</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item__createssdsobjects"><strong>_createSSDSobjects()</strong></a></strong><br />
+</dt>
+<dd>
+Build and return a list of SSDS objects given a URL to a MetadataAccessServlet call.
+If a second argument is given then that SSDS object will be instantiated rather than the object returned from
+the MetadataAccessServlet.  If the types do not match a warning message will be printed.
+</dd>
+<dd>
+<p>Examples:</p>
+</dd>
+<dd>
+<pre>
+        # Request and return a Deployment 
+        my $url = $obj-&gt;baseUrl . &quot;className=Deployment&amp;methodName=listChildDeployments&amp;findBy=PK&amp;findByType=String&amp;findByValue=&quot; . $obj-&gt;id;
+        return $obj-&gt;_createSSDSobjects($url);
+        
+        # Request a DataStream and return a DataFile
+        my $url = $obj-&gt;baseUrl . &quot;className=Deployment&amp;methodName=listOutputs&amp;findBy=PK&amp;findByType=String&amp;findByValue=&quot; . $obj-&gt;id;
+        return $obj-&gt;_createSSDSobjects($url, 'DataFile');</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item__execssdsmethod"><strong>_execSSDSmethod()</strong></a></strong><br />
+</dt>
+<dd>
+Execute an SSDS access method that does not return an object.  Typically this is 
+used for calling insret()s, update()s, and delete()s.  Returns 1 if successful, 0
+if a Fault is detected or any data is returned from the call.
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $url = $obj-&gt;baseUrl . &quot;className=DeviceTypeAccess&amp;methodName=insert&amp;param1Type=DeviceType&amp;param1Value=DeviceType&quot;;
+        $url .= $obj-&gt;delim() . &quot;name=&quot; . $dt-&gt;name() if $dt-&gt;name();
+        $url .= $obj-&gt;delim() . &quot;description=&quot; . $dt-&gt;description() if $dt-&gt;description();
+        $url .= $obj-&gt;delim() . &quot;defaultDeploymentRole=&quot; . $dt-&gt;defaultDeploymentRole() if $dt-&gt;defaultDeploymentRole(); 
+        $url .= $obj-&gt;delim() . &quot;displayInDeviceTypesPicklist=&quot; . $dt-&gt;displayInDeviceTypesPicklist() if $dt-&gt;displayInDeviceTypesPicklist();
+        return $obj-&gt;_execSSDSmethod($url);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h2><a name="value_and_dataaccessobject_classes">Value and DataAccessObject classes</a></h2>
+<p>
+</p>
+<h3><a name="deployment">Deployment</a></h3>
+<p>Deployment - An SSDS Deployment object</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::Deployment object
+</dd>
+<dd>
+<p>The following methods may be used to get or set any of the attributes of a 
+Deployment object (each attribute is both a setter and getter):</p>
+</dd>
+<dd>
+<pre>
+        id name description startDate endDate role nominalLatitude nominalLongitude 
+        nominalDepth xOffset yOffset zOffset x3DOrientationText</pre>
+</dd>
+<dd>
+<p>Note: the <code>get_attribute_names()</code> method will return this list of attributes</p>
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $depl = $deplAccess-&gt;findByPK(4322);
+        print &quot;NominalLongitude = &quot; . $depl-&gt;nominalLongitude . &quot;\n&quot;;
+        $depl-&gt;nominalDepth(20.0);      # Set nominal depth of Deployment to 20 m</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_childdeployments"><strong>childDeployments()</strong></a></strong><br />
+</dt>
+<dd>
+return list of child deployments
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $deplAccess = new SSDS::DeploymentAccess();
+        my $depl = $deplAccess-&gt;findByPK(4309);
+        my @deplAttr = ($depl-&gt;get_attribute_names());
+        my $childDepls = $depl-&gt;childDeployments();
+        foreach my $cd (@{$childDepls}) {
+                foreach my $a (@deplAttr) {
+                        next unless $cd-&gt;$a;
+                        print &quot;  $a = &quot; . $cd-&gt;$a . &quot;\n&quot;;
+                }
+                print&quot;\n&quot;;
+        }</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_getdevice"><strong>getDevice()</strong></a></strong><br />
+</dt>
+<dd>
+return the Device object for this Deployment
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dev = $id-&gt;getDevice($id-&gt;id());
+        print &quot;Instrument Deployment &quot; . $id-&gt;name() . &quot;\n&quot;;
+        print &quot;  of Device   &quot; . $dev-&gt;name() . &quot;\n&quot;;</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_listoutputs"><strong>listOutputs()</strong></a></strong><br />
+</dt>
+<dd>
+return list of output DataStreams or DataFiles
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        $outputs = $depl-&gt;listOutputs();
+        @dfAttr = ${$outputs}[0]-&gt;get_attribute_names() if $outputs;
+        foreach my $o (@{$outputs}) {
+                foreach my $a (@dfAttr) {
+                        next unless $o-&gt;$a;
+                        print &quot;  $a = &quot; . $o-&gt;$a . &quot;\n&quot;;
+                }
+                print&quot;\n&quot;;
+        }</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_getparentdeployment"><strong>getParentDeployment()</strong></a></strong><br />
+</dt>
+<dd>
+Return parent Deployment
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $depl = $deplAccess-&gt;findByPK(4322);
+        my $parentDepl = $depl-&gt;getParentDeployment();
+        foreach my $a (@deplAttr) {
+                next unless $parentDepl-&gt;$a;
+                print &quot;  $a = &quot; . $parentDepl-&gt;$a . &quot;\n&quot;;
+        }</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_getstartesecs"><strong>getStartEsecs()</strong></a></strong><br />
+</dt>
+<dd>
+Return the Unix Epoch seconds of the start time for this Deployment
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        print &quot;    startDate = &quot; . $depl-&gt;startDate() . &quot;\n&quot;;
+        print &quot;    start epoch seconds = &quot; . $depl-&gt;getStartEsecs() . &quot;\n&quot;;</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_getendesecs"><strong>getEndEsecs()</strong></a></strong><br />
+</dt>
+<dd>
+Return the Unix Epoch seconds of the end time for this Deployment
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        print &quot;    endDate = &quot; . $depl-&gt;endDate() . &quot;\n&quot; if $depl-&gt;endDate();
+        print &quot;    end epoch seconds = &quot; . $depl-&gt;getEndEsecs() . &quot;\n&quot; if $depl-&gt;getEndEsecs();</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="deploymentaccess">DeploymentAccess</a></h3>
+<p>DeploymentAccess - Contains methods to query for and get Deployment objects</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::DeploymentAccess object
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $deplAccess = new SSDS::DeploymentAccess();
+        $depl = $deplAccess-&gt;findByPK(4322);</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_findbypk"><strong>findByPK(pk)</strong></a></strong><br />
+</dt>
+<dd>
+return the Deployment that has ID = pk.
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $deplAccess = new SSDS::DeploymentAccess();
+        my $depl = $deplAccess-&gt;findByPK(4322);
+        print &quot;NominalLongitude = &quot; . $depl-&gt;nominalLongitude . &quot;\n&quot;;</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_findbyname"><strong>findByName(name)</strong></a></strong><br />
+</dt>
+<dd>
+return a list of Deployments that match the name.
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $deplAccess = new SSDS::DeploymentAccess();
+        my @depl = $deplAccess-&gt;findByName(&quot;CIMT Mooring Deployment&quot;);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="device">Device</a></h3>
+<p>Device - An SSDS Device object</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::Device object
+</dd>
+<dd>
+<p>The following methods may be used to get or set any of the attributes of a 
+Deployment object (each attribute is both a setter and getter):</p>
+</dd>
+<dd>
+<pre>
+   id name description mfgName mfgModel mfgSerialNumber preferredDeploymentRole</pre>
+</dd>
+<dd>
+<p>Note: the <code>get_attribute_names()</code> method will return this list of attributes</p>
+</dd>
+<dd>
+<p>Example:
+</p>
+</dd>
+<dd>
+<pre>
+
+        my $devAccess = new SSDS::DeviceAccess();
+        $dev = $devAccess-&gt;findByPK(1319);
+        print &quot;mfgModel = &quot; . $dev-&gt;mfgModel . &quot;\n&quot;;
+        $dev-&gt;mfgSerialNumber(1234);    # Set manufacturer serial number to 1234</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_getdevicetype"><strong>getDeviceType()</strong></a></strong><br />
+</dt>
+<dd>
+DeviceType is a special attribute.  It comes from a database lookup table via a DeviceType object.
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $devAccess = new SSDS::DeviceAccess();
+        $dev = $devAccess-&gt;findByPK(1319);
+        print &quot;DeviceType name = &quot; . $dev-&gt;getDeviceType()-&gt;name() . &quot;\n&quot;</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="deviceaccess">DeviceAccess</a></h3>
+<p>DeviceAccess - Contains methods to query for and get Device objects</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::DeviceAccess object
+</dd>
+<dd>
+<p>Example:
+</p>
+</dd>
+<dd>
+<pre>
+
+        my $devAccess = new SSDS::DeviceAccess();
+        $dev = $devAccess-&gt;findByPK(1319);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByPK(pk)</strong></strong><br />
+</dt>
+<dd>
+return the Device with PK = pk
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $devAccess = new SSDS::DeviceAccess();
+        $dev = $devAccess-&gt;findByPK(1319);</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_findbylikename"><strong>findByLikeName(string)</strong></a></strong><br />
+</dt>
+<dd>
+return a list of Deployments where string matches any part of the Deployment name.
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        $devs = $devAccess-&gt;findByLikeName(&quot;CTD&quot;);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="datafile">DataFile</a></h3>
+<p>DataFile - An SSDS DataFile object</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::DataFile object
+</dd>
+<dd>
+<p>The following methods may be used to get or set any of the attributes of a 
+Deployment object (each attribute is both a setter and getter):</p>
+</dd>
+<dd>
+<pre>
+    id name description startDate endDate original url contentLength mimeType
+    webAccessible dodsAccessible fileName</pre>
+</dd>
+<dd>
+<p>Note: the <code>get_attribute_names()</code> method will return this list of attributes</p>
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dcAccess = new SSDS::DataFileAccess();
+        my $dc = $dcAccess-&gt;findByPK(5777);</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_getrecorddescription"><strong>getRecordDescription()</strong></a></strong><br />
+</dt>
+<dd>
+Return the RecordDescription object for this DataFile
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $rd = $dc-&gt;getRecordDescription();
+        foreach my $a ($rd-&gt;get_attribute_names()) {
+                next unless $rd-&gt;$a;
+                print &quot;  $a = &quot; . $rd-&gt;$a . &quot;\n&quot;;
+        }</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="datafileaccess">DataFileAccess</a></h3>
+<p>DataFileAccess - Contains methods to query for and get DataFile objects</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::DataFileAccess object
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dcAccess = new SSDS::DataFileAccess();
+        my $dc = $dcAccess-&gt;findByPK(5777);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByPK(pk)</strong></strong><br />
+</dt>
+<dd>
+return the DataFile with PK = pk
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dcAccess = new SSDS::DataFileAccess();
+        my $dc = $dcAccess-&gt;findByPK(5777);</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_findbyurl"><strong>findByUrl(string)</strong></a></strong><br />
+</dt>
+<dd>
+Return a list of DataFiles where the url is string.
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dfAccess = new SSDS::DataFileAccess();
+        my $df = $dfAccess-&gt;findByUrl(&quot;<a href="http://ssds-test.shore.mbari.org/ssds/rawpackets/1313_0_1_1327&quot">http://ssds-test.shore.mbari.org/ssds/rawpackets/1313_0_1_1327&quot</a>;);
+        print &quot;isWebAccessible = &quot; . ${$df}[0]-&gt;webAccessible() . &quot;\n&quot;;</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_insert"><strong>insert($df)</strong></a></strong><br />
+</dt>
+<dd>
+Insert into the database the DataFile $df
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="datastream">DataStream</a></h3>
+<p>DataStream - An SSDS DataStream object</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::DataStream object
+</dd>
+<dd>
+<p>The following methods may be used to get or set any of the attributes of a 
+Deployment object (each attribute is both a setter and getter):</p>
+</dd>
+<dd>
+<pre>
+    id name description startDate endDate original url contentLength mimeType
+    webAccessible</pre>
+</dd>
+<dd>
+<p>Note: the <code>get_attribute_names()</code> method will return this list of attributes</p>
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dcAccess = new SSDS::DataStreamAccess();
+        my $dc = $dcAccess-&gt;findByPK(5777);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>getRecordDescription()</strong></strong><br />
+</dt>
+<dd>
+Return the RecordDescription object for this DataStream
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $rd = $dc-&gt;getRecordDescription();
+        foreach my $a ($rd-&gt;get_attribute_names()) {
+                next unless $rd-&gt;$a;
+                print &quot;  $a = &quot; . $rd-&gt;$a . &quot;\n&quot;;
+        }</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="datastreamaccess">DataStreamAccess</a></h3>
+<p>DataStreamAccess - Contains methods to query for and get DataStream objects</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::DataStreamAccess object
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dcAccess = new SSDS::DataStreamAccess();
+        my $dc = $dcAccess-&gt;findByPK(5777);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByPK(pk)</strong></strong><br />
+</dt>
+<dd>
+return the DataStream with PK = pk
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dcAccess = new SSDS::DataStreamAccess();
+        my $dc = $dcAccess-&gt;findByPK(5777);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByUrl(string)</strong></strong><br />
+</dt>
+<dd>
+return a list of DataStreams where the url is string.
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dfAccess = new SSDS::DataStreamAccess();
+        my $df = $dfAccess-&gt;findByUrl(&quot;<a href="http://ssds-test.shore.mbari.org/ssds/rawpackets/1313_0_1_1327&quot">http://ssds-test.shore.mbari.org/ssds/rawpackets/1313_0_1_1327&quot</a>;);
+        print &quot;isWebAccessible = &quot; . ${$df}[0]-&gt;webAccessible() . &quot;\n&quot;;</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="devicetype">DeviceType</a></h3>
+<p>DeviceType - An SSDS DeviceType object</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::DeviceType object
+</dd>
+<dd>
+<p>The following methods may be used to get or set any of the attributes of a 
+Deployment object (each attribute is both a setter and getter):</p>
+</dd>
+<dd>
+<pre>
+    id name description defaultDeploymentRole displayInDeviceTypesPicklist</pre>
+</dd>
+<dd>
+<p>Note: the <code>get_attribute_names()</code> method will return this list of attributes</p>
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dcAccess = new SSDS::DeviceTypeAccess();
+        my $dc = $dcAccess-&gt;findByPK(5777);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="devicetypeaccess">DeviceTypeAccess</a></h3>
+<p>DeviceTypeAccess - Contains methods to query for and get DeviceType objects</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::DeviceTypeAccess object
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dtAccess = new SSDS::DeviceTypeAccess();
+        my $dt = $dtAccess-&gt;findByPK(102);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByPK(pk)</strong></strong><br />
+</dt>
+<dd>
+return the DeviceType with PK = pk
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dtAccess = new SSDS::DeviceTypeAccess();
+        my $dt = $dtAccess-&gt;findByPK(110);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByName(string)</strong></strong><br />
+</dt>
+<dd>
+return the DeviceType with name = string
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dtAccess = new SSDS::DeviceTypeAccess();
+        my $dt = $dtAccess-&gt;findByName(&quot;CTD&quot;);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>insert($dt)</strong></strong><br />
+</dt>
+<dd>
+Insert into the database the DeviceType $dt
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dtAccess = new SSDS::DeviceTypeAccess();
+        my $dt = new SSDS::DeviceType();
+        $dt-&gt;name(&quot;IMCTD&quot;);
+        $dt-&gt;description(&quot;Inductive Modem CTD&quot;);
+        $dt-&gt;defaultDeploymentRole(&quot;instrument&quot;);
+        $dt-&gt;displayInDeviceTypesPicklist(&quot;true&quot;);
+        $dtAccess-&gt;insert($dt);</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_delete"><strong>delete($dt)</strong></a></strong><br />
+</dt>
+<dd>
+Delete DeviceType $dt from the database
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $dtAccess = new SSDS::DeviceTypeAccess();
+        my $dt = $dtAccess-&gt;findByName(&quot;IMCTD&quot;);
+        $dtAccess-&gt;delete($dt);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="recorddescription">RecordDescription</a></h3>
+<p>RecordDescription - An SSDS RecordDescription object</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::RecordDescription object
+</dd>
+<dd>
+<p>The following methods may be used to get or set any of the attributes of a 
+Deployment object (each attribute is both a setter and getter):</p>
+</dd>
+<dd>
+<pre>
+    id recordType bufferStyle bufferLengthType bufferItemSeparator recordTerminator endian parseable</pre>
+</dd>
+<dd>
+<p>Note: the <code>get_attribute_names()</code> method will return this list of attributes</p>
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $rdAccess = new SSDS::RecordDescriptionAccess();
+        my $rd = $rdAccess-&gt;findByPK(101);</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_listrecordvariables"><strong>listRecordVariables()</strong></a></strong><br />
+</dt>
+<dd>
+Return list of RecordVariables from this RecordDescription
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        $rvs = $rd-&gt;listRecordVariables();
+        @rvAttr = ${$rvs}[0]-&gt;get_attribute_names() if $outputs;
+        foreach my $o (@{$rvs}) {
+                foreach my $a (@rvAttr) {
+                        next unless $o-&gt;$a;
+                        print &quot;  $a = &quot; . $o-&gt;$a . &quot;\n&quot;;
+                }
+                print&quot;\n&quot;;
+        }</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="recorddescriptionaccess">RecordDescriptionAccess</a></h3>
+<p>RecordDescriptionAccess - Contains methods to query for and get RecordDescription objects</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::RecordDescriptionAccess object
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $rdAccess = new SSDS::RecordDescriptionAccess();
+        my $rd = $rdAccess-&gt;findByPK(102);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByPK(pk)</strong></strong><br />
+</dt>
+<dd>
+return the RecordDescription with PK = pk
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $rdAccess = new SSDS::RecordDescriptionAccess();
+        my $rd = $rdAccess-&gt;findByPK(110);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="recordvariable">RecordVariable</a></h3>
+<p>RecordVariable - An SSDS RecordVariable object</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::RecordVariable object
+</dd>
+<dd>
+<p>The following methods may be used to get or set any of the attributes of a 
+Deployment object (each attribute is both a setter and getter):</p>
+</dd>
+<dd>
+<pre>
+    id name longName description format units columnIndex validMin validMax missingValue parseRegExp</pre>
+</dd>
+<dd>
+<p>Note: the <code>get_attribute_names()</code> method will return this list of attributes</p>
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $rvAccess = new SSDS::RecordVariableAccess();
+        my $rv = $rvAccess-&gt;findByPK(101);</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_getstandardvariable"><strong>getStandardVariable()</strong></a></strong><br />
+</dt>
+<dd>
+Return the StandardVariable object for this RecordVariable
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $standard_name = $rv-&gt;getStandardVariable-&gt;name();</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="recordvariableaccess">RecordVariableAccess</a></h3>
+<p>RecordVariableAccess - Contains methods to query for and get RecordVariable objects</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::RecordVariableAccess object
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $rvAccess = new SSDS::RecordVariableAccess();
+        my $rv = $rvAccess-&gt;findByPK(102);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByPK(pk)</strong></strong><br />
+</dt>
+<dd>
+return the RecordVariable with PK = pk
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $rvAccess = new SSDS::RecordVariableAccess();
+        my $rv = $rvAccess-&gt;findByPK(110);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="standardvariable">StandardVariable</a></h3>
+<p>StandardVariable - An SSDS StandardVariable object</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::StandardVariable object
+</dd>
+<dd>
+<p>The following methods may be used to get or set any of the attributes of a 
+Deployment object (each attribute is both a setter and getter):</p>
+</dd>
+<dd>
+<pre>
+    id name referenceScale displayInPickList description</pre>
+</dd>
+<dd>
+<p>Note: the <code>get_attribute_names()</code> method will return this list of attributes</p>
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $svAccess = new SSDS::StandardVariableAccess();
+        my $sv = $svAccess-&gt;findByPK(101);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="standardvariableaccess">StandardVariableAccess</a></h3>
+<p>StandardVariableAccess - Contains methods to query for and get StandardVariable objects</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::StandardVariableAccess object
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $svAccess = new SSDS::StandardVariableAccess();
+        my $sv = $svAccess-&gt;findByPK(102);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByPK(pk)</strong></strong><br />
+</dt>
+<dd>
+return the StandardVariable with PK = pk
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $svAccess = new SSDS::StandardVariableAccess();
+        my $sv = $svAccess-&gt;findByPK(110);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="standardunit">StandardUnit</a></h3>
+<p>StandardUnit - An SSDS StandardUnit object</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::StandardUnit object
+</dd>
+<dd>
+<p>The following methods may be used to get or set any of the attributes of a 
+Deployment object (each attribute is both a setter and getter):</p>
+</dd>
+<dd>
+<pre>
+    id name longName symbol displayInPickList Description</pre>
+</dd>
+<dd>
+<p>Note: the <code>get_attribute_names()</code> method will return this list of attributes</p>
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $suAccess = new SSDS::StandardUnitAccess();
+        my $su = $suAccess-&gt;findByPK(101);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="standardunitaccess">StandardUnitAccess</a></h3>
+<p>StandardUnitAccess - Contains methods to query for and get StandardUnit objects</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::StandardUnitAccess object
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $suAccess = new SSDS::StandardUnitAccess();
+        my $su = $suAccess-&gt;findByPK(102);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByPK(pk)</strong></strong><br />
+</dt>
+<dd>
+return the StandardUnit with PK = pk
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $suAccess = new SSDS::StandardUnitAccess();
+        my $su = $suAccess-&gt;findByPK(110);</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="processrun">ProcessRun</a></h3>
+<p>ProcessRun - An SSDS ProcessRun object</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::ProcessRun object
+</dd>
+<dd>
+<p>The following methods may be used to get or set any of the attributes of a 
+Deployment object (each attribute is both a setter and getter):</p>
+</dd>
+<dd>
+<pre>
+    id name description startDate endDate hostName</pre>
+</dd>
+<dd>
+<p>Note: the <code>get_attribute_names()</code> method will return this list of attributes</p>
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $prAccess = new SSDS::ProcessRunAccess();
+        my $pr = $prAccess-&gt;findByPK(4389);</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_addinput"><strong>addInput()</strong></a></strong><br />
+</dt>
+<dd>
+Add an existing Input DataStream or DataFile to an existing ProcessRun.  
+Both objects must already exist in the database for this to work as it simply associates IDs.
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        # Get a DataStream and add as input
+        $dcAccess = new SSDS::DataStreamAccess();
+        $dc = $dcAccess-&gt;findByPK(4283);
+        $p-&gt;addInput($dc);</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_addoutput"><strong>addOutput()</strong></a></strong><br />
+</dt>
+<dd>
+Add an Output DataStream or DataFile to a ProcessRun.
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        # Get a DataStream and add as input
+        $dcAccess = new SSDS::DataStreamAccess();
+        $dc = $dcAccess-&gt;findByPK(4283);
+        $p-&gt;addOutput($dc);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>listOutputs()</strong></strong><br />
+</dt>
+<dd>
+Return list of output DataStreams or DataFiles from this ProcessRun
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        $outputs = $pr-&gt;listOutputs();
+        @dfAttr = ${$outputs}[0]-&gt;get_attribute_names() if $outputs;
+        foreach my $o (@{$outputs}) {
+                foreach my $a (@dfAttr) {
+                        next unless $o-&gt;$a;
+                        print &quot;  $a = &quot; . $o-&gt;$a . &quot;\n&quot;;
+                }
+                print&quot;\n&quot;;
+        }</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_listinputs"><strong>listInputs()</strong></a></strong><br />
+</dt>
+<dd>
+Return list of output DataStreams or DataFiles from this ProcessRun
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        $inputs = $pr-&gt;listInputs();
+        @dfAttr = ${$Inputs}[0]-&gt;get_attribute_names() if $inputs;
+        foreach my $o (@{$inputs}) {
+                foreach my $a (@dfAttr) {
+                        next unless $o-&gt;$a;
+                        print &quot;  $a = &quot; . $o-&gt;$a . &quot;\n&quot;;
+                }
+                print&quot;\n&quot;;
+        }</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h3><a name="processrunaccess">ProcessRunAccess</a></h3>
+<p>ProcessRunAccess - Contains methods to query for and get ProcessRun objects</p>
+<dl>
+<dt><strong><strong>new()</strong></strong><br />
+</dt>
+<dd>
+Instantiate an SSDS::ProcessRunAccess object
+</dd>
+<dd>
+<p>Example:</p>
+</dd>
+<dd>
+<pre>
+        my $prAccess = new SSDS::ProcessRunAccess();
+        my $pr = $prAccess-&gt;findByPK(102);</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByPK(pk)</strong></strong><br />
+</dt>
+<dd>
+return the ProcessRun with PK = pk
+
+
+</dd>
+<dd>
+<p>Example:
+
+</p>
+</dd>
+<dd>
+<pre>
+        my $prAccess = new SSDS::ProcessRunAccess();
+        my $pr = $prAccess-&gt;findByPK(110);
+
+</pre>
+</dd>
+<p></p>
+<dt><strong><strong>findByName(string)</strong></strong><br />
+</dt>
+<dd>
+return the ProcessRun with name  = string
+
+
+</dd>
+<dd>
+<p>Example:
+
+</p>
+</dd>
+<dd>
+<pre>
+        my $prAccess = new SSDS::ProcessRunAccess();
+        my $pr = $prAccess-&gt;findByName(&quot;Test ProcessRun&quot;);
+
+</pre>
+</dd>
+<p></p>
+<dt><strong><strong>insert($pr)</strong></strong><br />
+</dt>
+<dd>
+Insert into the database the ProcessRun $pr
+
+
+</dd>
+<dd>
+<p>Example:
+
+</p>
+</dd>
+<dd>
+<pre>
+        my $prAccess = new SSDS::ProcessRunAccess();
+        my $pr = new SSDS::ProcessRun();
+        $pr-&gt;
+        $prAccess-&gt;insert($pr);
+
+</pre>
+</dd>
+<p></p>
+<dt><strong><strong>delete($pr)</strong></strong><br />
+</dt>
+<dd>
+Delete ProcessRun $pr from the database
+
+
+</dd>
+<dd>
+<p>Example:
+
+</p>
+</dd>
+<dd>
+<pre>
+        my $prAccess = new SSDS::ProcessRunAccess();
+        my $pr = $prAccess-&gt;findByPK(1);
+        $prAccess-&gt;delete($pr);
+
+</pre>
+</dd>
+<p></p>
+<dt><strong><a name="item_update"><strong>update($pr)</strong></a></strong><br />
+</dt>
+<dd>
+Update ProcessRun $pr in database
+
+
+</dd>
+<dd>
+<p>Example:
+
+</p>
+</dd>
+<dd>
+<pre>
+        my $prAccess = new SSDS::ProcessRunAccess();
+        my $pr = $prAccess-&gt;findByPK(1);
+        $prAccess-&gt;update($pr);
+
+</pre>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<hr />
+<h1><a name="examples">EXAMPLES</a></h1>
+<pre>
+ #
+ # Get top level mooring deployment and work down from there to get
+ # URLs of output DataStreams
+ #
+ my $deplAccess = new SSDS::DeploymentAccess();
+ my $devAccess = new SSDS::DeviceAccess();
+ my $moorDepl = $deplAccess-&gt;findByName(&quot;CIMT Mooring Deployment&quot;);
+ foreach my $md ( @{$moorDepl} ) {      
+        my $canDepls = $md-&gt;childDeployments();
+        foreach my $cd ( @{$canDepls} ) {
+                my $instDepls = $cd-&gt;childDeployments();
+                foreach my $id (@{$instDepls}) {
+                        print &quot;Instrument Deployment &quot; . $id-&gt;name() . &quot;\n&quot;;
+                        my $dev = $id-&gt;getDevice($id-&gt;id());
+                        print &quot;of Device &quot; . $dev-&gt;name() . &quot;\n&quot;;
+                        my $outputs = $id-&gt;listOutputs();
+                        foreach my $o ( @{$outputs} ) {
+                                my $name = $o-&gt;name();
+                                my $url = $o-&gt;url();
+                                print &quot;  Output file name = $name\n&quot;;
+                                print &quot;  url = $url\n&quot;;
+                        }
+                        print &quot;\n&quot;;
+                }
+        }
+ } 
+ 
+ #
+ # Get the variable delimiter for the output from an Instrument Deploymnet
+ #
+ $delim = ${$id-&gt;listOutputs}[0]-&gt;getRecordDescription-&gt;bufferItemSeparator();
+ 
+ #
+ # Get parsing details from the SSDS metadata
+ # (ds: DataStream, rd: RecordRescription, rv:RecordVariable)
+ #
+ my $ds = ${$id-&gt;listOutputs}[0];
+ print &quot;Input DataStream name: &quot; . $ds-&gt;name() . &quot;\n&quot; if $debug;
+ foreach my $a ($ds-&gt;get_attribute_names()) {
+        next unless $ds-&gt;$a;
+        print &quot;  $a = &quot; . $ds-&gt;$a . &quot;\n&quot; if $debug;
+ }
+
+</pre>
+<pre>
+ my $rd = $ds-&gt;getRecordDescription();
+ print &quot;RecordDescription:\n&quot; if $debug;
+ foreach my $a ($rd-&gt;get_attribute_names()) {
+        next unless $rd-&gt;$a;
+        print &quot;  $a = &quot; . $rd-&gt;$a . &quot;\n&quot; if $debug;
+ }
+
+</pre>
+<pre>
+ # 
+ # Read Record variable attributes into named arrays for use later
+ #
+ my $rrvs = $rd-&gt;listRecordVariables();
+ foreach my $a (${$rrvs}[0]-&gt;get_attribute_names()) {
+        @{$a} = ();
+ }
+ my $i = 0;
+ foreach my $rv ( @{$rrvs} ) {
+        print &quot;RecordVariable name: &quot; . $rv-&gt;name() . &quot;\n&quot; if $debug;
+        foreach my $a ($rv-&gt;get_attribute_names()) {
+                next unless  $rv-&gt;$a;
+                print &quot;  $a = &quot; . $rv-&gt;$a . &quot;\n&quot; if $debug;
+                $$a[$i] = $rv-&gt;$a;    # Save variable Attributes in named arrays
+        }
+        $i++;
+ }
+
+</pre>
+<p>
+</p>
+<hr />
+<h1><a name="see_also">SEE ALSO</a></h1>
+<p>Java classes in the moos.ssds.model and moos.ssds.services packages of MBARI's SSDS project.  
+Diagrams of the object model and the database are in the poster at 
+<a href="http://www.mbari.org/staff/mccann/papers/AGUPoster2004_AUV_data_management.pdf">http://www.mbari.org/staff/mccann/papers/AGUPoster2004_AUV_data_management.pdf</a>.
+
+</p>
+<p>The Perl package ObjectTemplate (This package is required for SSDS.pm.  for ActiveState Perl's ppm: <code>install Class-ObjectTemplate</code>.)
+The version used as of this writing is 0.7.
+
+</p>
+<p>
+</p>
+<hr />
+<h1><a name="bugs">BUGS</a></h1>
+<p>Many of the SSDS object attributes are null and these values are simply not set when
+SSDS.pm materializes the objects.  This causes many of these type of warnings from the
+ObjectTemplate module:
+
+</p>
+<pre>
+   Use of uninitialized value in numeric eq (==) at (eval 3) line 14.
+
+</pre>
+<p>If you like using the -w option on the perl command then you may want to add this line
+to your installation of ObjectTemplate.pm:
+
+</p>
+<pre>
+    no warnings 'uninitialized';
+
+</pre>
+<p>Not all characters work well as delimiters.  Ones that have been tested include '|' (the default)
+and '~'.
+
+</p>
+<p>
+</p>
+<hr />
+<h1><a name="author">AUTHOR</a></h1>
+<p>Mike McCann <em>&lt;<a href="mailto:mccann@mbari.org">mccann@mbari.org</a>&gt;</em>
+
+</p>
+<p>This module was developed as part of the MBARI 2003-2005 Shore Side Data System project.
+
+</p>
+<p><a href="http://www.mbari.org/ssds">http://www.mbari.org/ssds</a>
+
+</p>
+
+</body>
+
+</html>
