@@ -26,6 +26,11 @@ public class ClassPathHacker {
 		URLClassLoader sysloader = (URLClassLoader) ClassLoader
 				.getSystemClassLoader();
 		Class sysclass = URLClassLoader.class;
+		System.out.println("Classpath before hack: ");
+		URL[] classpathUrls = sysloader.getURLs();
+		for (int i = 0; i < classpathUrls.length; i++) {
+			System.out.println(i + ". " + classpathUrls[i]);
+		}
 
 		try {
 			Method method = sysclass.getDeclaredMethod("addURL", parameters);
@@ -37,6 +42,10 @@ public class ClassPathHacker {
 					"Error, could not add URL to system classloader");
 		}// end try catch
 
+		System.out.println("Classpath after hack: ");
+		classpathUrls = sysloader.getURLs();
+		for (int i = 0; i < classpathUrls.length; i++) {
+			System.out.println(i + ". " + classpathUrls[i]);
+		}
 	}// end method
-
 }// end class

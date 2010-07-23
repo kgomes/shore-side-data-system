@@ -19,14 +19,13 @@ import java.io.Serializable;
 import java.util.Properties;
 
 import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSession;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -38,7 +37,7 @@ import org.mbari.siam.distributed.DevicePacket;
  * <p>
  * <code>PublisherComponent</code> provides an easy to use class that handles
  * JMS publish-subscribe messaging. A <code>PublisherComponent</code> can
- * publish to multiple topics. The goal of this is to provide messsaging without
+ * publish to multiple topics. The goal of this is to provide messaging without
  * requiring the developer to use JMS api's
  * </p>
  * 
@@ -47,6 +46,17 @@ import org.mbari.siam.distributed.DevicePacket;
  */
 
 public class PublisherComponent {
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(PublisherComponent.class);
+
+	/**
+	 * A properties file used for reading in jms information for the publisher
+	 * to utilize when working
+	 */
+	private Properties jmsProps = new Properties();
 
 	/**
 	 * This is the name of the topic that will used to publish packets to
@@ -59,70 +69,30 @@ public class PublisherComponent {
 	private String defaultTopicname;
 
 	/**
-	 * This is the JNDI Context that will be used (Naming Service) to locate the
-	 * appropriate remote classes to use for publishing messages.
-	 */
-	private Context jndiContext;
-
-	/**
 	 * This is the hostname where the naming service is located
 	 */
 	private String jndiHostName = null;
 
 	/**
-	 * This is the JMS TopicConnectionFactory that is used to get a topic that
-	 * can then be used to publish messages to
+	 * This is the connection that the messages will be published to
 	 */
-	private TopicConnectionFactory topicConnectionFactory;
-
-	/**
-	 * This is the connection to the topic that the messages will be published
-	 * to
-	 */
-	private TopicConnection topicConnection;
-
-	/**
-	 * This is the JMS topic that will be used for publishing
-	 */
-	private Topic topic;
+	private Connection connection;
 
 	/**
 	 * This is a session that the publishing of messages will be run in.
 	 */
-	private TopicSession topicSession;
+	private Session session;
 
 	/**
-	 * This is the topic publisher that is actually used to send messages to the
-	 * topic
+	 * This is the JMS MessageProducer for publishing
 	 */
-	private TopicPublisher topicPublisher;
-
-	/**
-	 * This is a JMS message that is used to send to the topic
-	 */
-	private ObjectMessage message;
-
-	/**
-	 * This is a BytesMessage that can be used to publish an array of bytes.
-	 */
-	private BytesMessage bytesMessage;
+	private MessageProducer messageProducer;
 
 	/**
 	 * This is a boolean to track if this PublisherComponent is currently
 	 * connected to a topic session
 	 */
 	private boolean connected = false;
-
-	/**
-	 * A properties file used for reading in jms information for the publisher
-	 * to utilize when working
-	 */
-	private Properties jmsProps = new Properties();
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(PublisherComponent.class);
 
 	/**
 	 * This is a constructor that starts a connection to a JMS server
@@ -188,13 +158,66 @@ public class PublisherComponent {
 	} // End default constructor
 
 	/**
-	 * This method starts the connection to the JMS server. Can also be used to
-	 * restart a lost connection.
+	 * This function specifies the topic name to publish to. Calling this method
+	 * will stop and restart the publisher with a new topic name.
+	 * 
+	 * @param topicName
+	 *            The name of the JMS topic name to publish to
+	 */
+	public void setTopicname(String topicName) {
+		// Set the topic name
+		logger.debug("New topic name will be assigned to " + topicName);
+		if ((topicName == null) || (topicName.compareTo("") == 0)) {
+			logger.debug("Topic name was null or empty so "
+					+ "using default topicname of " + defaultTopicname);
+			this.topicname = defaultTopicname;
+		} else {
+			this.topicname = topicName;
+		}
+
+		// Restart the connection
+		restart();
+
+		// If we are not connected, print this out to the logger
+		if (!connected) {
+			logger.error("Could not setTopicName because "
+					+ "connection was not established");
+		}
+
+	} // End setTopicname
+
+	/**
+	 * This method cleans up the connection
+	 */
+	private void stop() {
+		logger.debug("Stop called");
+
+		// Close the connection
+		if (connection != null) {
+			try {
+				logger.debug("Connection stats before closing:\nClientID = "
+						+ connection.getClientID() + "\nJMSProviderName = "
+						+ connection.getMetaData().getJMSProviderName());
+				connection.stop();
+			} catch (JMSException e) {
+				logger.error("JMS Exception caught while stopping "
+						+ "the connection:" + e.getMessage());
+			} catch (Exception e) {
+				logger.error("Unknown Exception caught while stopping "
+						+ "the connection:" + e.getMessage());
+			}
+		}
+
+		// Set flag to say that the publisher is not connected
+		logger.debug("Everything should be stopped, closed and cleaned now");
+		connected = false;
+
+	} // End stop
+
+	/**
+	 * This method starts the connection to the JMS server.
 	 */
 	private void start() {
-		// First clean up everything from the past by calling stop
-		this.stop();
-
 		// Set the connected value to true
 		logger.debug("Start called");
 		connected = true;
@@ -203,6 +226,7 @@ public class PublisherComponent {
 		// needs to be in the classpath somewhere). If there is a local
 		// messaging hostname defined, override the jndi.properties one
 		// with that one.
+		Context jndiContext = null;
 		try {
 			jndiContext = new InitialContext();
 			if ((this.jndiHostName != null) && (!this.jndiHostName.equals(""))) {
@@ -228,240 +252,157 @@ public class PublisherComponent {
 			return;
 		}
 
-		// Now try to grab the connection factory for topics from the initial
-		// context
-		try {
-			topicConnectionFactory = (TopicConnectionFactory) jndiContext
-					.lookup(jmsProps
-							.getProperty("ssds.jms.topic.connection.factory.jndi.name"));
-		} catch (NamingException ne) {
-			logger.error("!!--> "
-					+ "A naming exception was caught while trying "
-					+ "to get the topicConnectionFactory: " + ne.getMessage());
-			connected = false;
-			return;
-		} catch (Exception e) {
-			logger.error("!!--> "
-					+ "An unknown exception was caught while trying "
-					+ "to get the topicConnectionFactory: " + e.getMessage());
-			connected = false;
-			return;
-		}
-
-		// Try to get the topic connection
-		try {
-			topicConnection = topicConnectionFactory.createTopicConnection();
-		} catch (JMSException jmse) {
-			logger.error("!!--> " + "A JMS exception was caught while trying "
-					+ "to get the topicConnection: " + jmse.getMessage());
-			connected = false;
-			return;
-		} catch (Exception e) {
-			logger.error("!!--> "
-					+ "An unknown exception was caught while trying "
-					+ "to get the topicConnection: " + e.getMessage());
+		// Now try to grab the connection factory from the initial context
+		ConnectionFactory connectionFactory = null;
+		if (jndiContext != null) {
+			try {
+				connectionFactory = (ConnectionFactory) jndiContext
+						.lookup(jmsProps
+								.getProperty("ssds.jms.topic.connection.factory.jndi.name"));
+			} catch (NamingException ne) {
+				logger.error("!!--> "
+						+ "A naming exception was caught while trying "
+						+ "to get the ConnectionFactory: " + ne.getMessage());
+				connected = false;
+				return;
+			} catch (Exception e) {
+				logger.error("!!--> "
+						+ "An unknown exception was caught while trying "
+						+ "to get the ConnectionFactory: " + e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
 			connected = false;
 			return;
 		}
 
-		// Get the Topic
-		try {
-			topic = (Topic) jndiContext.lookup(this.topicname);
-		} catch (NamingException ne) {
-			logger.error("!!--> Could not get topic in setTopicName and a "
-					+ "NamingException was caught: " + ne.getMessage());
-			connected = false;
-			return;
-		} catch (Exception e) {
-			logger.error("!!--> Could not get topic in setTopicName and an "
-					+ "unknown exception was caught: " + e.getMessage());
+		// Look up the destination
+		Destination publishingDestination = null;
+		if (connectionFactory != null) {
+			// Get the destination
+			try {
+				publishingDestination = (Destination) jndiContext
+						.lookup(this.topicname);
+			} catch (NamingException ne) {
+				logger.error("!!--> Could not get destination "
+						+ "and a NamingException was caught: "
+						+ ne.getMessage());
+				connected = false;
+				return;
+			} catch (Exception e) {
+				logger.error("!!--> Could not get destination "
+						+ "and an unknown exception was caught: "
+						+ e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
 			connected = false;
 			return;
 		}
 
-		// Get the topic session
-		try {
-			topicSession = topicConnection.createTopicSession(false,
-					Session.AUTO_ACKNOWLEDGE);
-		} catch (JMSException jmse) {
-			logger.error("!!--> " + "A JMS exception was caught while trying "
-					+ "to get the topicSession: " + jmse.getMessage());
+		// Try to get a connection
+		if (publishingDestination != null) {
+			try {
+				connection = connectionFactory.createConnection();
+			} catch (JMSException jmse) {
+				logger.error("!!--> A JMS exception was caught while trying "
+						+ "to get the connection: " + jmse.getMessage());
+				connected = false;
+				return;
+			} catch (Exception e) {
+				logger.error("!!--> An unknown exception was caught while "
+						+ "trying to get the connection: " + e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
 			connected = false;
 			return;
-		} catch (Exception e) {
-			logger.error("!!--> "
-					+ "An unknown exception was caught while trying "
-					+ "to get the topicSession: " + e.getMessage());
+		}
+
+		// Get the session
+		if (connection != null) {
+			try {
+				session = connection.createSession(false,
+						Session.AUTO_ACKNOWLEDGE);
+			} catch (JMSException jmse) {
+				logger.error("!!--> A JMS exception was caught while trying "
+						+ "to get the session: " + jmse.getMessage());
+				connected = false;
+				return;
+			} catch (Exception e) {
+				logger.error("!!--> An unknown exception was caught while "
+						+ "trying to get the session: " + e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
+			connected = false;
+			return;
+		}
+
+		// Try to setup the producer
+		if (session != null) {
+			try {
+				messageProducer = session.createProducer(publishingDestination);
+			} catch (JMSException jmse) {
+				logger.error("!!--> Could not create producer and a "
+						+ "JMSException was caught: " + jmse.getMessage());
+				connected = false;
+				return;
+			} catch (Exception e) {
+				logger.error("!!--> Could not create producer and an "
+						+ "unknown exception was caught: " + e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
 			connected = false;
 			return;
 		}
 
 		// Now start the connection
 		try {
-			topicConnection.start();
+			connection.start();
 		} catch (JMSException jmse) {
-			logger.error("!!--> " + "A JMS exception was caught while trying "
-					+ "to start the topic connection: " + jmse.getMessage());
+			logger.error("!!--> A JMS exception was caught while trying "
+					+ "to start the connection: " + jmse.getMessage());
 			connected = false;
 			return;
 		} catch (Exception e) {
 			logger.error("!!--> "
 					+ "An unknown exception was caught while trying "
-					+ "to start the topic connection: " + e.getMessage());
+					+ "to start the connection: " + e.getMessage());
 			connected = false;
 			return;
 		}
 
-		// Try to get a publisher
+		// Close the initial context
 		try {
-			topicPublisher = topicSession.createPublisher(topic);
-		} catch (JMSException jmse) {
-			logger
-					.error("!!--> Could not get topicPublisher in setTopicName and a "
-							+ "JMSException was caught: " + jmse.getMessage());
-			connected = false;
-			return;
-		} catch (Exception e) {
-			logger
-					.error("!!--> Could not get topicPublisher in setTopicName and an "
-							+ "unknown exception was caught: " + e.getMessage());
-			connected = false;
-			return;
+			if (jndiContext != null)
+				jndiContext.close();
+		} catch (NamingException e) {
+			logger.error("NamingException caught while trying "
+					+ "to close the naming context: " + e.getMessage());
 		}
 
-		// Now try to create a message
-		try {
-			message = topicSession.createObjectMessage();
-		} catch (JMSException jmse) {
-			logger.error("!!--> " + "A JMS exception was caught while trying "
-					+ "to create a message: " + jmse.getMessage());
-			connected = false;
-			return;
-		} catch (Exception e) {
-			logger.error("!!--> "
-					+ "An unknown exception was caught while trying "
-					+ "to create a message: " + e.getMessage());
-			try {
-				if (topicPublisher != null) {
-					topicPublisher.close();
-				}
-				if (topicConnection != null) {
-					topicConnection.stop();
-				}
-				if (topicSession != null) {
-					topicSession.close();
-				}
-				if (topicConnection != null) {
-					topicConnection.close();
-				}
-			} catch (JMSException jmse) {
-			}
-			connected = false;
-			return;
-		}
 		// If here return as everything should be OK and up and running
 		return;
+
 	} // End start
 
 	/**
-	 * This method gets rid of all the topic related objects and the initial
-	 * context.
+	 * This method simply calls stop and then start
 	 */
-	private void stop() {
-		logger.debug("Stop called");
+	public void restart() {
+		// Stop things
+		stop();
 
-		// NULL out all the objects
-		message = null;
-		topic = null;
-
-		// First close the TopicPublisher
-		if (topicPublisher != null) {
-			try {
-				topicPublisher.close();
-			} catch (JMSException e) {
-				logger
-						.error("JMS Exception caught while closing topic publisher in stop():"
-								+ e.getMessage());
-			} catch (Exception e) {
-				logger
-						.error("Unknown Exception caught while closing topic publisher in stop():"
-								+ e.getMessage());
-			}
-			topicPublisher = null;
-		}
-
-		// Now stop the TopicConnection
-		if (topicConnection != null) {
-			try {
-				topicConnection.stop();
-			} catch (JMSException e) {
-				logger
-						.error("JMS Exception caught while stopping the topicConnection:"
-								+ e.getMessage());
-			} catch (Exception e) {
-				logger
-						.error("Unknown Exception caught while stopping the topicConnection:"
-								+ e.getMessage());
-			}
-		}
-
-		// Now close the TopicSession
-		if (topicSession != null) {
-			try {
-				topicSession.close();
-			} catch (JMSException e) {
-				logger
-						.error("JMS Exception caught while closing topic session in stop():"
-								+ e.getMessage());
-			} catch (Exception e) {
-				logger
-						.error("Unknown Exception caught while closing topic session in stop():"
-								+ e.getMessage());
-			}
-			topicSession = null;
-		}
-
-		// Now close the TopicConnection
-		if (topicConnection != null) {
-			try {
-				topicConnection.close();
-			} catch (JMSException e) {
-				logger
-						.error("JMS Exception caught while closing topic connection in stop():"
-								+ e.getMessage());
-			} catch (Exception e) {
-				logger
-						.error("Unknown Exception caught while closing topic connection in stop():"
-								+ e.getMessage());
-			}
-			topicConnection = null;
-		}
-
-		// Null out the connection factory
-		topicConnectionFactory = null;
-
-		// If the naming context is not null, close and null it
-		if (jndiContext != null) {
-			try {
-				jndiContext.close();
-			} catch (NamingException e) {
-				logger
-						.error("JMS Exception caught while closing jndi context in stop():"
-								+ e.getMessage());
-			} catch (Exception e) {
-				logger
-						.error("Unknown Exception caught while closing jndi context in stop():"
-								+ e.getMessage());
-			}
-			// Null it out
-			jndiContext = null;
-		}
-
-		// Set flag to say that the publisher is not connected
-		logger.debug("Everything should be stopped, closed and cleaned now");
-		connected = false;
-
-	} // End stop
+		// Start it up again
+		start();
+	}
 
 	/**
 	 * This is the method that the client will call when it is ready to publish
@@ -499,9 +440,9 @@ public class PublisherComponent {
 		if (connected) {
 			try {
 				// Send the serializable object
-				message = topicSession.createObjectMessage();
+				ObjectMessage message = session.createObjectMessage();
 				message.setObject(obj);
-				topicPublisher.publish(message);
+				messageProducer.send(message);
 				success = true;
 			} catch (JMSException e) {
 				logger.error("JMS Exception caught while publishing: "
@@ -536,9 +477,9 @@ public class PublisherComponent {
 		if (connected) {
 			try {
 				// Send the serializable object
-				bytesMessage = topicSession.createBytesMessage();
+				BytesMessage bytesMessage = session.createBytesMessage();
 				bytesMessage.writeBytes(bytes);
-				topicPublisher.publish(bytesMessage);
+				messageProducer.send(bytesMessage);
 				success = true;
 			} catch (JMSException e) {
 				logger.error("JMS Exception caught while publishing: "
@@ -552,46 +493,6 @@ public class PublisherComponent {
 		}
 		return success;
 	}
-
-	/**
-	 * This function specifies the topic name to publish to. Calling this method
-	 * will stop and restart the publisher with a new topic name.
-	 * 
-	 * @param topicName
-	 *            The name of the JMS topic name to publish to
-	 */
-	public void setTopicname(String topicName) {
-		// Set the topic name
-		logger.debug("New topic name will be assigned to " + topicName);
-		if ((topicName == null) || (topicName.compareTo("") == 0)) {
-			logger
-					.debug("Topic name was null or empty so using default topicname of "
-							+ defaultTopicname);
-			this.topicname = defaultTopicname;
-		} else {
-			this.topicname = topicName;
-		}
-
-		// Close the old connection
-		if (topicPublisher != null) {
-			try {
-				topicPublisher.close();
-			} catch (JMSException jmse) {
-				logger.error("Could not close the topicPublisher: "
-						+ jmse.getMessage());
-			}
-		}
-
-		// Now that the topic name has changed, restart the connections
-		start();
-
-		// If we are not connected, print this out to the logger
-		if (!connected) {
-			logger
-					.error("Could not setTopicName because connection was not established");
-		}
-
-	} // End setTopicname
 
 	/**
 	 * Getter method to retrieve the name of the topic that this publisher is
@@ -618,19 +519,11 @@ public class PublisherComponent {
 	}
 
 	/**
-	 * This is the finalize method that is run by the garbage collector just
-	 * before destroying the object. It is used to clean up connections, etc.
+	 * The method that closes everything up
 	 */
-	public void finalize() {
-		// Finalize the parent then call stop on this object
-		try {
-			logger.debug("finalize method called ...");
-			super.finalize();
-			stop();
-			logger.debug("finalize finished.");
-		} catch (Throwable t) {
-			logger.debug("Could not complete finalize correctly ...");
-		}
-	} // End finalize
+	public void close() {
+		// Call the stop method
+		this.stop();
+	}
 
 } // End PublisherComponent

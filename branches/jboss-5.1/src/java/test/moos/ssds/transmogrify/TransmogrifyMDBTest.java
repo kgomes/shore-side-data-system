@@ -2,7 +2,6 @@ package test.moos.ssds.transmogrify;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
@@ -19,7 +18,6 @@ import org.apache.log4j.PropertyConfigurator;
 import org.mbari.siam.distributed.MetadataPacket;
 import org.mbari.siam.operations.utils.ExportablePacket;
 
-import test.moos.ssds.ClassPathHacker;
 import test.moos.ssds.io.util.TestPacketUtility;
 
 public class TransmogrifyMDBTest extends TestCase {
@@ -29,34 +27,10 @@ public class TransmogrifyMDBTest extends TestCase {
 	 */
 	private static Logger logger = Logger.getLogger(TransmogrifyMDBTest.class);
 
-	/**
-	 * This is the class to help with publishing
-	 */
-	private static PublisherComponent publisherComponent;
-
-	/**
-	 * This is the class to help with subscribing
-	 */
-	private static SubscriberComponent subscriberComponent;
-
-	/**
-	 * The listener to be used for handling the message
-	 */
-	private TransmogrifyMDBTestMessageListener transmogrifyMDBTestMessageListener = new TransmogrifyMDBTestMessageListener();
-
 	public TransmogrifyMDBTest(String name) {
 		super(name);
 
-		// Add the base of the transmogrifier build files to the classpath
-		try {
-			ClassPathHacker.addFile(new File("build/transmogrify"));
-			ClassPathHacker.addFile(new File("build/transmogrify-pub"));
-		} catch (IOException e1) {
-			logger.error("IOException caught trying to add the "
-					+ "build/transmogrify directory to the class path"
-					+ e1.getMessage());
-		}
-
+		// Load the log4j properties
 		Properties log4jProperties = new Properties();
 		try {
 			log4jProperties.load(this.getClass().getResourceAsStream(
@@ -67,37 +41,6 @@ public class TransmogrifyMDBTest extends TestCase {
 		}
 		PropertyConfigurator.configure(log4jProperties);
 
-		// Grab the transmogrifier properties for the file
-		Properties transmogProps = new Properties();
-		logger.debug("Constructor called ... going to "
-				+ "try and read the transmogrifier properties file in ...");
-		try {
-			transmogProps.load(this.getClass().getResourceAsStream(
-					"/moos/ssds/transmogrify/transmogrify.properties"));
-		} catch (Exception e) {
-			logger.error("Exception trying to read in properties file: "
-					+ e.getMessage()
-					+ "\nThis could be due to the fact that you have "
-					+ "not run 'ant -Dtarget=build' from the root of "
-					+ "the project directory.  This needs to be done "
-					+ "before these tests are run.");
-		}
-
-		// Grab the topic name to republish to
-		String republishTopicName = transmogProps
-				.getProperty("transmogrify.republish.topic");
-		logger.debug("Will listen for messages on topic " + republishTopicName);
-
-		// Create the subscriber
-		if (subscriberComponent == null)
-			subscriberComponent = new SubscriberComponent(republishTopicName,
-					transmogrifyMDBTestMessageListener);
-
-		// Create the publisher component to connect up to the topic that the
-		// transmogrify MDB is listening to
-		if (publisherComponent == null)
-			publisherComponent = new PublisherComponent();
-
 	}
 
 	protected void setUp() throws Exception {
@@ -106,6 +49,7 @@ public class TransmogrifyMDBTest extends TestCase {
 
 	protected void tearDown() throws Exception {
 		super.tearDown();
+
 	}
 
 	/**
@@ -116,6 +60,26 @@ public class TransmogrifyMDBTest extends TestCase {
 	 */
 	@SuppressWarnings("deprecation")
 	public void testSendMessage() {
+		// Grab the topic name to republish to
+		String republishTopicName = "topic/SSDSIngestTopic";
+		logger.debug("Will listen for messages on topic " + republishTopicName);
+
+		SubscriberComponent subscriberComponent = null;
+		PublisherComponent publisherComponent = null;
+		TransmogrifyMDBTestMessageListener transmogrifyMDBTestMessageListener = new TransmogrifyMDBTestMessageListener();
+
+		// Create the subscriber
+		if (subscriberComponent == null)
+			subscriberComponent = new SubscriberComponent(republishTopicName,
+					transmogrifyMDBTestMessageListener);
+		logger.debug("SubscriberComponent created and listening.");
+
+		// Create the publisher component to connect up to the topic that the
+		// transmogrify MDB is listening to
+		if (publisherComponent == null)
+			publisherComponent = new PublisherComponent();
+		logger.debug("PublisherComponent created");
+
 		// Create the output stream to help export the SIAM packet
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
@@ -132,6 +96,7 @@ public class TransmogrifyMDBTest extends TestCase {
 		metadataPacket.setSequenceNo(1);
 		Date metadataPacketDate = new Date();
 		metadataPacket.setSystemTime(metadataPacketDate.getTime());
+		logger.debug("MetadataPacket constructed");
 
 		// Wrap and export
 		exportablePacket.wrapPacket(metadataPacket);
@@ -141,10 +106,13 @@ public class TransmogrifyMDBTest extends TestCase {
 			assertTrue("IOException caught trying to export "
 					+ "MetadataPacket to SIAM formatted byte array.", false);
 		}
+		logger.debug("Wrapped in an exportable packet (SIAM)");
 
 		// Now publish the SIAM formatted byte array to the TransmogrifyMDB
 		// input topic
 		publisherComponent.publishBytes(bos.toByteArray());
+		logger.debug("Published packet and will check to "
+				+ "see if subscriber received it.");
 
 		// Wait for a bit or until the listener gets a message
 		Date dateToStopWaiting = new Date(new Date().getTime() + 5000);
@@ -154,6 +122,8 @@ public class TransmogrifyMDBTest extends TestCase {
 		}
 		// Check for the message
 		if (transmogrifyMDBTestMessageListener.getCurrentBytesMessage() != null) {
+			logger.debug("Look like the receiver did "
+					+ "get something, let's compare");
 			// Grab the bytes message which should be the Metadata packet but in
 			// SSDS form
 			BytesMessage receivedBytesMessage = transmogrifyMDBTestMessageListener
@@ -186,6 +156,7 @@ public class TransmogrifyMDBTest extends TestCase {
 		// Now let's try sending the object itself (yes, I know this is
 		// deprecated)
 		publisherComponent.publish(metadataPacket);
+		logger.debug("OK, going to just send the object message itself");
 
 		// Wait for a bit or until the listener gets a message
 		dateToStopWaiting = new Date(new Date().getTime() + 5000);
@@ -194,6 +165,8 @@ public class TransmogrifyMDBTest extends TestCase {
 		}
 		// Check for the message
 		if (transmogrifyMDBTestMessageListener.getCurrentBytesMessage() != null) {
+			logger.debug("OK, look's like the receiver "
+					+ "got the new message too");
 			// Grab the bytes message which should be the Metadata packet but in
 			// SSDS form
 			BytesMessage receivedBytesMessage = transmogrifyMDBTestMessageListener
@@ -222,6 +195,20 @@ public class TransmogrifyMDBTest extends TestCase {
 			assertTrue("After object send, the byte array was not received",
 					false);
 		}
+
+		// Tear down the publisher too
+		logger.debug("Closing publisher");
+		if (publisherComponent != null)
+			publisherComponent.close();
+		publisherComponent = null;
+		logger.debug("Publisher closed");
+
+		// Tear down the subscriber and null it out
+		logger.debug("Closing subscriber");
+		if (subscriberComponent != null)
+			subscriberComponent.close();
+		subscriberComponent = null;
+		logger.debug("Subscriber closed");
 
 	}
 }

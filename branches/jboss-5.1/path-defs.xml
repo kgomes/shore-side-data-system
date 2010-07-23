@@ -72,7 +72,7 @@
 		<pathelement location="${build.classes}" />
 	</path>
 
-	<!-- Define the fileset that includes the JBoss client lib jars that we need -->
+	<!-- Define the fileset that includes the JBoss client lib jars that we need for jms publishing -->
 	<fileset id="publisher-client-jboss-libs" dir="${jboss.client.jar.directory}">
 		<include name="${log4j.jar}" />
 		<include name="${concurrent.jar}" />
@@ -98,36 +98,29 @@
 
 	<!-- Define the fileset that contains the JBoss client jars -->
 	<fileset id="jboss-client-jar-fileset" dir="${jboss.client.jar.directory}">
-		<include name="${log4j.jar}" />
-		<include name="${jboss-j2ee.jar}" />
-		<include name="${concurrent.jar}" />
-		<include name="${jbossall-client.jar}" />
-		<include name="${jboss-common-client.jar}" />
-		<include name="${jbossmq-client.jar}" />
-		<include name="${jboss-system-client.jar}" />
-		<include name="${jnp-client.jar}" />
-		<include name="${servlet.jar}" />
-		<include name="${jaxrpc.jar}" />
-		<include name="${commons.httpclient.jar}" />
-		<include name="${commons.codec.jar}" />
-		<include name="${activation.jar}" />
-		<include name="${hibernate.client.commons.logging.jar}" />
-		<include name="${javassist.jar}" />
-		<include name="${bcel.jar}" />
-		<include name="${jibx-bind.jar}" />
-		<include name="${jibx-extras.jar}" />
-		<include name="${jibx-run.jar}" />
-		<include name="${jibx-schema.jar}" />
-		<include name="${jibx-tools.jar}" />
-		<include name="${joda-time.jar}" />
-		<include name="${qdox.jar}" />
-		<include name="${stax-api.jar}" />
-		<include name="${wstx-asl.jar}" />
-		<include name="${xbis-jbix.jar}" />
-		<include name="${xmlpull.jar}" />
-		<include name="${xpp3.jar}" />
+		<include name="*.jar" />
 	</fileset>
 
+	<!-- Define the fileset that contains all the common/lib jars -->
+	<fileset id="jboss-common-lib-jar-fileset" dir="${jboss.common.lib.location}">
+		<include name="*.jar" />
+	</fileset>
+
+	<!-- Define the fileset that contains all the JBoss lib jars -->
+	<fileset id="jboss-lib-jar-fileset" dir="${jboss.lib.location}">
+		<include name="*.jar" />
+	</fileset>
+	
+	<!-- Define the fileset that contains the web jars for JBoss -->
+	<fileset id="jboss-web-jar-fileset" dir="${jboss.web.deploy.location}">
+		<include name="**/*.jar" />
+	</fileset>
+
+	<!-- Define the fileset for all the jars in the project lib directory -->
+	<fileset id="project-lib-jar-fileset" dir="${project.lib}">
+		<include name="*.jar" />
+	</fileset>
+	
 	<!-- Define the fileset that includes the JBoss server lib jars that we need -->
 	<fileset id="jboss-lib-jar-fileset" dir="${jboss.home}/server/${jboss.server.type}/lib">
 		<include name="${hibernate.jar}" />

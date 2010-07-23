@@ -18,14 +18,16 @@
 <!-- This files is used to setup a JMS Topic -->
 
 <server>
-  <mbean code="org.jboss.mq.server.jmx.Topic" name="jboss.mq.destination:service=Topic,name=@TOPIC_NAME@">
-    <depends optional-attribute-name="DestinationManager">jboss.mq:service=DestinationManager</depends>
-    <depends optional-attribute-name="SecurityManager">jboss.mq:service=SecurityManager</depends>
-    <attribute name="SecurityConf">
+  <mbean code="org.jboss.jms.server.destination.TopicService" 
+  	name="jboss.messaging.destination:service=Topic,name=@TOPIC_NAME@"
+  	xmbean-dd="xmdesc/Topic-xmbean.xml">
+    <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+    <depends>jboss.messaging:service=PostOffice</depends>
+    <attribute name="SecurityConfig">
       <security>
         <role name="guest" read="true" write="true"/>
         <role name="publisher" read="true" write="true" create="false"/>
-        <role name="durSubscriber" read="true" write="true" create="true"/>
+        <role name="durpublisher" read="true" write="true" create="true"/>
       </security>
     </attribute>
   </mbean>

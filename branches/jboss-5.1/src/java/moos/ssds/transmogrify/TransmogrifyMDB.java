@@ -16,21 +16,21 @@
 package moos.ssds.transmogrify;
 
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.Properties;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.MessageDriven;
 import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSession;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.io.util.PacketUtility;
@@ -51,20 +51,12 @@ import org.mbari.siam.distributed.DevicePacket;
  * 
  * @author : $Author: kgomes $
  * @version : $Revision: 1.13.2.1 $
- * 
- *          From here down is XDoclet Stuff for generating deployment
- *          configuration files
- * @ejb.bean name="Transmogrifier" display-name="Transmogrifier Message-Driven
- *           Bean" description="Transmogrifies stuff into stuff"
- *           transaction-type="Container" acknowledge-mode="Auto-acknowledge"
- *           destination-type="javax.jms.Topic"
- * @ejb.resource-ref res-ref-name="TopicConnectionFactory"
- *                   res-type="javax.jms.TopicConnectionFactory"
- *                   res-auth="Application"
- * @jboss.destination-jndi-name name="topic/${transmogrify.topic.name}"
  */
-public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
-		javax.jms.MessageListener {
+@MessageDriven(activationConfig = {
+		@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
+		@ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/SSDSTransmogTopic"),
+		@ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable") })
+public class TransmogrifyMDB implements MessageListener {
 
 	/**
 	 * This is just a default serial version ID for this class (java best
@@ -78,314 +70,109 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 	static Logger logger = Logger.getLogger(TransmogrifyMDB.class);
 
 	/**
-	 * This is the properties that contains the information needed to
-	 * transmogrify incoming packets
+	 * The ConnectionFactory that will be injected by the container
 	 */
-	private Properties transmogProps = null;
+	@Resource(mappedName = "ConnectionFactory")
+	private ConnectionFactory connectionFactory;
 
 	/**
-	 * This is the name of the topic that the packets will be republished to
+	 * This is the JMS destination that will be published to and will be
+	 * injected by the container
 	 */
-	private String republishTopicName = null;
-
-	/**
-	 * This is the JNDI Context that will be used (Naming Service) to locate the
-	 * appropriate remote classes to use for publishing messages.
-	 */
-	private Context jndiContext = null;
-
-	/**
-	 * The TopicConnectionFactory that will be used to republish messages
-	 */
-	private TopicConnectionFactory topicConnectionFactory = null;
+	@Resource(mappedName = "topic/SSDSIngestTopic")
+	private Destination destination;
 
 	/**
 	 * This is the connection to the topic that the messages will be published
 	 * to
 	 */
-	private TopicConnection topicConnection = null;
-
-	/**
-	 * This is the JMS topic that will be used for publishing
-	 */
-	private Topic topic = null;
+	private Connection connection = null;
 
 	/**
 	 * This is a session that the publishing of messages will be run in.
 	 */
-	private TopicSession topicSession = null;
+	private Session session = null;
 
 	/**
-	 * This is the topic publisher that is actually used to send messages to the
-	 * topic
+	 * This is the message producer that is actually used to send messages to
+	 * the
 	 */
-	private TopicPublisher topicPublisher = null;
-
-	/**
-	 * This is the default constructor
-	 */
-	public TransmogrifyMDB() {
-	} // End Constructor
-
-	/**
-	 * This is the callback that the container uses to set the
-	 * MessageDrivenContext
-	 */
-	public void setMessageDrivenContext(javax.ejb.MessageDrivenContext context) {
-	} // End setMessageDrivenContext
-
-	/**
-	 * This is the callback that the container uses to create this bean
-	 */
-	@SuppressWarnings("unchecked")
-	public void ejbCreate() {
-		// Grab the transmogrifier properties for the file
-		transmogProps = new Properties();
-		logger.debug("Constructor called ... going to "
-				+ "try and read the properties file in ...");
-		try {
-			transmogProps.load(this.getClass().getResourceAsStream(
-					"/moos/ssds/transmogrify/transmogrify.properties"));
-		} catch (Exception e) {
-			logger.error("Exception trying to read in properties file: "
-					+ e.getMessage());
-		}
-		// If they are not null, write them to a debug log
-		if (transmogProps != null) {
-			logger.debug("Loaded props OK and they are:");
-			Enumeration keys = transmogProps.keys();
-			while (keys.hasMoreElements()) {
-				String key = (String) keys.nextElement();
-				String value = (String) transmogProps.get(key);
-				logger.debug(key + ": " + value);
-			}
-		} else {
-			logger.error("Could not seem to load the "
-					+ "properties for transmogrifier.");
-		}
-
-		// Grab the topic name to republish to
-		this.republishTopicName = transmogProps
-				.getProperty("transmogrify.republish.topic");
-
-		// Instead of using the publisher component, let's manage our own so
-		// that we can use a different InvocationLayer
-		this.setupPublishing();
-
-	} // End ejbCreate
+	private MessageProducer messageProducer = null;
 
 	/**
 	 * This method sets up the publishing so the the message driven bean can
 	 * republish the message after doing its thing.
-	 * 
-	 * @return a <code>boolean</code> that indicates if the setup went OK or not
 	 */
-	private boolean setupPublishing() {
-		// First tear down any existing connections
-		this.tearDownPublishing();
-
-		// First get the naming context from the container
-		try {
-			this.jndiContext = new InitialContext();
-		} catch (NamingException e) {
-			logger.error("NamingException caught from the container "
-					+ "while trying to setup the " + "publishing: "
-					+ e.getMessage());
-			return false;
-		} catch (Exception e) {
-			logger.error("Exception caught from the container "
-					+ "while trying to setup the " + "publishing: "
-					+ e.getMessage());
-			return false;
+	@PostConstruct
+	public void setupPublishing() {
+		// Make sure the connection factory is there
+		if (connectionFactory != null) {
+			// Create a connection
+			try {
+				connection = connectionFactory.createConnection();
+			} catch (JMSException e) {
+				logger.error("JMSException caught trying to create "
+						+ "the connection from the "
+						+ "injected connection factory: " + e.getMessage());
+			}
+			if (connection != null) {
+				// Create a session
+				try {
+					session = connection.createSession(false,
+							Session.AUTO_ACKNOWLEDGE);
+				} catch (JMSException e) {
+					logger.error("JMSException caught trying to create "
+							+ "the session from the connection:"
+							+ e.getMessage());
+				}
+				if (session != null) {
+					if (destination != null) {
+						// Create a message producer
+						try {
+							messageProducer = session
+									.createProducer(destination);
+						} catch (JMSException e) {
+							logger.error("JMSException caught trying "
+									+ "to create the producer from the "
+									+ "session: " + e.getMessage());
+						}
+						if (messageProducer == null)
+							logger.error("Was not able to "
+									+ "create a MessageProducer");
+					} else {
+						logger.error("The destination that was to be "
+								+ "injected by the container "
+								+ "appears to be null");
+					}
+				} else {
+					logger.error("Could not seem to create a "
+							+ "session from the connection");
+				}
+			} else {
+				logger.error("Could not seem to create a connection "
+						+ "using the injected connection factory");
+			}
+		} else {
+			logger.error("ConnectionFactory is NULL and should "
+					+ "have been injected by the container!");
 		}
-
-		// Now lets get the topic connection factory. In this case, we want
-		// to use the the JVM Invocation layer since we are in the same
-		// jvm as jboss.
-		try {
-			topicConnectionFactory = (TopicConnectionFactory) jndiContext
-					.lookup("java:/ConnectionFactory");
-		} catch (NamingException e) {
-			logger.error("NamingException caught from the container "
-					+ "while trying to get the JVM Invocation "
-					+ "layer the publishing: " + e.getMessage());
-			return false;
-		} catch (Exception e) {
-			logger.error("Exception caught from the container "
-					+ "while trying to get the JVM Invocation "
-					+ "layer the publishing: " + e.getMessage());
-			return false;
-		}
-
-		// Now create a topic connection from the factory
-		try {
-			this.topicConnection = topicConnectionFactory
-					.createTopicConnection();
-		} catch (JMSException e1) {
-			logger.error("JMSException caught from the container "
-					+ "while trying to create the TopicConnection: "
-					+ e1.getMessage());
-			return false;
-		} catch (Exception e1) {
-			logger.error("Exception caught from the container "
-					+ "while trying to create the TopicConnection: "
-					+ e1.getMessage());
-			return false;
-		}
-
-		// Grab the topic from the container
-		try {
-			this.topic = (Topic) jndiContext.lookup(this.republishTopicName);
-		} catch (NamingException e) {
-			logger.error("NamingException caught from the container "
-					+ "while trying to get the topic "
-					+ this.republishTopicName + " for publishing: "
-					+ e.getMessage());
-			return false;
-		} catch (Exception e) {
-			logger.error("Exception caught from the container "
-					+ "while trying to get the topic "
-					+ this.republishTopicName + " for publishing: "
-					+ e.getMessage());
-			return false;
-		}
-
-		// Now create the topic session
-		try {
-			this.topicSession = this.topicConnection.createTopicSession(false,
-					Session.AUTO_ACKNOWLEDGE);
-		} catch (JMSException e2) {
-			logger.error("JMSException caught while trying to create the"
-					+ " topicSession from the connection: " + e2.getMessage());
-			return false;
-		} catch (Exception e2) {
-			logger.error("Exception caught while trying to create the"
-					+ " topicSession from the connection: " + e2.getMessage());
-			return false;
-		}
-
-		// Now start the connection
-		try {
-			this.topicConnection.start();
-		} catch (JMSException e2) {
-			logger.error("JMSException caught while trying to start the"
-					+ " topicConnection: " + e2.getMessage());
-			return false;
-		} catch (Exception e2) {
-			logger.error("Exception caught while trying to start the"
-					+ " topicConnection: " + e2.getMessage());
-			return false;
-		}
-
-		// Now create the publisher
-		try {
-			this.topicPublisher = topicSession.createPublisher(this.topic);
-		} catch (JMSException e2) {
-			logger.error("JMSException caught while trying to create the"
-					+ " topicPublisher from the topicSession: "
-					+ e2.getMessage());
-			return false;
-		} catch (Exception e2) {
-			logger.error("Exception caught while trying to create the"
-					+ " topicPublisher from the topicSession: "
-					+ e2.getMessage());
-			return false;
-		}
-		return true;
 	}
 
 	/**
-	 * This method stops all the JMS components
-	 * 
-	 * @return
+	 * This method cleans up the connection to the next topic
 	 */
-	private boolean tearDownPublishing() {
-		// First close the topic publisher
-		if (this.topicPublisher != null) {
-			try {
-				this.topicPublisher.close();
-			} catch (JMSException e) {
-				logger.error("JMSException caught while trying to "
-						+ "close the topic publisher: " + e.getMessage());
-				return false;
-			} catch (Exception e) {
-				logger.error("Exception caught while trying to "
-						+ "close the topic publisher: " + e.getMessage());
-				return false;
-			}
-			this.topicPublisher = null;
-		}
-		// Now stop the connection
-		if (this.topicConnection != null) {
-			try {
-				this.topicConnection.stop();
-			} catch (JMSException e) {
-				logger.error("JMSException caught while trying to "
-						+ "stop the topic connection: " + e.getMessage());
-				return false;
-			} catch (Exception e) {
-				logger.error("Exception caught while trying to "
-						+ "stop the topic connection: " + e.getMessage());
-				return false;
-			}
-		}
-		// Now close the session
-		if (this.topicSession != null) {
-			try {
-				this.topicSession.close();
-			} catch (JMSException e) {
-				logger.error("JMSException caught while trying to "
-						+ "close the topic session: " + e.getMessage());
-				return false;
-			} catch (Exception e) {
-				logger.error("Exception caught while trying to "
-						+ "close the topic session: " + e.getMessage());
-				return false;
-			}
-			this.topicSession = null;
-		}
+	@PreDestroy
+	public void tearDownPublishing() {
 		// Now close the connection
-		if (this.topicConnection != null) {
+		if (connection != null) {
 			try {
-				this.topicConnection.close();
+				connection.close();
 			} catch (JMSException e) {
 				logger.error("JMSException caught while trying to "
 						+ "close the topic connection: " + e.getMessage());
-				return false;
-			} catch (Exception e) {
-				logger.error("Exception caught while trying to "
-						+ "close the topic connection: " + e.getMessage());
-				return false;
 			}
-			this.topicConnection = null;
 		}
-		// Now close the jndi context
-		if (this.jndiContext != null) {
-			try {
-				this.jndiContext.close();
-			} catch (NamingException e) {
-				logger.error("Naming Exception caught while trying to "
-						+ "close the JNDI context: " + e.getMessage());
-				return false;
-			} catch (Exception e) {
-				logger.error("Exception caught while trying to "
-						+ "close the JNDI context: " + e.getMessage());
-				return false;
-			}
-			this.jndiContext = null;
-		}
-		// Null out the topic connection factory
-		this.topicConnectionFactory = null;
-
-		return true;
 	}
-
-	/**
-	 * This is the callback that the container uses when removing this bean
-	 */
-	public void ejbRemove() {
-		this.tearDownPublishing();
-	} // End ejbRemove
 
 	/**
 	 * This is the callback method that the container calls when a message is
@@ -491,8 +278,9 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 		// incoming byte array looks like a SIAM formatted byte array
 
 		// Convert it to SSDS format
-		byte[] ssdsBytes = PacketUtility.convertSIAMByteArrayToVersion3SSDSByteArray(
-				siamBytes, false, false, false, false);
+		byte[] ssdsBytes = PacketUtility
+				.convertSIAMByteArrayToVersion3SSDSByteArray(siamBytes, false,
+						false, false, false);
 		PacketUtility.logVersion3SSDSByteArray(ssdsBytes, false);
 
 		// Now publish those
@@ -512,13 +300,10 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 		// Republish that to SSDS ingest
 		BytesMessage newBytesMessage = null;
 		try {
-			newBytesMessage = topicSession.createBytesMessage();
+			newBytesMessage = session.createBytesMessage();
 		} catch (JMSException e1) {
 			logger.error("JMSException caught while trying to create a "
 					+ "new bytes message: " + e1.getMessage());
-			// TODO kgomes while setupPublishing helps for the next message,
-			// this message will be lost
-			this.setupPublishing();
 		}
 		if (newBytesMessage != null) {
 			try {
@@ -530,7 +315,7 @@ public class TransmogrifyMDB implements javax.ejb.MessageDrivenBean,
 			}
 		}
 		try {
-			topicPublisher.publish(newBytesMessage);
+			messageProducer.send(newBytesMessage);
 		} catch (JMSException e2) {
 			logger.error("JMSException caught while trying to publish "
 					+ "the bytes message" + e2.getMessage());

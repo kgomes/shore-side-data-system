@@ -19,16 +19,6 @@
 	<!-- Import all the path definitions -->
 	<import file="path-defs.xml" />
 
-	<!-- Define the ejb-doclet task -->
-	<taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
-		<classpath>
-			<pathelement location="${jboss.client.jar.directory}/${jboss-j2ee.jar}" />
-			<fileset dir="${xdoclet.path}">
-				<include name="*.jar" />
-			</fileset>
-		</classpath>
-	</taskdef>
-
 	<!-- Do stuff that you want everytime ant is run -->
 	<target name="init">
 		<!-- Initialize the date/time -->
@@ -56,7 +46,6 @@
 		<mkdir dir="${project.build}" />
 		<mkdir dir="${project.build}/transmogrify-pub" />
 		<mkdir dir="${project.build}/classes" />
-		<mkdir dir="${project.build}/transmogrify/META-INF" />
 		<mkdir dir="${project.dist}" />
 		<mkdir dir="${gen.doc}" />
 		<mkdir dir="${gen.html}" />
@@ -67,38 +56,8 @@
 	<!-- The clean target -->
 	<target name="clean" depends="remove-working-dirs,rebuild-project-dirs" />
 
-	<!-- The target to run xdoclet on the transmogrify specific classes -->
-	<target name="ejb-doclet" depends="init">
-		<!-- First, run ejbdoclet for the transmogrify MDB -->
-		<ejbdoclet ejbspec="${transmogrify.xdoclet.ejb.spec.version}" destDir="${src.gen}" verbose="${transmogrify.xdoclet.verbose}" force="${transmogrify.xdoclet.force}">
-			<!-- Run on any classes that are MDB's in transmogrify package -->
-			<fileset dir="${src.java}">
-				<include name="moos/ssds/transmogrify/**/*MDB.java" />
-			</fileset>
-			<!-- Create the generic J2EE deployment descriptor -->
-			<deploymentdescriptor destdir="${project.build}/transmogrify/META-INF" destinationFile="ejb-jar.xml" validatexml="true" />
-			<!-- Create the deployment file for jboss -->
-			<jboss version="${transmogrify.xdoclet.jboss.version}" destDir="${project.build}/transmogrify/META-INF" />
-		</ejbdoclet>
-	</target>
-
 	<!-- Copy any files that need to be setup before building jars or running tests -->
-	<target name="configure-files" depends="ejb-doclet" description="This target copies or configures any files that	need to be setup before the distributions can be built or the tests can be run">
-		<!-- Now create the properties file that the TransmogrifyMDB will use -->
-		<copy file="${resources.build}/moos/ssds/transmogrify/transmogrify_template.properties" tofile="${project.build}/transmogrify/moos/ssds/transmogrify/transmogrify.properties" overwrite="true">
-			<filterset>
-				<filter token="TRANSMOGRIFY_REPUBLISH_TOPIC_NAME" value="${transmogrify.republish.topic.name}" />
-			</filterset>
-		</copy>
-
-		<!-- The Manifest File for transmogrify -->
-		<copy file="${resources.build}/manifest/MANIFEST_TEMPLATE.MF" tofile="${project.build}/transmogrify/META-INF/MANIFEST.MF" overwrite="true">
-			<filterset>
-				<filter token="CLASSPATH" value="${transmogrify.classpath}" />
-				<filter token="MAIN_CLASS_STATEMENT" value="" />
-			</filterset>
-		</copy>
-
+	<target name="configure-files" description="This target copies or configures any files that need to be setup before the distributions can be built or the tests can be run">
 		<!-- Copy the correct JNDI file for the client publisher jar -->
 		<copy file="${resources.build}/jboss/jndi.properties" tofile="${project.build}/transmogrify-pub/jndi.properties" overwrite="true">
 			<filterset>
@@ -109,8 +68,8 @@
 		<!-- Configure JMS properties as well -->
 		<copy file="${resources.build}/moos/ssds/jms/jms_template.properties" tofile="${project.build}/transmogrify-pub/moos/ssds/jms/jms.properties" overwrite="true">
 			<filterset>
-				<filter token="JMS_TOPIC" value="${transmogrify.publisher.jms.topic.name}" />
-				<filter token="JMS_TOPIC_CONNECTION_FACTORY_JNDI_NAME" value="${transmogrify.publisher.jms.topic.connection.factory.jndi.name}" />
+				<filter token="JMS_TOPIC" value="${transmogrify.topic.name}" />
+				<filter token="JMS_TOPIC_CONNECTION_FACTORY_JNDI_NAME" value="${transmogrify.connection.factory.jndi.name}" />
 			</filterset>
 		</copy>
 
@@ -135,8 +94,7 @@
 			<include name="moos/ssds/jms/**/*.java" />
 			<include name="moos/ssds/util/**/*.java" />
 			<classpath>
-				<pathelement location="${jboss.client.jar.directory}/${log4j.jar}" />
-				<pathelement location="${jboss.client.jar.directory}/${jboss-j2ee.jar}" />
+				<fileset refid="jboss-common-lib-jar-fileset" />
 				<pathelement location="${project.lib}/${siam.jar}" />
 			</classpath>
 		</javac>
@@ -152,23 +110,15 @@
 		<delete file="${project.dist}/ssds-transmogrify.jar" />
 
 		<!-- Create the transmogrify jar file -->
-		<jar jarfile="${project.dist}/ssds-transmogrify.jar" manifest="${project.build}/transmogrify/META-INF/MANIFEST.MF">
+		<jar jarfile="${project.dist}/ssds-transmogrify.jar">
 			<!-- Include the class -->
 			<fileset dir="${build.classes}">
 				<include name="moos/ssds/transmogrify/**/*.class" />
 				<include name="moos/ssds/io/SSDSDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
 				<include name="moos/ssds/io/util/PacketUtility.class" />
-				<include name="moss/ssds/util/*.class" />
+				<include name="moos/ssds/util/*.class" />
 			</fileset>
-			<!-- Include all necessary resources -->
-			<fileset dir="${project.build}/transmogrify">
-				<include name="moos/ssds/transmogrify/**/*.properties" />
-			</fileset>
-			<!-- Include the metadata for the deployment descriptor -->
-			<fileset dir="${project.build}/transmogrify">
-				<include name="META-INF/*.xml" />
-			</fileset>
-			<fileset dir="${project.dir}" includes="lib/${siam.jar}" />
 		</jar>
 
 		<!-- Now jar it up -->
@@ -187,59 +137,21 @@
 		</jar>
 	</target>
 
-	<!-- The target to test the TransmogrifyMDB instance -->
-	<target name="test" depends="init, configure-files">
-		<!-- Clean out the compiled test classes -->
-		<delete dir="${project.build}/classes/test/moos/ssds/transmogrify" />
-		<delete dir="${project.build}/classes/test/moos/ssds/io/util" />
-
-		<!-- Compile just the test classes -->
-		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
-			<src path="${src.java}" />
-			<include name="test/moos/ssds/ClassPathHacker.java" />
-			<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
-			<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
-			<classpath>
-				<pathelement location="${project.build}/classes" />
-				<pathelement location="${project.lib}/${junit.jar}" />
-				<pathelement location="${project.lib}/${jddac.jar}" />
-				<fileset refid="all-project-lib-flattened-jar-fileset" />
-				<fileset refid="jboss-client-jar-fileset" />
-			</classpath>
-		</javac>
-		<junit printsummary="withOutAndErr" haltonfailure="no" errorProperty="test.failed" failureProperty="test.failed">
-			<jvmarg value="-Xms512m" />
-			<jvmarg value="-Xmx1024m" />
-			<classpath>
-				<pathelement location="${project.build}/classes" />
-				<pathelement location="${project.lib}/${junit.jar}" />
-				<pathelement location="${project.lib}/${jddac.jar}" />
-				<fileset refid="all-project-lib-flattened-jar-fileset" />
-				<fileset refid="jboss-client-jar-fileset" />
-			</classpath>
-			<formatter type="xml" />
-			<batchtest fork="yes" todir="${gen.test}">
-				<fileset dir="${src.java}">
-					<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
-					<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
-				</fileset>
-			</batchtest>
-		</junit>
-	</target>
-
 	<!-- Deploy the transmogrify component -->
 	<target name="deploy" depends="dist">
 		<!-- Copy over the JMS topic files that Transmogrify needs -->
-		<copy file="${src.resources}/build/jboss/ssds-jms-service_template.xml" tofile="${transmogrify.deployment.location}/ssds-ingest-service.xml" overwrite="true">
-			<filterset>
-				<filter token="TOPIC_NAME" value="${transmogrify.publisher.jms.topic.name}" />
-			</filterset>
-		</copy>
 		<copy file="${src.resources}/build/jboss/ssds-jms-service_template.xml" tofile="${transmogrify.deployment.location}/ssds-transmogrify-service.xml" overwrite="true">
 			<filterset>
-				<filter token="TOPIC_NAME" value="${transmogrify.republish.topic.name}" />
+				<filter token="TOPIC_NAME" value="${transmogrify.topic.name}" />
 			</filterset>
 		</copy>
+		<copy file="${src.resources}/build/jboss/ssds-jms-service_template.xml" tofile="${transmogrify.deployment.location}/ssds-ingest-service.xml" overwrite="true">
+			<filterset>
+				<filter token="TOPIC_NAME" value="${ingest.topic.name}" />
+			</filterset>
+		</copy>
+		<!-- Deploy any dependency jars to the common jar location -->
+		<copy file="${project.lib}/${siam.jar}" todir="${jboss.common.lib.location}" />
 		<!-- Now deploy the jar -->
 		<copy file="${project.dist}/ssds-transmogrify.jar" todir="${transmogrify.deployment.location}" />
 		<!-- Make sure the ssds-docs directory is there -->
@@ -249,7 +161,7 @@
 		<mkdir dir="${project.dist}/tempzip" />
 		<copy file="${resources.build}/doc/client/README_transmogrify_pub.html" tofile="${project.dist}/tempzip/README.html" overwrite="true">
 			<filterset>
-				<filter token="TRANSMOGRIFY_CLASSPATH" value="${client.transmogrify.classpath}" />
+				<filter token="TRANSMOGRIFY_CLASSPATH" value="${transmogrify.publisher.classpath}" />
 			</filterset>
 		</copy>
 		<copy file="${resources.build}/doc/client/ExampleSSDSClientPublisher.java" tofile="${project.dist}/tempzip/ExampleSSDSClientPublisher.java" overwrite="true" />
@@ -260,7 +172,7 @@
 			<fileset dir="${project.dist}/tempzip" includes="ExampleSSDSClientPublisher.java" />
 			<fileset dir="${project.dist}" includes="ssds-transmogrify-pub.jar" />
 			<fileset dir="${project.lib}" includes="${siam.jar}" />
-			<fileset refid="publisher-client-jboss-libs" />
+			<fileset refid="jboss-client-jar-fileset" />
 		</zip>
 		<!-- Go ahead and deploy the static doc index page -->
 		<copy file="${src.resources}/build/doc/index.html" todir="${project.documentation.deploy.location}" overwrite="true" />
@@ -271,7 +183,44 @@
 		<delete file="${transmogrify.deployment.location}/ssds-transmogrify.jar" />
 		<delete file="${transmogrify.deployment.location}/ssds-transmogrify-service.xml" />
 		<delete file="${transmogrify.deployment.location}/ssds-ingest-service.xml" />
+		<delete file="${jboss.common.lib.location}/${siam.jar}" />
 		<!-- Remove the client publishing jar -->
 		<delete file="${project.documentation.deploy.location}/client/ssds-transmogrify-pub.zip" />
+	</target>
+
+	<!-- The target to test the TransmogrifyMDB instance -->
+	<target name="test" depends="compile, configure-files">
+		<!-- Clean out the compiled test classes -->
+		<delete dir="${project.build}/classes/test/moos/ssds/transmogrify" />
+		<delete dir="${project.build}/classes/test/moos/ssds/io/util" />
+
+		<!-- Compile just the test classes -->
+		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
+			<src path="${src.java}" />
+			<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
+			<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
+			<classpath>
+				<pathelement location="${project.build}/classes" />
+				<fileset refid="project-lib-jar-fileset" />
+				<fileset refid="jboss-client-jar-fileset" />
+			</classpath>
+		</javac>
+		<junit printsummary="withOutAndErr" haltonfailure="no" errorProperty="test.failed" failureProperty="test.failed">
+			<jvmarg value="-Xms512m" />
+			<jvmarg value="-Xmx1024m" />
+			<classpath>
+				<pathelement location="${project.build}/classes" />
+				<pathelement location="${project.build}/transmogrify-pub" />
+				<fileset refid="project-lib-jar-fileset" />
+				<fileset refid="jboss-client-jar-fileset" />
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${gen.test}">
+				<fileset dir="${src.java}">
+					<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
+					<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
+				</fileset>
+			</batchtest>
+		</junit>
 	</target>
 </project>
