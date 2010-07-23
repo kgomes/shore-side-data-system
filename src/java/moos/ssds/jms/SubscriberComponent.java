@@ -17,15 +17,13 @@ package moos.ssds.jms;
 
 import java.util.Properties;
 
-import javax.jms.ExceptionListener;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicSession;
-import javax.jms.TopicSubscriber;
+import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -35,7 +33,7 @@ import org.apache.log4j.Logger;
 /**
  * <p>
  * SubscriberComponent provides an easy to use class that handles JMS
- * publish-subscribe messaging. The goal of this is to povide messsaging without
+ * publish-subscribe messaging. The goal of this is to provide messaging without
  * requiring the developer to use JMS api's
  * </p>
  * <p>
@@ -43,7 +41,7 @@ import org.apache.log4j.Logger;
  * </p>
  * 
  * <pre>
- * import ssds.portal.*;
+ * import moos.ssds.jms.*;
  * 
  * public class Subscriber1 {
  * 
@@ -70,7 +68,7 @@ import org.apache.log4j.Logger;
  * <code>TopicConnection</code> when the class was no longer used. However, the
  * garbage collector would call the finalize() method at seemingly random times.
  * Causing the program to cease. Moving the close() call out of the finalize()
- * method stopeed this problem.
+ * method stopped this problem.
  * </p>
  * <hr>
  * 
@@ -80,16 +78,25 @@ import org.apache.log4j.Logger;
 public class SubscriberComponent {
 
 	/**
-	 * The topic name that this SubscriberComponent will subscribe to
+	 * This is the log4j logger used to log activity in a SubscriberComponent
 	 */
-	protected String topicname;
+	private Logger logger = Logger.getLogger(SubscriberComponent.class);
 
 	/**
-	 * This the the naming Context that will be used to look up the JMS related
-	 * servcies. It is going to use the first jndi.properties file it finds in
-	 * its classpath to determine which JNDI service to utilize.
+	 * A properties file used for reading in jms information for the subscriber
+	 * to utilize when working
 	 */
-	protected Context jndiContext;
+	private Properties jmsProps = new Properties();
+
+	/**
+	 * A boolean that indicates the connection status of the subscriber
+	 */
+	private boolean connected = false;
+
+	/**
+	 * The topic name that this SubscriberComponent will subscribe to
+	 */
+	protected String destinationName = null;
 
 	/**
 	 * This is the name of the host to subscribe to
@@ -97,36 +104,21 @@ public class SubscriberComponent {
 	protected String hostName = null;
 
 	/**
-	 * This is the JMS TopicConnectionFactory that is used to get the topic
-	 * connection for this subscriber
+	 * This is the Connection to the JMS server
 	 */
-	protected TopicConnectionFactory topicConnectionFactory;
+	protected Connection connection = null;
 
 	/**
-	 * This is the TopicSession that will be used to listen and process messages
+	 * This is the session that will be used to listen and process messages
 	 * coming from JMS
 	 */
-	protected TopicSession topicSession;
+	protected Session session = null;
 
 	/**
-	 * This is the TopicConnection to the JMS server
+	 * This is the MessageConsumer that will be the link between the JMS
+	 * destination and the responsible listener
 	 */
-	protected TopicConnection topicConnection;
-
-	/**
-	 * A dummy message
-	 */
-	protected Message message;
-
-	/**
-	 * This is the topic that this component subscribes to
-	 */
-	private Topic topic;
-
-	/**
-	 * This is the TopicSubscriber obtained from the JMS server
-	 */
-	protected TopicSubscriber topicSubscriber;
+	protected MessageConsumer messageConsumer = null;
 
 	/**
 	 * This is a local copy of the message listener used to process messages
@@ -134,19 +126,8 @@ public class SubscriberComponent {
 	private MessageListener messageListener;
 
 	/**
-	 * This is the log4j logger used to log activity in a SubscriberComponent
-	 */
-	private Logger subscriberLogger = Logger
-			.getLogger(SubscriberComponent.class);
-
-	/**
-	 * A properties file used for reading in jms information for the subscriber
-	 * to utilize when working
-	 */
-	Properties jmsProps = new Properties();
-
-	/**
-	 * The constructor to help specify the hostname
+	 * The constructor to that can be used if you know the hostname, destination
+	 * name and the MessageListener that will handle the messages
 	 * 
 	 * @param hostName
 	 * @param topicName
@@ -160,195 +141,57 @@ public class SubscriberComponent {
 	}
 
 	/**
-	 * Constructor
+	 * Constructor which takes in a destination name and a MessageListener
 	 * 
-	 * @param topicName
-	 *            The name of the topic to subscribe to. For JBoss this needs to
-	 *            be "topic/someTopic" whereas most other J2EE servers would use
-	 *            "someTopic"
+	 * @param destinationName
+	 *            The name of the Destination to subscribe to. For JBoss this
+	 *            needs to be "topic/someTopic" whereas most other J2EE servers
+	 *            would use "someTopic"
 	 * @param messageListener
 	 *            The <code>MessageListener</code> to be used to handle the
 	 *            message.
 	 */
-	public SubscriberComponent(String topicName, MessageListener messageListener) {
-		// Now try to read the jms properties to find out what the JNDI name of
-		// the TopicConnectionFactory is
+	public SubscriberComponent(String destinationName,
+			MessageListener messageListener) {
+		// Now read the jms properties to find the JNDI name of the
+		// ConnectionFactory
 		try {
 			jmsProps.load(this.getClass().getResourceAsStream(
 					"/moos/ssds/jms/jms.properties"));
 		} catch (Exception e) {
-			subscriberLogger.debug("Could not get jms properties file");
+			logger.debug("Could not get jms properties file");
 		}
 		// Now call the subscribe method
-		subscribe(topicName, messageListener);
+		subscribe(destinationName, messageListener);
 	}
 
 	/**
 	 * This method assigns the hostname that you will subscribe to. This gives
 	 * the client a way to override any jndi.properties file that was found.
+	 * After assigning the hostname, it restarts the subscription connection.
 	 * 
 	 * @param hostName
 	 */
 	public void setHostName(String hostName) {
 		this.hostName = hostName;
-		this.subscribe(this.topicname, this.messageListener);
+		this.subscribe(this.destinationName, this.messageListener);
 	}
 
 	/**
-	 * This method will attempt to connect to the JMS topic using the currently
-	 * defined topic names and message listeners. If either are null (or an
-	 * empty topic name), it will throw an IllegalArgumentException
-	 */
-	private void subscribe() throws IllegalArgumentException {
-		if ((this.topicname == null) || (this.topicname.equals(""))) {
-			throw new IllegalArgumentException("The topic name is empty so no "
-					+ "connection could be established");
-		}
-		if (this.messageListener == null) {
-			throw new IllegalArgumentException(
-					"The message listener has not be created "
-							+ "so no connection was established.");
-		}
-		this.subscribe(this.topicname, this.messageListener);
-	}
-
-	/**
-	 * Looks up the topic via JNDI and subscribes to it.
+	 * This method returns the boolean that indicates the connection status of
+	 * the subscriber
 	 * 
-	 * @param topicName
-	 *            The name of the topic to subscribe to.
-	 * @param messageListener
-	 *            The <code>MessageListener</code> to be used to handle the
-	 *            message.
+	 * @return
 	 */
-	private void subscribe(String topicName, MessageListener messageListener) {
-
-		this.close();
-		// Set the connected flag to false
-		boolean connected = false;
-		subscriberLogger.debug("SubscriberComponent is subscribing to "
-				+ topicName);
-
-		// Now try to connect up everything
-		try {
-			// Set the local variables to those incoming
-			this.topicname = topicName;
-			this.messageListener = messageListener;
-			subscriberLogger
-					.debug("Starting JNDI and JMS in SubscriberComponent");
-
-			// Create a JNDI API Context Object if none exists
-			jndiContext = new InitialContext();
-
-			subscriberLogger
-					.debug("Should have initial context and it looks like:"
-							+ jndiContext.getEnvironment());
-			// Check to see if a hostname is specified
-			if ((this.hostName != null) && (!this.hostName.equals(""))) {
-				jndiContext.removeFromEnvironment(Context.PROVIDER_URL);
-				jndiContext.addToEnvironment(Context.PROVIDER_URL, hostName
-						+ ":1099");
-				subscriberLogger
-						.debug("Changed subscriber host, now JNDI looks like:"
-								+ jndiContext.getEnvironment());
-			}
-
-			// Loop through and try to get the TopicConnectionFactory from the
-			// JMS server. Keep looping until the TopicConnectionFactory is
-			// found
-			while (!connected) {
-				try {
-					topicConnectionFactory = (TopicConnectionFactory) jndiContext
-							.lookup(jmsProps
-									.getProperty("ssds.jms.topic.connection.factory.jndi.name"));
-				} catch (NamingException ne) {
-					subscriberLogger
-							.error("Could not get to initial context due to naming exception, will wait and try again. Message = "
-									+ ne.getMessage());
-					try {
-						Thread.sleep(10000);
-					} catch (Exception te) {
-						subscriberLogger.warn("Could not put thread to sleep");
-					}
-					continue;
-				} catch (Exception ex) {
-					subscriberLogger
-							.error("Could not get to initial context due to unknown exception, will wait and try again. Message = "
-									+ ex.getMessage());
-					try {
-						Thread.sleep(10000);
-					} catch (Exception te) {
-						subscriberLogger.warn("Could not put thread to sleep");
-					}
-					continue;
-				}
-				// Now set connected flag to true
-				connected = true;
-			}
-			subscriberLogger.debug("should have topicConnectionFactory");
-
-			// Now create the TopicConnection
-			topicConnection = topicConnectionFactory.createTopicConnection();
-			subscriberLogger.debug("Should have topicConnection");
-
-			// Set the exception callback listener
-			topicConnection.setExceptionListener(new JmsExceptionListener());
-
-			// Now create a TopicSession
-			topicSession = topicConnection.createTopicSession(false,
-					TopicSession.AUTO_ACKNOWLEDGE);
-			subscriberLogger.debug("should have topicSession");
-
-			// Now create a dummy message
-			message = topicSession.createObjectMessage();
-			subscriberLogger.debug("should have create message");
-
-			// Lookup the topic and get the appropriate publisher
-			topic = (Topic) jndiContext.lookup(topicName);
-			subscriberLogger.debug("should have topic");
-
-			topicSubscriber = topicSession.createSubscriber(topic);
-			subscriberLogger.debug("should have topicSubscriber");
-
-			// Now set the message listener to that that was handed off in
-			// the constructor
-			topicSubscriber.setMessageListener(messageListener);
-			subscriberLogger.debug("should have set message listener");
-
-			// Now start up the connection and listen for packets
-			topicConnection.start();
-			subscriberLogger.debug("should have started");
-		} catch (NamingException e) {
-			subscriberLogger.debug("Error publishing to JMS. JNDI API lookup"
-					+ " failed: " + e.toString());
-			e.printStackTrace();
-		} catch (JMSException e) {
-			subscriberLogger
-					.debug("Error connecting to JMS: " + e.getMessage());
-			e.printStackTrace();
-		} catch (Exception e) {
-			subscriberLogger.debug("Unknown exception caught: "
-					+ e.getMessage());
-			e.printStackTrace();
-		}
-
-		// Now close the InitialContext to make sure it goes away
-		try {
-			if (jndiContext != null)
-				jndiContext.close();
-		} catch (NamingException e) {
-			subscriberLogger
-					.debug("NamingException caught trying to close the JNDI Context: "
-							+ e.getMessage());
-		}
-
+	public boolean isConnected() {
+		return connected;
 	}
 
 	/**
 	 * Accessor for the MessageListener
 	 * 
-	 * @return The class used to process the messages recieved by this <code>
-     * SubscriberComponent</code>
+	 * @return The class used to process the messages received by this
+	 *         <code>SubscriberComponent</code>
 	 */
 	public MessageListener getMessageListener() {
 		return messageListener;
@@ -361,7 +204,7 @@ public class SubscriberComponent {
 	 *         subscribed to.
 	 */
 	public String getTopicname() {
-		return topicname;
+		return destinationName;
 	}
 
 	/**
@@ -369,70 +212,200 @@ public class SubscriberComponent {
 	 * used.
 	 */
 	public void close() {
-		subscriberLogger.debug("close called");
-		try {
-			// Null out the local message
-			message = null;
-			// Null out the Topic
-			topic = null;
-			// Check null and close TopicSubscriber
-			if (topicSubscriber != null) {
-				topicSubscriber.close();
-				topicSubscriber = null;
+		logger.debug("close called");
+		// Check null and close TopicConnection
+		if (connection != null) {
+			try {
+				logger.debug("Connection stats before closing:\nClientID = "
+						+ connection.getClientID() + "\nJMSProviderName = "
+						+ connection.getMetaData().getJMSProviderName());
+				connection.close();
+			} catch (JMSException e) {
+				logger.error("JMSException caught trying "
+						+ "to close the connection: " + e.getMessage());
+			} catch (Exception e) {
+				logger.error("Exception caught trying to "
+						+ "close the connection: " + e.getMessage());
 			}
-			// Check null and close TopicSession
-			if (topicSession != null) {
-				topicSession.close();
-				topicSession = null;
-			}
-			// Check null and close TopicConnection
-			if (topicConnection != null) {
-				topicConnection.close();
-				topicConnection = null;
-			}
-			// Null out TopicConnection Factory
-			topicConnectionFactory = null;
-			// Check null and close JNDI Context
-			if (jndiContext != null) {
-				jndiContext.close();
-				jndiContext = null;
-			}
-		} catch (JMSException e) {
-			subscriberLogger.debug("Error with JMS connection on cleanup: "
-					+ e.getMessage());
-		} catch (NamingException e) {
-			subscriberLogger.debug("Error with JNDI API on cleanup: "
-					+ e.getMessage());
-		} catch (Exception e) {
-			subscriberLogger.debug("Unknown exception on close: "
-					+ e.getMessage());
+			connection = null;
 		}
-
+		connected = false;
 	}
 
 	/**
-	 * This is a listener that will be used to trap JMSExceptions from the
-	 * server and then try to re-establish the connection
+	 * Looks up the topic via JNDI and subscribes to it.
 	 * 
-	 * @author kgomes
+	 * @param destinationName
+	 *            The name of the destination to subscribe to.
+	 * @param messageListener
+	 *            The <code>MessageListener</code> to be used to handle the
+	 *            message.
 	 */
-	private class JmsExceptionListener implements ExceptionListener {
+	private void subscribe(String destinationName,
+			MessageListener messageListener) {
 
-		public void onException(JMSException e) {
-			subscriberLogger.warn("Connection caught an exception so "
-					+ "I will try to restart the connection (Message = "
-					+ e.getMessage() + ")");
-			// First close everything
-			close();
-			// Now try to restart
-			try {
-				subscribe();
-			} catch (IllegalArgumentException e1) {
-				subscriberLogger
-						.error("IllegalArgumentException caught trying to re-subscribe: "
-								+ e1.getMessage());
+		// Set the local variables to those incoming
+		this.destinationName = destinationName;
+		this.messageListener = messageListener;
+
+		// Close the existing connection
+		this.close();
+
+		// Set the connected flag to false
+		connected = true;
+		logger.debug("SubscriberComponent is " + "subscribing to "
+				+ destinationName);
+
+		// Get initialContexct
+		logger.debug("Looking up InitialContext");
+		Context jndiContext = null;
+		try {
+			jndiContext = new InitialContext();
+
+			logger.debug("Should have initial context and it looks like:"
+					+ jndiContext.getEnvironment());
+			// Check to see if a hostname is specified
+			if ((this.hostName != null) && (!this.hostName.equals(""))) {
+				jndiContext.removeFromEnvironment(Context.PROVIDER_URL);
+				jndiContext.addToEnvironment(Context.PROVIDER_URL, hostName
+						+ ":1099");
+				logger.debug("Changed subscriber host, now JNDI looks like:"
+						+ jndiContext.getEnvironment());
 			}
+		} catch (NamingException e) {
+			logger.error("NamingException caught trying "
+					+ "to get InitialContext: " + e.getMessage());
+			connected = false;
+			return;
 		}
+
+		// If the naming context was found, look up the connection factory
+		logger.debug("Looking up the ConnectionFactory");
+		ConnectionFactory connectionFactory = null;
+		if (jndiContext != null) {
+			try {
+				connectionFactory = (ConnectionFactory) jndiContext
+						.lookup(jmsProps
+								.getProperty("ssds.jms.topic.connection.factory.jndi.name"));
+			} catch (NamingException e) {
+				logger.error("NamingException caught trying "
+						+ "to get ConnectionFactory: " + e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
+			connected = false;
+			return;
+		}
+
+		// Grab the Destination to subscribe to
+		logger.debug("Looking up the destination with name " + destinationName);
+		Destination consumerDestination = null;
+		if (connectionFactory != null) {
+			try {
+				consumerDestination = (Destination) jndiContext
+						.lookup(destinationName);
+			} catch (NamingException e) {
+				logger.error("NamingException caught trying "
+						+ "to get the destination: " + e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
+			connected = false;
+			return;
+		}
+
+		// Now create the connection
+		logger.debug("Going to create the connection.");
+		if (consumerDestination != null) {
+			try {
+				connection = connectionFactory.createConnection();
+			} catch (JMSException e) {
+				logger.error("JMSException caught trying "
+						+ "to create the connection: " + e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
+			connected = false;
+			return;
+		}
+
+		// Create the session
+		logger.debug("Going to create the session");
+		if (consumerDestination != null) {
+			try {
+				session = connection.createSession(false,
+						Session.AUTO_ACKNOWLEDGE);
+			} catch (JMSException e) {
+				logger.error("JMSException caught trying "
+						+ "to create the connection: " + e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
+			connected = false;
+			return;
+		}
+
+		// Now create the consumer
+		logger.debug("Going the create the consumer");
+		if (session != null) {
+			try {
+				messageConsumer = session.createConsumer(consumerDestination);
+			} catch (JMSException e) {
+				logger.error("JMSException caught trying "
+						+ "to create the message consumer: " + e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
+			connected = false;
+			return;
+		}
+
+		// If the message consumer was all good, connect up the listeners
+		logger.debug("Going to set the listener on the consumer");
+		if (messageConsumer != null) {
+			try {
+				messageConsumer.setMessageListener(messageListener);
+			} catch (JMSException e) {
+				logger.error("JMSException caught trying "
+						+ "to set the message listener: " + e.getMessage());
+				connected = false;
+				return;
+			}
+		} else {
+			connected = false;
+			return;
+		}
+
+		// Now start up the connection and listen for packets
+		logger.debug("Going to start the connection.");
+		try {
+			if (connected)
+				connection.start();
+		} catch (JMSException e) {
+			logger.error("JMSException caught trying "
+					+ "to set start the connection: " + e.getMessage());
+			connected = false;
+			return;
+		}
+		logger.debug("should have started");
+
+		// Now close the InitialContext to make sure it goes away
+		try {
+			if (jndiContext != null)
+				jndiContext.close();
+		} catch (NamingException e) {
+			logger.debug("NamingException caught trying to "
+					+ "close the JNDI Context: " + e.getMessage());
+		}
+
+		// Now return
+		return;
+
 	}
 
 }
