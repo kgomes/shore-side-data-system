@@ -7,16 +7,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.Properties;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
@@ -40,12 +35,12 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	/* ********************************************** */
 	/* These parameters are for direct DB connections */
 	/* ********************************************** */
-	private String databaseJDBCUrl = null;
-	private String username = null;
-	private String password = null;
+	// private String databaseJDBCUrl = null;
+	// private String username = null;
+	// private String password = null;
 	// This is a boolean that tells the object if this is supposed to be a
 	// direct connection to the database or not
-	private boolean directConnection = false;
+	// private boolean directConnection = false;
 	/* ************************ */
 	/* End direct DB connection */
 	/* ************************ */
@@ -102,30 +97,30 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	 * @param deviceID
 	 * @throws ClassNotFoundException
 	 */
-	public PacketSQLQuery(String databaseDriverClassName,
-			String databaseJDBCUrl, String username, String password,
-			PacketSQLQueryFactory packetSQLQueryFactory) throws SQLException,
-			ClassNotFoundException {
-		// First check that incoming parameters are OK
-		if ((databaseDriverClassName == null) || (databaseJDBCUrl == null)
-				|| (username == null) || (password == null))
-			throw new SQLException("One of the constructor parameters "
-					+ "was not specified, all four must be.");
-
-		// Set the flag for a direct connection
-		this.directConnection = true;
-
-		// Set the local variabless
-		this.databaseJDBCUrl = databaseJDBCUrl;
-		this.username = username;
-		this.password = password;
-
-		// Load the DB driver
-		Class.forName(databaseDriverClassName);
-
-		// Set the PacketSQLFactory
-		this.packetSQLQueryFactory = packetSQLQueryFactory;
-	}
+	// public PacketSQLQuery(String databaseDriverClassName,
+	// String databaseJDBCUrl, String username, String password,
+	// PacketSQLQueryFactory packetSQLQueryFactory) throws SQLException,
+	// ClassNotFoundException {
+	// // First check that incoming parameters are OK
+	// if ((databaseDriverClassName == null) || (databaseJDBCUrl == null)
+	// || (username == null) || (password == null))
+	// throw new SQLException("One of the constructor parameters "
+	// + "was not specified, all four must be.");
+	//
+	// // Set the flag for a direct connection
+	// this.directConnection = true;
+	//
+	// // Set the local variabless
+	// this.databaseJDBCUrl = databaseJDBCUrl;
+	// this.username = username;
+	// this.password = password;
+	//
+	// // Load the DB driver
+	// Class.forName(databaseDriverClassName);
+	//
+	// // Set the PacketSQLFactory
+	// this.packetSQLQueryFactory = packetSQLQueryFactory;
+	// }
 
 	/**
 	 * @return Returns the ds.
@@ -143,59 +138,60 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 	 */
 	private void setDataSource(DataSource dataSource) throws SQLException {
 		// Set the flag to turn off the direct connection
-		this.directConnection = false;
+		// this.directConnection = false;
 		// If the data source is null, look up one using the local properties
 		if (dataSource == null) {
-			logger.debug("No DataSource specified, will "
-					+ "construct one from the io.properties");
-			Properties ioProperties = null;
-			// Create and load the io properties
-			ioProperties = new Properties();
-			try {
-				ioProperties.load(this.getClass().getResourceAsStream(
-						"/moos/ssds/io/io.properties"));
-			} catch (Exception e) {
-				logger.error("Exception trying to read in properties file: "
-						+ e.getMessage());
-			}
-			// Grab JNDI stuff
-			String jndiHostName = ioProperties
-					.getProperty("io.storage.sql.jndi.server.name");
-			String dataSourceJndiName = "java:/"
-					+ ioProperties.getProperty("io.storage.sql.jndi.name");
-			logger.debug("jndiHostName = " + jndiHostName
-					+ ", dataSourceJndiName = " + dataSourceJndiName);
-
-			// Now grab the DataSource from the JNDI
-			Context jndiContext = null;
-			try {
-				jndiContext = new InitialContext();
-				if ((jndiHostName != null) && (!jndiHostName.equals(""))) {
-					jndiContext.removeFromEnvironment(Context.PROVIDER_URL);
-					jndiContext.addToEnvironment(Context.PROVIDER_URL,
-							jndiHostName + ":1099");
-				}
-			} catch (NamingException ne) {
-				logger
-						.error("!!--> A naming exception was caught while trying "
-								+ "to get an initial context: "
-								+ ne.getMessage());
-				return;
-			} catch (Exception e) {
-				logger
-						.error("!!--> An unknown exception was caught while trying "
-								+ "to get an initial context: "
-								+ e.getMessage());
-				return;
-			}
-			try {
-				this.dataSource = (DataSource) jndiContext
-						.lookup(dataSourceJndiName);
-				logger.debug("DataSource from JNDI DataSource = "
-						+ this.dataSource);
-			} catch (NamingException e1) {
-				logger.error("Could not get DataSource: " + e1.getMessage());
-			}
+			throw new SQLException("No DataSource specified.");
+			// logger.debug("No DataSource specified, will "
+			// + "construct one from the io.properties");
+			// Properties ioProperties = null;
+			// // Create and load the io properties
+			// ioProperties = new Properties();
+			// try {
+			// ioProperties.load(this.getClass().getResourceAsStream(
+			// "/moos/ssds/io/io.properties"));
+			// } catch (Exception e) {
+			// logger.error("Exception trying to read in properties file: "
+			// + e.getMessage());
+			// }
+			// // Grab JNDI stuff
+			// String jndiHostName = ioProperties
+			// .getProperty("io.storage.sql.jndi.server.name");
+			// String dataSourceJndiName = "java:/"
+			// + ioProperties.getProperty("io.storage.sql.jndi.name");
+			// logger.debug("jndiHostName = " + jndiHostName
+			// + ", dataSourceJndiName = " + dataSourceJndiName);
+			//
+			// // Now grab the DataSource from the JNDI
+			// Context jndiContext = null;
+			// try {
+			// jndiContext = new InitialContext();
+			// if ((jndiHostName != null) && (!jndiHostName.equals(""))) {
+			// jndiContext.removeFromEnvironment(Context.PROVIDER_URL);
+			// jndiContext.addToEnvironment(Context.PROVIDER_URL,
+			// jndiHostName + ":1099");
+			// }
+			// } catch (NamingException ne) {
+			// logger
+			// .error("!!--> A naming exception was caught while trying "
+			// + "to get an initial context: "
+			// + ne.getMessage());
+			// return;
+			// } catch (Exception e) {
+			// logger
+			// .error("!!--> An unknown exception was caught while trying "
+			// + "to get an initial context: "
+			// + e.getMessage());
+			// return;
+			// }
+			// try {
+			// this.dataSource = (DataSource) jndiContext
+			// .lookup(dataSourceJndiName);
+			// logger.debug("DataSource from JNDI DataSource = "
+			// + this.dataSource);
+			// } catch (NamingException e1) {
+			// logger.error("Could not get DataSource: " + e1.getMessage());
+			// }
 
 		} else {
 			this.dataSource = dataSource;
@@ -240,27 +236,27 @@ public class PacketSQLQuery implements Enumeration<byte[]> {
 		Connection connection = null;
 
 		// Grab a new connection
-		if (!directConnection) {
-			logger.debug("It is not a direct connection so we "
-					+ "will grab a connection from the DataSource");
-			try {
-				connection = this.dataSource.getConnection();
-			} catch (Exception e) {
-				logger.error("Exception caught trying to get "
-						+ "Connection from DataSource "
-						+ "(not direction connection): " + e.getMessage());
-			}
-		} else {
-			logger.debug("This is a direct connection, so we "
-					+ "will use DriverManager to get a connection");
-			try {
-				connection = DriverManager.getConnection(this.databaseJDBCUrl,
-						this.username, this.password);
-			} catch (Exception e) {
-				logger.error("Exception caught trying to get "
-						+ "Connection from DataSource: " + e.getMessage());
-			}
+		// if (!directConnection) {
+		logger.debug("It is not a direct connection so we "
+				+ "will grab a connection from the DataSource");
+		try {
+			connection = this.dataSource.getConnection();
+		} catch (Exception e) {
+			logger.error("Exception caught trying to get "
+					+ "Connection from DataSource "
+					+ "(not direction connection): " + e.getMessage());
 		}
+		// } else {
+		// logger.debug("This is a direct connection, so we "
+		// + "will use DriverManager to get a connection");
+		// try {
+		// connection = DriverManager.getConnection(this.databaseJDBCUrl,
+		// this.username, this.password);
+		// } catch (Exception e) {
+		// logger.error("Exception caught trying to get "
+		// + "Connection from DataSource: " + e.getMessage());
+		// }
+		// }
 
 		// Grab the SQL statement from the factory
 		String queryString = packetSQLQueryFactory.getQueryStatement();
