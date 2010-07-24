@@ -22,7 +22,7 @@
 	<!-- Define the ejb-doclet task -->
 	<taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
 		<classpath>
-			<pathelement location="${jboss.client.jar.directory}/${jboss-j2ee.jar}" />
+			<fileset refid="jboss-common-lib-jar-fileset" />
 			<fileset dir="${xdoclet.path}">
 				<include name="*.jar" />
 			</fileset>
@@ -32,7 +32,7 @@
 	<!-- Hibernate taskdefs -->
 	<taskdef name="hibernatedoclet" classname="xdoclet.modules.hibernate.HibernateDocletTask">
 		<classpath>
-			<pathelement location="${jboss.client.jar.directory}/${jboss-j2ee.jar}" />
+			<fileset refid="jboss-common-lib-jar-fileset" />
 			<fileset dir="${xdoclet.path}">
 				<include name="*.jar" />
 			</fileset>
@@ -42,7 +42,7 @@
 	<!-- Define the web-doclet task -->
 	<taskdef name="webdoclet" classname="xdoclet.modules.web.WebDocletTask">
 		<classpath>
-			<pathelement location="${jboss.client.jar.directory}/${servlet.jar}" />
+			<fileset refid="jboss-common-lib-jar-fileset" />
 			<fileset dir="${xdoclet.path}">
 				<include name="*.jar" />
 			</fileset>
