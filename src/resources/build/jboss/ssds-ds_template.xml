@@ -28,6 +28,7 @@
     <user-name>@DATASOURCE_USER_LOGIN_NAME@</user-name>
     <password>@DATASOURCE_PASSWORD@</password>
     <transaction-isolation>@DATASOURCE_TRANSACTION_ISOLATION@</transaction-isolation>
+    <check-valid-connection-sql>@DATASOURCE_CHECK_VALID_CONNECTION_SQL@</check-valid-connection-sql>
     <metadata>
         <type-mapping>@DATASOURCE_TYPE_MAPPING@</type-mapping>
     </metadata>
