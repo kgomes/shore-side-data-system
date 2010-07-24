@@ -1,16 +1,14 @@
 package test.moos.ssds.io;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+import moos.ssds.io.PacketSQLQueryFactory;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-
-import test.moos.ssds.ClassPathHacker;
-import moos.ssds.io.PacketSQLQueryFactory;
-import junit.framework.TestCase;
 
 public class PacketSQLQueryFactoryTest extends TestCase {
 
@@ -33,15 +31,6 @@ public class PacketSQLQueryFactoryTest extends TestCase {
 
 	public PacketSQLQueryFactoryTest(String name) {
 		super(name);
-		// Add the base of the transmogrifier build files to the classpath
-		try {
-			ClassPathHacker.addFile(new File("build/ingest"));
-			ClassPathHacker.addFile(new File("build/ingest-pub"));
-		} catch (IOException e1) {
-			logger.error("IOException caught trying to add the "
-					+ "build/transmogrify directory to the class path"
-					+ e1.getMessage());
-		}
 
 		Properties log4jProperties = new Properties();
 		try {
