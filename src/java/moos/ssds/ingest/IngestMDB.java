@@ -19,17 +19,20 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.MessageDriven;
 import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSession;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 import moos.ssds.io.PacketOutput;
 import moos.ssds.io.PacketOutputManager;
@@ -48,19 +51,12 @@ import org.apache.log4j.Logger;
  * 
  * @author : $Author: kgomes $
  * @version : $Revision: 1.11.2.1 $ <br>
- *          XDoclet Stuff for deployment
- * @ejb.bean name="Ingest" display-name="Ingest Message-Driven Bean"
- *           description="This is the front-line ingest for the Shore-Side Data
- *           System-SSDS" transaction-type="Container"
- *           acknowledge-mode="Auto-acknowledge"
- *           destination-type="javax.jms.Topic"
- * @ejb.resource-ref res-ref-name="TopicConnectionFactory"
- *                   res-type="javax.jms.TopicConnectionFactory"
- *                   res-auth="Application"
- * @jboss.destination-jndi-name name="topic/${ingest.topic.name}"
  */
-public class IngestMDB implements javax.ejb.MessageDrivenBean,
-		javax.jms.MessageListener {
+@MessageDriven(activationConfig = {
+		@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
+		@ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/SSDSIngestTopic"),
+		@ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable") })
+public class IngestMDB implements MessageListener {
 
 	/**
 	 * A serial version ID to make eclipse happy
@@ -73,15 +69,46 @@ public class IngestMDB implements javax.ejb.MessageDrivenBean,
 	static Logger logger = Logger.getLogger(IngestMDB.class);
 
 	/**
+	 * The ConnectionFactory that will be injected by the container
+	 */
+	@Resource(mappedName = "ConnectionFactory")
+	private ConnectionFactory connectionFactory;
+
+	/**
+	 * This is the JMS destination that will be published to and will be
+	 * injected by the container
+	 */
+	@Resource(mappedName = "topic/SSDSRuminateTopic")
+	private Destination destination;
+
+	/**
+	 * This is the data source where data will be written to
+	 */
+	@Resource(mappedName = "java:/SSDS_Data")
+	private static DataSource dataSource = null;
+
+	/**
+	 * This is the connection to the topic that the messages will be published
+	 * to
+	 */
+	private Connection connection = null;
+
+	/**
+	 * This is a session that the publishing of messages will be run in.
+	 */
+	private Session session = null;
+
+	/**
+	 * This is the message producer that is actually used to send messages to
+	 * the
+	 */
+	private MessageProducer messageProducer = null;
+
+	/**
 	 * This is the properties that contains the information needed to ingest
 	 * incoming packets
 	 */
 	private Properties ingestProps = null;
-
-	/**
-	 * These are the names of the topics that the packets will be republished to
-	 */
-	private String republishTopicName = null;
 
 	/**
 	 * This is a flag to indicate if Ingest should serialize packets to disk or
@@ -90,62 +117,12 @@ public class IngestMDB implements javax.ejb.MessageDrivenBean,
 	private boolean fileSerializationEnabled = false;
 
 	/**
-	 * This is the JNDI Context that will be used (Naming Service) to locate the
-	 * appropriate remote classes to use for publishing messages.
+	 * This method sets up the internal properties and message producer
+	 * utilizing resources from the container
 	 */
-	private Context jndiContext = null;
-
-	/**
-	 * The TopicConnectionFactory that will be used to republish messages
-	 */
-	private TopicConnectionFactory topicConnectionFactory = null;
-
-	/**
-	 * This is the connection to the topic that the messages will be published
-	 * to
-	 */
-	private TopicConnection topicConnection = null;
-
-	/**
-	 * These are the JMS topics that will be used for publishing
-	 */
-	private Topic topic = null;
-
-	/**
-	 * This is a session that the publishing of messages will be run in.
-	 */
-	private TopicSession topicSession = null;
-
-	/**
-	 * These are the topic publishers that are actually used to send messages to
-	 * the topic
-	 */
-	private TopicPublisher topicPublisher = null;
-
-	/**
-	 * This is a boolean to indicated if the publishing is setup and working
-	 * correctly
-	 */
-	private boolean publishingSetup = false;
-
-	/**
-	 * This is the default constructor
-	 */
-	public IngestMDB() {
-	}
-
-	/**
-	 * This is the callback that the container uses to set the
-	 * MessageDrivenContext
-	 */
-	public void setMessageDrivenContext(javax.ejb.MessageDrivenContext context) {
-	}
-
-	/**
-	 * This is the callback that the container uses to create this bean
-	 */
-	public void ejbCreate() {
-		// Grab the transmogrifier properties for the file
+	@PostConstruct
+	public void setup() {
+		// Grab the ingest properties from the properties file
 		ingestProps = new Properties();
 		try {
 			ingestProps.load(this.getClass().getResourceAsStream(
@@ -155,121 +132,79 @@ public class IngestMDB implements javax.ejb.MessageDrivenBean,
 					+ e.getMessage());
 		}
 
-		// Grab the topic name to republish to
-		this.republishTopicName = ingestProps
-				.getProperty("ingest.republish.topic");
-
 		// Grab the property that indicates if file serialization is requested
 		if (ingestProps.getProperty("ingest.file.serialization")
 				.equalsIgnoreCase("on"))
 			fileSerializationEnabled = true;
 
-		// Instead of using the publisher component, let's manage our own so
-		// that we can use a different InvocationLayer
-		this.setupPublishing();
-
-	} // End ejbCreate
-
-	/**
-	 * This method sets up the publishing so the the message driven bean can
-	 * republish the message after doing its thing.
-	 * 
-	 * @return a <code>boolean</code> that indicates if the setup went OK or not
-	 */
-	private boolean setupPublishing() {
-		// First tear down any existing connections
-		this.tearDownPublishing();
-		this.publishingSetup = false;
-
-		// Set a flag to track success of setup
-		boolean setupOK = true;
-		// First get the naming context from the container
-		try {
-			this.jndiContext = new InitialContext();
-			topicConnectionFactory = (TopicConnectionFactory) jndiContext
-					.lookup("java:/ConnectionFactory");
-			this.topicConnection = topicConnectionFactory
-					.createTopicConnection();
-			this.topic = (Topic) jndiContext.lookup(this.republishTopicName);
-			this.topicSession = this.topicConnection.createTopicSession(false,
-					Session.AUTO_ACKNOWLEDGE);
-			this.topicConnection.start();
-			this.topicPublisher = topicSession.createPublisher(this.topic);
-		} catch (NamingException e) {
-			logger.error("NamingException caught in setupPublishing: "
-					+ e.getMessage());
-			this.publishingSetup = false;
-			setupOK = false;
-		} catch (JMSException e) {
-			logger.error("JMSException caught in setupPublishing: "
-					+ e.getMessage());
-			this.publishingSetup = false;
-			setupOK = false;
-		} catch (Exception e) {
-			logger.error("Exception caught in setupPublishing: "
-					+ e.getMessage());
-			this.publishingSetup = false;
-			setupOK = false;
+		// Make sure the connection factory is there
+		if (connectionFactory != null) {
+			// Create a connection
+			try {
+				connection = connectionFactory.createConnection();
+			} catch (JMSException e) {
+				logger.error("JMSException caught trying to create "
+						+ "the connection from the "
+						+ "injected connection factory: " + e.getMessage());
+			}
+			if (connection != null) {
+				// Create a session
+				try {
+					session = connection.createSession(false,
+							Session.AUTO_ACKNOWLEDGE);
+				} catch (JMSException e) {
+					logger.error("JMSException caught trying to create "
+							+ "the session from the connection:"
+							+ e.getMessage());
+				}
+				if (session != null) {
+					if (destination != null) {
+						// Create a message producer
+						try {
+							messageProducer = session
+									.createProducer(destination);
+						} catch (JMSException e) {
+							logger.error("JMSException caught trying "
+									+ "to create the producer from the "
+									+ "session: " + e.getMessage());
+						}
+						if (messageProducer == null)
+							logger.error("Was not able to "
+									+ "create a MessageProducer");
+					} else {
+						logger.error("The destination that was to be "
+								+ "injected by the container "
+								+ "appears to be null");
+					}
+				} else {
+					logger.error("Could not seem to create a "
+							+ "session from the connection");
+				}
+			} else {
+				logger.error("Could not seem to create a connection "
+						+ "using the injected connection factory");
+			}
+		} else {
+			logger.error("ConnectionFactory is NULL and should "
+					+ "have been injected by the container!");
 		}
-		this.publishingSetup = true;
-		return setupOK;
 	}
 
 	/**
 	 * This method stops all the JMS components
-	 * 
-	 * @return
 	 */
-	private boolean tearDownPublishing() {
-		this.publishingSetup = false;
-		boolean tearDownOK = true;
+	@PreDestroy
+	public void tearDownPublishing() {
 		try {
-			// Close up everything
-			if (this.topicPublisher != null) {
-				this.topicPublisher.close();
-				this.topicPublisher = null;
-			}
-			// Now stop the connection
-			if (this.topicConnection != null) {
-				this.topicConnection.stop();
-			}
-			// Now close the session
-			if (this.topicSession != null) {
-				this.topicSession.close();
-				this.topicSession = null;
-			}
 			// Now close the connection
-			if (this.topicConnection != null) {
-				this.topicConnection.close();
-				this.topicConnection = null;
+			if (connection != null) {
+				connection.close();
 			}
-			// Now close the jndi context
-			if (this.jndiContext != null) {
-				this.jndiContext.close();
-				this.jndiContext = null;
-			}
-			// Null out the topic connection factory
-			this.topicConnectionFactory = null;
 		} catch (JMSException e) {
-			logger.error("Tear down caught a JMSException " + e.getMessage());
-			tearDownOK = false;
-		} catch (NamingException e) {
-			logger.error("Tear down caught a NameException " + e.getMessage());
-			tearDownOK = false;
-		} catch (Exception e) {
-			logger.error("Tear down caught a Exception " + e.getMessage());
-			tearDownOK = false;
+			logger.error("JMSException caught trying to close the connection: "
+					+ e.getMessage());
 		}
-
-		return tearDownOK;
 	}
-
-	/**
-	 * This is the callback that the container uses when removing this bean
-	 */
-	public void ejbRemove() {
-		this.tearDownPublishing();
-	} // End ejbRemove
 
 	/**
 	 * This is the callback method that the container calls when a message is
@@ -316,18 +251,11 @@ public class IngestMDB implements javax.ejb.MessageDrivenBean,
 			if (packetType == 1) {
 				logger.debug("bytesMessage was a metadata packet "
 						+ "so ingest will republish");
-				// Should be it, now republish the packet to the next step
-				// Create a new message
-				if (!this.publishingSetup) {
-					logger.error("Publishing was not setup");
-					this.setupPublishing();
-				}
 				try {
-					topicPublisher.publish(bytesMessage);
+					messageProducer.send(bytesMessage);
 				} catch (JMSException e2) {
 					logger.error("JMSException caught while trying "
 							+ "to publish the bytes message" + e2.getMessage());
-					this.publishingSetup = false;
 				}
 			}
 		}
@@ -335,8 +263,7 @@ public class IngestMDB implements javax.ejb.MessageDrivenBean,
 	}
 
 	/**
-	 * This method takes in a BytesMessage (JMS Message) and records it's
-	 * contents to storage on disk
+	 * This method takes packet information and serializes to disk
 	 * 
 	 * @param bytesMessage
 	 */
@@ -366,7 +293,8 @@ public class IngestMDB implements javax.ejb.MessageDrivenBean,
 	private void persistBytesMessageToDatabase(long deviceID,
 			BytesMessage bytesMessage) {
 		// Grab the SQL packet output
-		PacketSQLOutput po = PacketOutputManager.getPacketSQLOutput(deviceID);
+		PacketSQLOutput po = PacketOutputManager.getPacketSQLOutput(dataSource,
+				deviceID);
 		try {
 			po.writeBytesMessage(bytesMessage);
 		} catch (SQLException e1) {
