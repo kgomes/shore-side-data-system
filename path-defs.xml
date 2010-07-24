@@ -52,27 +52,7 @@
 	<propertycopy name="io.storage.sql.lastnumber.preamble" from="io.storage.sql.${database.server.type}.lastnumber.preamble" silent="true" />
 	<propertycopy name="io.storage.sql.lastnumber.postamble" from="io.storage.sql.${database.server.type}.lastnumber.postamble" silent="true" />
 
-	<!-- Define a fileset for JiBX jars -->
-	<path id="jibx-classpath">
-		<fileset dir="${project.lib}">
-			<include name="${bcel.jar}" />
-			<include name="${jibx-bind.jar}" />
-			<include name="${jibx-extras.jar}" />
-			<include name="${jibx-run.jar}" />
-			<include name="${jibx-schema.jar}" />
-			<include name="${jibx-tools.jar}" />
-			<include name="${joda-time.jar}" />
-			<include name="${qdox.jar}" />
-			<include name="${stax-api.jar}" />
-			<include name="${wstx-asl.jar}" />
-			<include name="${xbis-jbix.jar}" />
-			<include name="${xmlpull.jar}" />
-			<include name="${xpp3.jar}" />
-		</fileset>
-		<pathelement location="${build.classes}" />
-	</path>
-
-	<!-- Define the fileset that includes the JBoss client lib jars that we need for jms publishing -->
+	<!-- Define the fileset that includes the JBoss client lib jars that we need for jms publishing
 	<fileset id="publisher-client-jboss-libs" dir="${jboss.client.jar.directory}">
 		<include name="${log4j.jar}" />
 		<include name="${concurrent.jar}" />
@@ -94,7 +74,7 @@
 		<include name="${xbis-jbix.jar}" />
 		<include name="${xmlpull.jar}" />
 		<include name="${xpp3.jar}" />
-	</fileset>
+	</fileset> -->
 
 	<!-- Define the fileset that contains the JBoss client jars -->
 	<fileset id="jboss-client-jar-fileset" dir="${jboss.client.jar.directory}">
@@ -110,7 +90,7 @@
 	<fileset id="jboss-lib-jar-fileset" dir="${jboss.lib.location}">
 		<include name="*.jar" />
 	</fileset>
-	
+
 	<!-- Define the fileset that contains the web jars for JBoss -->
 	<fileset id="jboss-web-jar-fileset" dir="${jboss.web.deploy.location}">
 		<include name="**/*.jar" />
@@ -120,7 +100,41 @@
 	<fileset id="project-lib-jar-fileset" dir="${project.lib}">
 		<include name="*.jar" />
 	</fileset>
-	
+
+	<!-- JiBX fileset -->
+	<fileset id="jibx-jars" dir="${project.lib}">
+		<include name="${bcel.jar}" />
+		<include name="${jibx-bind.jar}" />
+		<include name="${jibx-extras.jar}" />
+		<include name="${jibx-run.jar}" />
+		<include name="${jibx-schema.jar}" />
+		<include name="${jibx-tools.jar}" />
+		<include name="${joda-time.jar}" />
+		<include name="${qdox.jar}" />
+		<include name="${stax-api.jar}" />
+		<include name="${wstx-asl.jar}" />
+		<include name="${xbis-jbix.jar}" />
+		<include name="${xmlpull.jar}" />
+		<include name="${xpp3.jar}" />
+	</fileset>
+
+	<!-- Deployed JiBX fileset -->
+	<fileset id="deployed-jibx-jars" dir="${jboss.common.lib.location}">
+		<include name="${bcel.jar}" />
+		<include name="${jibx-bind.jar}" />
+		<include name="${jibx-extras.jar}" />
+		<include name="${jibx-run.jar}" />
+		<include name="${jibx-schema.jar}" />
+		<include name="${jibx-tools.jar}" />
+		<include name="${joda-time.jar}" />
+		<include name="${qdox.jar}" />
+		<include name="${stax-api.jar}" />
+		<include name="${wstx-asl.jar}" />
+		<include name="${xbis-jbix.jar}" />
+		<include name="${xmlpull.jar}" />
+		<include name="${xpp3.jar}" />
+	</fileset>
+
 	<!-- Define the fileset that includes the JBoss server lib jars that we need -->
 	<fileset id="jboss-lib-jar-fileset" dir="${jboss.home}/server/${jboss.server.type}/lib">
 		<include name="${hibernate.jar}" />
@@ -234,11 +248,17 @@
 		<include name="${xpp3.jar}" />
 	</fileset>
 
+	<!-- Define a fileset for JiBX jars -->
+	<path id="jibx-classpath">
+		<fileset refid="jibx-jars" />
+		<pathelement location="${build.classes}" />
+	</path>
+
+
 	<!-- Define classpath for compiling the source code -->
 	<path id="compile-classpath">
-		<fileset refid="jboss-client-jar-fileset" />
-		<fileset refid="jboss-lib-jar-fileset" />
-		<fileset refid="all-project-lib-jar-fileset" />
+		<fileset refid="jboss-common-lib-jar-fileset" />
+		<fileset refid="project-lib-jar-fileset" />
 	</path>
 
 </project>
