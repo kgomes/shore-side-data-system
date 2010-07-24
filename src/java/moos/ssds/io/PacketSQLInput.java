@@ -123,29 +123,29 @@ public class PacketSQLInput implements Enumeration<Object> {
 	 * @param deviceID
 	 * @throws ClassNotFoundException
 	 */
-	public PacketSQLInput(String databaseDriverClassName,
-			String databaseJDBCUrl, String username, String password,
-			long deviceID, String sqlTableDelimiter) throws SQLException,
-			ClassNotFoundException {
-
-		// First check that incoming parameters are OK
-		if ((databaseDriverClassName == null) || (databaseJDBCUrl == null)
-				|| (username == null) || (password == null))
-			throw new SQLException(
-					"One of the constructor parameters was not specified, all four must be.");
-
-		// Create the factory
-		this.packetSQLQueryFactory = new PacketSQLQueryFactory(deviceID);
-
-		// If the sqlTableDelimeter is specified, it must be overriding
-		if (sqlTableDelimiter != null) {
-			this.packetSQLQueryFactory.setSqlTableDelimiter(sqlTableDelimiter);
-		}
-
-		// Now the packetSQLQuery
-		this.packetSQLQuery = new PacketSQLQuery(databaseDriverClassName,
-				databaseJDBCUrl, username, password, this.packetSQLQueryFactory);
-	}
+	// public PacketSQLInput(String databaseDriverClassName,
+	// String databaseJDBCUrl, String username, String password,
+	// long deviceID, String sqlTableDelimiter) throws SQLException,
+	// ClassNotFoundException {
+	//
+	// // First check that incoming parameters are OK
+	// if ((databaseDriverClassName == null) || (databaseJDBCUrl == null)
+	// || (username == null) || (password == null))
+	// throw new SQLException(
+	// "One of the constructor parameters was not specified, all four must be.");
+	//
+	// // Create the factory
+	// this.packetSQLQueryFactory = new PacketSQLQueryFactory(deviceID);
+	//
+	// // If the sqlTableDelimeter is specified, it must be overriding
+	// if (sqlTableDelimiter != null) {
+	// this.packetSQLQueryFactory.setSqlTableDelimiter(sqlTableDelimiter);
+	// }
+	//
+	// // Now the packetSQLQuery
+	// this.packetSQLQuery = new PacketSQLQuery(databaseDriverClassName,
+	// databaseJDBCUrl, username, password, this.packetSQLQueryFactory);
+	// }
 
 	/**
 	 * @return Returns the deviceID.
