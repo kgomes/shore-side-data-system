@@ -27,16 +27,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
 /**
  * This class is designed to manage a pool of PacketOutput objects that can be
- * used by the ingest MessageDrivenBeans. The reason this is done is to prevent
+ * used by the Ingest MessageDrivenBean. The reason this is done is to prevent
  * unsynchronized writes to the file where the DevicePackets are serialized to.
  * 
  * @author kgomes
@@ -70,19 +68,18 @@ public class PacketOutputManager {
 	/**
 	 * This is the <code>DataSource</code> that the PacketSQLOutputs will use.
 	 * 
-	 * @associates DataSource
 	 */
 	private static DataSource dataSource = null;
 
 	/**
 	 * This is the host where the DataSource will be looked up
 	 */
-	private String jndiHostName = null;
+	// private String jndiHostName = null;
 
 	/**
 	 * This is the JNDI name of the data source that will be used
 	 */
-	private String dataSourceJndiName = null;
+	// private String dataSourceJndiName = null;
 
 	/**
 	 * These are strings that will be used as templates to form SQL statements
@@ -131,36 +128,36 @@ public class PacketOutputManager {
 		logger.debug("packetStorageBase = " + packetStorageBase);
 
 		// Grab JNDI stuff
-		this.jndiHostName = ioProperties
-				.getProperty("io.storage.sql.jndi.server.name");
-		this.dataSourceJndiName = "java:/"
-				+ ioProperties.getProperty("io.storage.sql.jndi.name");
+		// this.jndiHostName = ioProperties
+		// .getProperty("io.storage.sql.jndi.server.name");
+		// this.dataSourceJndiName = "java:/"
+		// + ioProperties.getProperty("io.storage.sql.jndi.name");
 
 		// Now grab the DataSource from the JNDI
-		Context jndiContext = null;
-		try {
-			jndiContext = new InitialContext();
-			if ((this.jndiHostName != null) && (!this.jndiHostName.equals(""))) {
-				jndiContext.removeFromEnvironment(Context.PROVIDER_URL);
-				jndiContext.addToEnvironment(Context.PROVIDER_URL,
-						this.jndiHostName + ":1099");
-			}
-			logger.debug("JNDI environment = " + jndiContext.getEnvironment());
-		} catch (NamingException ne) {
-			logger.error("!!--> A naming exception was caught while trying "
-					+ "to get an initial context: " + ne.getMessage());
-			return;
-		} catch (Exception e) {
-			logger.error("!!--> An unknown exception was caught while trying "
-					+ "to get an initial context: " + e.getMessage());
-			return;
-		}
-		try {
-			dataSource = (DataSource) jndiContext
-					.lookup(this.dataSourceJndiName);
-		} catch (NamingException e1) {
-			logger.error("Could not get DataSource: " + e1.getMessage());
-		}
+		// Context jndiContext = null;
+		// try {
+		// jndiContext = new InitialContext();
+		// if ((this.jndiHostName != null) && (!this.jndiHostName.equals(""))) {
+		// jndiContext.removeFromEnvironment(Context.PROVIDER_URL);
+		// jndiContext.addToEnvironment(Context.PROVIDER_URL,
+		// this.jndiHostName + ":1099");
+		// }
+		// logger.debug("JNDI environment = " + jndiContext.getEnvironment());
+		// } catch (NamingException ne) {
+		// logger.error("!!--> A naming exception was caught while trying "
+		// + "to get an initial context: " + ne.getMessage());
+		// return;
+		// } catch (Exception e) {
+		// logger.error("!!--> An unknown exception was caught while trying "
+		// + "to get an initial context: " + e.getMessage());
+		// return;
+		// }
+		// try {
+		// dataSource = (DataSource) jndiContext
+		// .lookup(this.dataSourceJndiName);
+		// } catch (NamingException e1) {
+		// logger.error("Could not get DataSource: " + e1.getMessage());
+		// }
 
 		// Now grab the SQL templates to use for creating tables, primary keys,
 		// and indicies
@@ -286,9 +283,17 @@ public class PacketOutputManager {
 	 * @param deviceID
 	 * @return
 	 */
-	public static synchronized PacketSQLOutput getPacketSQLOutput(long deviceID) {
+	public static synchronized PacketSQLOutput getPacketSQLOutput(
+			DataSource dataSourceToSet, long deviceID) {
 		// Make sure instance exits
 		getInstance();
+
+		// Store the data source or return null
+		if (dataSourceToSet == null)
+			return null;
+
+		// Set the local data source
+		dataSource = dataSourceToSet;
 
 		PacketSQLOutput toReturn = null;
 		toReturn = (PacketSQLOutput) packetSQLOutputs.get(new Long(deviceID));
@@ -313,108 +318,127 @@ public class PacketOutputManager {
 
 		boolean tableOK = true;
 
-		Connection connection = null;
-		try {
-			connection = dataSource.getConnection();
-		} catch (SQLException e4) {
-			// TODO Auto-generated catch block
-			e4.printStackTrace();
-		} catch (Exception e4) {
-			logger.error("Exception caught: " + e4.getClass().getName() + ": "
-					+ e4.getMessage());
-		}
+		// Make sure DataSource is available
+		if (dataSource != null) {
 
-		// Try to query for the table
-		DatabaseMetaData dbm = null;
-		try {
-			dbm = connection.getMetaData();
-		} catch (SQLException e1) {
-			logger.error("Could not get metadata from DataSource:"
-					+ e1.getMessage());
-		}
-		String[] tableTypes = { "TABLE" };
-		ResultSet allTables = null;
-		if (dbm != null) {
+			// Create a connection
+			Connection connection = null;
 			try {
-				allTables = dbm
-						.getTables(null, null, "" + deviceID, tableTypes);
-			} catch (SQLException e2) {
-				logger
-						.error("Could not get list of tables from database metadata: "
-								+ e2.getMessage());
-			}
-		}
-		boolean tableFound = false;
-		if (allTables != null) {
-			try {
-				while (allTables.next()) {
-					tableFound = true;
-				}
-			} catch (SQLException e3) {
-				logger.error("Exception trying to loop over list of tables: "
-						+ e3.getMessage());
-			}
-		}
-		if (tableFound) {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				logger
-						.error("Could not close the connection after finding table: "
-								+ e.getMessage());
-			}
-			return true;
-		} else {
-			logger.debug("No table was found for device " + deviceID
-					+ ", so will create a new one...");
-			// Must create the table
-			String createTableSQL = createTableSQLTemplate.replaceAll(
-					"@DEVICE_ID@", deviceID + "");
-			String createPrimaryKeySQL = createPrimaryKeySQLTemplate
-					.replaceAll("@DEVICE_ID@", deviceID + "");
-			String createTimestampIndexSQL = createTimestampIndexSQLTemplate
-					.replaceAll("@DEVICE_ID@", deviceID + "");
-			logger
-					.debug("To create the table, the following statements will be run:\n"
-							+ createTableSQL
-							+ "\n"
-							+ createPrimaryKeySQL
-							+ "\n" + createTimestampIndexSQL);
-			try {
-				PreparedStatement pstmt = connection
-						.prepareStatement(createTableSQL);
-				pstmt.execute();
-				pstmt.close();
-				pstmt = connection.prepareStatement(createPrimaryKeySQL);
-				pstmt.execute();
-				pstmt.close();
-			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to create table for device "
-								+ deviceID + ": " + e.getMessage());
+				connection = dataSource.getConnection();
+			} catch (SQLException e4) {
+				logger.error("SQLException caught trying to get connection: "
+						+ e4.getClass().getName() + ": " + e4.getMessage());
+				e4.printStackTrace();
+				tableOK = false;
+			} catch (Exception e4) {
+				logger.error("Exception caught trying to get connection: "
+						+ e4.getClass().getName() + ": " + e4.getMessage());
+				e4.printStackTrace();
 				tableOK = false;
 			}
-			// Now add the index
-			if (tableOK) {
+
+			// Try to query for the table
+			if (connection != null) {
+				DatabaseMetaData dbm = null;
 				try {
-					PreparedStatement indexStmt = connection
-							.prepareStatement(createTimestampIndexSQL);
-					indexStmt.execute();
-					indexStmt.close();
-				} catch (SQLException e) {
-					logger
-							.error("SQLException caught trying to add index for device "
-									+ deviceID + ": " + e.getMessage());
+					dbm = connection.getMetaData();
+				} catch (SQLException e1) {
+					logger.error("Could not get metadata from DataSource:"
+							+ e1.getMessage());
 					tableOK = false;
 				}
+				// Check to make sure DatabaseMetadata if found first
+				String[] tableTypes = { "TABLE" };
+				ResultSet allTables = null;
+				if (dbm != null) {
+					try {
+						allTables = dbm.getTables(null, null, "" + deviceID,
+								tableTypes);
+					} catch (SQLException e2) {
+						logger.error("Could not get list of "
+								+ "tables from database metadata: "
+								+ e2.getMessage());
+					}
+				}
+				boolean tableFound = false;
+				if (allTables != null) {
+					try {
+						while (allTables.next()) {
+							tableFound = true;
+						}
+					} catch (SQLException e3) {
+						logger.error("SQLException trying to "
+								+ "loop over list of tables: "
+								+ e3.getMessage());
+					}
+				}
+				if (tableFound) {
+					try {
+						connection.close();
+					} catch (SQLException e) {
+						logger.error("Could not close the "
+								+ "connection after finding table: "
+								+ e.getMessage());
+					}
+					return true;
+				} else {
+					logger.debug("No table was found for device " + deviceID
+							+ ", so will create a new one...");
+					// Must create the table
+					String createTableSQL = createTableSQLTemplate.replaceAll(
+							"@DEVICE_ID@", deviceID + "");
+					String createPrimaryKeySQL = createPrimaryKeySQLTemplate
+							.replaceAll("@DEVICE_ID@", deviceID + "");
+					String createTimestampIndexSQL = createTimestampIndexSQLTemplate
+							.replaceAll("@DEVICE_ID@", deviceID + "");
+					logger.debug("To create the table, the "
+							+ "following statements will be run:\n"
+							+ createTableSQL + "\n" + createPrimaryKeySQL
+							+ "\n" + createTimestampIndexSQL);
+					try {
+						PreparedStatement pstmt = connection
+								.prepareStatement(createTableSQL);
+						pstmt.execute();
+						pstmt.close();
+						pstmt = connection
+								.prepareStatement(createPrimaryKeySQL);
+						pstmt.execute();
+						pstmt.close();
+					} catch (SQLException e) {
+						logger.error("SQLException caught trying "
+								+ "to create table for device " + deviceID
+								+ ": " + e.getMessage());
+						tableOK = false;
+					}
+					// Now add the index
+					if (tableOK) {
+						try {
+							PreparedStatement indexStmt = connection
+									.prepareStatement(createTimestampIndexSQL);
+							indexStmt.execute();
+							indexStmt.close();
+						} catch (SQLException e) {
+							logger.error("SQLException caught trying "
+									+ "to add index for device " + deviceID
+									+ ": " + e.getMessage());
+							tableOK = false;
+						}
+					}
+				}
+				try {
+					// Close the connection
+					connection.close();
+				} catch (SQLException e) {
+					logger.error("SQLException caught trying "
+							+ "to close the connection: " + e.getMessage());
+				}
+			} else {
+				logger.error("Connection could not be created");
+				tableOK = false;
 			}
-		}
-		try {
-			// Close the connection
-			connection.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} else {
+			logger.error("DataSouce is not available!");
+			tableOK = false;
 		}
 		return tableOK;
 	}
