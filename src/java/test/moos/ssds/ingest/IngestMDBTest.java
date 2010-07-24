@@ -2,7 +2,6 @@ package test.moos.ssds.ingest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -30,8 +29,6 @@ import org.mbari.siam.distributed.MetadataPacket;
 import org.mbari.siam.distributed.SensorDataPacket;
 import org.mbari.siam.operations.utils.ExportablePacket;
 
-import test.moos.ssds.ClassPathHacker;
-
 public class IngestMDBTest extends TestCase {
 
 	/**
@@ -48,15 +45,6 @@ public class IngestMDBTest extends TestCase {
 
 	public IngestMDBTest(String name) {
 		super(name);
-		// Add the base of the transmogrifier build files to the classpath
-		try {
-			ClassPathHacker.addFile(new File("build/ingest"));
-			ClassPathHacker.addFile(new File("build/ingest-pub"));
-		} catch (IOException e1) {
-			logger.error("IOException caught trying to add the "
-					+ "build/transmogrify directory to the class path"
-					+ e1.getMessage());
-		}
 
 		Properties log4jProperties = new Properties();
 		try {
@@ -233,17 +221,17 @@ public class IngestMDBTest extends TestCase {
 
 			ssdsByteArrayAccess.remove();
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			assertTrue("RemoteException caught during test:" + e.getMessage(),
+					false);
 		} catch (NamingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			assertTrue("NamingException caught during test:" + e.getMessage(),
+					false);
 		} catch (CreateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			assertTrue("CreateException caught during test:" + e.getMessage(),
+					false);
 		} catch (RemoveException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			assertTrue("RemoveException caught during test:" + e.getMessage(),
+					false);
 		}
 
 	}
@@ -402,17 +390,17 @@ public class IngestMDBTest extends TestCase {
 
 			ssdsByteArrayAccess.remove();
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			assertTrue("RemoteException caught during test:" + e.getMessage(),
+					false);
 		} catch (NamingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			assertTrue("NamingException caught during test:" + e.getMessage(),
+					false);
 		} catch (CreateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			assertTrue("CreateException caught during test:" + e.getMessage(),
+					false);
 		} catch (RemoveException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			assertTrue("RemoveException caught during test:" + e.getMessage(),
+					false);
 		}
 	}
 }
