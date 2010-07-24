@@ -48,86 +48,91 @@ import org.apache.log4j.Logger;
  */
 public class PacketSubmissionAccessEJB implements SessionBean {
 
-    /**
-     * @see javax.ejb.SessionBean#ejbActivate()
-     */
-    public void ejbActivate() throws EJBException, RemoteException {}
+	/**
+	 * @see javax.ejb.SessionBean#ejbActivate()
+	 */
+	public void ejbActivate() throws EJBException, RemoteException {
+	}
 
-    /**
-     * @see javax.ejb.SessionBean#ejbPassivate()
-     */
-    public void ejbPassivate() throws EJBException, RemoteException {}
+	/**
+	 * @see javax.ejb.SessionBean#ejbPassivate()
+	 */
+	public void ejbPassivate() throws EJBException, RemoteException {
+	}
 
-    /**
-     * @see javax.ejb.SessionBean#ejbRemove()
-     */
-    public void ejbRemove() throws EJBException, RemoteException {}
+	/**
+	 * @see javax.ejb.SessionBean#ejbRemove()
+	 */
+	public void ejbRemove() throws EJBException, RemoteException {
+	}
 
-    /**
-     * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
-     */
-    public void setSessionContext(SessionContext arg0) throws EJBException,
-        RemoteException {}
+	/**
+	 * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
+	 */
+	public void setSessionContext(SessionContext arg0) throws EJBException,
+			RemoteException {
+	}
 
-    /**
-     * The EJB callback that is used when the bean is created
-     */
-    public void ejbCreate() throws CreateException {
-        logger.debug("Creating the PacketSubmissionEJB");
+	/**
+	 * The EJB callback that is used when the bean is created
+	 */
+	public void ejbCreate() throws CreateException {
+		logger.debug("Creating the PacketSubmissionEJB");
 
-        // Get the PacketOutputManager singleton
-        if (this.packetOutputManager == null) {
-            this.packetOutputManager = PacketOutputManager.getInstance();
-        }
+		// Get the PacketOutputManager singleton
+		if (this.packetOutputManager == null) {
+			this.packetOutputManager = PacketOutputManager.getInstance();
+		}
 
-        logger.debug("OK, the instance should be created");
-    }
+		logger.debug("OK, the instance should be created");
+	}
 
-    /**
-     * @throws CreateException
-     */
-    public void ejbPostCreate() throws CreateException {}
+	/**
+	 * @throws CreateException
+	 */
+	public void ejbPostCreate() throws CreateException {
+	}
 
-    /**
-     * This is the method to submit a packet to the SQL storage mechanism.
-     * 
-     * @ejb.interface-method view-type="both"
-     * @param deviceID
-     *            This is the source of the packet and should be the SSDS ID of
-     *            the device
-     * @param packetBytes
-     *            this is the byte array that contains the data in the format
-     *            specified in the SSDS packet documentation
-     */
-    public void submitPacketAsByteArray(long deviceID, byte[] packetBytes)
-        throws DataException {
-        // Grab the appropriate PacketSQLOutput
-        PacketSQLOutput packetSQLOutput = PacketOutputManager
-            .getPacketSQLOutput(deviceID);
+	/**
+	 * This is the method to submit a packet to the SQL storage mechanism.
+	 * 
+	 * @ejb.interface-method view-type="both"
+	 * @param deviceID
+	 *            This is the source of the packet and should be the SSDS ID of
+	 *            the device
+	 * @param packetBytes
+	 *            this is the byte array that contains the data in the format
+	 *            specified in the SSDS packet documentation
+	 */
+	public void submitPacketAsByteArray(long deviceID, byte[] packetBytes)
+			throws DataException {
+		// Grab the appropriate PacketSQLOutput
+		PacketSQLOutput packetSQLOutput = PacketOutputManager
+				.getPacketSQLOutput(null, deviceID);
 
-        // Now write the packet
-        try {
-            packetSQLOutput.writeBytes(packetBytes);
-        } catch (SQLException e) {
-            logger
-                .error("SQLException was caught trying to write bytes to SQL DataSource: "
-                    + e.getMessage());
-            throw new DataException(
-                "An SQLException was caught trying to insert the given bytes array: "
-                    + e.getMessage());
-        } catch (Exception e) {
-            logger.error("A " + e.getClass().getName()
-                + " was caught trying to write bytes to SQL DataSource: "
-                + e.getMessage());
-            throw new DataException("A " + e.getClass().getName()
-                + " was caught trying to insert the given bytes array: "
-                + e.getMessage());
-        }
-    }
+		// Now write the packet
+		try {
+			packetSQLOutput.writeBytes(packetBytes);
+		} catch (SQLException e) {
+			logger
+					.error("SQLException was caught trying to write bytes to SQL DataSource: "
+							+ e.getMessage());
+			throw new DataException(
+					"An SQLException was caught trying to insert the given bytes array: "
+							+ e.getMessage());
+		} catch (Exception e) {
+			logger.error("A " + e.getClass().getName()
+					+ " was caught trying to write bytes to SQL DataSource: "
+					+ e.getMessage());
+			throw new DataException("A " + e.getClass().getName()
+					+ " was caught trying to insert the given bytes array: "
+					+ e.getMessage());
+		}
+	}
 
-    PacketOutputManager packetOutputManager = null;
+	PacketOutputManager packetOutputManager = null;
 
-    /** A log4j logger */
-    static Logger logger = Logger.getLogger(PacketSubmissionAccessEJB.class);
+	/** A log4j logger */
+	static Logger logger = Logger.getLogger(PacketSubmissionAccessEJB.class);
 
 }
