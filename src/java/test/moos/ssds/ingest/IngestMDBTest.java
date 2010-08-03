@@ -3,15 +3,14 @@ package test.moos.ssds.ingest;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.ejb.CreateException;
-import javax.ejb.RemoveException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
@@ -19,8 +18,6 @@ import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.io.util.PacketUtility;
 import moos.ssds.jms.PublisherComponent;
 import moos.ssds.services.data.SSDSByteArrayAccess;
-import moos.ssds.services.data.SSDSByteArrayAccessHome;
-import moos.ssds.services.data.SSDSByteArrayAccessUtil;
 import moos.ssds.util.DateUtils;
 
 import org.apache.log4j.Logger;
@@ -37,11 +34,6 @@ public class IngestMDBTest extends TestCase {
 	private static Logger logger = Logger.getLogger(IngestMDBTest.class);
 
 	private int numberOfMessagesToSend = 1234;
-
-	/**
-	 * This is the class to help with publishing
-	 */
-	private static PublisherComponent publisherComponent;
 
 	public IngestMDBTest(String name) {
 		super(name);
@@ -71,11 +63,6 @@ public class IngestMDBTest extends TestCase {
 					+ "the project directory.  This needs to be done "
 					+ "before these tests are run.");
 		}
-
-		// Create the publisher component to connect up to the topic that the
-		// transmogrify MDB is listening to
-		if (publisherComponent == null)
-			publisherComponent = new PublisherComponent();
 	}
 
 	protected void setUp() throws Exception {
@@ -126,7 +113,9 @@ public class IngestMDBTest extends TestCase {
 						false, false, false, false);
 
 		// Now publish the SSDS formatted byte array to the IngestMDB topic
+		PublisherComponent publisherComponent = new PublisherComponent();
 		publisherComponent.publishBytes(ssdsFormattedBytes);
+		publisherComponent.close();
 
 		// Wait for a bit or until the listener gets a message
 		Date dateToStopWaiting = new Date(new Date().getTime() + 500);
@@ -135,10 +124,12 @@ public class IngestMDBTest extends TestCase {
 
 		// Now let's construct the SSDSByteArrayEJB interface
 		try {
-			SSDSByteArrayAccessHome ssdsByteArrayAccessHome = SSDSByteArrayAccessUtil
-					.getHome();
-			SSDSByteArrayAccess ssdsByteArrayAccess = ssdsByteArrayAccessHome
-					.create();
+			// Grab a naming context
+			Context context = new InitialContext();
+
+			// Look up the remote bean
+			SSDSByteArrayAccess ssdsByteArrayAccess = (SSDSByteArrayAccess) context
+					.lookup("moos/ssds/services/data/SSDSByteArrayAccess");
 
 			// Set the device ID
 			ssdsByteArrayAccess.setDeviceID(101);
@@ -220,17 +211,8 @@ public class IngestMDBTest extends TestCase {
 			}
 
 			ssdsByteArrayAccess.remove();
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught during test:" + e.getMessage(),
-					false);
 		} catch (NamingException e) {
 			assertTrue("NamingException caught during test:" + e.getMessage(),
-					false);
-		} catch (CreateException e) {
-			assertTrue("CreateException caught during test:" + e.getMessage(),
-					false);
-		} catch (RemoveException e) {
-			assertTrue("RemoveException caught during test:" + e.getMessage(),
 					false);
 		}
 
@@ -257,6 +239,7 @@ public class IngestMDBTest extends TestCase {
 		Calendar baseTime = (Calendar) startDateOfMessages.clone();
 
 		// Now loop over and create messages and send them as fast as I can
+		PublisherComponent publisherComponent = new PublisherComponent();
 		for (int i = 0; i < numberOfMessagesToSend; i++) {
 			// Reset the ByteArrayOutputStream
 			bos.reset();
@@ -284,6 +267,7 @@ public class IngestMDBTest extends TestCase {
 			// Add a second
 			startDateOfMessages.add(Calendar.MILLISECOND, 1);
 		}
+		publisherComponent.close();
 
 		// Now sleep for a bit
 		// Wait for a bit or until the listener gets a message
@@ -293,19 +277,18 @@ public class IngestMDBTest extends TestCase {
 
 		// Now let's construct the SSDSByteArrayEJB interface
 		try {
-			SSDSByteArrayAccessHome ssdsByteArrayAccessHome = SSDSByteArrayAccessUtil
-					.getHome();
-			SSDSByteArrayAccess ssdsByteArrayAccess = ssdsByteArrayAccessHome
-					.create();
+			// Grab a naming context
+			Context context = new InitialContext();
+
+			// Look up the remote bean
+			SSDSByteArrayAccess ssdsByteArrayAccess = (SSDSByteArrayAccess) context
+					.lookup("moos/ssds/services/data/SSDSByteArrayAccess");
 
 			// Set the device ID
 			ssdsByteArrayAccess.setDeviceID(101);
 
-			// Now try to search for the latest byte array
+			// Now try to search for the latest number of packets that I sent
 			ssdsByteArrayAccess.setLastNumberOfPackets(numberOfMessagesToSend);
-
-			ssdsByteArrayAccess.setStartPacketSubType(1);
-			ssdsByteArrayAccess.setStartPacketType(0);
 
 			// Run the query
 			try {
@@ -321,6 +304,11 @@ public class IngestMDBTest extends TestCase {
 					.hasMoreElements());
 			while (ssdsByteArrayAccess.hasMoreElements()) {
 				byte[] returnedByteArray = ssdsByteArrayAccess.nextElement();
+
+				// Make sure it is not null
+				assertNotNull("The byte array in the element "
+						+ (loopCounter + 1) + " should not be null",
+						returnedByteArray);
 
 				// Convert it to SSDS format
 				byte[] ssdsFormat = null;
@@ -389,17 +377,11 @@ public class IngestMDBTest extends TestCase {
 			}
 
 			ssdsByteArrayAccess.remove();
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught during test:" + e.getMessage(),
-					false);
+			assertEquals("Loop counter should match the "
+					+ "number of packets published", loopCounter,
+					numberOfMessagesToSend);
 		} catch (NamingException e) {
 			assertTrue("NamingException caught during test:" + e.getMessage(),
-					false);
-		} catch (CreateException e) {
-			assertTrue("CreateException caught during test:" + e.getMessage(),
-					false);
-		} catch (RemoveException e) {
-			assertTrue("RemoveException caught during test:" + e.getMessage(),
 					false);
 		}
 	}
