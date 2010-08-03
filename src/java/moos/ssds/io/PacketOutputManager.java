@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
@@ -40,6 +39,11 @@ import org.apache.log4j.Logger;
  * @author kgomes
  */
 public class PacketOutputManager {
+
+	/**
+	 * A log4j logger
+	 */
+	private static Logger logger = Logger.getLogger(PacketOutputManager.class);
 
 	/**
 	 * This is the collection of active <code>PacketOutput</code> s that can be
@@ -100,11 +104,6 @@ public class PacketOutputManager {
 	 * The IO Properties for the PacketInput/Output
 	 */
 	private static Properties ioProperties = null;
-
-	/**
-	 * A log4j logger
-	 */
-	static Logger logger = Logger.getLogger(PacketOutputManager.class);
 
 	/**
 	 * This constructor is private because no client should be able to construct
