@@ -314,7 +314,6 @@
 		<!-- Compile just the test classes -->
 		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
 			<src path="${src.java}" />
-			<include name="test/moos/ssds/ClassPathHacker.java" />
 			<include name="test/moos/ssds/io/PacketSQLQueryFactoryTest.java" />
 			<include name="test/moos/ssds/io/TestPacketOutput.java" />
 			<include name="test/moos/ssds/ingest/IngestMDBTest.java" />
