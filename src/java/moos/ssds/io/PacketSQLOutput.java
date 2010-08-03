@@ -242,7 +242,7 @@ public class PacketSQLOutput {
 			pstmt.setNull(14, Types.DOUBLE);
 			pstmt.setNull(15, Types.DOUBLE);
 			pstmt.setNull(16, Types.FLOAT);
-			pstmt.execute();
+			pstmt.executeUpdate();
 		} catch (SQLException e1) {
 			logger.error("SQLException while trying to insert data: "
 					+ e1.getMessage());
