@@ -85,7 +85,7 @@ public class IngestMDB implements MessageListener {
 	 * This is the data source where data will be written to
 	 */
 	@Resource(mappedName = "java:/SSDS_Data")
-	private static DataSource dataSource = null;
+	private static DataSource dataSource;
 
 	/**
 	 * This is the connection to the topic that the messages will be published
