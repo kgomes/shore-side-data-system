@@ -15,43 +15,53 @@
  */
 package moos.ssds.services.data;
 
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.Enumeration;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.PostActivate;
+import javax.ejb.PrePassivate;
+import javax.ejb.Remove;
+import javax.ejb.Stateful;
+import javax.sql.DataSource;
 
 import moos.ssds.io.PacketSQLQuery;
 import moos.ssds.io.PacketSQLQueryFactory;
 
 import org.apache.log4j.Logger;
+import org.jboss.ejb3.annotation.RemoteBinding;
 
 /**
- * This EJB is a <code>SessionBean</code> that gives clients the capability of
- * submitting packets that match the SSDS byte array format. These packets will
- * end up in the SQL database storage for the SSDS system.
+ * This is the stateful session EJB for clients to get access to SSDS raw data
+ * packets that have been streamed to the SSDS. It has lots of parameters that
+ * can be set for the query to allow for flexible data queries. It also handles
+ * paging of the data on the server so the client does not have to worry about
+ * bogging down the memory if the request is large.
  * 
- * @author kgomes
- * @ejb.bean name="SSDSByteArrayAccess" type="Stateful"
- *           jndi-name="moos/ssds/services/data/SSDSByteArrayAccess"
- *           local-jndi-name="moos/ssds/services/data/SSDSByteArrayLocal"
- *           view-type="both"
- * @ejb.home create="true"
- *           local-class="moos.ssds.services.data.SSDSByteArrayAccessLocalHome"
- *           remote-class="moos.ssds.services.data.SSDSByteArrayAccessHome"
- * @ejb.interface create="true"
- *                local-class="moos.ssds.services.data.SSDSByteArrayAccessLocal"
- *                remote-class="moos.ssds.services.data.SSDSByteArrayAccess"
  */
-public class SSDSByteArrayAccessEJB implements SessionBean {
+@Stateful
+@RemoteBinding(jndiBinding = "moos/ssds/services/data/SSDSByteArrayAccess")
+public class SSDSByteArrayAccessEJB implements SSDSByteArrayAccess,
+		Enumeration<byte[]> {
 
+	/**
+	 * A log4j logger
+	 */
+	private static Logger logger = Logger
+			.getLogger(SSDSByteArrayAccessEJB.class);
 	/**
 	 * The default serial version ID
 	 */
 	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This is the data source that the container will provide and will be used
+	 * to query for data
+	 */
+	@Resource(mappedName = "java:/SSDS_Data")
+	private static DataSource dataSource;
 
 	/**
 	 * This is the packet SQL factory that will be used to construct the query
@@ -63,80 +73,65 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 */
 	private PacketSQLQuery packetSQLQuery = null;
 
-	/** A log4j logger */
-	static Logger logger = Logger.getLogger(SSDSByteArrayAccessEJB.class);
-
 	/**
-	 * @see javax.ejb.SessionBean#ejbActivate()
+	 * This is the default constructor that is called when the bean is
+	 * instantiated
 	 */
-	public void ejbActivate() throws EJBException, RemoteException {
-		logger.debug("ejbActivate called");
-		// Create a new packetSQLQuery
-		try {
-			if (packetSQLQuery == null)
-				packetSQLQuery = new PacketSQLQuery(null, packetSQLQueryFactory);
-		} catch (SQLException e) {
-			throw new RemoteException(e.getMessage());
-		}
+	public SSDSByteArrayAccessEJB() {
 	}
 
-	/**
-	 * @see javax.ejb.SessionBean#ejbPassivate()
-	 */
-	public void ejbPassivate() throws EJBException, RemoteException {
-		logger.debug("ejbPassivate called");
-		// Close the sql connection
-		packetSQLQuery.close();
-		packetSQLQuery = null;
-	}
-
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 */
-	public void ejbRemove() throws EJBException, RemoteException {
-		logger.debug("ejbRemove called");
-		// Close the PacketSQLQuery
-		packetSQLQuery.close();
-	}
-
-	/**
-	 * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
-	 */
-	public void setSessionContext(SessionContext sessionContext)
-			throws EJBException, RemoteException {
-		logger.debug("setSessionContext called with context " + sessionContext);
-	}
-
-	/**
-	 * The EJB callback that is used when the bean is created
-	 */
-	public void ejbCreate() throws CreateException {
-		logger.debug("ejbCreate called");
+	@PostConstruct
+	public void setupPacketSQLQuery() throws SQLException {
+		logger.debug("DataSource is " + dataSource.toString());
 		// Create the PacketSQLQueryFactory
 		packetSQLQueryFactory = new PacketSQLQueryFactory();
 
-		// Now the PacketSQLQuery
-		try {
-			if (packetSQLQuery == null)
-				packetSQLQuery = new PacketSQLQuery(null, packetSQLQueryFactory);
-		} catch (SQLException e) {
-			throw new CreateException(e.getMessage());
+		// Create a new packetSQLQuery
+		if (packetSQLQuery == null)
+			packetSQLQuery = new PacketSQLQuery(dataSource,
+					packetSQLQueryFactory);
+	}
+
+	/**
+	 * This method is called by the container just before the EJB is passivated
+	 */
+	@PrePassivate
+	public void prePassivate() {
+		logger.debug("prePassivate called");
+		// Close the sql connection
+		if (packetSQLQuery != null) {
+			packetSQLQuery.close();
+			packetSQLQuery = null;
 		}
 	}
 
 	/**
-	 * @throws CreateException
+	 * This method is called by the container just after the EJB is activated
+	 * back into a session
+	 * 
+	 * @throws SQLException
 	 */
-	public void ejbPostCreate() throws CreateException {
-		logger.debug("ejbPostCreate called");
+	@PostActivate
+	public void postActivate() throws SQLException {
+		setupPacketSQLQuery();
+	}
+
+	/**
+	 * This method is called by the container just before the EJB is removed
+	 * (destroyed)
+	 */
+	@Remove
+	public void remove() {
+		logger.debug("remove called");
+		// Close the PacketSQLQuery
+		if (packetSQLQuery != null)
+			packetSQLQuery.close();
 	}
 
 	/**
 	 * This method clears out all the order by parameters that will be used in
 	 * the query. It sets up the default to be timestampSeconds and
 	 * timestampNanoseconds ascending as the default
-	 * 
-	 * @ejb.interface-method view-type="both"
 	 */
 	public void clearOrderByParameters() {
 		packetSQLQueryFactory.clearOrderByParameters();
@@ -146,7 +141,6 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method adds a parameter to order the result by. The boolean
 	 * indicates if it should be descending (true) or ascending (false)
 	 * 
-	 * @ejb.interface-method view-type="both"
 	 * @param orderByParameter
 	 *            the parameter to order the results by
 	 * @param isDescending
@@ -162,7 +156,6 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	/**
 	 * This method returns the device ID of the data that will be queried for
 	 * 
-	 * @ejb.interface-method view-type="both"
 	 * @return Returns the deviceID.
 	 */
 	public long getDeviceID() {
@@ -172,7 +165,6 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	/**
 	 * This method sets the device ID that will be used in the query
 	 * 
-	 * @ejb.interface-method view-type="both"
 	 * @param deviceID
 	 */
 	public void setDeviceID(long deviceID) {
@@ -183,7 +175,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the starting parent ID for the query that will be
 	 * used.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the startParentID.
 	 */
 	public long getStartParentID() {
@@ -195,7 +187,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * collection. If no end parentID is specified, the query will set the
 	 * criteria to equals to the starting parent ID
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startParentID
 	 *            The parentID to set.
 	 */
@@ -207,7 +199,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the ID of the parent ID that will be the upper bound
 	 * for the query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the endParentID.
 	 */
 	public long getEndParentID() {
@@ -217,7 +209,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	/**
 	 * This method sets the upper bound for the parent ID for the query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param endParentID
 	 *            The parentID to set.
 	 */
@@ -230,7 +222,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * include. If no endPacketType is specified, the query will search for
 	 * packetType equal to startPacketType
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the startPacketType.
 	 */
 	public int getStartPacketType() {
@@ -242,7 +234,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * include. If no endPacketType is specified, the query will searhc for
 	 * packetType equal to startPacketType
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startPacketType
 	 *            The packetType to set.
 	 */
@@ -254,7 +246,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the upper bound of the packetType for the query to
 	 * include.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the endPacketType.
 	 */
 	public int getEndPacketType() {
@@ -265,7 +257,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method sets the upper bound of the packetType for the query to
 	 * include
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param endPacketType
 	 *            The packetType to set.
 	 */
@@ -279,7 +271,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * query will set the criteria to search for packetSubTypes that are equal
 	 * to startPacketSubType.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the startPacketSubType.
 	 */
 	public long getStartPacketSubType() {
@@ -292,7 +284,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * query will set the criteria to search for packetSubTypes that are equal
 	 * to startPacketSubType.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startPacketSubType
 	 *            The packetSubType to set.
 	 */
@@ -304,7 +296,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the upper bound of the packetSubType that will be
 	 * included in the query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the endPacketSubType.
 	 */
 	public long getEndPacketSubType() {
@@ -315,7 +307,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method sets the upper bound of the packetSubType that will be
 	 * included in the query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param endPacketSubType
 	 *            The packetSubType to set.
 	 */
@@ -329,7 +321,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * will set the criteria for dataDescriptionID to be equal to the
 	 * startDataDescriptionID.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the startDataDescriptionID.
 	 */
 	public long getStartDataDescriptionID() {
@@ -342,7 +334,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * set the criteria for dataDescriptionID to be equal to the
 	 * startDataDescriptionID.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startDataDescriptionID
 	 *            The dataDescriptionID to set.
 	 */
@@ -354,7 +346,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the upper bound of the dataDescriptionID for the
 	 * query to be executed.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the endDataDescriptionID.
 	 */
 	public long getEndDataDescriptionID() {
@@ -365,7 +357,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method sets the upper bound for the dataDescriptionID for the query
 	 * to be executed
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param endDataDescriptionID
 	 *            The dataDescriptionID to set.
 	 */
@@ -379,7 +371,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * the query will set the criteria to be equal to the
 	 * startDataDescriptionVersion.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the startDataDescriptionVersion.
 	 */
 	public long getStartDataDescriptionVersion() {
@@ -392,7 +384,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * the query will set the criteria to be equal to the
 	 * startDataDescriptionVersion.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startDataDescriptionVersion
 	 *            The dataDescriptionVersion to set.
 	 */
@@ -405,7 +397,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the upper bound for the dataDescriptionVersion that
 	 * will be used in the query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the endDataDescriptionVersion.
 	 */
 	public long getEndDataDescriptionVersion() {
@@ -416,7 +408,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method sets the upper bound for the dataDescriptionVersion that will
 	 * be used in the query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param endDataDescriptionVersion
 	 *            The dataDescriptionVersion to set.
 	 */
@@ -431,7 +423,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * the start date specified here. A method to set the start date for the
 	 * query
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startDate
 	 */
 	public void setStartDate(Date startDate) {
@@ -443,7 +435,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * will be executed. If the endTimestampSeconds is not specified, the query
 	 * will set the criteria equal to the startTimeSeconds.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the startTimestampSeconds.
 	 */
 	public long getStartTimestampSeconds() {
@@ -455,7 +447,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * be executed. If the endTimestampSeconds is not specified, the query will
 	 * set the criteria equal to the startTimeSeconds.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startTimestampSeconds
 	 *            The timestampSeconds to set.
 	 */
@@ -467,7 +459,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method sets the upper limit of the date and time that the query will
 	 * be searching over.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startDate
 	 */
 	public void setEndDate(Date endDate) {
@@ -478,7 +470,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the upper bound for the timestamp in epoch seconds
 	 * for which the query will be searching over.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the endTimestampSeconds.
 	 */
 	public long getEndTimestampSeconds() {
@@ -489,7 +481,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method sets the upper bound for the timestamp in epoch seconds for
 	 * which the query will search osver.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param endTimestampSeconds
 	 *            The timestampSeconds to set.
 	 */
@@ -503,7 +495,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * search only for entries that have a sequenceNumber equal to the
 	 * startSequenceNumber specified here.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the startSequenceNumber.
 	 */
 	public long getStartSequenceNumber() {
@@ -516,7 +508,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * search only for entries that have a sequenceNumber equal to the
 	 * startSequenceNumber specified here.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startSequenceNumber
 	 *            The sequenceNumber to set.
 	 */
@@ -528,7 +520,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the upper bound for the sequenceNumber that will be
 	 * used in the query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the endSequenceNumber.
 	 */
 	public long getEndSequenceNumber() {
@@ -538,7 +530,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	/**
 	 * This method sets the upper bound for the sequenceNumber to search for.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startSequenceNumber
 	 *            The sequenceNumber to set.
 	 */
@@ -551,7 +543,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * be searched for. If this is set and the endLatitude is not set, the
 	 * criteria will be set to search for records that match the startLatitude.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the startLatitude.
 	 */
 	public double getStartLatitude() {
@@ -563,7 +555,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * searched for. If this is set and the endLatitude is not set, the criteria
 	 * will be set to search for records that match the startLatitude.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startLatitude
 	 *            The startLatitude to set.
 	 */
@@ -575,7 +567,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the upper bound of the latitude that will be searched
 	 * for in this query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the endLatitude.
 	 */
 	public double getEndLatitude() {
@@ -586,7 +578,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method sets the upper bound of the latitude that will be searched
 	 * for in this query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param endLatitude
 	 *            The endLatitude to set.
 	 */
@@ -599,7 +591,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * be searched for. If this is set and the endLongitude is not set, the
 	 * criteria will be set to search for records that match the startLongitude.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the startLongitude.
 	 */
 	public double getStartLongitude() {
@@ -611,7 +603,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * searched for. If this is set and the endLongitude is not set, the
 	 * criteria will be set to search for records that match the startLongitude.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startLongitude
 	 *            The startLongitude to set.
 	 */
@@ -623,7 +615,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the upper bound of longitude that is set for the
 	 * query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the endLongitude.
 	 */
 	public double getEndLongitude() {
@@ -633,7 +625,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	/**
 	 * This method sets the upper bound of longitude that is set for the query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param endLongitude
 	 *            The endLongitude to set.
 	 */
@@ -646,7 +638,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * searched for. If this is set and the endDepth is not set, the criteria
 	 * will be set to search for records that match the startDepth.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the startDepth.
 	 */
 	public float getStartDepth() {
@@ -658,7 +650,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * searched for. If this is set and the endDepth is not set, the criteria
 	 * will be set to search for records that match the startDepth.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param startDepth
 	 *            The startDepth to set.
 	 */
@@ -670,7 +662,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the upper bound (poor choice of words for depth, I
 	 * know) for this query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return Returns the endDepth.
 	 */
 	public float getEndDepth() {
@@ -681,7 +673,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method sets the upper bound (poor choice of words for depth, I know)
 	 * for this query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param endDepth
 	 *            The endDepth to set.
 	 */
@@ -693,7 +685,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This is the method that returns the number of packets to be retrieved
 	 * from the end of the query that is returned
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return
 	 */
 	public long getLastNumberOfPackets() {
@@ -704,7 +696,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method sets the number of packets to be retrieved from the end of
 	 * the data query.
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @param lastNumberOfPackets
 	 */
 	public void setLastNumberOfPackets(long lastNumberOfPackets) {
@@ -716,7 +708,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * called before iterating over any elements
 	 * 
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @throws SQLException
 	 */
 	public void queryForData() throws SQLException {
@@ -733,7 +725,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the names of the fields in the byte array in the
 	 * order in which they are returned
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return
 	 */
 	public String[] listFieldNames() {
@@ -744,7 +736,7 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	 * This method returns the classes that are associated with the byte array
 	 * that is returned
 	 * 
-	 * @ejb.interface-method view-type="both"
+	 * 
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
@@ -755,7 +747,6 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	/**
 	 * @see java.util.Enumeration#hasMoreElements()
 	 * 
-	 * @ejb.interface-method view-type="both"
 	 */
 	public boolean hasMoreElements() {
 		return packetSQLQuery.hasMoreElements();
@@ -764,7 +755,6 @@ public class SSDSByteArrayAccessEJB implements SessionBean {
 	/**
 	 * @see java.util.Enumeration#nextElement()
 	 * 
-	 * @ejb.interface-method view-type="both"
 	 */
 	public byte[] nextElement() {
 		return packetSQLQuery.nextElement();
