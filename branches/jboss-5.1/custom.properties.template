@@ -47,6 +47,56 @@ jboss.host.name=
 jboss.base.url=http://${jboss.host.name}:8080
 
 ################################################################
+#                SSDS Location Properties                      #
+################################################################
+# This is a property the defines whether or not you want 
+# incoming data that is published to SSDS stored as serialized 
+# packets to disk.  SSDS does not use these packet files for 
+# much and depends entirely on the data stored in a database.
+# You can have them serialized for backup purposes if you like.
+# This should "on" for disk serialization to occur and "off" for
+# database only storage.
+content.directory.store.serialized.packets=off
+
+# This is the base directory where all of the content will be
+# written to.  Content are things like instrument data files, 
+# metadata XML files, transmogrify component files, quick look
+# plots, etc.  If you want to put them in other places, you can
+# override other properties in the project.properties file.
+content.directory.location=
+
+# This property is the URL that points to the content.directory.location
+# from an HTTP server.  Usually an HTTP server is setup and a
+# link is created in the HTTP server to point to this base
+# directory so that all the contents of that directory can
+# be served over HTTP.  This is the URL that points to that
+# directory.  By default it is set to the hostname and then
+# the content directory base, but that will most likely need to
+# be overridden based on your server configuration.
+content.directory.url=http://${jboss.host.name}/
+
+# This property indicates the base URL for the DODS (OPeNDAP)
+# server that points to that location as well.
+content.directory.dods.url=http://${jboss.host.name}/cgi-bin/nph-dods/
+
+################################################################
+#                SSDS Database Properties                      #
+################################################################
+# This is the name of the database server where the SSDS will 
+# write data and metadata
+database.server.name=
+# This is the name of the data storage database
+database.data.name=ssds_data
+# This is the name of the metadata storage database
+database.metadata.name=ssds_metadata
+# This is the type of database server that will be used (options
+# are 'mssql' for Microsoft SQL Server or 'mysql' for MySQL)
+database.server.type=
+# Credentials for the user that will connect to the database
+database.server.login.username=
+database.server.login.password=
+
+################################################################
 #            JBoss Security (LDAP) Properties                  #
 ################################################################
 # This is the URL for the LDAP provider for your instance.  It
@@ -134,52 +184,6 @@ core.mail.user.messages=false
 # for testing/development deployments and "off" for production
 # for speed.
 debug=on
-
-################################################################
-#                SSDS Location Properties                      #
-################################################################
-# This is a property the defines whether or not you want 
-# incoming data that is published to SSDS stored as serialized 
-# packets to disk.  SSDS does not use these packet files for 
-# much and depends entirely on the data stored in a database.
-# You can have them serialized for backup purposes if you like.
-# This should "on" for disk serialization to occur and "off" for
-# database only storage.
-content.directory.store.serialized.packets=off
-
-# This is the base directory where all of the content will be
-# written to.  Content are things like instrument data files, 
-# metadata XML files, transmogrify component files, quick look
-# plots, etc.  If you want to put them in other places, you can
-# override other properties in the project.properties file.
-content.directory.location=
-
-# This property is the URL that points to the content.directory.location
-# from an HTTP server.  Usually an HTTP server is setup and a
-# link is created in the HTTP server to point to this base
-# directory so that all the contents of that directory can
-# be served over HTTP.  This is the URL that points to that
-# directory.  By default it is set to the hostname and then
-# the content directory base, but that will most likely need to
-# be overridden based on your server configuration.
-content.directory.url=http://${jboss.host.name}/
-
-# This property indicates the base URL for the DODS (OPeNDAP)
-# server that points to that location as well.
-content.directory.dods.url=http://${jboss.host.name}/cgi-bin/nph-dods/
-
-################################################################
-#                SSDS Database Properties                      #
-################################################################
-# This is the name of the database server where the SSDS will 
-# write data and metadata
-database.server.name=
-# This is the type of database server that will be used (options
-# are 'mssql' for Microsoft SQL Server or 'mysql' for MySQL)
-database.server.type=
-# Credentials for the user that will connect to the database
-database.server.login.username=
-database.server.login.password=
 
 ################################################################
 #                  Other SSDS Properties                       #
