@@ -15,8 +15,6 @@
  */
 package test.moos.ssds.services.metadata;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -72,10 +70,10 @@ import moos.ssds.services.metadata.UserGroupAccessUtil;
 
 import org.apache.log4j.Logger;
 
-import test.moos.ssds.ClassPathHacker;
-
 /**
- * @author achase
+ * 
+ * @author kgomes
+ * 
  */
 public abstract class TestAccessCase extends TestCase {
 
@@ -84,11 +82,6 @@ public abstract class TestAccessCase extends TestCase {
 	 */
 	public TestAccessCase(String name) {
 		super(name);
-		// Add the base of the transmogrifier build files to the classpath
-		try {
-			ClassPathHacker.addFile(new File("build/metadata/jndi"));
-		} catch (IOException e1) {
-		}
 	}
 
 	protected void setUp() {
