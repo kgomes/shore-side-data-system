@@ -269,9 +269,8 @@ public class IngestMDBTest extends TestCase {
 		}
 		publisherComponent.close();
 
-		// Now sleep for a bit
-		// Wait for a bit or until the listener gets a message
-		Date dateToStopWaiting = new Date(new Date().getTime() + 5000);
+		// Now sleep for a bit to let all the inserts commit
+		Date dateToStopWaiting = new Date(new Date().getTime() + 20000);
 		while (new Date().before(dateToStopWaiting)) {
 		}
 
