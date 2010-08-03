@@ -139,6 +139,7 @@
 				<include name="moos/ssds/services/data/**/*EJB.java" />
 				<include name="moos/ssds/services/metadata/*EJB.java" />
 				<include name="moos/ssds/services/metadata/AccessBean.java" />
+				<exclude name="moos/ssds/services/data/SQLByteArrayAccessEJB.java"/>
 			</fileset>
 			<!-- Generate the home and remote interfaces -->
 			<homeinterface />
