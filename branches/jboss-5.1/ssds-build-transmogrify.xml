@@ -37,6 +37,9 @@
 		<delete dir="${project.build}/transmogrify" />
 		<!-- Delete the client publishing build directory -->
 		<delete dir="${project.build}/transmogrify-pub" />
+		<!-- Delete the directory for the servlet builds -->
+		<delete dir="${project.build}/transmogrify-servlet/WEB-INF" />
+		<delete dir="${project.build}/transmogrify-servlet" />
 	</target>
 
 	<!-- This target rebuilds the appropriate directories by using the project -->
@@ -45,6 +48,8 @@
 		<!-- Base project directories -->
 		<mkdir dir="${project.build}" />
 		<mkdir dir="${project.build}/transmogrify-pub" />
+		<mkdir dir="${project.build}/transmogrify-servlet" />
+		<mkdir dir="${project.build}/transmogrify-servlet/WEB-INF" />
 		<mkdir dir="${project.build}/classes" />
 		<mkdir dir="${project.dist}" />
 		<mkdir dir="${gen.doc}" />
@@ -82,6 +87,9 @@
 				<filter token="LOG4J_PATTERN_LAYOUT" value="${client.log4j.pattern.layout}" />
 			</filterset>
 		</copy>
+
+		<!-- Deployment file for transmogrify servlet -->
+		<copy file="${src.resources}/build/servlet/transmogrify-servlet-web.xml" tofile="${project.build}/transmogrify-servlet/WEB-INF/web.xml" />
 	</target>
 
 	<!-- Compile the necessary code source code -->
@@ -93,6 +101,7 @@
 			<include name="moos/ssds/io/**/*.java" />
 			<include name="moos/ssds/jms/**/*.java" />
 			<include name="moos/ssds/util/**/*.java" />
+			<include name="moos/ssds/services/servlet/data/TransmogrifyServlet.java" />
 			<classpath>
 				<fileset refid="jboss-common-lib-jar-fileset" />
 				<pathelement location="${project.lib}/${siam.jar}" />
@@ -135,6 +144,22 @@
 			<fileset dir="${project.build}/transmogrify-pub" includes="jndi.properties" />
 			<fileset dir="${project.build}/transmogrify-pub" includes="moos/ssds/jms/jms.properties" />
 		</jar>
+
+		<!-- Delete the old war file -->
+		<delete file="${project.dist}/transmogrify.war" />
+
+		<!-- Build the transmogrify servlet war -->
+		<war destfile="${project.dist}/transmogrify.war" webxml="${project.build}/transmogrify-servlet/WEB-INF/web.xml">
+			<classes dir="${project.build}/classes">
+				<include name="moos/ssds/services/servlet/data/TransmogrifyServlet.class" />
+				<include name="moos/ssds/io/SSDSDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
+				<include name="moos/ssds/io/util/PacketUtility.class" />
+				<include name="moos/ssds/util/DateUtils.class" />
+				<include name="moos/ssds/util/XmlDateFormat.class" />
+			</classes>
+			<lib dir="${project.lib}" includes="${siam.jar}" />
+		</war>
 	</target>
 
 	<!-- Deploy the transmogrify component -->
@@ -154,6 +179,8 @@
 		<copy file="${project.lib}/${siam.jar}" todir="${jboss.common.lib.location}" />
 		<!-- Now deploy the jar -->
 		<copy file="${project.dist}/ssds-transmogrify.jar" todir="${transmogrify.deployment.location}" />
+		<!-- Now deploy the servlet war -->
+		<copy file="${project.dist}/transmogrify.war" todir="${transmogrify.deployment.location}" />
 		<!-- Make sure the ssds-docs directory is there -->
 		<mkdir dir="${project.documentation.deploy.location}/client" />
 		<!-- Copy over the client publishing jar -->
@@ -180,6 +207,7 @@
 
 	<!-- This target removes the transmogrify application from the deployment location -->
 	<target name="undeploy" depends="init">
+		<delete file="${transmogrify.deployment.location}/transmogrify.war" />
 		<delete file="${transmogrify.deployment.location}/ssds-transmogrify.jar" />
 		<delete file="${transmogrify.deployment.location}/ssds-transmogrify-service.xml" />
 		<delete file="${transmogrify.deployment.location}/ssds-ingest-service.xml" />
@@ -199,6 +227,7 @@
 			<src path="${src.java}" />
 			<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
 			<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
+			<include name="test/moos/ssds/util/TestTestDateUtil.java" />
 			<classpath>
 				<pathelement location="${project.build}/classes" />
 				<fileset refid="project-lib-jar-fileset" />
@@ -219,6 +248,7 @@
 				<fileset dir="${src.java}">
 					<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
 					<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
+					<include name="test/moos/ssds/util/TestDateUtil.java" />
 				</fileset>
 			</batchtest>
 		</junit>
