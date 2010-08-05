@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 
 /**
  * <p>
- * Class for formatting and parsing dates in the format specifed by the W3C XML
+ * Class for formatting and parsing dates in the format specified by the W3C XML
  * Schema 2 standard
  * </p>
  * 
@@ -38,6 +38,11 @@ import org.apache.log4j.Logger;
  * @version : $Revision: 1.1.2.3 $
  */
 public final class XmlDateFormat implements Serializable {
+
+	/**
+	 * A logger for debugging purposes
+	 */
+	static Logger logger = Logger.getLogger(XmlDateFormat.class);
 
 	/**
 	 * This is the version that we can control for serialization purposes
@@ -54,11 +59,6 @@ public final class XmlDateFormat implements Serializable {
 	 * A Number formatter
 	 */
 	private NumberFormat numberFormat = new DecimalFormat("0000");
-
-	/**
-	 * A logger for debugging purposes
-	 */
-	static Logger logger = Logger.getLogger(XmlDateFormat.class);
 
 	/**
 	 * The default constructor
@@ -106,7 +106,7 @@ public final class XmlDateFormat implements Serializable {
 	 * filenames
 	 * 
 	 * @param date
-	 *            The data to convert to a string representation
+	 *            The date to convert to a string representation
 	 * @return A compact GMT representation. Example 20030505T161144
 	 */
 	public String formatCompact(Date date) {
@@ -152,7 +152,6 @@ public final class XmlDateFormat implements Serializable {
 		calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
 
 		// Some local variables for tracking
-		// int index = 0;
 		int year = 0;
 		int month = 0;
 		int day = 0;
