@@ -20,11 +20,7 @@ import java.util.Date;
 import junit.framework.TestCase;
 import moos.ssds.util.DateUtils;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 
 /**
  * This is the test class to test the DateUtil class
@@ -33,6 +29,11 @@ import org.apache.log4j.PatternLayout;
  * @version : $Revision: 1.1.2.1 $
  */
 public class TestDateUtil extends TestCase {
+
+	/**
+	 * The logger for dumping information to
+	 */
+	static Logger logger = Logger.getLogger(TestDateUtil.class);
 
 	/**
 	 * @param arg0
@@ -44,6 +45,59 @@ public class TestDateUtil extends TestCase {
 	protected void setUp() {
 	}
 
+	/**
+	 * This test checks to make sure the function that extracts epoch seconds is
+	 * working OK
+	 */
+	public void testGetEpochTimestampSeconds() {
+		Date date = new Date(123456789L);
+		assertEquals("Extraction of epoch seconds should be OK", 123456,
+				DateUtils.getEpochTimestampSeconds(date));
+	}
+
+	/**
+	 * This test to makes sure the seconds extraction from millis is working OK
+	 */
+	public void testGetEpochTimestampSecondsFromEpochMillis() {
+		Date date = new Date(123456789L);
+		assertEquals("Extraction of epoch seconds from millis should be OK",
+				123456, DateUtils.getEpochTimestampSecondsFromEpochMillis(date
+						.getTime()));
+	}
+
+	/**
+	 * This makes sure the extraction of nanoseconds from epoch millis is
+	 * correct.
+	 * 
+	 * TODO kgomes - This is actually not correct (see SSDS-77 bug), but it is a
+	 * known issue. When SSDS-77 if fixed, this will need to be fixed to test
+	 * correctly
+	 */
+	public void testGetNanosecondsFromEpochMillis() {
+		Date date = new Date(123456789L);
+		assertEquals("Extraction of nanoseconds from millis should be OK",
+				789000, DateUtils.getNanosecondsFromEpochMillis(date.getTime()));
+	}
+
+	/**
+	 * This tests to make sure the function to take in epoch seconds and
+	 * nanoseconds creates the epoch millis correctly
+	 * 
+	 * TODO kgomes - This is actually not correct (see SSDS-77 bug), but it is a
+	 * known issue. When SSDS-77 if fixed, this will need to be fixed to test
+	 * correctly
+	 */
+	public void testConstructEpochMillisFromEpochSecondsAndNanoseconds() {
+		assertEquals("The epoch millis should be constructed correctly",
+				123456789, DateUtils
+						.constructEpochMillisFromEpochSecondsAndNanoseconds(
+								123456, 789000));
+	}
+
+	/**
+	 * This tests checks to see if two different dates that are within 1 second
+	 * of each other will be considered equal by the equalsWithinSeconds method
+	 */
 	public void testEqualsWithinSeconds() {
 		Date date1 = new Date(10000L);
 		Date date2 = new Date(10050L);
@@ -58,8 +112,13 @@ public class TestDateUtil extends TestCase {
 				.equalsWithinSeconds(date1, date2, 1));
 	}
 
+	/**
+	 * This method checks to see if the rounding down to seconds is workign
+	 * correctly
+	 */
 	public void testRoundDateDownToSeconds() {
 
+		// Create some dates
 		Date date1 = new Date(10000L);
 		Date date2 = new Date(10010L);
 		Date date3 = new Date(10999L);
@@ -86,8 +145,4 @@ public class TestDateUtil extends TestCase {
 				date1Round.getTime() != date4Round.getTime());
 	}
 
-	/**
-	 * The logger for dumping information to
-	 */
-	static Logger logger = Logger.getLogger(TestDateUtil.class);
 }
