@@ -1,0 +1,20 @@
+package moos.ssds.io;
+
+option java_package = "moos.ssds.io";
+option java_outer_classname = "SSDSGeoLocatedDevicePacketProto";
+
+message MessagePacket {
+	optional int64 sourceID = 1;
+	optional int64 parentID = 2;
+	optional int32 packetType = 3;
+	optional int64 packetSubType = 4;
+	optional int64 metadataSequenceNumber = 5;
+	optional int64 dataDescriptionVersion = 6;
+	optional int64 timestampSeconds = 7;
+	optional int64 timestampNanoseconds = 8;
+	optional int64 sequenceNumber = 9;
+	optional int32 bufferLen = 10;
+	optional bytes bufferBytes = 11;
+	optional int32 bufferTwoLen = 12;
+	optional bytes bufferTwoBytes = 13;
+}
