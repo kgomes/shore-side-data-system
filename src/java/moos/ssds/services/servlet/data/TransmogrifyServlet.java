@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -22,6 +23,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import moos.ssds.io.util.Base64;
+import moos.ssds.io.util.PacketUtility;
 import moos.ssds.util.XmlDateFormat;
 
 import org.apache.log4j.Logger;
@@ -254,7 +257,7 @@ public class TransmogrifyServlet extends HttpServlet {
 		// Grab the stream ID
 		short streamID = 0x0100;
 		try {
-			streamID = extractStreamID(request);
+			streamID = extractShort(request, "StreamID");
 			// If the parameter was not specified, set it to default
 			if (streamID == -1)
 				streamID = 0x100;
@@ -266,7 +269,7 @@ public class TransmogrifyServlet extends HttpServlet {
 		// Grab the device packet version
 		long devicePacketVersion = 0;
 		try {
-			devicePacketVersion = extractDevicePacketVersion(request);
+			devicePacketVersion = extractLong(request, "DevicePacketVersion");
 			// If it was not specified set it to some default
 			if (devicePacketVersion == -1)
 				devicePacketVersion = 0;
@@ -278,7 +281,7 @@ public class TransmogrifyServlet extends HttpServlet {
 		// Grab the device ID (source ID)
 		long sourceID = -1;
 		try {
-			sourceID = extractSourceID(request);
+			sourceID = extractLong(request, "SourceID");
 		} catch (IllegalArgumentException e) {
 			messageBuilder.append("<li>" + e.getMessage() + "</li>");
 			validRequest = false;
@@ -305,8 +308,116 @@ public class TransmogrifyServlet extends HttpServlet {
 			validRequest = false;
 		}
 
+		// Grab the sequence number
+		long sequenceNumber = -1;
+		try {
+			sequenceNumber = extractLong(request, "SequenceNumber");
+		} catch (IllegalArgumentException e) {
+			messageBuilder.append("<li>" + e.getMessage() + "</li>");
+			validRequest = false;
+		}
+		// Since SequenceNumber is required, make sure it was parsed from the
+		// request
+		if (sequenceNumber == -1) {
+			messageBuilder
+					.append("<li>SequenceNumber was not specified, this is required</li>");
+			validRequest = false;
+		}
+
+		// Grab the metadata reference number
+		long metadataRef = -1;
+		try {
+			metadataRef = extractLong(request, "MetadataRef");
+		} catch (IllegalArgumentException e) {
+			messageBuilder.append("<li>" + e.getMessage() + "</li>");
+			validRequest = false;
+		}
+
+		// Grab the ID of the parent
+		long parentID = -1;
+		try {
+			parentID = extractLong(request, "ParentID");
+		} catch (IllegalArgumentException e) {
+			messageBuilder.append("<li>" + e.getMessage() + "</li>");
+			validRequest = false;
+		}
+
+		// Grab the record type
+		long recordType = -1;
+		try {
+			recordType = extractLong(request, "RecordType");
+		} catch (IllegalArgumentException e) {
+			messageBuilder.append("<li>" + e.getMessage() + "</li>");
+			validRequest = false;
+		}
+		// Since RecordType is required, make sure it was parsed from the
+		// request
+		if (recordType == -1) {
+			messageBuilder
+					.append("<li>RecordType was not specified, this is required</li>");
+			validRequest = false;
+		}
+
+		// Grab the second stream ID
+		short secondStreamID = -1;
+		try {
+			secondStreamID = extractShort(request, "SecondStreamID");
+		} catch (IllegalArgumentException e) {
+			messageBuilder.append("<li>" + e.getMessage() + "</li>");
+			validRequest = false;
+		}
+		// Make sure it is one of the required values
+		if (secondStreamID != 0x101 && secondStreamID != 0x102
+				&& secondStreamID != 0x103) {
+			messageBuilder
+					.append("<li>SecondStreamID was not specified "
+							+ "or was not one of the valid options:"
+							+ "<ol><li><b>0x101</b> = Metadata Packet</li>"
+							+ "<li><b>0x102</b> = Sensor Data Packet (or Summary Packet)</li>"
+							+ "<li><b>0x103</b> = Device Message Packet</li></ol></li>");
+			validRequest = false;
+		}
+
+		// The second packet version
+		long secondPacketVersion = -1;
+		try {
+			secondPacketVersion = extractLong(request, "SecondPacketVersion");
+		} catch (IllegalArgumentException e) {
+			messageBuilder.append("<li>" + e.getMessage() + "</li>");
+			validRequest = false;
+		}
+		// Set it to zero if not found
+		if (secondPacketVersion == -1)
+			secondPacketVersion = 0;
+
+		// Now for the payloads, they should be base64 encoded
+		byte[] firstBuffer = extractBase64Encoded(request, "FirstBuffer");
+		byte[] secondBuffer = extractBase64Encoded(request, "SecondBuffer");
+
 		// If the request was valid, construct and publish the message
 		if (validRequest) {
+
+			// Create the byte array in SIAM format
+			byte[] siamByteArray = PacketUtility.createSIAMFormatByteArray(
+					streamID, devicePacketVersion, sourceID, timestamp,
+					sequenceNumber, metadataRef, parentID, recordType,
+					secondStreamID, secondPacketVersion, firstBuffer,
+					secondBuffer);
+
+			// Create the bytes message
+			BytesMessage bytesMessage = null;
+			try {
+				bytesMessage = session.createBytesMessage();
+				if (bytesMessage != null) {
+					bytesMessage.writeBytes(siamByteArray);
+					messageProducer.send(bytesMessage);
+				}
+			} catch (JMSException e) {
+				messageBuilder.append("<li>JMSException caught trying to "
+						+ "send your message to SSDS: " + e.getMessage()
+						+ "</li>");
+				validRequest = false;
+			}
 		}
 
 		// If a response was requested, send it
@@ -325,9 +436,7 @@ public class TransmogrifyServlet extends HttpServlet {
 					.hasNext();) {
 				String key = iterator.next();
 				String[] parameterValues = (String[]) parameterMap.get(key);
-				out
-						.print("\n  <li>" + key + "=" + parameterValues[0]
-								+ "</li>");
+				out.print("\n  <li>" + key + "=" + parameterValues[0] + "</li>");
 			}
 			out.print("\n</ol>");
 
@@ -385,122 +494,89 @@ public class TransmogrifyServlet extends HttpServlet {
 	}
 
 	/**
-	 * This method takes in the servlet request, tries to find a parameter named
-	 * StreamID and then tries to convert the value to a short. If no value was
-	 * sent, a -1 will be returned
+	 * This method takes in the servlet request, tries to find a parameter with
+	 * the parameter name provided and then tries to convert the value to a
+	 * short. If no value was sent, a -1 will be returned
 	 * 
 	 * @param request
 	 *            is the HttpServletRequest that may contain the StreamID
 	 *            parameter
+	 * @param parameterName
+	 *            the name of the parameter to search for and to convert to a
+	 *            short
 	 * @return the parameter converted to a java short. A -1 will be returned if
 	 *         no parameter was specified in the request
 	 * @throws IllegalArgumentException
 	 *             if the parameter was specified, but could not be converted to
 	 *             a short
 	 */
-	private short extractStreamID(HttpServletRequest request)
+	private short extractShort(HttpServletRequest request, String parameterName)
 			throws IllegalArgumentException {
 		// The short to return
-		short streamID = -1;
-		// Look for the parameter with name StreamID
-		if (request.getParameterMap().containsKey("StreamID")) {
+		short shortToReturn = -1;
+		// Look for the parameter with given name
+		if (request.getParameterMap().containsKey(parameterName)) {
 			String[] parameterValueArray = (String[]) request.getParameterMap()
-					.get("StreamID");
+					.get(parameterName);
 			// Check to see if it is specified in Hex
 			if (parameterValueArray[0].contains("x")
 					|| parameterValueArray[0].contains("X")) {
 				try {
-					streamID = Short.decode(parameterValueArray[0]);
+					shortToReturn = Short.decode(parameterValueArray[0]);
 				} catch (Exception e) {
-					throw new IllegalArgumentException(
-							"The StreamID value could "
-									+ "not be decoded to a short:"
-									+ e.getMessage());
+					throw new IllegalArgumentException("The " + parameterName
+							+ " value could " + "not be decoded to a short:"
+							+ e.getMessage());
 				}
 			} else {
 				try {
-					streamID = Short.parseShort(parameterValueArray[0]);
+					shortToReturn = Short.parseShort(parameterValueArray[0]);
 				} catch (Exception e) {
-					throw new IllegalArgumentException(
-							"The StreamID value could "
-									+ "not be converted to a short: "
-									+ e.getMessage());
+					throw new IllegalArgumentException("The " + parameterName
+							+ " value could " + "not be converted to a short: "
+							+ e.getMessage());
 				}
 			}
 		}
 
 		// Return the value
-		return streamID;
+		return shortToReturn;
 	}
 
 	/**
-	 * This method takes in the servlet request, tries to find a parameter named
-	 * DevicePacketVersion and then tries to convert the value to a long. If no
-	 * value was sent, a -1 will be returned
+	 * This method takes in the servlet request, tries to find a parameter with
+	 * the given name and then tries to convert the value to a long. If no value
+	 * was sent, a -1 will be returned
 	 * 
 	 * @param request
-	 *            is the HttpServletRequest that may contain the
-	 *            DevicePacketVersion parameter
+	 *            is the HttpServletRequest that may contain the parameter
+	 * @param parameterName
+	 *            is the name of the parameter to search for
 	 * @return the parameter converted to a java long. A -1 will be returned if
 	 *         no parameter was specified in the request
 	 * @throws IllegalArgumentException
 	 *             if the parameter was specified, but could not be converted to
 	 *             a long
 	 */
-	private long extractDevicePacketVersion(HttpServletRequest request)
+	private long extractLong(HttpServletRequest request, String parameterName)
 			throws IllegalArgumentException {
 		// The long to return
-		long devicePacketVersion = -1;
-		// Look for the parameter with name DevicePacketVersion
-		if (request.getParameterMap().containsKey("DevicePacketVersion")) {
+		long longToReturn = -1;
+		// Look for the parameter with the given name
+		if (request.getParameterMap().containsKey(parameterName)) {
 			String[] parameterValueArray = (String[]) request.getParameterMap()
-					.get("DevicePacketVersion");
+					.get(parameterName);
 			try {
-				devicePacketVersion = Long.parseLong(parameterValueArray[0]);
+				longToReturn = Long.parseLong(parameterValueArray[0]);
 			} catch (Exception e) {
-				throw new IllegalArgumentException(
-						"The DevicePacketVersion value could "
-								+ "not be converted to a long: "
-								+ e.getMessage());
+				throw new IllegalArgumentException("The " + parameterName
+						+ " value could " + "not be converted to a long: "
+						+ e.getMessage());
 			}
 		}
 
 		// Return the value
-		return devicePacketVersion;
-	}
-
-	/**
-	 * This method takes in the servlet request, tries to find a parameter named
-	 * SourceID and then tries to convert the value to a long. If no value was
-	 * sent, a -1 will be returned
-	 * 
-	 * @param request
-	 *            is the HttpServletRequest that may contain the SourceID
-	 *            parameter
-	 * @return the parameter converted to a java long. A -1 will be returned if
-	 *         no parameter was specified in the request
-	 * @throws IllegalArgumentException
-	 *             if the parameter was specified, but could not be converted to
-	 *             a long
-	 */
-	private long extractSourceID(HttpServletRequest request)
-			throws IllegalArgumentException {
-		// The long to return
-		long sourceID = -1;
-		// Look for the parameter with name SourceID
-		if (request.getParameterMap().containsKey("SourceID")) {
-			String[] parameterValueArray = (String[]) request.getParameterMap()
-					.get("SourceID");
-			try {
-				sourceID = Long.parseLong(parameterValueArray[0]);
-			} catch (Exception e) {
-				throw new IllegalArgumentException("The SourceID value could "
-						+ "not be converted to a long: " + e.getMessage());
-			}
-		}
-
-		// Return the value
-		return sourceID;
+		return longToReturn;
 	}
 
 	/**
@@ -527,7 +603,7 @@ public class TransmogrifyServlet extends HttpServlet {
 			String[] parameterValueArray = (String[]) request.getParameterMap()
 					.get("Timestamp");
 			// There are two possibilities here, one is the ISO form and the
-			// other is epoch millis. Let's look for a ":" or a "/" to see if it
+			// other is epoch millis. Let's look for a ":" or a "-" to see if it
 			// is a ISO form
 			if (parameterValueArray[0].contains(":")
 					|| parameterValueArray[0].contains("-")) {
@@ -565,4 +641,42 @@ public class TransmogrifyServlet extends HttpServlet {
 		return timestamp;
 	}
 
+	/**
+	 * This method takes in an HttpServletRequest and looks for a parameter with
+	 * the given name. If one is found, it will take the value associated with
+	 * the parameter and assume that it is base64 encoded and will then decode
+	 * that into a byte array. If there is not parameter, null will be returned.
+	 * 
+	 * @param request
+	 *            the HttpServletRequest to search for the requested parameter
+	 * @param parameterName
+	 *            the parameter to search for
+	 * @return the value associated with the parameter decoded from base64
+	 *         encoding (or null if no parameter
+	 * @throws IllegalArgumentException
+	 *             if the parameter was specified, but something went wrong
+	 *             trying to decode it
+	 */
+	private byte[] extractBase64Encoded(HttpServletRequest request,
+			String parameterName) throws IllegalArgumentException {
+		// The byte array to return
+		byte[] bytesToReturn = null;
+
+		// Look for the parameter with the given name
+		if (request.getParameterMap().containsKey(parameterName)) {
+			String[] parameterValueArray = (String[]) request.getParameterMap()
+					.get(parameterName);
+			Base64 base64 = new Base64();
+			try {
+				bytesToReturn = base64.decode(parameterValueArray[0]);
+			} catch (Exception e) {
+				throw new IllegalArgumentException(
+						"Something went wrong trying to decode parameter "
+								+ parameterName + ": " + e.getMessage());
+			}
+		}
+
+		// Return the result
+		return bytesToReturn;
+	}
 }
