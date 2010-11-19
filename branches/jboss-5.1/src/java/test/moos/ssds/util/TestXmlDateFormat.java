@@ -56,34 +56,34 @@ public class TestXmlDateFormat extends TestCase {
 		// Grab the formatted date
 		String formattedDate = xmlDateFormat.format(date);
 		// Now make sure it is what we expect
-		assertEquals("The year should be correct", "2010", formattedDate
-				.substring(0, 4));
-		assertEquals("The month should match", "08", formattedDate.substring(5,
-				7));
-		assertEquals("The month should match", "04", formattedDate.substring(8,
-				10));
-		assertEquals("The hour should match", "22", formattedDate.substring(11,
-				13));
-		assertEquals("The minute should match", "18", formattedDate.substring(
-				14, 16));
-		assertEquals("The second should match", "20", formattedDate.substring(
-				17, 19));
+		assertEquals("The year should be correct", "2010",
+				formattedDate.substring(0, 4));
+		assertEquals("The month should match", "08",
+				formattedDate.substring(5, 7));
+		assertEquals("The month should match", "04",
+				formattedDate.substring(8, 10));
+		assertEquals("The hour should match", "22",
+				formattedDate.substring(11, 13));
+		assertEquals("The minute should match", "18",
+				formattedDate.substring(14, 16));
+		assertEquals("The second should match", "20",
+				formattedDate.substring(17, 19));
 		assertEquals("The zone should match", "Z", formattedDate.substring(19));
 		// Grab the compact formatted date
 		String compactFormattedDate = xmlDateFormat.formatCompact(date);
 		// Now make sure it is what we expect
-		assertEquals("The year should be correct", "2010", compactFormattedDate
-				.substring(0, 4));
-		assertEquals("The month should match", "08", compactFormattedDate
-				.substring(4, 6));
-		assertEquals("The month should match", "04", compactFormattedDate
-				.substring(6, 8));
-		assertEquals("The hour should match", "22", compactFormattedDate
-				.substring(9, 11));
-		assertEquals("The minute should match", "18", compactFormattedDate
-				.substring(11, 13));
-		assertEquals("The second should match", "20", compactFormattedDate
-				.substring(13, 15));
+		assertEquals("The year should be correct", "2010",
+				compactFormattedDate.substring(0, 4));
+		assertEquals("The month should match", "08",
+				compactFormattedDate.substring(4, 6));
+		assertEquals("The month should match", "04",
+				compactFormattedDate.substring(6, 8));
+		assertEquals("The hour should match", "22",
+				compactFormattedDate.substring(9, 11));
+		assertEquals("The minute should match", "18",
+				compactFormattedDate.substring(11, 13));
+		assertEquals("The second should match", "20",
+				compactFormattedDate.substring(13, 15));
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class TestXmlDateFormat extends TestCase {
 	 */
 	public void testParse() {
 		// Create the string for the date
-		String dateString = "2010-08-0T12:34:56Z";
+		String dateString = "2010-08-04T12:34:56Z";
 
 		// Now parse it
 		Date parsedDate = xmlDateFormat.parse(dateString);
@@ -105,17 +105,71 @@ public class TestXmlDateFormat extends TestCase {
 		parsedCalendar.setTime(parsedDate);
 
 		// Check the fields
-		assertEquals("The year should match", 2010, parsedCalendar
-				.get(Calendar.YEAR));
-		assertEquals("The month should match", 8, parsedCalendar
-				.get(Calendar.MONTH) + 1);
-		assertEquals("The day should match", 4, parsedCalendar
-				.get(Calendar.DAY_OF_MONTH));
-		assertEquals("The hour should match", 12, parsedCalendar
-				.get(Calendar.HOUR_OF_DAY));
-		assertEquals("The minute should match", 34, parsedCalendar
-				.get(Calendar.MINUTE));
-		assertEquals("The second should match", 56, parsedCalendar
-				.get(Calendar.SECOND));
+		assertEquals("The year should match", 2010,
+				parsedCalendar.get(Calendar.YEAR));
+		assertEquals("The month should match", 8,
+				parsedCalendar.get(Calendar.MONTH) + 1);
+		assertEquals("The day should match", 4,
+				parsedCalendar.get(Calendar.DAY_OF_MONTH));
+		assertEquals("The hour should match", 12,
+				parsedCalendar.get(Calendar.HOUR_OF_DAY));
+		assertEquals("The minute should match", 34,
+				parsedCalendar.get(Calendar.MINUTE));
+		assertEquals("The second should match", 56,
+				parsedCalendar.get(Calendar.SECOND));
+
+		// Try one with short digits and no timezone
+		dateString = "2010-8-4T9:3:5";
+
+		// Now parse it
+		parsedDate = xmlDateFormat.parse(dateString);
+
+		assertNotNull("The parser should have returned something", parsedDate);
+
+		// A Calendar to help with testing
+		parsedCalendar = Calendar.getInstance();
+		parsedCalendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+		parsedCalendar.setTime(parsedDate);
+
+		// Check the fields
+		assertEquals("The year should match", 2010,
+				parsedCalendar.get(Calendar.YEAR));
+		assertEquals("The month should match", 8,
+				parsedCalendar.get(Calendar.MONTH) + 1);
+		assertEquals("The day should match", 4,
+				parsedCalendar.get(Calendar.DAY_OF_MONTH));
+		assertEquals("The hour should match", 9,
+				parsedCalendar.get(Calendar.HOUR_OF_DAY));
+		assertEquals("The minute should match", 3,
+				parsedCalendar.get(Calendar.MINUTE));
+		assertEquals("The second should match", 5,
+				parsedCalendar.get(Calendar.SECOND));
+
+		// And one more normal, but with no timezone
+		dateString = "2010-08-04T09:03:25";
+
+		// Now parse it
+		parsedDate = xmlDateFormat.parse(dateString);
+
+		assertNotNull("The parser should have returned something", parsedDate);
+
+		// A Calendar to help with testing
+		parsedCalendar = Calendar.getInstance();
+		parsedCalendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+		parsedCalendar.setTime(parsedDate);
+
+		// Check the fields
+		assertEquals("The year should match", 2010,
+				parsedCalendar.get(Calendar.YEAR));
+		assertEquals("The month should match", 8,
+				parsedCalendar.get(Calendar.MONTH) + 1);
+		assertEquals("The day should match", 4,
+				parsedCalendar.get(Calendar.DAY_OF_MONTH));
+		assertEquals("The hour should match", 9,
+				parsedCalendar.get(Calendar.HOUR_OF_DAY));
+		assertEquals("The minute should match", 3,
+				parsedCalendar.get(Calendar.MINUTE));
+		assertEquals("The second should match", 25,
+				parsedCalendar.get(Calendar.SECOND));
 	}
 }

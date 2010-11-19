@@ -52,8 +52,8 @@ public final class XmlDateFormat implements Serializable {
 	/**
 	 * The Calendar object to do the transformations
 	 */
-	private Calendar calendar = new GregorianCalendar(TimeZone
-			.getTimeZone("GMT"));
+	private Calendar calendar = new GregorianCalendar(
+			TimeZone.getTimeZone("GMT"));
 
 	/**
 	 * A Number formatter
@@ -162,7 +162,7 @@ public final class XmlDateFormat implements Serializable {
 
 		// Setup the pattern to grab the values
 		Pattern datePattern = Pattern
-				.compile("^\\s*(\\d{4})[/|-]+(\\d+)[/|-]+(\\d+)\\D*(\\d+):(\\d+):(\\d+)\\s*(\\S+)\\s*$");
+				.compile("^\\s*(\\d{4})[/|-]+(\\d+)[/|-]+(\\d+)\\D*(\\d+):(\\d+):(\\d+)\\s*(\\D+)\\s*$");
 		Matcher matcher = datePattern.matcher(source);
 		if (matcher.matches()) {
 			year = new Integer(matcher.group(1)).intValue();
@@ -191,6 +191,9 @@ public final class XmlDateFormat implements Serializable {
 				return null;
 			}
 		}
+		logger.debug("Parsing " + source + " gives:\nYear=" + year + "\nMonth="
+				+ month + "\nDay=" + day + "\nHour=" + hour + "\nMinute="
+				+ minute + "\nSecond=" + second + "\nZone=" + zone);
 
 		// Set the calendar
 		calendar.set(year, month, day, hour, minute, second);
@@ -207,8 +210,8 @@ public final class XmlDateFormat implements Serializable {
 			String offsetMinute = zoneMatcher.group(4);
 			if ((offsetHourDirection.equals("+"))
 					|| (offsetHourDirection.equals(""))) {
-				calendar.add(Calendar.HOUR, new Integer("-" + offsetHour)
-						.intValue());
+				calendar.add(Calendar.HOUR,
+						new Integer("-" + offsetHour).intValue());
 			} else if (offsetHourDirection.equals("-")) {
 				calendar.add(Calendar.HOUR, new Integer(offsetHour).intValue());
 			}
@@ -218,20 +221,19 @@ public final class XmlDateFormat implements Serializable {
 						calendar.add(Calendar.MINUTE, new Integer("-"
 								+ offsetMinute).intValue());
 					} else if (offsetHourDirection.equals("-")) {
-						calendar.add(Calendar.MINUTE, new Integer(offsetMinute)
-								.intValue());
+						calendar.add(Calendar.MINUTE,
+								new Integer(offsetMinute).intValue());
 					}
 				} else if (offsetMinuteIndicator.equals("+")) {
 					calendar.add(Calendar.MINUTE, new Integer("-"
 							+ offsetMinute).intValue());
 				} else if (offsetMinuteIndicator.equals("-")) {
-					calendar.add(Calendar.MINUTE, new Integer(offsetMinute)
-							.intValue());
+					calendar.add(Calendar.MINUTE,
+							new Integer(offsetMinute).intValue());
 				}
 			}
 		}
 		dateToReturn = calendar.getTime();
 		return dateToReturn;
 	}
-
 }
