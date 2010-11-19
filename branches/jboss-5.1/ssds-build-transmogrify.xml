@@ -158,6 +158,7 @@
 				<include name="moos/ssds/io/SSDSDevicePacket.class" />
 				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
 				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacketProto.class" />
+				<include name="moos/ssds/io/util/Base64.class" />
 				<include name="moos/ssds/io/util/PacketUtility.class" />
 				<include name="moos/ssds/util/DateUtils.class" />
 				<include name="moos/ssds/util/XmlDateFormat.class" />
@@ -233,9 +234,10 @@
 		<!-- Compile just the test classes -->
 		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
 			<src path="${src.java}" />
-			<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
+			<include name="test/moos/ssds/transmogrify/*.java" />
+			<include name="test/moos/ssds/services/servlet/data/*.java" />
 			<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
-			<include name="test/moos/ssds/util/TestTestDateUtil.java" />
+			<include name="test/moos/ssds/util/*.java" />
 			<classpath>
 				<pathelement location="${project.build}/classes" />
 				<fileset refid="project-lib-jar-fileset" />
@@ -255,8 +257,10 @@
 			<batchtest fork="yes" todir="${gen.test}">
 				<fileset dir="${src.java}">
 					<include name="test/moos/ssds/transmogrify/TransmogrifyMDBTest.java" />
+					<include name="test/moos/ssds/services/servlet/data/TransmogrifyServletTest.java" />
 					<include name="test/moos/ssds/io/util/TestPacketUtility.java" />
 					<include name="test/moos/ssds/util/TestDateUtil.java" />
+					<include name="test/moos/ssds/util/TestXmlDateFormat.java" />
 				</fileset>
 			</batchtest>
 		</junit>
