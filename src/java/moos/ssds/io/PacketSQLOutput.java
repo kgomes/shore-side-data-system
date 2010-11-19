@@ -49,12 +49,6 @@ public class PacketSQLOutput {
 	private DataSource dataSource;
 
 	/**
-	 * This is the actual connection that is used by the PacketSQLOutput to send
-	 * data to the DB.
-	 */
-	private Connection connection;
-
-	/**
 	 * The string that is used as a delimiter for table queries
 	 */
 	private String sqlTableDelimiter = null;
@@ -107,18 +101,6 @@ public class PacketSQLOutput {
 	 */
 	public DataSource getDataSource() {
 		return dataSource;
-	}
-
-	/**
-	 * This method closes the database <code>Connection</code>.
-	 */
-	public void close() {
-		try {
-			connection.close();
-		} catch (Throwable e) {
-			logger.error("Throwable caught trying to close the connection:"
-					+ e.getMessage());
-		}
 	}
 
 	/**
@@ -209,8 +191,9 @@ public class PacketSQLOutput {
 			logger.error("IOException caught: " + e.getMessage());
 		}
 		// Grab a connection
+		Connection connection = null;
 		try {
-			this.connection = dataSource.getConnection();
+			connection = dataSource.getConnection();
 		} catch (SQLException e) {
 			logger.error("Could not get a connection to the database: "
 					+ e.getMessage());
@@ -218,7 +201,7 @@ public class PacketSQLOutput {
 		// Try the write
 		try {
 			// Prepare the statement to insert the data
-			PreparedStatement pstmt = this.connection
+			PreparedStatement pstmt = connection
 					.prepareStatement("INSERT INTO " + this.sqlTableDelimiter
 							+ deviceID + this.sqlTableDelimiter + " VALUES "
 							+ "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
@@ -243,35 +226,13 @@ public class PacketSQLOutput {
 			pstmt.setNull(15, Types.DOUBLE);
 			pstmt.setNull(16, Types.FLOAT);
 			pstmt.executeUpdate();
+			pstmt.close();
 		} catch (SQLException e1) {
 			logger.error("SQLException while trying to insert data: "
 					+ e1.getMessage());
 		}
-		// Flush the output
-		this.flush();
 
 		// Close the connection
-		this.close();
+		connection.close();
 	}
-
-	/**
-	 * This is the method that is called when the object is cleaned up and
-	 * closes all the data streams
-	 */
-	public void finalize() {
-		try {
-			super.finalize();
-			connection.close();
-		} catch (Throwable t) {
-			logger.error("Throwable caught trying to "
-					+ "finalize and close connections" + t.getMessage());
-		}
-	}
-
-	/**
-	 * This method does nothing in the SQL case
-	 */
-	public void flush() {
-	}
-
 }
