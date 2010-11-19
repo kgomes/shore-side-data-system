@@ -19,6 +19,7 @@ import javax.naming.InitialContext;
 
 import junit.framework.TestCase;
 import moos.ssds.io.SSDSDevicePacket;
+import moos.ssds.io.SSDSGeoLocatedDevicePacketProto;
 import moos.ssds.io.util.PacketUtility;
 import net.java.jddac.common.type.ArgArray;
 
@@ -30,6 +31,8 @@ import org.mbari.siam.distributed.MetadataPacket;
 import org.mbari.siam.distributed.SensorDataPacket;
 import org.mbari.siam.distributed.SummaryPacket;
 import org.mbari.siam.operations.utils.ExportablePacket;
+
+import com.google.protobuf.ByteString;
 
 public class TestPacketUtility extends TestCase {
 
@@ -58,12 +61,12 @@ public class TestPacketUtility extends TestCase {
 	 * The current time that will be used to tag packets
 	 */
 	private Date metadataPacketDate = new Date();
-	private Date deviceMessagePacketDate = new Date(metadataPacketDate
-			.getTime() + 10000);
-	private Date measurementPacketDate = new Date(deviceMessagePacketDate
-			.getTime() + 10000);
-	private Date sensorDataPacketDate = new Date(measurementPacketDate
-			.getTime() + 10000);
+	private Date deviceMessagePacketDate = new Date(
+			metadataPacketDate.getTime() + 10000);
+	private Date measurementPacketDate = new Date(
+			deviceMessagePacketDate.getTime() + 10000);
+	private Date sensorDataPacketDate = new Date(
+			measurementPacketDate.getTime() + 10000);
 	private Date summaryPacketDate = new Date(
 			sensorDataPacketDate.getTime() + 10000);
 
@@ -250,8 +253,8 @@ public class TestPacketUtility extends TestCase {
 
 		// SummaryPacket
 		summaryPacket = new SummaryPacket(deviceID);
-		summaryPacket.setData(summaryPacketDate.getTime(), summaryPacketData
-				.getBytes());
+		summaryPacket.setData(summaryPacketDate.getTime(),
+				summaryPacketData.getBytes());
 		summaryPacket.setMetadataRef(metadataPacketSequenceNumber);
 		summaryPacket.setParentId(parentID);
 		summaryPacket.setRecordType(summaryPacketRecordType);
@@ -370,13 +373,11 @@ public class TestPacketUtility extends TestCase {
 		assertTrue(
 				"MetadataPacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(
-						PacketUtility
-								.convertSIAMByteArrayToVersion3SSDSByteArray(
-										PacketUtility
-												.extractByteArrayFromBytesMessage(metadataBytesMessage),
-										true, true, true, true), deviceID,
-						parentID, 1, 0L, 0L, 0L,
-						metadataPacketDate.getTime() / 1000,
+						PacketUtility.convertSIAMByteArrayToVersion3SSDSByteArray(
+								PacketUtility
+										.extractByteArrayFromBytesMessage(metadataBytesMessage),
+								true, true, true, true), deviceID, parentID, 1,
+						0L, 0L, 0L, metadataPacketDate.getTime() / 1000,
 						((metadataPacketDate.getTime() % 1000) * 1000),
 						metadataPacketSequenceNumber,
 						metadataPacketBytesMessage.getBytes(),
@@ -386,12 +387,11 @@ public class TestPacketUtility extends TestCase {
 		assertTrue(
 				"DeviceMessagePacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(
-						PacketUtility
-								.convertSIAMByteArrayToVersion3SSDSByteArray(
-										PacketUtility
-												.extractByteArrayFromBytesMessage(deviceMessageBytesMessage),
-										true, true, true, true), deviceID,
-						parentID, 4, deviceMessagePacketRecordType,
+						PacketUtility.convertSIAMByteArrayToVersion3SSDSByteArray(
+								PacketUtility
+										.extractByteArrayFromBytesMessage(deviceMessageBytesMessage),
+								true, true, true, true), deviceID, parentID, 4,
+						deviceMessagePacketRecordType,
 						metadataPacketSequenceNumber,
 						metadataPacketSequenceNumber, deviceMessagePacketDate
 								.getTime() / 1000, ((deviceMessagePacketDate
@@ -406,12 +406,11 @@ public class TestPacketUtility extends TestCase {
 		assertTrue(
 				"MeasurmentPacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(
-						PacketUtility
-								.convertSIAMByteArrayToVersion3SSDSByteArray(
-										PacketUtility
-												.extractByteArrayFromBytesMessage(measurementBytesMessage),
-										true, true, true, true), deviceID,
-						parentID, 4, measurementPacketRecordType,
+						PacketUtility.convertSIAMByteArrayToVersion3SSDSByteArray(
+								PacketUtility
+										.extractByteArrayFromBytesMessage(measurementBytesMessage),
+								true, true, true, true), deviceID, parentID, 4,
+						measurementPacketRecordType,
 						metadataPacketSequenceNumber,
 						metadataPacketSequenceNumber, measurementPacketDate
 								.getTime() / 1000, ((measurementPacketDate
@@ -424,12 +423,11 @@ public class TestPacketUtility extends TestCase {
 		assertTrue(
 				"SensorDataPacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(
-						PacketUtility
-								.convertSIAMByteArrayToVersion3SSDSByteArray(
-										PacketUtility
-												.extractByteArrayFromBytesMessage(sensorDataBytesMessage),
-										true, true, true, true), deviceID,
-						parentID, 0, sensorDataPacketRecordType,
+						PacketUtility.convertSIAMByteArrayToVersion3SSDSByteArray(
+								PacketUtility
+										.extractByteArrayFromBytesMessage(sensorDataBytesMessage),
+								true, true, true, true), deviceID, parentID, 0,
+						sensorDataPacketRecordType,
 						metadataPacketSequenceNumber,
 						metadataPacketSequenceNumber, sensorDataPacketDate
 								.getTime() / 1000, ((sensorDataPacketDate
@@ -441,13 +439,11 @@ public class TestPacketUtility extends TestCase {
 		assertTrue(
 				"SummaryPacket byte array should be converted properly to SSDS byte array",
 				testSSDSByteArray(
-						PacketUtility
-								.convertSIAMByteArrayToVersion3SSDSByteArray(
-										PacketUtility
-												.extractByteArrayFromBytesMessage(summaryPacketBytesMessage),
-										true, true, true, true), deviceID,
-						parentID, 0, summaryPacketRecordType,
-						metadataPacketSequenceNumber,
+						PacketUtility.convertSIAMByteArrayToVersion3SSDSByteArray(
+								PacketUtility
+										.extractByteArrayFromBytesMessage(summaryPacketBytesMessage),
+								true, true, true, true), deviceID, parentID, 0,
+						summaryPacketRecordType, metadataPacketSequenceNumber,
 						metadataPacketSequenceNumber, summaryPacketDate
 								.getTime() / 1000, ((summaryPacketDate
 								.getTime() % 1000) * 1000),
@@ -488,11 +484,11 @@ public class TestPacketUtility extends TestCase {
 				testSSDSByteArray(ssdsDeviceMessageDevicePacketByteArray,
 						deviceID, parentID, 4, deviceMessagePacketRecordType,
 						metadataPacketSequenceNumber,
-						metadataPacketSequenceNumber, deviceMessagePacketDate
-								.getTime() / 1000, ((deviceMessagePacketDate
-								.getTime() % 1000) * 1000),
-						deviceMessagePacketSequenceNumber, deviceMessageMessage
-								.getBytes(), null));
+						metadataPacketSequenceNumber,
+						deviceMessagePacketDate.getTime() / 1000,
+						((deviceMessagePacketDate.getTime() % 1000) * 1000),
+						deviceMessagePacketSequenceNumber,
+						deviceMessageMessage.getBytes(), null));
 
 		// MeasurementPacket
 		SSDSDevicePacket ssdsMeasurmentDevicePacket = PacketUtility
@@ -509,9 +505,9 @@ public class TestPacketUtility extends TestCase {
 				testSSDSByteArray(ssdsMeasurmentDevicePacketByteArray,
 						deviceID, parentID, 4, measurementPacketRecordType,
 						metadataPacketSequenceNumber,
-						metadataPacketSequenceNumber, measurementPacketDate
-								.getTime() / 1000, ((measurementPacketDate
-								.getTime() % 1000) * 1000),
+						metadataPacketSequenceNumber,
+						measurementPacketDate.getTime() / 1000,
+						((measurementPacketDate.getTime() % 1000) * 1000),
 						measurementPacketSequenceNumber,
 						targetMeasurementPacketArgArray.toString().getBytes(),
 						null));
@@ -528,11 +524,11 @@ public class TestPacketUtility extends TestCase {
 				testSSDSByteArray(ssdsSensorDataDevicePacketByteArray,
 						deviceID, parentID, 0, sensorDataPacketRecordType,
 						metadataPacketSequenceNumber,
-						metadataPacketSequenceNumber, sensorDataPacketDate
-								.getTime() / 1000, ((sensorDataPacketDate
-								.getTime() % 1000) * 1000),
-						sensorDataPacketSequenceNumber, sensorDataPacketBuffer
-								.getBytes(), null));
+						metadataPacketSequenceNumber,
+						sensorDataPacketDate.getTime() / 1000,
+						((sensorDataPacketDate.getTime() % 1000) * 1000),
+						sensorDataPacketSequenceNumber,
+						sensorDataPacketBuffer.getBytes(), null));
 
 		// SummaryPacket
 		SSDSDevicePacket ssdsSummaryDevicePacket = PacketUtility
@@ -546,11 +542,11 @@ public class TestPacketUtility extends TestCase {
 				testSSDSByteArray(ssdsSummaryDevicePacketByteArray, deviceID,
 						parentID, 0, summaryPacketRecordType,
 						metadataPacketSequenceNumber,
-						metadataPacketSequenceNumber, summaryPacketDate
-								.getTime() / 1000, ((summaryPacketDate
-								.getTime() % 1000) * 1000),
-						summaryPacketSequenceNumber, summaryPacketData
-								.getBytes(), null));
+						metadataPacketSequenceNumber,
+						summaryPacketDate.getTime() / 1000,
+						((summaryPacketDate.getTime() % 1000) * 1000),
+						summaryPacketSequenceNumber,
+						summaryPacketData.getBytes(), null));
 	}
 
 	public void testReadVariablesFromVersion3SSDSByteArray() {
@@ -601,10 +597,10 @@ public class TestPacketUtility extends TestCase {
 				timestampNanoseconds, ((Long) extractedArray[7]).longValue());
 		assertEquals("SequenceNumbers should be the same", sequenceNumber,
 				((Long) extractedArray[8]).longValue());
-		assertTrue("First buffers should be the same", Arrays.equals(
-				firstBuffer, ((byte[]) extractedArray[10])));
-		assertTrue("Second buffers should be the same", Arrays.equals(
-				secondBuffer, ((byte[]) extractedArray[12])));
+		assertTrue("First buffers should be the same",
+				Arrays.equals(firstBuffer, ((byte[]) extractedArray[10])));
+		assertTrue("Second buffers should be the same",
+				Arrays.equals(secondBuffer, ((byte[]) extractedArray[12])));
 
 		// Let's try nulling out some things
 		firstBuffer = null;
@@ -640,10 +636,57 @@ public class TestPacketUtility extends TestCase {
 				((Long) extractedArray[8]).longValue());
 		assertEquals("First buffer should be of 0 length", 0,
 				((Integer) extractedArray[9]).intValue());
-		assertTrue("First buffer should be an empty buffer", Arrays.equals(
-				new byte[0], ((byte[]) extractedArray[10])));
-		assertTrue("Second buffers should be the same", Arrays.equals(
-				secondBuffer, ((byte[]) extractedArray[12])));
+		assertTrue("First buffer should be an empty buffer",
+				Arrays.equals(new byte[0], ((byte[]) extractedArray[10])));
+		assertTrue("Second buffers should be the same",
+				Arrays.equals(secondBuffer, ((byte[]) extractedArray[12])));
+	}
+
+	public void testConvertProtocolBufferMessageToSSDSByteArray() {
+		// Construct the variables to use to create the protocol buffer message
+		long sourceID = 101;
+		long parentID = 100;
+		// The type of packet Data = 0, Metadata = 1, Device Message = 4
+		int packetType = 9;
+		// This is the record type
+		long packetSubType = 1;
+		long metadataSequenceNumber = 10;
+		long dataDescriptionVersion = 11;
+		Date now = new Date();
+		// TODO kgomes this needs to be changed after but SSDS-77 is fixed
+		long timestampSeconds = now.getTime() / 1000;
+		long timestampNanoseconds = (now.getTime() % 1000) * 1000;
+		long sequenceNumber = 199;
+		byte[] firstBuffer = "Sensor Data First Buffer".getBytes();
+		byte[] secondBuffer = "SensorData Second Buffer (ignored)".getBytes();
+
+		// Create the ProtocolBuffersMessage
+		SSDSGeoLocatedDevicePacketProto.MessagePacket message = SSDSGeoLocatedDevicePacketProto.MessagePacket
+				.newBuilder().setSourceID(sourceID).setParentID(parentID)
+				.setPacketType(packetType).setPacketSubType(packetSubType)
+				.setMetadataSequenceNumber(metadataSequenceNumber)
+				.setDataDescriptionVersion(dataDescriptionVersion)
+				.setTimestampSeconds(timestampSeconds)
+				.setTimestampNanoseconds(timestampNanoseconds)
+				.setSequenceNumber(sequenceNumber)
+				.setBufferBytes(ByteString.copyFrom(firstBuffer))
+				.setBufferTwoBytes(ByteString.copyFrom(secondBuffer)).build();
+
+		// Serialize it
+		byte[] protoSerialArray = message.toByteArray();
+
+		// Now convert that to a SSDSByteArray
+		byte[] ssdsByteArray = PacketUtility
+				.convertProtocolBuffersByteArrayToSSDSByteArray(protoSerialArray);
+
+		// Run the test
+		assertTrue(
+				"SummaryPacket byte array should be converted properly to SSDS byte array",
+				testSSDSByteArray(ssdsByteArray, sourceID, parentID,
+						packetType, packetSubType, metadataSequenceNumber,
+						dataDescriptionVersion, timestampSeconds,
+						timestampNanoseconds, sequenceNumber, firstBuffer,
+						secondBuffer));
 	}
 
 	/**
@@ -743,10 +786,8 @@ public class TestPacketUtility extends TestCase {
 			}
 			if (actualSequenceNumber != sequenceNumber) {
 				allEquals = false;
-				logger
-						.debug("SequenceNumbers did NOT match! Expected "
-								+ sequenceNumber + " but found "
-								+ actualSequenceNumber);
+				logger.debug("SequenceNumbers did NOT match! Expected "
+						+ sequenceNumber + " but found " + actualSequenceNumber);
 			}
 			if (actualMetadataRef != metadataRef) {
 				allEquals = false;
@@ -765,10 +806,8 @@ public class TestPacketUtility extends TestCase {
 			}
 			if (actualSecondStreamID != secondStreamID) {
 				allEquals = false;
-				logger
-						.debug("SecondStreamIDs did NOT match! Expected "
-								+ secondStreamID + " but found "
-								+ actualSecondStreamID);
+				logger.debug("SecondStreamIDs did NOT match! Expected "
+						+ secondStreamID + " but found " + actualSecondStreamID);
 			}
 			if (actualSecondPacketVersion != secondPacketVersion) {
 				allEquals = false;
@@ -805,11 +844,10 @@ public class TestPacketUtility extends TestCase {
 							|| !Arrays.equals(actualSecondBufferBytes,
 									secondBufferBytes)) {
 						allEquals = false;
-						logger
-								.debug("SecondBufferBytes did NOT match! Expected "
-										+ new String(secondBufferBytes)
-										+ " but found "
-										+ new String(actualSecondBufferBytes));
+						logger.debug("SecondBufferBytes did NOT match! Expected "
+								+ new String(secondBufferBytes)
+								+ " but found "
+								+ new String(actualSecondBufferBytes));
 					}
 				}
 			}
@@ -946,10 +984,8 @@ public class TestPacketUtility extends TestCase {
 			}
 			if (actualSequenceNumber != sequenceNumber) {
 				allEquals = false;
-				logger
-						.error("SequenceNumbers did NOT match! Expecting "
-								+ sequenceNumber + " but found "
-								+ actualSequenceNumber);
+				logger.error("SequenceNumbers did NOT match! Expecting "
+						+ sequenceNumber + " but found " + actualSequenceNumber);
 			}
 			if (firstBuffer != null) {
 				if (actualFirstBufferLength != firstBuffer.length) {
@@ -969,11 +1005,10 @@ public class TestPacketUtility extends TestCase {
 			if (secondBuffer != null) {
 				if (actualSecondBufferLength != secondBuffer.length) {
 					allEquals = false;
-					logger
-							.error("SecondBufferLenghts did NOT match! Expecting "
-									+ secondBuffer.length
-									+ " but found "
-									+ actualSecondBufferLength);
+					logger.error("SecondBufferLenghts did NOT match! Expecting "
+							+ secondBuffer.length
+							+ " but found "
+							+ actualSecondBufferLength);
 				}
 				if (actualSecondBufferLength > 0
 						&& !Arrays
