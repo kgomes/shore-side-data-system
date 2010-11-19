@@ -89,8 +89,8 @@ public class IngestMDBTest extends TestCase {
 		ExportablePacket exportablePacket = new ExportablePacket();
 
 		// MetadataPacket comes first
-		MetadataPacket metadataPacket = new MetadataPacket(101, ("Cause")
-				.getBytes(), ("Buffer bytes").getBytes());
+		MetadataPacket metadataPacket = new MetadataPacket(101,
+				("Cause").getBytes(), ("Buffer bytes").getBytes());
 		metadataPacket.setMetadataRef(1);
 		metadataPacket.setParentId(100);
 		metadataPacket.setRecordType(0);
@@ -163,23 +163,24 @@ public class IngestMDBTest extends TestCase {
 
 				// Now check some things
 				// SourceID (device ID)
-				assertEquals("SourceID should be 101", 101, ssdsDevicePacket
-						.sourceID());
+				assertEquals("SourceID should be 101", 101,
+						ssdsDevicePacket.sourceID());
 				// SystemTime
-				assertEquals("System time should be equal", metadataPacketDate
-						.getTime(), ssdsDevicePacket.systemTime());
+				assertEquals("System time should be equal",
+						metadataPacketDate.getTime(),
+						ssdsDevicePacket.systemTime());
 				// Sequence Number
 				assertEquals("The sequence Number should be 9", 9,
 						ssdsDevicePacket.sequenceNo());
 				// MetadataRef
-				assertEquals("MetadataRef should be 1", 1, ssdsDevicePacket
-						.metadataRef());
+				assertEquals("MetadataRef should be 1", 1,
+						ssdsDevicePacket.metadataRef());
 				// ParentID
-				assertEquals("ParentID should be 100", 100, ssdsDevicePacket
-						.getParentId());
+				assertEquals("ParentID should be 100", 100,
+						ssdsDevicePacket.getParentId());
 				// RecordType
-				assertEquals("RecordType should be 0", 0, ssdsDevicePacket
-						.getRecordType());
+				assertEquals("RecordType should be 0", 0,
+						ssdsDevicePacket.getRecordType());
 				// MetadataSequenceNumber
 				assertEquals("MetadataSequenceNumber should be 1", 1,
 						ssdsDevicePacket.getMetadataSequenceNumber());
@@ -187,27 +188,29 @@ public class IngestMDBTest extends TestCase {
 				assertEquals("DataDescriptionVersion should be 1", 1,
 						ssdsDevicePacket.getDataDescriptionVersion());
 				// Timestamp Seconds
-				assertEquals("Timestamp seconds should be equal", DateUtils
-						.getEpochTimestampSeconds(metadataPacketDate),
+				assertEquals("Timestamp seconds should be equal",
+						DateUtils.getEpochTimestampSeconds(metadataPacketDate),
 						ssdsDevicePacket.getTimestampSeconds());
 				// Timestamp Nanoseconds
-				assertEquals("Timestamp nanoseconds should be equal", DateUtils
-						.getNanoseconds(metadataPacketDate), ssdsDevicePacket
-						.getTimestampNanoseconds());
+				assertEquals("Timestamp nanoseconds should be equal",
+						DateUtils.getNanoseconds(metadataPacketDate),
+						ssdsDevicePacket.getTimestampNanoseconds());
 				// PlatformID
-				assertEquals("PlatformID should be 100", 100, ssdsDevicePacket
-						.getPlatformID());
+				assertEquals("PlatformID should be 100", 100,
+						ssdsDevicePacket.getPlatformID());
 				// PacketType
-				assertEquals("PacketType should be 0", 0, ssdsDevicePacket
-						.getPacketType());
+				assertEquals("PacketType should be 0", 0,
+						ssdsDevicePacket.getPacketType());
 
 				// Data Buffer
 				assertTrue("Data Buffers should be equal", Arrays.equals(
-						"Buffer bytes".getBytes(), ssdsDevicePacket
-								.getDataBuffer()));
+						"Buffer bytes".getBytes(),
+						ssdsDevicePacket.getDataBuffer()));
 				// Other Buffer
-				assertTrue("Other buffers should be equal", Arrays.equals(
-						"Cause".getBytes(), ssdsDevicePacket.getOtherBuffer()));
+				assertTrue(
+						"Other buffers should be equal",
+						Arrays.equals("Cause".getBytes(),
+								ssdsDevicePacket.getOtherBuffer()));
 			}
 
 			ssdsByteArrayAccess.remove();
@@ -258,8 +261,8 @@ public class IngestMDBTest extends TestCase {
 
 			// Convert those bytes to SSDS formatted bytes
 			byte[] ssdsFormattedBytes = PacketUtility
-					.convertSIAMByteArrayToVersion3SSDSByteArray(bos
-							.toByteArray(), false, false, false, false);
+					.convertSIAMByteArrayToVersion3SSDSByteArray(
+							bos.toByteArray(), false, false, false, false);
 
 			// Now publish the SSDS formatted byte array to the IngestMDB topic
 			publisherComponent.publishBytes(ssdsFormattedBytes);
@@ -299,8 +302,8 @@ public class IngestMDBTest extends TestCase {
 
 			// Now grab the byte array
 			int loopCounter = 0;
-			assertTrue("Result should have elements.", ssdsByteArrayAccess
-					.hasMoreElements());
+			assertTrue("Result should have elements.",
+					ssdsByteArrayAccess.hasMoreElements());
 			while (ssdsByteArrayAccess.hasMoreElements()) {
 				byte[] returnedByteArray = ssdsByteArrayAccess.nextElement();
 
@@ -325,23 +328,24 @@ public class IngestMDBTest extends TestCase {
 
 				// Now check some things
 				// SourceID (device ID)
-				assertEquals("SourceID should be 101", 101, ssdsDevicePacket
-						.sourceID());
+				assertEquals("SourceID should be 101", 101,
+						ssdsDevicePacket.sourceID());
 				// SystemTime
-				assertEquals("System time should be equal", baseTime
-						.getTimeInMillis(), ssdsDevicePacket.systemTime());
+				assertEquals("System time should be equal",
+						baseTime.getTimeInMillis(),
+						ssdsDevicePacket.systemTime());
 				// Sequence Number
 				assertEquals("The sequence Number should equal",
 						loopCounter + 1, ssdsDevicePacket.sequenceNo());
 				// MetadataRef
-				assertEquals("MetadataRef should be 1", 1, ssdsDevicePacket
-						.metadataRef());
+				assertEquals("MetadataRef should be 1", 1,
+						ssdsDevicePacket.metadataRef());
 				// ParentID
-				assertEquals("ParentID should be 100", 100, ssdsDevicePacket
-						.getParentId());
+				assertEquals("ParentID should be 100", 100,
+						ssdsDevicePacket.getParentId());
 				// RecordType
-				assertEquals("RecordType should be 1", 1, ssdsDevicePacket
-						.getRecordType());
+				assertEquals("RecordType should be 1", 1,
+						ssdsDevicePacket.getRecordType());
 				// MetadataSequenceNumber
 				assertEquals("MetadataSequenceNumber should be 1", 1,
 						ssdsDevicePacket.getMetadataSequenceNumber());
@@ -349,24 +353,187 @@ public class IngestMDBTest extends TestCase {
 				assertEquals("DataDescriptionVersion should be 1", 1,
 						ssdsDevicePacket.getDataDescriptionVersion());
 				// Timestamp Seconds
-				assertEquals("Timestamp seconds should be equal", DateUtils
-						.getEpochTimestampSeconds(baseTime.getTime()),
+				assertEquals("Timestamp seconds should be equal",
+						DateUtils.getEpochTimestampSeconds(baseTime.getTime()),
 						ssdsDevicePacket.getTimestampSeconds());
 				// Timestamp Nanoseconds
-				assertEquals("Timestamp nanoseconds should be equal", DateUtils
-						.getNanoseconds(baseTime.getTime()), ssdsDevicePacket
-						.getTimestampNanoseconds());
+				assertEquals("Timestamp nanoseconds should be equal",
+						DateUtils.getNanoseconds(baseTime.getTime()),
+						ssdsDevicePacket.getTimestampNanoseconds());
 				// PlatformID
-				assertEquals("PlatformID should be 100", 100, ssdsDevicePacket
-						.getPlatformID());
+				assertEquals("PlatformID should be 100", 100,
+						ssdsDevicePacket.getPlatformID());
 				// PacketType
-				assertEquals("PacketType should be 1", 1, ssdsDevicePacket
-						.getPacketType());
+				assertEquals("PacketType should be 1", 1,
+						ssdsDevicePacket.getPacketType());
 
 				// Data Buffer
 				String buffer = "SDP " + loopCounter;
-				String deviceBuffer = new String(ssdsDevicePacket
-						.getDataBuffer());
+				String deviceBuffer = new String(
+						ssdsDevicePacket.getDataBuffer());
+				assertEquals("Data Buffers should be equal", buffer,
+						deviceBuffer);
+
+				// Bump System time and loop counter
+				baseTime.add(Calendar.MILLISECOND, 1);
+				loopCounter++;
+			}
+
+			ssdsByteArrayAccess.remove();
+			assertEquals("Loop counter should match the "
+					+ "number of packets published", loopCounter,
+					numberOfMessagesToSend);
+		} catch (NamingException e) {
+			assertTrue("NamingException caught during test:" + e.getMessage(),
+					false);
+		}
+	}
+
+	public void testSendMultipleProtocolBufferMessagesAndCorrectReadback() {
+		// The things that don't change
+		long sourceID = 101;
+		long parentID = 100;
+		int packetType = 0;
+		long packetSubType = 1;
+		long metadataSequenceNumber = 199;
+		long dataDescriptionVersion = 199;
+		long startSequenceNumber = 200;
+
+		// Create the starting date to be 500 milliseconds ago
+		Calendar startDateOfMessages = Calendar.getInstance();
+		startDateOfMessages.add(Calendar.MILLISECOND, -1
+				* numberOfMessagesToSend);
+		Calendar baseTime = (Calendar) startDateOfMessages.clone();
+
+		// Now loop over and create messages and send them as fast as I can
+		PublisherComponent publisherComponent = new PublisherComponent();
+		publisherComponent.setTopicname("topic/SSDSIngestProtoTopic");
+		for (int i = 0; i < numberOfMessagesToSend; i++) {
+
+			// Create the byte array to publish
+			byte[] protocolBufferBytes = PacketUtility
+					.createProtocolBufferByteArray(
+							sourceID,
+							parentID,
+							packetType,
+							packetSubType,
+							metadataSequenceNumber,
+							dataDescriptionVersion,
+							DateUtils
+									.getEpochTimestampSeconds(startDateOfMessages
+											.getTime()), DateUtils
+									.getNanoseconds(startDateOfMessages
+											.getTime()), startSequenceNumber
+									+ i, ("SDP " + (startSequenceNumber + i))
+									.getBytes(), "".getBytes());
+
+			// Now publish the SSDS formatted byte array to the IngestMDB topic
+			publisherComponent.publishBytes(protocolBufferBytes);
+
+			// Add a second
+			startDateOfMessages.add(Calendar.MILLISECOND, 1);
+		}
+		publisherComponent.close();
+
+		// Now sleep for a bit to let all the inserts commit
+		Date dateToStopWaiting = new Date(new Date().getTime() + 20000);
+		while (new Date().before(dateToStopWaiting)) {
+		}
+
+		// Now let's construct the SSDSByteArrayEJB interface
+		try {
+			// Grab a naming context
+			Context context = new InitialContext();
+
+			// Look up the remote bean
+			SSDSByteArrayAccess ssdsByteArrayAccess = (SSDSByteArrayAccess) context
+					.lookup("moos/ssds/services/data/SSDSByteArrayAccess");
+
+			// Set the device ID
+			ssdsByteArrayAccess.setDeviceID(101);
+
+			// Now try to search for the latest number of packets that I sent
+			ssdsByteArrayAccess.setLastNumberOfPackets(numberOfMessagesToSend);
+
+			// Run the query
+			try {
+				ssdsByteArrayAccess.queryForData();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			// Now grab the byte array
+			int loopCounter = 0;
+			assertTrue("Result should have elements.",
+					ssdsByteArrayAccess.hasMoreElements());
+			while (ssdsByteArrayAccess.hasMoreElements()) {
+				byte[] returnedByteArray = ssdsByteArrayAccess.nextElement();
+
+				// Make sure it is not null
+				assertNotNull("The byte array in the element "
+						+ (loopCounter + 1) + " should not be null",
+						returnedByteArray);
+
+				// Convert it to SSDS format
+				byte[] ssdsFormat = null;
+				if (returnedByteArray != null)
+					ssdsFormat = PacketUtility
+							.stripOffVersionAndAddDeviceIDInFront(
+									returnedByteArray, 101);
+
+				// Now convert it to SSDSDevice Packet
+				SSDSDevicePacket ssdsDevicePacket = PacketUtility
+						.convertVersion3SSDSByteArrayToSSDSDevicePacket(
+								ssdsFormat, true);
+				logger.debug("Testing read back of sequence number "
+						+ ssdsDevicePacket.sequenceNo());
+
+				// Now check some things
+				// SourceID (device ID)
+				assertEquals("SourceID should be 101", 101,
+						ssdsDevicePacket.sourceID());
+				// SystemTime
+				assertEquals("System time should be equal",
+						baseTime.getTimeInMillis(),
+						ssdsDevicePacket.systemTime());
+				// Sequence Number
+				assertEquals("The sequence Number should equal", loopCounter
+						+ startSequenceNumber, ssdsDevicePacket.sequenceNo());
+				// MetadataRef
+				assertEquals("MetadataRef should be 199", 199,
+						ssdsDevicePacket.metadataRef());
+				// ParentID
+				assertEquals("ParentID should be 100", 100,
+						ssdsDevicePacket.getParentId());
+				// RecordType
+				assertEquals("RecordType should be 1", 1,
+						ssdsDevicePacket.getRecordType());
+				// MetadataSequenceNumber
+				assertEquals("MetadataSequenceNumber should be 199", 199,
+						ssdsDevicePacket.getMetadataSequenceNumber());
+				// DeviceDescriptionVersion
+				assertEquals("DataDescriptionVersion should be 199", 199,
+						ssdsDevicePacket.getDataDescriptionVersion());
+				// Timestamp Seconds
+				assertEquals("Timestamp seconds should be equal",
+						DateUtils.getEpochTimestampSeconds(baseTime.getTime()),
+						ssdsDevicePacket.getTimestampSeconds());
+				// Timestamp Nanoseconds
+				assertEquals("Timestamp nanoseconds should be equal",
+						DateUtils.getNanoseconds(baseTime.getTime()),
+						ssdsDevicePacket.getTimestampNanoseconds());
+				// PlatformID
+				assertEquals("PlatformID should be 100", 100,
+						ssdsDevicePacket.getPlatformID());
+				// PacketType
+				assertEquals("PacketType should be 1", 1,
+						ssdsDevicePacket.getPacketType());
+
+				// Data Buffer
+				String buffer = "SDP " + (startSequenceNumber + loopCounter);
+				String deviceBuffer = new String(
+						ssdsDevicePacket.getDataBuffer());
 				assertEquals("Data Buffers should be equal", buffer,
 						deviceBuffer);
 
