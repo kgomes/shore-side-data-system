@@ -130,6 +130,14 @@
 
 	<!-- Compile the necessary code source code -->
 	<target name="compile" depends="init">
+		<!-- Run the protocol buffer compiler on the .proto for message packets -->
+		<exec executable="protoc" failifexecutionfails="false">
+			<arg value="--proto_path=${src.proto}" />
+			<arg value="--java_out=${src.java}" />
+			<arg value="--python_out=${project.src}/python" />
+			<arg value="${src.proto}/ssds-geo-located-device-packet.proto" />
+		</exec>
+
 		<!-- Run the appropriate javac -->
 		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
 			<src path="${src.java}" />
@@ -141,6 +149,7 @@
 			<classpath>
 				<fileset refid="jboss-common-lib-jar-fileset" />
 				<pathelement location="${project.lib}/${siam.jar}" />
+				<pathelement location="${project.lib}/${protocol-buffers.jar}" />
 			</classpath>
 		</javac>
 	</target>
@@ -189,6 +198,7 @@
 			<fileset dir="${build.classes}">
 				<include name="moos/ssds/io/SSDSDevicePacket.class" />
 				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacketProto.class" />
 				<include name="moos/ssds/io/util/PacketUtility.class" />
 				<include name="moos/ssds/jms/PublisherComponent.class" />
 				<include name="moos/ssds/jms/PacketGenerator.class" />
@@ -215,6 +225,8 @@
 		<copy file="${project.lib}/${database.driver.jar.file}" todir="${jboss.common.lib.location}" />
 		<!-- Deploy SIAM jar -->
 		<copy file="${project.lib}/${siam.jar}" todir="${jboss.common.lib.location}" />
+		<!-- Deploy Protocol Buffers jar -->
+		<copy file="${project.lib}/${protocol-buffers.jar}" todir="${jboss.common.lib.location}" />
 		<!-- JiBX jars -->
 		<copy todir="${jboss.common.lib.location}">
 			<fileset refid="jibx-jars" />
@@ -253,6 +265,11 @@
 				<filter token="TOPIC_NAME" value="${ingest.topic.name}" />
 			</filterset>
 		</copy>
+		<copy file="${resources.build}/jboss/ssds-jms-service_template.xml" tofile="${ingest.deployment.location}/ssds-ingest-proto-service.xml" overwrite="true">
+			<filterset>
+				<filter token="TOPIC_NAME" value="${ingest.proto.topic.name}" />
+			</filterset>
+		</copy>
 		<copy file="${resources.build}/jboss/ssds-jms-service_template.xml" tofile="${ingest.deployment.location}/ssds-ruminate-service.xml" overwrite="true">
 			<filterset>
 				<filter token="TOPIC_NAME" value="${ruminate.topic.name}" />
@@ -281,6 +298,7 @@
 			<fileset dir="${project.dist}" includes="ssds-ingest-pub.jar" />
 			<fileset dir="${project.dist}" includes="ssds-client-data-services.jar" />
 			<fileset dir="${project.lib}" includes="${siam.jar}" />
+			<fileset dir="${project.lib}" includes="${protocol-buffers.jar}" />
 			<fileset refid="jboss-client-jar-fileset" />
 		</zip>
 		<!-- Go ahead and deploy the static doc index page -->
@@ -299,6 +317,7 @@
 		<!-- Undeploy dependencies -->
 		<delete file="${jboss.common.lib.location}/${database.driver.jar.file}" />
 		<delete file="${jboss.common.lib.location}/${siam.jar}" />
+		<delete file="${jboss.common.lib.location}/${protocol-buffers.jar}" />
 		<delete>
 			<fileset refid="deployed-jibx-jars" />
 		</delete>
