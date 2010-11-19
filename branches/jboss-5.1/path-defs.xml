@@ -167,6 +167,7 @@
 		<include name="lib/${grib.jar}" />
 		<include name="lib/${leddatastream.jar}" />
 		<include name="lib/${siam.jar}" />
+		<include name="lib/${protocol-buffers.jar}" />
 		<include name="lib/${xerces.jar}" />
 		<include name="lib/${dods.jar}" />
 		<include name="lib/${metadata.datasource.jdbc.jar}" />
@@ -219,6 +220,7 @@
 		<include name="${grib.jar}" />
 		<include name="${leddatastream.jar}" />
 		<include name="${siam.jar}" />
+		<include name="${protocol-buffers.jar}" />
 		<include name="${xerces.jar}" />
 		<include name="${dods.jar}" />
 		<include name="${metadata.datasource.jdbc.jar}" />
