@@ -43,9 +43,10 @@ import org.apache.log4j.Logger;
 /**
  * <p>
  * This class is a Message Driven Bean (MDB) that listen to a topic for incoming
- * messages. It then serializes those message to disk in file that are organized
- * by certain &quot;keys&quot;. It then passes these message on to more topics
- * for further processing.
+ * messages. It then serializes those message to disk in files that are
+ * organized by certain &quot;keys&quot; (if enabled) as well as stores in a
+ * relational database. It then passes these message on to more topics for
+ * further processing.
  * </p>
  * <hr>
  * 
