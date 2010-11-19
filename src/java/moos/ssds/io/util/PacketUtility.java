@@ -13,6 +13,7 @@ import javax.jms.JMSException;
 
 import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.io.SSDSGeoLocatedDevicePacket;
+import moos.ssds.io.SSDSGeoLocatedDevicePacketProto;
 import moos.ssds.util.DateUtils;
 
 import org.apache.log4j.Logger;
@@ -22,6 +23,9 @@ import org.mbari.siam.distributed.Exportable;
 import org.mbari.siam.distributed.MetadataPacket;
 import org.mbari.siam.distributed.SensorDataPacket;
 import org.mbari.siam.distributed.SummaryPacket;
+
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * This class contains some utility methods for dealing with the various aspects
@@ -68,11 +72,10 @@ public class PacketUtility {
 				// Create a new array with the size of the payload
 				payloadSize = bytesMessage.getBodyLength();
 				if (payloadSize > Integer.MAX_VALUE) {
-					logger
-							.error("The payload size of the incoming BytesMessage "
-									+ "is bigger than the maximum size of integer array I "
-									+ "can allocate, this is VERY unsual as the message is "
-									+ "larger than 2GB. I am ignoring the message");
+					logger.error("The payload size of the incoming BytesMessage "
+							+ "is bigger than the maximum size of integer array I "
+							+ "can allocate, this is VERY unsual as the message is "
+							+ "larger than 2GB. I am ignoring the message");
 					return null;
 				}
 			} catch (JMSException e) {
@@ -374,12 +377,10 @@ public class PacketUtility {
 				try {
 					secondBufferLength = dis.readInt();
 				} catch (Exception e) {
-					logger
-							.error("An Exception was caught trying to "
-									+ "extract the "
-									+ "second buffer length by reading in "
-									+ "int from the ssds byte array: "
-									+ e.getMessage());
+					logger.error("An Exception was caught trying to "
+							+ "extract the "
+							+ "second buffer length by reading in "
+							+ "int from the ssds byte array: " + e.getMessage());
 				}
 				loggerMessage.append("SecondBufferLength=" + secondBufferLength
 						+ "|");
@@ -409,9 +410,8 @@ public class PacketUtility {
 					}
 				}
 			} catch (IOException e) {
-				logger
-						.error("An IOException was trapped during the extraction: "
-								+ e.getMessage());
+				logger.error("An IOException was trapped during the extraction: "
+						+ e.getMessage());
 			} catch (Exception e) {
 				logger.error("An Exception was trapped during the extraction: "
 						+ e.getMessage());
@@ -483,7 +483,7 @@ public class PacketUtility {
 	}
 
 	/**
-	 * This method takes int the various pieces of information and builds a byte
+	 * This method takes in the various pieces of information and builds a byte
 	 * array that is in the prescribed SSDS format
 	 */
 	public static byte[] createVersion3SSDSByteArray(long sourceID,
@@ -539,6 +539,33 @@ public class PacketUtility {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * This method takes in the various pieces of information and builds a byte
+	 * array that is the serialized version of the protocol buffers definition
+	 * of an SSDSGeoLocatedDevicePacket
+	 */
+	public static byte[] createProtocolBufferByteArray(long sourceID,
+			long parentID, int packetType, long packetSubType,
+			long metadataSequenceNumber, long dataDescriptionVersion,
+			long timestampSeconds, long timestampNanoseconds,
+			long sequenceNumber, byte[] firstBuffer, byte[] secondBuffer) {
+
+		// Build the protocol buffer message
+		SSDSGeoLocatedDevicePacketProto.MessagePacket message = SSDSGeoLocatedDevicePacketProto.MessagePacket
+				.newBuilder().setSourceID(sourceID).setParentID(parentID)
+				.setPacketType(packetType).setPacketSubType(packetSubType)
+				.setMetadataSequenceNumber(metadataSequenceNumber)
+				.setDataDescriptionVersion(dataDescriptionVersion)
+				.setTimestampSeconds(timestampSeconds)
+				.setTimestampNanoseconds(timestampNanoseconds)
+				.setSequenceNumber(sequenceNumber)
+				.setBufferBytes(ByteString.copyFrom(firstBuffer))
+				.setBufferTwoBytes(ByteString.copyFrom(secondBuffer)).build();
+
+		// Serialize it and return the byte array
+		return message.toByteArray();
 	}
 
 	/**
@@ -617,8 +644,8 @@ public class PacketUtility {
 		if (devicePacket == null)
 			return null;
 		// The SSDSDevicePacket to return
-		SSDSDevicePacket ssdsDevicePacket = new SSDSDevicePacket(devicePacket
-				.sourceID());
+		SSDSDevicePacket ssdsDevicePacket = new SSDSDevicePacket(
+				devicePacket.sourceID());
 
 		// Copy over the sequence number
 		ssdsDevicePacket.setSequenceNo(devicePacket.sequenceNo());
@@ -958,11 +985,12 @@ public class PacketUtility {
 
 		return createVersion3SSDSByteArray(ssdsDevicePacket.sourceID(),
 				ssdsDevicePacket.getParentId(), packetType, recordType,
-				ssdsDevicePacket.getMetadataSequenceNumber(), ssdsDevicePacket
-						.getDataDescriptionVersion(), ssdsDevicePacket
-						.getTimestampSeconds(), ssdsDevicePacket
-						.getTimestampNanoseconds(), ssdsDevicePacket
-						.sequenceNo(), ssdsDevicePacket.getDataBuffer(),
+				ssdsDevicePacket.getMetadataSequenceNumber(),
+				ssdsDevicePacket.getDataDescriptionVersion(),
+				ssdsDevicePacket.getTimestampSeconds(),
+				ssdsDevicePacket.getTimestampNanoseconds(),
+				ssdsDevicePacket.sequenceNo(),
+				ssdsDevicePacket.getDataBuffer(),
 				ssdsDevicePacket.getOtherBuffer());
 	}
 
@@ -1158,5 +1186,43 @@ public class PacketUtility {
 		// Return the packet
 		return packet;
 
+	}
+
+	/**
+	 * This method takes in a byte array that is in the protocol buffers form
+	 * and converts it to the SSDS Byte Array format
+	 * 
+	 * @param protocolBufferMessage
+	 * @return
+	 */
+	public static byte[] convertProtocolBuffersByteArrayToSSDSByteArray(
+			byte[] protocolBufferMessage) {
+		// First convert the incoming byte array to a Protocol buffer message
+		SSDSGeoLocatedDevicePacketProto.MessagePacket messagePacket = null;
+		try {
+			messagePacket = SSDSGeoLocatedDevicePacketProto.MessagePacket
+					.parseFrom(protocolBufferMessage);
+		} catch (InvalidProtocolBufferException e) {
+			logger.error("InvalidProtocolBufferException caught trying to convert: "
+					+ e.getMessage());
+		}
+
+		// If it worked, extract all the fields and call the method to convert
+		// it to a byte array in SSDS format
+		if (messagePacket != null) {
+			// Return the array
+			return createVersion3SSDSByteArray(messagePacket.getSourceID(),
+					messagePacket.getParentID(), messagePacket.getPacketType(),
+					messagePacket.getPacketSubType(),
+					messagePacket.getMetadataSequenceNumber(),
+					messagePacket.getDataDescriptionVersion(),
+					messagePacket.getTimestampSeconds(),
+					messagePacket.getTimestampNanoseconds(),
+					messagePacket.getSequenceNumber(), messagePacket
+							.getBufferBytes().toByteArray(), messagePacket
+							.getBufferTwoBytes().toByteArray());
+		} else {
+			return null;
+		}
 	}
 }
