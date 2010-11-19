@@ -105,6 +105,7 @@
 			<classpath>
 				<fileset refid="jboss-common-lib-jar-fileset" />
 				<pathelement location="${project.lib}/${siam.jar}" />
+				<pathelement location="${project.lib}/${protocol-buffers.jar}" />
 			</classpath>
 		</javac>
 	</target>
@@ -125,6 +126,7 @@
 				<include name="moos/ssds/transmogrify/**/*.class" />
 				<include name="moos/ssds/io/SSDSDevicePacket.class" />
 				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacketProto.class" />
 				<include name="moos/ssds/io/util/PacketUtility.class" />
 				<include name="moos/ssds/util/*.class" />
 			</fileset>
@@ -135,6 +137,7 @@
 			<fileset dir="${build.classes}">
 				<include name="moos/ssds/io/SSDSDevicePacket.class" />
 				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacketProto.class" />
 				<include name="moos/ssds/io/util/PacketUtility.class" />
 				<include name="moos/ssds/jms/PublisherComponent.class" />
 				<include name="moos/ssds/jms/PacketGenerator.class" />
@@ -154,11 +157,13 @@
 				<include name="moos/ssds/services/servlet/data/TransmogrifyServlet.class" />
 				<include name="moos/ssds/io/SSDSDevicePacket.class" />
 				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacketProto.class" />
 				<include name="moos/ssds/io/util/PacketUtility.class" />
 				<include name="moos/ssds/util/DateUtils.class" />
 				<include name="moos/ssds/util/XmlDateFormat.class" />
 			</classes>
 			<lib dir="${project.lib}" includes="${siam.jar}" />
+			<lib dir="${project.lib}" includes="${protocol-buffers.jar}" />
 		</war>
 	</target>
 
@@ -177,6 +182,7 @@
 		</copy>
 		<!-- Deploy any dependency jars to the common jar location -->
 		<copy file="${project.lib}/${siam.jar}" todir="${jboss.common.lib.location}" />
+		<copy file="${project.lib}/${protocol-buffers.jar}" todir="${jboss.common.lib.location}" />
 		<!-- Now deploy the jar -->
 		<copy file="${project.dist}/ssds-transmogrify.jar" todir="${transmogrify.deployment.location}" />
 		<!-- Now deploy the servlet war -->
@@ -199,6 +205,7 @@
 			<fileset dir="${project.dist}/tempzip" includes="ExampleSSDSClientPublisher.java" />
 			<fileset dir="${project.dist}" includes="ssds-transmogrify-pub.jar" />
 			<fileset dir="${project.lib}" includes="${siam.jar}" />
+			<fileset dir="${project.lib}" includes="${protocol-buffers.jar}" />
 			<fileset refid="jboss-client-jar-fileset" />
 		</zip>
 		<!-- Go ahead and deploy the static doc index page -->
@@ -212,6 +219,7 @@
 		<delete file="${transmogrify.deployment.location}/ssds-transmogrify-service.xml" />
 		<delete file="${transmogrify.deployment.location}/ssds-ingest-service.xml" />
 		<delete file="${jboss.common.lib.location}/${siam.jar}" />
+		<delete file="${jboss.common.lib.location}/${protocol-buffers.jar}" />
 		<!-- Remove the client publishing jar -->
 		<delete file="${project.documentation.deploy.location}/client/ssds-transmogrify-pub.zip" />
 	</target>
