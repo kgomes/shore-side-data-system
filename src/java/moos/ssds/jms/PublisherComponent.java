@@ -272,9 +272,6 @@ public class PublisherComponent {
 				connected = false;
 				return;
 			}
-		} else {
-			connected = false;
-			return;
 		}
 
 		// Look up the destination

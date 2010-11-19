@@ -293,9 +293,6 @@ public class SubscriberComponent {
 				connected = false;
 				return;
 			}
-		} else {
-			connected = false;
-			return;
 		}
 
 		// Grab the Destination to subscribe to
@@ -344,9 +341,6 @@ public class SubscriberComponent {
 				connected = false;
 				return;
 			}
-		} else {
-			connected = false;
-			return;
 		}
 
 		// Now create the consumer
