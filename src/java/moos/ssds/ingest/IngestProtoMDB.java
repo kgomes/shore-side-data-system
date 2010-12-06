@@ -37,8 +37,8 @@ import javax.sql.DataSource;
 import moos.ssds.io.PacketOutput;
 import moos.ssds.io.PacketOutputManager;
 import moos.ssds.io.PacketSQLOutput;
-import moos.ssds.io.SSDSGeoLocatedDevicePacketProto;
-import moos.ssds.io.SSDSGeoLocatedDevicePacketProto.MessagePacket;
+import moos.ssds.io.SSDSDevicePacketProto;
+import moos.ssds.io.SSDSDevicePacketProto.MessagePacket;
 import moos.ssds.io.util.PacketUtility;
 
 import org.apache.log4j.Logger;
@@ -242,7 +242,7 @@ public class IngestProtoMDB implements MessageListener {
 			MessagePacket ssdsGeoLocatedDevicePacketProto = null;
 			if (protoMessage != null) {
 				try {
-					ssdsGeoLocatedDevicePacketProto = SSDSGeoLocatedDevicePacketProto.MessagePacket
+					ssdsGeoLocatedDevicePacketProto = SSDSDevicePacketProto.MessagePacket
 							.parseFrom(protoMessage);
 				} catch (InvalidProtocolBufferException e1) {
 					logger.error("InvalidProtocolBufferException caught "
