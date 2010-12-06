@@ -8,9 +8,9 @@ from google.protobuf import descriptor_pb2
 
 
 DESCRIPTOR = descriptor.FileDescriptor(
-  name='ssds-geo-located-device-packet.proto',
+  name='ssds-device-packet.proto',
   package='moos.ssds.io',
-  serialized_pb='\n$ssds-geo-located-device-packet.proto\x12\x0cmoos.ssds.io\"\xc4\x02\n\rMessagePacket\x12\x10\n\x08sourceID\x18\x01 \x01(\x03\x12\x10\n\x08parentID\x18\x02 \x01(\x03\x12\x12\n\npacketType\x18\x03 \x01(\x05\x12\x15\n\rpacketSubType\x18\x04 \x01(\x03\x12\x1e\n\x16metadataSequenceNumber\x18\x05 \x01(\x03\x12\x1e\n\x16\x64\x61taDescriptionVersion\x18\x06 \x01(\x03\x12\x18\n\x10timestampSeconds\x18\x07 \x01(\x03\x12\x1c\n\x14timestampNanoseconds\x18\x08 \x01(\x03\x12\x16\n\x0esequenceNumber\x18\t \x01(\x03\x12\x11\n\tbufferLen\x18\n \x01(\x05\x12\x13\n\x0b\x62ufferBytes\x18\x0b \x01(\x0c\x12\x14\n\x0c\x62ufferTwoLen\x18\x0c \x01(\x05\x12\x16\n\x0e\x62ufferTwoBytes\x18\r \x01(\x0c\x42/\n\x0cmoos.ssds.ioB\x1fSSDSGeoLocatedDevicePacketProto')
+  serialized_pb='\n\x18ssds-device-packet.proto\x12\x0cmoos.ssds.io\"\xc4\x02\n\rMessagePacket\x12\x10\n\x08sourceID\x18\x01 \x01(\x03\x12\x10\n\x08parentID\x18\x02 \x01(\x03\x12\x12\n\npacketType\x18\x03 \x01(\x05\x12\x15\n\rpacketSubType\x18\x04 \x01(\x03\x12\x1e\n\x16metadataSequenceNumber\x18\x05 \x01(\x03\x12\x1e\n\x16\x64\x61taDescriptionVersion\x18\x06 \x01(\x03\x12\x18\n\x10timestampSeconds\x18\x07 \x01(\x03\x12\x1c\n\x14timestampNanoseconds\x18\x08 \x01(\x03\x12\x16\n\x0esequenceNumber\x18\t \x01(\x03\x12\x11\n\tbufferLen\x18\n \x01(\x05\x12\x13\n\x0b\x62ufferBytes\x18\x0b \x01(\x0c\x12\x14\n\x0c\x62ufferTwoLen\x18\x0c \x01(\x05\x12\x16\n\x0e\x62ufferTwoBytes\x18\r \x01(\x0c\x42%\n\x0cmoos.ssds.ioB\x15SSDSDevicePacketProto')
 
 
 
@@ -122,8 +122,8 @@ _MESSAGEPACKET = descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=55,
-  serialized_end=379,
+  serialized_start=43,
+  serialized_end=367,
 )
 
 
