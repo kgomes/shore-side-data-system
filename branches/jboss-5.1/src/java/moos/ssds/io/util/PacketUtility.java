@@ -12,8 +12,8 @@ import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 
 import moos.ssds.io.SSDSDevicePacket;
+import moos.ssds.io.SSDSDevicePacketProto;
 import moos.ssds.io.SSDSGeoLocatedDevicePacket;
-import moos.ssds.io.SSDSGeoLocatedDevicePacketProto;
 import moos.ssds.util.DateUtils;
 
 import org.apache.log4j.Logger;
@@ -553,7 +553,7 @@ public class PacketUtility {
 			long sequenceNumber, byte[] firstBuffer, byte[] secondBuffer) {
 
 		// Build the protocol buffer message
-		SSDSGeoLocatedDevicePacketProto.MessagePacket message = SSDSGeoLocatedDevicePacketProto.MessagePacket
+		SSDSDevicePacketProto.MessagePacket message = SSDSDevicePacketProto.MessagePacket
 				.newBuilder().setSourceID(sourceID).setParentID(parentID)
 				.setPacketType(packetType).setPacketSubType(packetSubType)
 				.setMetadataSequenceNumber(metadataSequenceNumber)
@@ -1198,9 +1198,9 @@ public class PacketUtility {
 	public static byte[] convertProtocolBuffersByteArrayToSSDSByteArray(
 			byte[] protocolBufferMessage) {
 		// First convert the incoming byte array to a Protocol buffer message
-		SSDSGeoLocatedDevicePacketProto.MessagePacket messagePacket = null;
+		SSDSDevicePacketProto.MessagePacket messagePacket = null;
 		try {
-			messagePacket = SSDSGeoLocatedDevicePacketProto.MessagePacket
+			messagePacket = SSDSDevicePacketProto.MessagePacket
 					.parseFrom(protocolBufferMessage);
 		} catch (InvalidProtocolBufferException e) {
 			logger.error("InvalidProtocolBufferException caught trying to convert: "

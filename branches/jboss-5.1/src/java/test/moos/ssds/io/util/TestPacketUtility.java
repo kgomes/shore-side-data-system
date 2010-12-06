@@ -19,7 +19,7 @@ import javax.naming.InitialContext;
 
 import junit.framework.TestCase;
 import moos.ssds.io.SSDSDevicePacket;
-import moos.ssds.io.SSDSGeoLocatedDevicePacketProto;
+import moos.ssds.io.SSDSDevicePacketProto;
 import moos.ssds.io.util.PacketUtility;
 import net.java.jddac.common.type.ArgArray;
 
@@ -661,7 +661,7 @@ public class TestPacketUtility extends TestCase {
 		byte[] secondBuffer = "SensorData Second Buffer (ignored)".getBytes();
 
 		// Create the ProtocolBuffersMessage
-		SSDSGeoLocatedDevicePacketProto.MessagePacket message = SSDSGeoLocatedDevicePacketProto.MessagePacket
+		SSDSDevicePacketProto.MessagePacket message = SSDSDevicePacketProto.MessagePacket
 				.newBuilder().setSourceID(sourceID).setParentID(parentID)
 				.setPacketType(packetType).setPacketSubType(packetSubType)
 				.setMetadataSequenceNumber(metadataSequenceNumber)

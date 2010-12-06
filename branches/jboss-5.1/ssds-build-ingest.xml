@@ -135,7 +135,7 @@
 			<arg value="--proto_path=${src.proto}" />
 			<arg value="--java_out=${src.java}" />
 			<arg value="--python_out=${project.src}/python" />
-			<arg value="${src.proto}/ssds-geo-located-device-packet.proto" />
+			<arg value="${src.proto}/ssds-device-packet.proto" />
 		</exec>
 
 		<!-- Run the appropriate javac -->
