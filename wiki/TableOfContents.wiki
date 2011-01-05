@@ -1,5 +1,6 @@
   * [WelcomeToTheSSDSWiki Welcome]
     * [Requirements]
+      * [UseCases Use Cases]
     * [Design]
       * [TransmogrifyAndIngest Transmogrify and Ingest Architecture]
     * [Development]
