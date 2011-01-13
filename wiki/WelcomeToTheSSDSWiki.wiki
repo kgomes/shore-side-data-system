@@ -9,11 +9,11 @@ The SSDS was originally developed as a component of the Monterey Ocean Observing
 
 Most major data management systems work within certain boundaries, dealing with specific data formats or conventions (e.g., netCDF COARDS), or a known and stable data set (WODC). But to meet MBARI's diverse data management requirements, SSDS ingests, catalogs and serves:
 
-# a large and ever-changing set of sensors, instruments, and data set formats
-# varied data collection formats, ASCII and binary, simple and complex
-# streaming, file-based, and human-entered data, from internal and external data systems, in near-real-time and offline
-# reprocessed data, including quality control and domain-specific data transformations
-# operational changes to observatory instrumentation, including calibrations, instrument changes, and platform changes
+  # a large and ever-changing set of sensors, instruments, and data set formats
+  # varied data collection formats, ASCII and binary, simple and complex
+  # streaming, file-based, and human-entered data, from internal and external data systems, in near-real-time and offline
+  # reprocessed data, including quality control and domain-specific data transformations
+  # operational changes to observatory instrumentation, including calibrations, instrument changes, and platform changes
 
 At the same time, SSDS provides a coherent, integrated interface to scientists and other users, who want simple access to both their raw data from each instrument, but also want to cull specific variables from the overall data set. Plus, the system supports the data volumes and new instrumentation expected on ocean observing systems like MOOS and MARS, with minimal or no reprogramming.
  
