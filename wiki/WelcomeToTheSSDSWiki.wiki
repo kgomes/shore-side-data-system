@@ -17,7 +17,7 @@ Most major data management systems work within certain boundaries, dealing with 
 
 At the same time, SSDS provides a coherent, integrated interface to scientists and other users, who want simple access to both their raw data from each instrument, but also want to cull specific variables from the overall data set. Plus, the system supports the data volumes and new instrumentation expected on ocean observing systems like MOOS and MARS, with minimal or no reprogramming.
 
-<table border="0">
+<table border="0" cellspacing="2" cellpadding="0">
 <tr><td align="center"><b>MBARI's Deployment of SSDS</b></td></tr>
 <tr><td>
 <img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/OperationalSSDS.jpg" alt="Operational Deployment of SSDS"/>
