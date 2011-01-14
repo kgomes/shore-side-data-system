@@ -22,7 +22,7 @@ At the same time, SSDS provides a coherent, integrated interface to scientists a
 <tr><td>
 <img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/OperationalSSDS.jpg" alt="Operational Deployment of SSDS"/>
 </td></tr>
-<tr><td><caption align="bottom>An example logical deployment of the SSDS at MBARI</caption>
+<tr><td align="center"><i>An example logical deployment of the SSDS at MBARI</i>
 </td></tr>
 </table>
 
