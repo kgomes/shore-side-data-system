@@ -7,6 +7,14 @@ The Shore Side Data System (SSDS) software is a J2EE application that was built 
 
 The SSDS was originally developed as a component of the Monterey Ocean Observing System, commonly called MOOS. MOOS was a MBARI development effort to develop key infrastructure elements for national and international ocean observing systems. The initial MOOS Workshop Report cited the need for a reliable, cost-effective data management system. The SSDS was the component that was built to address the data management needs for ocean observatories.
 
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td>
+<img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/OperationalSSDS.jpg" alt="Operational Deployment of SSDS"/>
+</td></tr>
+<tr><td align="center"><i>An example logical deployment of the SSDS at MBARI</i>
+</td></tr>
+</table>
+
 Most major data management systems work within certain boundaries, dealing with specific data formats or conventions (e.g., netCDF COARDS), or a known and stable data set (WODC). But to meet MBARI's diverse data management requirements, SSDS ingests, catalogs and serves:
 
   # a large and ever-changing set of sensors, instruments, and data set formats
@@ -16,14 +24,6 @@ Most major data management systems work within certain boundaries, dealing with 
   # operational changes to observatory instrumentation, including calibrations, instrument changes, and platform changes
 
 At the same time, SSDS provides a coherent, integrated interface to scientists and other users, who want simple access to both their raw data from each instrument, but also want to cull specific variables from the overall data set. Plus, the system supports the data volumes and new instrumentation expected on ocean observing systems like MOOS and MARS, with minimal or no reprogramming.
-
-<table border="0" cellspacing="2" cellpadding="0">
-<tr><td>
-<img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/OperationalSSDS.jpg" alt="Operational Deployment of SSDS"/>
-</td></tr>
-<tr><td align="center"><i>An example logical deployment of the SSDS at MBARI</i>
-</td></tr>
-</table>
 
 The SSDS design emphasizes flexibility, scalability, expandability, and maintainability, anticipating the highly variable and growing research and operational demands on ocean observing systems. Because it is part of an Ocean Observing System, SSDS is particularly effective when coupled with a metadata-aware instrument infrastructure such as SIAM. However, it readily accommodates less systematic data sources, recognizing the critical role of external data and system interoperability in scientific data management. By applying an iterative methodology within a systems-oriented development approach, we have been able to tune the architecture for each new application while building toward long-term observing system goals.
 
