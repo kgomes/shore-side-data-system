@@ -17,7 +17,7 @@ Most major data management systems work within certain boundaries, dealing with 
 
 At the same time, SSDS provides a coherent, integrated interface to scientists and other users, who want simple access to both their raw data from each instrument, but also want to cull specific variables from the overall data set. Plus, the system supports the data volumes and new instrumentation expected on ocean observing systems like MOOS and MARS, with minimal or no reprogramming.
 
-`<img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/OperationalSSDS.jpg" alt="Operational Deployment of SSDS"/>`
+<img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/OperationalSSDS.jpg" alt="Operational Deployment of SSDS"/>
 
 The SSDS design emphasizes flexibility, scalability, expandability, and maintainability, anticipating the highly variable and growing research and operational demands on ocean observing systems. Because it is part of an Ocean Observing System, SSDS is particularly effective when coupled with a metadata-aware instrument infrastructure such as SIAM. However, it readily accommodates less systematic data sources, recognizing the critical role of external data and system interoperability in scientific data management. By applying an iterative methodology within a systems-oriented development approach, we have been able to tune the architecture for each new application while building toward long-term observing system goals.
 
