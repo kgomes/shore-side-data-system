@@ -15,11 +15,13 @@ Here is a sequence diagram of the basic steps that occur when a packet is submit
 
 [http://shore-side-data-system.googlecode.com/svn/wiki/images/TransmogrifyIngest.jpg]
 
-After the ingest step, if the packet is a metadata packet, it is forwarded on to the RuminateMDB (covered on another wiki page).
+After the ingest step, if the packet is a metadata packet, it is forwarded on to the RuminateMDB (covered on another wiki page).  The protocol buffers ingest MDB operates the same way expect that in the IngestProtoMDB, the packet gets converted from the incoming protocol buffer to an SSDSDevicePacket which is then persisted in the same was as the IngestMDB does it.
 
 === Transmogrify Packet Structure ===
 
 Our initial and primary publisher of data for the SSDS was the SIAM infrastructure.  Initially they would publish serialized Java objects that were SIAM !DevicePacket classes.  In the SSDS, we created !SSDSDevicePacket sub classes to map the SIAM !DevicePacket information to the SSDS world.  Here is a class diagram of the classes involved:
+
+[http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg]
 
 Just as a note, the idea with the SSDSGeoLocatedDevicePacket was that if there was a way to link a particular device to another device that was providing geospatial data, you could correlate all the SSDSDevicePackets by time with that device and tag each individual packet with a geospatial reference.
 
