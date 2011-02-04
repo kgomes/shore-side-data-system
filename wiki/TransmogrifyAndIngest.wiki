@@ -3,7 +3,13 @@
 
 = Transmogrify and Ingest Components =
 
-This page documents the components that are known as "Transmogrify" (nod to Bill Watterson here) and "Ingest". These are the components that take in data and metadata streams and perform various tasks with them as they are brought into the SSDS. They are both implemented as Message Driven Beans (EJB) and are wired in series with Transmogrify feeding into Ingest. The original reason for having both was that Transmogrify was to handle data and metadata from the SIAM system that had some special characteristics and needed to be converted to the generic message format that the SSDS is expecting. If someone wanted to send the generic format, they could bypass the Transmogrify and send straight to Ingest. As with all things, patchwork becomes production and Transmogrify lives on to this day.
+This page documents the components that are known as "Transmogrify" (nod to Bill Watterson here) and "Ingest". These are the components that take in data and metadata streams and perform various tasks with them as they are brought into the SSDS. There are two messaging infrastructures that are used to ingest data into the SSDS, JMS and AMQP.  JMS was the original messaging scheme and works really well, especially considering you can spin up Message Driven Beans in JBoss and JBoss will manage the pools.  This, however, limited the clients to Java for publishing messages.  While certainly fine for our initial implementation for the MOOS program, we wanted to open up the messaging to more than just Java clients.  We added an application that connects to an AMQP broker and processes messages.  This allows non-Java clients to publish packets to the SSDS.
+
+Here is a logical diagram of the message flow for ingesting data into the SSDS.
+
+[http://shore-side-data-system.googlecode.com/svn/wiki/images/TransIngestLogical.jpg]
+
+They are both implemented as Message Driven Beans (EJB) and are wired in series with Transmogrify feeding into Ingest. The original reason for having both was that Transmogrify was to handle data and metadata from the SIAM system that had some special characteristics and needed to be converted to the generic message format that the SSDS is expecting. If someone wanted to send the generic format, they could bypass the Transmogrify and send straight to Ingest. As with all things, patchwork becomes production and Transmogrify lives on to this day.
 
 Here is a sequence diagram of the basic steps that occur when a packet is submitted via JMS to the SSDS.
 
