@@ -66,7 +66,7 @@ where:
 || *ParentID* || java.lang.long || The ID of the device that the generated device was attached to when it generated the packet ||
 || *!RecordType* || java.lang.long || The type of record that this packet contains: *0* = !MetadataPacket, *1* = Non-!MetadataPacket (Data and other) ||
 || *SecondStreamID* || java.lang.short || This defines the type of !DevicePacket that was used to construct the byte array.  The values are as follows: *!MetadataPacket* = 0x101, *!SensorDataPacket* = 0x102, *!DeviceMessagePacket* = 0x103, *!SummaryPacket* = 0x102 (same as SensorDataPacket) ||
-|| *SecondPacketVersion* || java.lang.long || This is the "serialVersionUID" on the class that was used to export the bytes.  It is the version of SIAM class that generated the byte array. As of this writing, it is the same as the !DevicePacketVersion.  Since currently it is always 0, SSDS ignores it. ||
+|| *!SecondPacketVersion* || java.lang.long || This is the "serialVersionUID" on the class that was used to export the bytes.  It is the version of SIAM class that generated the byte array. As of this writing, it is the same as the !DevicePacketVersion.  Since currently it is always 0, SSDS ignores it. ||
 || *!FirstBufferLength* || java.lang.int || This is the length of the array that holds the bytes of the first buffer ||
 || *!FirstBuffer* || java.lang.byte [] || This is the bytes array that represents the first buffer ||
 || *!SecondBufferLength* || java.lang.int || This is the length of the array that holds the bytes of the second buffer. ||
@@ -127,7 +127,7 @@ Here is a diagram of these various forms of data
 
 And the translation rules (some of these may seem very strange for legacy reasons).
 
-=== DevicePacket to SSDSDevicePacket ===
+=== !DevicePacket to SSDSDevicePacket ===
 *This translation is done in the constructor of SSDSDevicePacket which takes in a !DevicePacket*
 
 || !DevicePacket || Translation Rule || SSDSDevicePacket ||
@@ -147,28 +147,23 @@ And the translation rules (some of these may seem very strange for legacy reason
 
 This is done by the SIAM Exportable Packet class
 || DevicePacket || Translation Rule || SIAM Byte Array ||
-| | This is a static value that is set to indicate the byte array is a DevicePacket and is set to 0x0100 | EX_DEVICEPACKET |
-| | This is just the serial version UID of the class which is always 0 | serialVersionUID |
-| sourceID | direct copy | sourceID |
-| systemTime | direct copy | systemTime |
-| sequenceNo | direct copy | sequenceNo |
-| metadataRef | direct copy | metadataRef |
-| parentId | direct copy | parentId |
-| recordType | direct copy | recordType |
-| | This is set based on what type of packet:
-# If MetadataPacket, set to 0x0101
-# If SensorDataPacket, set to 0x0102
-# If DeviceMessagePacket, set to 0x0103 | EX_XXXXXXPACKET |
-| | This is just the serial version UID of the class which is always 0 | serialVersionUID |
-| firstBufferLength | direct copy (see note for first buffer) | firstBufferLength |
-| firstBuffer | This depends on the type of packet:
-# If MetadataPacket, "cause" bytes are copied over
-# If SensorDataPacket, "dataMessage" bytes are copied over
-# If DeviceMessagePacket, "message" bytes are copied over | firstBuffer |
-| secondBufferLength | only valid with MetadataPacket, but is copied directly over | secondBufferLength |
-| secondBuffer | only valid with MetadataPacket, and the "buffer" bytes are copied over | secondBuffer |
+|| || This is a static value that is set to indicate the byte array is a DevicePacket and is set to 0x0100 || EX_DEVICEPACKET ||
+|| || This is just the serial version UID of the class which is always 0 || serialVersionUID ||
+|| sourceID || direct copy || sourceID ||
+|| systemTime || direct copy || systemTime ||
+|| sequenceNo || direct copy || sequenceNo ||
+|| metadataRef || direct copy || metadataRef ||
+|| parentId || direct copy || parentId ||
+|| recordType || direct copy || recordType ||
+|| || This is set based on what type of packet: If !MetadataPacket: set to 0x0101, If !SensorDataPacket: set to 0x0102, If !DeviceMessagePacket: set to 0x0103 || EX_XXXXXXPACKET ||
+|| || This is just the serial version UID of the class which is always 0 || serialVersionUID ||
+|| firstBufferLength || direct copy (see note for first buffer) || firstBufferLength ||
+|| firstBuffer || This depends on the type of packet: If !MetadataPacket: "cause" bytes are copied over, if !SensorDataPacket: "dataMessage" bytes are copied over, if !DeviceMessagePacket, "message" bytes are copied over || firstBuffer ||
+|| secondBufferLength || only valid with !MetadataPacket, but is copied directly over || secondBufferLength ||
+|| secondBuffer || only valid with !MetadataPacket, and the "buffer" bytes are copied over || secondBuffer ||
 
-h6. SSDSDevicePacket to SIAM Byte Array
+=== SSDSDevicePacket to SIAM Byte Array ===
+
 *Originally done in TransmogrifyMDB by calling SSDSDevicePacket.convertToPublishableVersion3ByteArray before passing byte array to method to translate to SSDS format and then send to ingest*
 || SSDSDevicePacket || Translation Rule || SIAM Byte Array ||
 | | This is a static value that is set to indicate the byte array is a DevicePacket and is set to 0x0100 | EX_DEVICEPACKET |
