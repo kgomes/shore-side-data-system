@@ -17,7 +17,7 @@ Here is a sequence diagram of the basic steps that occur when a packet is submit
 
 After the ingest step, if the packet is a metadata packet, it is forwarded on to the RuminateMDB (covered on another wiki page).  The protocol buffers ingest MDB operates the same way expect that in the IngestProtoMDB, the packet gets converted from the incoming protocol buffer to an SSDSDevicePacket which is then persisted in the same was as the IngestMDB does it.
 
-=== Transmogrify Packet Structure ===
+== Transmogrify Packet Structure ==
 
 Our initial and primary publisher of data for the SSDS was the SIAM infrastructure.  Initially they would publish serialized Java objects that were SIAM !DevicePacket classes.  In the SSDS, we created SSDSDevicePacket sub classes to map the SIAM !DevicePacket information to the SSDS world.  Here is a class diagram of the classes involved:
 
@@ -90,7 +90,7 @@ Notes on the conversion:
 
 *WARNING*: Please note that because byte arrays are limited to 32 bit sizes, the largest payload of a message that can be converted by SSDS is 2GB.  While this does not seem like a major restriction, it can be hit if somebody is using straight JMS messaging (or other) and makes a payload bigger than 2GB.  SSDS will just ignore such a message.
 
-= Ingest Packet Structure =
+== Ingest Packet Structure ==
 
 So now we have all messages coming into Ingest in a format that SSDS is expecting (i.e. that matches the SSDS view of the world). For the diagram in the previous section, the attributes in the SSDS Bytes Array are:
 
@@ -109,51 +109,60 @@ So now we have all messages coming into Ingest in a format that SSDS is expectin
 || *bufferTwoLen* || java.lang.int || ||
 || *bufferTwoBytes* || java.lang.byte\[bufferTwoLen\] || ||
 
-The Ingest Message Driven Bean (MDB) then takes that byte array and using a !PacketOutput class that corresponds to the correct source ID, metadataSequenceNumber, packetSubType, and parentID, it writes the packet to disk.  It then uses a PacketSQLOutput to write that same packet to a table in the database.
+The Ingest Message Driven Bean (MDB) then takes that byte array and using a !PacketOutput class that corresponds to the correct source ID, metadataSequenceNumber, packetSubType, and parentID, it writes the packet to disk.  It then uses a !PacketSQLOutput to write that same packet to a table in the database.
  
-h5. Packet Translations
+== Packet Translations ==
 
-So, through all this, there are basically four representations of data packets in the SSDS ecosystem:
+So, through all this, there are basically five representations of data packets in the SSDS ecosystem:
 
-# SIAM Device Packet (and its sub classes MetadataPacket, SensorDataPacket, DeviceMessagePacket)
-# SSDSDevicePacket (and its sub class SSDSGeoLocatedDevicePacket)
-# SIAM Byte array (from Exportable class)
-# SSDS Byte array
+ # SIAM Device Packet (and its sub classes MetadataPacket, SensorDataPacket, DeviceMessagePacket)
+ # SSDSDevicePacket (and its sub class SSDSGeoLocatedDevicePacket)
+ # SIAM Byte array (from Exportable class)
+ # SSDS Byte array
+ # SSDS Protocol Buffers Format
 
 Here is a diagram of these various forms of data
+
 {gliffy:name=Packet Translations|space=SSDS|page=Ingest Architecture|pageid=8355863|align=center|size=L}
 
 And the translation rules (some of these may seem very strange for legacy reasons).
-h6. DevicePacket to SSDSDevicePacket
-*This translation is done in the constructor of SSDSDevicePacket which takes in a DevicePacket*
-|| DevicePacket || Translation Rule || SSDSDevicePacket ||
-| sourceID | direct copy | sourceID |
-| systemTime | direct copy | systemTime |
-| sequenceNo | direct copy | sequenceNo |
-| metadataRef | direct copy: 
-# metadataRef->metadataRef
-# metadataRef->metadataSequenceNumber
-# metadataRef->dataDescriptionID | # metadataRef
-# metadataSequenceNumber
-# dataDescriptionID |
-| parentId | direct copy:
-# parentId->parentId
-# parentId->platformID | # parentId
-# platformID |
-| recordType | # MetadataPacket: recordType to 0
-# Other: direct copy | recordType |
-| | # If MetadataPacket, packetType = 0
-# If SensorDataPacket, packetType = 1
-# If DeviceMessagePacket, packetType = 2 | packetType |
-| firstBufferLength | ignored | |
-| firstBuffer | First buffer depends on which type of packet
-# If MetadataPacket, copy "bytes" buffer
-# If SensorDataPacket, copy "dataBuffer"
-# If DeviceMessagePacket, copy "message" | firstBuffer |
-| secondBufferLength | ignored | |
-| secondBuffer | Only exists if MetadataPacket and will copy over "cause" buffer | secondBuffer |
 
-h6. DevicePacket to SIAM Byte Array
+=== DevicePacket to SSDSDevicePacket ===
+*This translation is done in the constructor of SSDSDevicePacket which takes in a DevicePacket*
+
+|| DevicePacket || Translation Rule || SSDSDevicePacket ||
+|| sourceID || direct copy || sourceID ||
+|| systemTime || direct copy || systemTime ||
+|| sequenceNo || direct copy || sequenceNo ||
+|| metadataRef || direct copy:
+ # metadataRef->metadataRef
+ # metadataRef->metadataSequenceNumber
+ # metadataRef->dataDescriptionID ||
+ # metadataRef
+ # metadataSequenceNumber
+ # dataDescriptionID ||
+|| parentId || direct copy:
+ # parentId->parentId
+ # parentId->platformID || 
+ # parentId
+ # platformID ||
+|| recordType || 
+ # MetadataPacket: recordType to 0
+ # Other: direct copy || recordType ||
+|| || 
+ # If MetadataPacket, packetType = 0
+ # If SensorDataPacket, packetType = 1
+ # If DeviceMessagePacket, packetType = 2 || packetType ||
+|| firstBufferLength || ignored || ||
+|| firstBuffer || First buffer depends on which type of packet
+ # If MetadataPacket, copy "bytes" buffer
+ # If SensorDataPacket, copy "dataBuffer"
+ # If DeviceMessagePacket, copy "message" || firstBuffer ||
+|| secondBufferLength || ignored || ||
+|| secondBuffer || Only exists if MetadataPacket and will copy over "cause" buffer || secondBuffer ||
+
+=== DevicePacket to SIAM Byte Array ===
+
 This is done by the SIAM Exportable Packet class
 || DevicePacket || Translation Rule || SIAM Byte Array ||
 | | This is a static value that is set to indicate the byte array is a DevicePacket and is set to 0x0100 | EX_DEVICEPACKET |
