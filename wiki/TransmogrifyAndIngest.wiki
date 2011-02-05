@@ -208,30 +208,19 @@ This is done by the SIAM Exportable Packet class
 *Originally done in TransmogrifyMDB in checkAndPublishBytes method now in !PacketUtility*
 
 || SIAM Byte Array || Translation Rules || SSDS Byte Array ||
-| EX_DEVICEPACKET | ignored | |
-| serialVersionUID | ignored | |
-| sourceID | direct copy | sourceID |
-| | Depending on EX_XXXXXXXPACKET:
-# If MetadataPacket, set packetType to 1
-# If SensorDataPacket, set packetType to 0
-# If DeviceMessagePacket, set packetType to 4 | packetType |
-| | This was set using the SIAMMetadataTracker that tried to keep track of real version numbers based on XML in payload | metadataSequencNumber |
-| systemTime | Split into timestampSeconds and timestampNanoseconds | # timestampSeconds
-# timestampNanoSeconds |
-| sequenceNo | direct copy | sequenceNumber |
-| metadataRef | direct copy | dataDescriptionVersion |
-| parentId | direct copy | parentID |
-| recordType | If MetadataPacket (determined from EX_XXXXXXXPACKET), recordType set to 0, otherwise set to recordType | packetSubType |
-| EX_XXXXXXXPACKET | ignored in storage, but used in logic | |
-| serialVersionUID | ignored | |
-| first/secondBufferLength | If MetadataPacket (determined from EX_XXXXXXXPACKET), firstBufferLength is set to secondBufferLength so we can flip the "cause" and "buffer" bytes because it just made more sense since the cause was rarely populated. Otherwise set to firstBufferLength | firstBufferLength |
-| first/secondBuffer | If MetadataPacket (determined from EX_XXXXXXXPACKET), firstBuffer is set to secondBuffer so we can flip the "cause" and "buffer" bytes because it just made more sense since the cause was rarely populated. Otherwise set to firstBuffer | firstBuffer |
-| firstBufferLength | If MetadataPacket (determined from EX_XXXXXXXPACKET), secondBufferLength is set to firstBufferLength to flip "cause" and "buffer" bytes | secondBufferLength |
-| firstBuffer | If MetadataPacket (determined from EX_XXXXXXXPACKET), secondBuffer is set to firstBuffer to flip "cause" and "buffer" bytes | secondBuffer |
-
-
-h5. Exploration of Upgrade of Ingest/Transmogrify to AMQP
-
-In an effort to allow non-Java clients to send data to SSDS in the form of messages and to upgrade the messaging system to a technology that is more scalable and higher performance, an investigation of AMQP implementations was done.
-
-# [Qpid Exploration]
+|| EX_DEVICEPACKET || ignored || ||
+|| serialVersionUID || ignored || ||
+|| sourceID || direct copy || sourceID ||
+|| || Depending on EX_XXXXXXXPACKET: if !MetadataPacket then set packetType to 1, if !SensorDataPacket then set packetType to 0, if !DeviceMessagePacket, set packetType to 4 || packetType ||
+|| || This was set using the SIAMMetadataTracker that tried to keep track of real version numbers based on XML in payload but that no longer exists, it is a direct copy || metadataSequenceNumber ||
+|| systemTime || Split into timestampSeconds and timestampNanoseconds || timestampSeconds and timestampNanoSeconds ||
+|| sequenceNo || direct copy || sequenceNumber ||
+|| metadataRef || direct copy || dataDescriptionVersion ||
+|| parentId || direct copy || parentID ||
+|| recordType || If !MetadataPacket (determined from EX_XXXXXXXPACKET), recordType set to 0, otherwise set to recordType || packetSubType ||
+|| EX_XXXXXXXPACKET || ignored in storage, but used in logic || ||
+|| serialVersionUID || ignored || ||
+|| first/secondBufferLength || If !MetadataPacket (determined from EX_XXXXXXXPACKET), firstBufferLength is set to secondBufferLength so we can flip the "cause" and "buffer" bytes because it just made more sense since the cause was rarely populated. Otherwise set to firstBufferLength || firstBufferLength ||
+|| first/secondBuffer || If !MetadataPacket (determined from EX_XXXXXXXPACKET), firstBuffer is set to secondBuffer so we can flip the "cause" and "buffer" bytes because it just made more sense since the cause was rarely populated. Otherwise set to firstBuffer || firstBuffer ||
+|| firstBufferLength || If !MetadataPacket (determined from EX_XXXXXXXPACKET), secondBufferLength is set to firstBufferLength to flip "cause" and "buffer" bytes || secondBufferLength ||
+|| firstBuffer || If !MetadataPacket (determined from EX_XXXXXXXPACKET), secondBuffer is set to firstBuffer to flip "cause" and "buffer" bytes || secondBuffer ||
