@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="/Users/kgomes/Documents/Projects/SSDS_Support/builds/saanish.shore.mbari.org-jboss5.1/src/resources/build/gwt/gwt-dev.jar"/>
+	<classpathentry kind="lib" path="/Users/kgomes/Documents/Projects/SSDS_Support/builds/saanish.shore.mbari.org-jboss5.1/src/resources/build/gwt/gwt-user.jar"/>
+	<classpathentry kind="output" path="war/WEB-INF/classes"/>
+</classpath>
