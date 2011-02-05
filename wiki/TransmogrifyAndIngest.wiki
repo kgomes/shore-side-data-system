@@ -94,27 +94,22 @@ Notes on the conversion:
 
 So now we have all messages coming into Ingest in a format that SSDS is expecting (i.e. that matches the SSDS view of the world). For the diagram in the previous section, the attributes in the SSDS Bytes Array are:
 
-||Attribute||Type||Description||
-|sourceID|java.lang.long|This is what is known as the SSDS ID for the device (i.e. DeviceID) that actually generated the packet of information.|
-|parentID|java.lang.long|This is the SSDS ID for the parent that the device was connected to when it sent the packet. If the ID is zero (0), then the generating device was not connected to a parent.|
-|packetType|java.lang.int|This is the "Type" of packet that is being sent. It is basically an enumerated list the with following context:
-0 = Data Packet
-1 = Metadata Packet
-2 = 
-3 = 
-4 = Device Message Packet|
-|packetSubType|java.lang.long|This is the equivalent of the "recordType" listed in the Transmogrify component. It is used to provide the hook to tell the client applications what type of record this is that was sent. It really only has meaning in the context of data packets as a device can often send data packets of different formats. This basically tells the application which record form is being sent in this packet.|
-|metadataSequenceNumber|java.lang.long|Also referred to as dataDescriptionID|
-|dataDescriptionVersion|java.lang.long| |
-|timestampSeconds|java.lang.long)| |
-|timestampNanoseconds|java.lang.long| |
-|sequenceNumber|java.lang.long)| |
-|bufferLen|java.lang.int| |
-|bufferBytes|java.lang.byte\[bufferLen\]| |
-|bufferTwoLen|java.lang.int| |
-|bufferTwoBytes|java.lang.byte\[bufferTwoLen\]| |
+|| Attribute || Type || Description ||
+|| *sourceID* || java.lang.long || This is what is known as the SSDS ID for the device (i.e. DeviceID) that actually generated the packet of information. ||
+|| *parentID* || java.lang.long || This is the SSDS ID for the parent that the device was connected to when it sent the packet. If the ID is zero (0), then the generating device was not connected to a parent. ||
+|| *packetType* || java.lang.int || This is the "Type" of packet that is being sent. It is basically an enumerated list the with following context: *0* = Data Packet, *1* = Metadata Packet, *2* = , *3* = , 4 = Device Message Packet ||
+|| *packetSubType* || java.lang.long || This is the equivalent of the "recordType" listed in the Transmogrify component. It is used to provide the hook to tell the client applications what type of record was sent. It really only has meaning in the context of data packets as a device can often send data packets of different formats. This basically tells the application which record form is being sent in this packet. ||
+|| *metadataSequenceNumber* || java.lang.long || Also referred to as dataDescriptionID ||
+|| *dataDescriptionVersion* || java.lang.long || ||
+|| *timestampSeconds* || java.lang.long || ||
+|| *timestampNanoseconds* || java.lang.long || ||
+|| *sequenceNumber* || java.lang.long || ||
+|| *bufferLen* || java.lang.int || ||
+|| *bufferBytes* || java.lang.byte\[bufferLen\] || ||
+|| *bufferTwoLen* || java.lang.int || ||
+|| *bufferTwoBytes* || java.lang.byte\[bufferTwoLen\] || ||
 
-The Ingest Message Driven Bean (MDB) then takes that byte array and using a PacketOutput class that corresponds to the correct source ID, metadataSequenceNumber, packetSubType, and parentID, it writes the packet to disk.  It then uses a PacketSQLOutput to write that same packet to a table in the database.
+The Ingest Message Driven Bean (MDB) then takes that byte array and using a !PacketOutput class that corresponds to the correct source ID, metadataSequenceNumber, packetSubType, and parentID, it writes the packet to disk.  It then uses a PacketSQLOutput to write that same packet to a table in the database.
  
 h5. Packet Translations
 
