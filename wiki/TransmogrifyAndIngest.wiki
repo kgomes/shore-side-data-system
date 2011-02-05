@@ -115,7 +115,7 @@ The Ingest Message Driven Bean (MDB) then takes that byte array and using a !Pac
 
 So, through all this, there are basically five representations of data packets in the SSDS ecosystem:
 
- # SIAM Device Packet (and its sub classes MetadataPacket, SensorDataPacket, DeviceMessagePacket)
+ # SIAM Device Packet (and its sub classes !MetadataPacket, !SensorDataPacket, !DeviceMessagePacket)
  # SSDSDevicePacket (and its sub class SSDSGeoLocatedDevicePacket)
  # SIAM Byte array (from Exportable class)
  # SSDS Byte array
@@ -128,38 +128,20 @@ Here is a diagram of these various forms of data
 And the translation rules (some of these may seem very strange for legacy reasons).
 
 === DevicePacket to SSDSDevicePacket ===
-*This translation is done in the constructor of SSDSDevicePacket which takes in a DevicePacket*
+*This translation is done in the constructor of SSDSDevicePacket which takes in a !DevicePacket*
 
-|| DevicePacket || Translation Rule || SSDSDevicePacket ||
+|| !DevicePacket || Translation Rule || SSDSDevicePacket ||
 || sourceID || direct copy || sourceID ||
 || systemTime || direct copy || systemTime ||
 || sequenceNo || direct copy || sequenceNo ||
-|| metadataRef || direct copy:
- # metadataRef->metadataRef
- # metadataRef->metadataSequenceNumber
- # metadataRef->dataDescriptionID ||
- # metadataRef
- # metadataSequenceNumber
- # dataDescriptionID ||
-|| parentId || direct copy:
- # parentId->parentId
- # parentId->platformID || 
- # parentId
- # platformID ||
-|| recordType || 
- # MetadataPacket: recordType to 0
- # Other: direct copy || recordType ||
-|| || 
- # If MetadataPacket, packetType = 0
- # If SensorDataPacket, packetType = 1
- # If DeviceMessagePacket, packetType = 2 || packetType ||
+|| metadataRef || direct copy: metadataRef->metadataRef,  metadataRef->metadataSequenceNumber, metadataRef->dataDescriptionID || metadataRef, metadataSequenceNumber, dataDescriptionID ||
+|| parentId || direct copy: parentId->parentId, parentId->platformID || parentId, platformID ||
+|| recordType || !MetadataPacket: recordType to 0, Other: direct copy || recordType ||
+|| || If !MetadataPacket: packetType = 0, If SensorDataPacket: packetType = 1, If !DeviceMessagePacket: packetType = 2 || packetType ||
 || firstBufferLength || ignored || ||
-|| firstBuffer || First buffer depends on which type of packet
- # If MetadataPacket, copy "bytes" buffer
- # If SensorDataPacket, copy "dataBuffer"
- # If DeviceMessagePacket, copy "message" || firstBuffer ||
+|| firstBuffer || First buffer depends on which type of packet: If !MetadataPacket: copy "bytes" buffer, If !SensorDataPacket: copy "dataBuffer", If !DeviceMessagePacket, copy "message" || firstBuffer ||
 || secondBufferLength || ignored || ||
-|| secondBuffer || Only exists if MetadataPacket and will copy over "cause" buffer || secondBuffer ||
+|| secondBuffer || Only exists if !MetadataPacket and will copy over "cause" buffer || secondBuffer ||
 
 === DevicePacket to SIAM Byte Array ===
 
