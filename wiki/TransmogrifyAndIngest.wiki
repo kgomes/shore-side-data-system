@@ -105,9 +105,9 @@ So now we have all messages coming into Ingest in a format that SSDS is expectin
 || *timestampNanoseconds* || java.lang.long || ||
 || *sequenceNumber* || java.lang.long || ||
 || *bufferLen* || java.lang.int || ||
-|| *bufferBytes* || java.lang.byte\[bufferLen\] || ||
+|| *bufferBytes* || java.lang.byte [bufferLen] || ||
 || *bufferTwoLen* || java.lang.int || ||
-|| *bufferTwoBytes* || java.lang.byte\[bufferTwoLen\] || ||
+|| *bufferTwoBytes* || java.lang.byte [bufferTwoLen] || ||
 
 The Ingest Message Driven Bean (MDB) then takes that byte array and using a !PacketOutput class that corresponds to the correct source ID, metadataSequenceNumber, packetSubType, and parentID, it writes the packet to disk.  It then uses a !PacketSQLOutput to write that same packet to a table in the database.
  
@@ -183,31 +183,30 @@ This is done by the SIAM Exportable Packet class
 
 === SSDSDevicePacket to SSDS Byte Array ===
 
-*Originally done in SSDSDevicePacket.convertToVersion3ByteArray now in PacketUtility*
+*Originally done in SSDSDevicePacket.convertToVersion3ByteArray now in !PacketUtility*
 
 || SSDSDevicePacket || Translation Rule || SSDS Byte Array ||
-| sourceID | direct copy | sourceID |
-| systemTime | ignored during the translation directly, but used through getter methods for seconds and nanoseconds | |
-| timestampSeconds | direct copy (note that this is _sort of_ a direct copy, there are getter methods on SSDSDevicePacket that convert the systemTime to seconds and nanoseconds when called). | timestampSeconds |
-| timestampNanoseconds | direct copy (note that this is _sort of_ a direct copy, there are getter methods on SSDSDevicePacket that convert the systemTime to seconds and nanoseconds when called). | timestampNanoseconds |
-| sequenceNo | direct copy | sequenceNumber |
-| metadataRef | ignored | | 
-| parentID | ignored | |
-| recordType | If packetType = 0, set packetSubType to 0, otherwise set to recordType | packetSubType | 
-| packetType | Depends on packetType:
-# If packetType = 0, set to 1
-# If packetType = 1, set to 0
-# If packetType = 2, set to 4 | packetType |
-| metadataSequenceNumber | direct copy | metadataSequenceNumber |
-| dataDescriptionVersion | direct copy | dataDescriptionVersion |
-| platformID | direct copy | parentID |
-| | copy length of dataBuffer | firstBufferLength | 
-| dataBuffer | direct copy | firstBuffer |
-| | copy length of otherBuffer | secondBufferLength |
-| otherBuffer | direct copy | secondBuffer |
+|| sourceID || direct copy || sourceID ||
+|| systemTime || ignored during the translation directly, but used through getter methods for seconds and nanoseconds || ||
+|| timestampSeconds || direct copy (note that this is _sort of_ a direct copy, there are getter methods on SSDSDevicePacket that convert the systemTime to seconds and nanoseconds when called). || timestampSeconds ||
+|| timestampNanoseconds || direct copy (note that this is _sort of_ a direct copy, there are getter methods on SSDSDevicePacket that convert the systemTime to seconds and nanoseconds when called). || timestampNanoseconds ||
+|| sequenceNo || direct copy || sequenceNumber ||
+|| metadataRef || ignored || || 
+|| parentID || ignored || ||
+|| recordType || If packetType = 0, set packetSubType to 0, otherwise set to recordType || packetSubType || 
+|| packetType || Depends on packetType: if packetType = 0 then set to 1, if packetType = 1 then set to 0,  if packetType = 2 then set to 4 || packetType ||
+|| metadataSequenceNumber || direct copy || metadataSequenceNumber ||
+|| dataDescriptionVersion || direct copy || dataDescriptionVersion ||
+|| platformID || direct copy || parentID ||
+|| || copy length of dataBuffer || firstBufferLength || 
+|| dataBuffer || direct copy || firstBuffer ||
+|| || copy length of otherBuffer || secondBufferLength ||
+|| otherBuffer || direct copy || secondBuffer ||
 
-h6. SIAM Byte Array to SSDS Byte Array
-*Originally done in TransmogrifyMDB in checkAndPublishBytes method*
+=== SIAM Byte Array to SSDS Byte Array ===
+
+*Originally done in TransmogrifyMDB in checkAndPublishBytes method now in !PacketUtility*
+
 || SIAM Byte Array || Translation Rules || SSDS Byte Array ||
 | EX_DEVICEPACKET | ignored | |
 | serialVersionUID | ignored | |
