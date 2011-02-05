@@ -68,9 +68,9 @@ where:
 || *SecondStreamID* || java.lang.short || This defines the type of !DevicePacket that was used to construct the byte array.  The values are as follows: *!MetadataPacket* = 0x101, *!SensorDataPacket* = 0x102, *!DeviceMessagePacket* = 0x103, *!SummaryPacket* = 0x102 (same as SensorDataPacket) ||
 || *!SecondPacketVersion* || java.lang.long || This is the "serialVersionUID" on the class that was used to export the bytes.  It is the version of SIAM class that generated the byte array. As of this writing, it is the same as the !DevicePacketVersion.  Since currently it is always 0, SSDS ignores it. ||
 || *!FirstBufferLength* || java.lang.int || This is the length of the array that holds the bytes of the first buffer ||
-|| *!FirstBuffer* || java.lang.byte [] || This is the bytes array that represents the first buffer ||
+|| *!FirstBuffer* || java.lang.byte ![] || This is the bytes array that represents the first buffer ||
 || *!SecondBufferLength* || java.lang.int || This is the length of the array that holds the bytes of the second buffer. ||
-|| *!SecondBuffer* || java.lang.byte [] || This is the array that holds the bytes of the second buffer. ||
+|| *!SecondBuffer* || java.lang.byte ![] || This is the array that holds the bytes of the second buffer. ||
 
 Now, in order to handle both types of inputs in Transmogrify (!DevicePackets and !BytesMessage structure), Transmogrify would take both and convert to a common format that would contain the information to cover both types of messages.  Since the !BytesMessage structure encompasses all the information in the !DevicePacket, we simply used that byte structure and in Transmogrify, a !DevicePacket is converted to a SSDSDevicePacket which is then converted to the same !BytesMessage structure using the methods in the !PacketUtility class.  Once the !DevicePacket object has been converted to a SIAMFormatByteArray, Transmogrify then converts that message, using the !PacketUtility class, to an SSDSFormatByteArray that is then used to send on to the Ingest component.  Here is the mapping that is used to convert from SIAMFormatByteArray to the SSDSFormatByteArray.
 
@@ -105,9 +105,9 @@ So now we have all messages coming into Ingest in a format that SSDS is expectin
 || *timestampNanoseconds* || java.lang.long || ||
 || *sequenceNumber* || java.lang.long || ||
 || *bufferLen* || java.lang.int || ||
-|| *bufferBytes* || java.lang.byte [bufferLen] || ||
+|| *bufferBytes* || java.lang.byte ![bufferLen] || ||
 || *bufferTwoLen* || java.lang.int || ||
-|| *bufferTwoBytes* || java.lang.byte [bufferTwoLen] || ||
+|| *bufferTwoBytes* || java.lang.byte ![bufferTwoLen] || ||
 
 The Ingest Message Driven Bean (MDB) then takes that byte array and using a !PacketOutput class that corresponds to the correct source ID, metadataSequenceNumber, packetSubType, and parentID, it writes the packet to disk.  It then uses a !PacketSQLOutput to write that same packet to a table in the database.
  
