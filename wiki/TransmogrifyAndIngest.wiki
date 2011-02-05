@@ -143,11 +143,11 @@ And the translation rules (some of these may seem very strange for legacy reason
 || secondBufferLength || ignored || ||
 || secondBuffer || Only exists if !MetadataPacket and will copy over "cause" buffer || secondBuffer ||
 
-=== DevicePacket to SIAM Byte Array ===
+=== !DevicePacket to SIAM Byte Array ===
 
 This is done by the SIAM Exportable Packet class
-|| DevicePacket || Translation Rule || SIAM Byte Array ||
-|| || This is a static value that is set to indicate the byte array is a DevicePacket and is set to 0x0100 || EX_DEVICEPACKET ||
+|| !DevicePacket || Translation Rule || SIAM Byte Array ||
+|| || This is a static value that is set to indicate the byte array is a !DevicePacket and is set to 0x0100 || EX_DEVICEPACKET ||
 || || This is just the serial version UID of the class which is always 0 || serialVersionUID ||
 || sourceID || direct copy || sourceID ||
 || systemTime || direct copy || systemTime ||
@@ -166,34 +166,25 @@ This is done by the SIAM Exportable Packet class
 
 *Originally done in TransmogrifyMDB by calling SSDSDevicePacket.convertToPublishableVersion3ByteArray before passing byte array to method to translate to SSDS format and then send to ingest*
 || SSDSDevicePacket || Translation Rule || SIAM Byte Array ||
-| | This is a static value that is set to indicate the byte array is a DevicePacket and is set to 0x0100 | EX_DEVICEPACKET |
-| | This is just the serial version UID of the class which is always 0 | serialVersionUID |
-| sourceID | direct copy | sourceID |
-| systemTime | direct copy | systemTime |
-| sequenceNo | direct copy | sequenceNo |
-| metadataSequenceNumber | direct copy | metadataRef |
-| parentID | direct copy | parentID |
-| recordType | # If packetType = 0, set recordType = 0
-# If packetType = 1, set recordType = recordType
-# If packetType = 2, set recordType = recordType | recordType |
-| | This is set based on what type of packet:
-# If packetType = 0, set to 0x0101
-# If packetType = 1, set to 0x0102
-# If packetType = 2, set to 0x0103 | EX_XXXXXXPACKET |
-| | This is just the serial version UID of the class which is always 0 | serialVersionUID |
-| | This depends on the type of packet:
-# If packetType = 0, set to length of "otherBuffer" 
-# If packetType = 1, set to length of "dataBuffer"
-# If packetType = 2, set to length of "dataBuffer" | firstBufferLength |
-| other/dataBuffer | This depends on the type of packet:
-# If packetType = 0, set to bytes from "otherBuffer" 
-# If packetType = 1, set to bytes from "dataBuffer"
-# If packetType = 2, set to bytes from "dataBuffer" | firstBuffer |
-| | This only exists if it is packetType = 0 then it is set to the length of the "dataBuffer" | secondBufferLength |
-| dataBuffer | This only exists if it is packetType = 0 then it is set to the byte from  the "dataBuffer" | secondBuffer |
+|| This is a static value that is set to indicate the byte array is a !DevicePacket and is set to 0x0100 || EX_DEVICEPACKET ||
+|| || This is just the serial version UID of the class which is always 0 || serialVersionUID ||
+|| sourceID || direct copy || sourceID ||
+|| systemTime || direct copy || systemTime ||
+|| sequenceNo || direct copy || sequenceNo ||
+|| metadataSequenceNumber || direct copy || metadataRef ||
+|| parentID || direct copy || parentID ||
+|| recordType || If packetType = 0 then set recordType = 0, if packetType = 1 then set recordType = recordType, if packetType = 2 then set recordType = recordType || recordType ||
+|| || This is set based on what type of packet: If packetType = 0 then set to 0x0101, if packetType = 1 then set to 0x0102, if packetType = 2 then set to 0x0103 || EX_XXXXXXPACKET ||
+|| || This is just the serial version UID of the class which is always 0 || serialVersionUID ||
+|| || This depends on the type of packet: if packetType = 0 then set to length of "otherBuffer", if packetType = 1 then set to length of "dataBuffer", if packetType = 2 then set to length of "dataBuffer" || firstBufferLength ||
+|| other/dataBuffer || This depends on the type of packet: If packetType = 0 then set to bytes from "otherBuffer", if packetType = 1 then set to bytes from "dataBuffer", if packetType = 2 then set to bytes from "dataBuffer" || firstBuffer ||
+|| || This only exists if it is packetType = 0 then it is set to the length of the "dataBuffer" || secondBufferLength ||
+|| dataBuffer || This only exists if it is packetType = 0 then it is set to the byte from  the "dataBuffer" || secondBuffer ||
 
-h5. SSDSDevicePacket to SSDS Byte Array
-*Originally done in SSDSDevicePacket.convertToVersion3ByteArray*
+=== SSDSDevicePacket to SSDS Byte Array ===
+
+*Originally done in SSDSDevicePacket.convertToVersion3ByteArray now in PacketUtility*
+
 || SSDSDevicePacket || Translation Rule || SSDS Byte Array ||
 | sourceID | direct copy | sourceID |
 | systemTime | ignored during the translation directly, but used through getter methods for seconds and nanoseconds | |
