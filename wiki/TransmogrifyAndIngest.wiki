@@ -77,15 +77,16 @@ Now, in order to handle both types of inputs in Transmogrify (!DevicePackets and
 [http://shore-side-data-system.googlecode.com/svn/wiki/images/SIAMToSSDSConvert.jpg]
 
 Notes on the conversion:
-# The dashes lines mean that, as of this writing, SSDS ignores those attributes in the array.  The reason the arrow is drawn is that if SIAM decides to use this attribute, SSDS may have to pay attention to it in the construction of its byte array.
-# The !DevicePacketVersion, !SecondStreamID, and !SecondPacketVersion are used to determine the correct packetType (although, right now, !DevicePacketVersion and !SecondPacketVersion are ignored).
-# For !MetadataPackets, the packetType is 1.
-# For !SensorDataPackets, the packetType is 0 (!SummaryPackets come across as !SensorDataPacket and are differentiated by their recordType).
-# For !DeviceMessagePackets, the packetType is 4.
-# If the incoming packet is a !MetadataPacket, the packetSubType is set to 0.  Otherwise, it is set to the !RecordType field.
-# The !RecordType is set to zero if the packet is a !MetadataPacket and set equal to the !RecordType from SIAM if not a !MetadataPacket.
-# The buffers are swapped if it is a !MetadataPacket.  It always seemed to logical to do it that way.
-# This timestamp (epoch milliseconds) is split into seconds and nanoseconds.
+
+ # The dashes lines mean that, as of this writing, SSDS ignores those attributes in the array.  The reason the arrow is drawn is that if SIAM decides to use this attribute, SSDS may have to pay attention to it in the construction of its byte array.
+ # The !DevicePacketVersion, !SecondStreamID, and !SecondPacketVersion are used to determine the correct packetType (although, right now, !DevicePacketVersion and !SecondPacketVersion are ignored).
+ # For !MetadataPackets, the packetType is 1.
+ # For !SensorDataPackets, the packetType is 0 (!SummaryPackets come across as !SensorDataPacket and are differentiated by their recordType).
+ # For !DeviceMessagePackets, the packetType is 4.
+ # If the incoming packet is a !MetadataPacket, the packetSubType is set to 0.  Otherwise, it is set to the !RecordType field.
+ # The !RecordType is set to zero if the packet is a !MetadataPacket and set equal to the !RecordType from SIAM if not a !MetadataPacket.
+ # The buffers are swapped if it is a !MetadataPacket.  It always seemed to logical to do it that way.
+ # This timestamp (epoch milliseconds) is split into seconds and nanoseconds.
 
 *WARNING*: Please note that because byte arrays are limited to 32 bit sizes, the largest payload of a message that can be converted by SSDS is 2GB.  While this does not seem like a major restriction, it can be hit if somebody is using straight JMS messaging (or other) and makes a payload bigger than 2GB.  SSDS will just ignore such a message.
 
