@@ -49,3 +49,8 @@ When the Transmogrify component receives a SIAM !DevicePacket, it converts it to
 || _X_ || _X_ || _X_ || _X_ || _X_ || _X_ || *longitude* || _X_ || Longitude where the packet was generated ||
 || _X_ || _X_ || _X_ || _X_ || _X_ || _X_ || *latitude* || _X_ || Latitude where the packet was generated ||
 || _X_ || _X_ || _X_ || _X_ || _X_ || _X_ || *depth* || _X_ || Depth (m) where the packet was generated ||
+
+We quickly ran into versioning and deserialization issues, so instead, SIAM began publishing their packets as javax.jms.BytesMessages that had a structured payload that was the result of the export method of the !Exportable interface. So, what comes across in a BytesMessage is an array of bytes in a payload that looks like the following:
+
+[http://shore-side-data-system.googlecode.com/svn/wiki/images/SIAMByteArrayFormat.jpg]
+
