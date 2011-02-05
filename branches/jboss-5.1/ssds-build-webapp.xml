@@ -56,45 +56,69 @@
 		<!-- Rebuild the directory -->
 		<mkdir dir="${project.build}/webapp" />
 
-	</target>
+		<!-- Check the build property to see if the Flex or GWT app is to be deployed -->
+		<if>
+			<equals arg1="${web.application.type.to.deploy}" arg2="FLASH" />
+			<!-- Clean the flash application -->
+			<then>
+				<!-- Nothing really to do here -->
+			</then>
+			<!-- Call the clean target on GWT application -->
+			<else>
+				<ant dir="${src.gwt.webapp}" antfile="build.xml" inheritAll="false" target="clean" />
+			</else>
+		</if>
 
-	<!-- This is the target that generates the ActionScript classes to match the core Metadata classes -->
-	<target name="action-script-generation" depends="init">
-		<gas3 outputdir="${src.web}/src">
-			<classpath>
-				<pathelement location="${build.classes}" />
-				<path refid="jibx-classpath" />
-			</classpath>
-			<fileset dir="${build.classes}">
-				<include name="moos/ssds/metadata/*.class" />
-				<exclude name="moos/ssds/metadata/JiBX*.class" />
-			</fileset>
-		</gas3>
+
 	</target>
 
 	<!-- Compile the webapp source code -->
-	<target name="compile" depends="action-script-generation">
-		<!-- First compile the supporting ActionScript classes
-		<compc output="${project.build}/webapp/ssds.swc" include-classes="moos.ssds.metadata.Device moos.ssds.metadata.DataProducer">
-			<source-path path-element="${src.web}/src" />
-			<compiler.include-libraries dir="${FLEX_HOME}/frameworks/libs" append="true" />
-		</compc> -->
+	<target name="compile" depends="init">
+		<!-- Check the build property to see if the Flex or GWT app is to be deployed -->
+		<if>
+			<equals arg1="${web.application.type.to.deploy}" arg2="FLASH" />
+			<!-- Compile the flash application -->
+			<then>
+				<!-- Generate the ActionScript classes to match the core Metadata classes -->
+				<gas3 outputdir="${src.web}/src">
+					<classpath>
+						<pathelement location="${build.classes}" />
+						<path refid="jibx-classpath" />
+					</classpath>
+					<fileset dir="${build.classes}">
+						<include name="moos/ssds/metadata/*.class" />
+						<exclude name="moos/ssds/metadata/JiBX*.class" />
+					</fileset>
+				</gas3>
 
-		<!-- Run the flex compiler on the explorer MXML file -->
-		<mxmlc file="${src.web}/src/explorer.mxml" output="${project.build}/webapp/explorer.swf" context-root="/ssds" services="${resources.build}/flex/WEB-INF/flex/services-config.xml">
-			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
-			<source-path path-element="${FLEX_HOME}/frameworks" />
-			<!-- List of SWC files or directories that contain SWC files. -->
-			<compiler.library-path dir="${FLEX_HOME}/frameworks">
-				<include name="**/*.swc" />
-			</compiler.library-path>
-			<compiler.library-path dir="${src.web}/libs">
-				<include name="**/*.swc" />
-			</compiler.library-path>
-			<!-- <compiler.external-library-path dir="${project.build}/webapp">
-			    <include name="**/*.swc" />
-			</compiler.external-library-path> -->
-		</mxmlc>
+				<!-- First compile the supporting ActionScript classes
+				<compc output="${project.build}/webapp/ssds.swc" include-classes="moos.ssds.metadata.Device moos.ssds.metadata.DataProducer">
+					<source-path path-element="${src.web}/src" />
+					<compiler.include-libraries dir="${FLEX_HOME}/frameworks/libs" append="true" />
+				</compc> -->
+
+				<!-- Run the flex compiler on the explorer MXML file -->
+				<mxmlc file="${src.web}/src/explorer.mxml" output="${project.build}/webapp/explorer.swf" context-root="/ssds" services="${resources.build}/flex/WEB-INF/flex/services-config.xml">
+					<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
+					<source-path path-element="${FLEX_HOME}/frameworks" />
+					<!-- List of SWC files or directories that contain SWC files. -->
+					<compiler.library-path dir="${FLEX_HOME}/frameworks">
+						<include name="**/*.swc" />
+					</compiler.library-path>
+					<compiler.library-path dir="${src.web}/libs">
+						<include name="**/*.swc" />
+					</compiler.library-path>
+					<!-- <compiler.external-library-path dir="${project.build}/webapp">
+					    <include name="**/*.swc" />
+					</compiler.external-library-path> -->
+				</mxmlc>
+
+			</then>
+			<!-- Build and deploy the GWT application -->
+			<else>
+				<ant dir="${src.gwt.webapp}" antfile="build.xml" inheritAll="false" target="gwtc" />
+			</else>
+		</if>
 
 	</target>
 
@@ -102,7 +126,21 @@
 	<target name="build" description="This will clean all the compiled classes and recompile" depends="clean,compile" />
 
 	<!-- The distribution target -->
-	<target name="dist" depends="build" description="Simply runs build since we deploy as exploded WAR" />
+	<target name="dist" description="Generates the distributable products">
+		<!-- Check the build property to see if the Flex or GWT app is to be deployed -->
+		<if>
+			<equals arg1="${web.application.type.to.deploy}" arg2="FLASH" />
+			<!-- Simply call the targets to clean and compile the flash application -->
+			<then>
+				<antcall inheritall="true" target="build" />
+			</then>
+
+			<!-- Simply call the target to build the GWT war file -->
+			<else>
+				<ant dir="${src.gwt.webapp}" antfile="build.xml" inheritAll="false" target="war" />
+			</else>
+		</if>
+	</target>
 
 	<!-- The target to test the metdata services -->
 	<target name="test" depends="init" description="This currently does nothing" />
@@ -119,26 +157,39 @@
 	<!-- Deploy the metadata -->
 	<target name="deploy" depends="dist,undeploy" description="This deploys the compiled SWFs and various other assets and pages">
 
-		<!-- Remove and rebuild the web application deployment directory -->
-		<mkdir dir="${webapp.deployment.location}" />
+		<!-- Check the build property to see if the Flex or GWT app is to be deployed -->
+		<if>
+			<equals arg1="${web.application.type.to.deploy}" arg2="FLASH" />
+			<!-- Build the flash application -->
+			<then>
+				<!-- Create the directory on the deployed server for the exploded WAR -->
+				<mkdir dir="${webapp.deployment.location}" />
 
-		<!-- Create the HTML wrapper assets -->
-		<html-wrapper title="SSDS Web Application" file="gen-index.html" swf="explorer" output="${webapp.deployment.location}" />
+				<!-- Create the HTML wrapper assets -->
+				<html-wrapper title="SSDS Web Application" file="gen-index.html" swf="explorer" output="${webapp.deployment.location}" />
 
-		<!-- Copy over the Flex assets -->
-		<copy todir="${webapp.deployment.location}" overwrite="true">
-			<fileset dir="${project.build}/webapp">
-				<exclude name="ssds.swc" />
-			</fileset>
-		</copy>
+				<!-- Copy over the Flex assets -->
+				<copy todir="${webapp.deployment.location}" overwrite="true">
+					<fileset dir="${project.build}/webapp">
+						<exclude name="ssds.swc" />
+					</fileset>
+				</copy>
 
-		<!-- Copy over other assets -->
-		<copy todir="${webapp.deployment.location}" overwrite="true">
-			<fileset dir="${src.web}/src">
-				<include name="**/*" />
-				<exclude name="**/*.mxml" />
-				<exclude name="**/*.as" />
-			</fileset>
-		</copy>
+				<!-- Copy over other assets -->
+				<copy todir="${webapp.deployment.location}" overwrite="true">
+					<fileset dir="${src.web}/src">
+						<include name="**/*" />
+						<exclude name="**/*.mxml" />
+						<exclude name="**/*.as" />
+					</fileset>
+				</copy>
+			</then>
+			<!-- Build and deploy the GWT application -->
+			<else>
+				<!-- Now copy the WAR file to the deployment location -->
+				<copy file="${src.gwt.webapp}/SSDSApplication.war" tofile="${webapp.deployment.location}" overwrite="true" />
+			</else>
+		</if>
+
 	</target>
 </project>
