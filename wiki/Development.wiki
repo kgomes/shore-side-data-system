@@ -5,4 +5,10 @@
 
 In order to develop using the SSDS code base, there are some things you can install to help in the development process.  Here are some suggestions:
 
+ # Install Java 6 SDK ([http://java.sun.com])
  # Install Maven ([http://maven.apache.org])
+ # Install Ant ([http://ant.apache.org])
+ # Install Eclipse 3.6 JEE version
+ # Install the JBoss Tools
+ ## Add update site JBoss 3.2 Tools with URL http://download.jboss.org/jbosstools/updates/development/
+ ## I chose Application Development, Maven Support, Web and Java EE Development
