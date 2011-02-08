@@ -1,4 +1,8 @@
 #summary Information about the development of the SSDS Software
 #sidebar TableOfContents
 
-Under Construction
+==Setup the Development Environment==
+
+In order to develop using the SSDS code base, there are some things you can install to help in the development process.  Here are some suggestions:
+
+ # Install Maven ([http://maven.apache.org])
