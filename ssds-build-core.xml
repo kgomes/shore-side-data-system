@@ -245,23 +245,15 @@
 		<!-- Copy the IO properties file over -->
 		<copy file="${resources.build}/moos/ssds/io/io_template.properties" tofile="${project.build}/data/moos/ssds/io/io.properties" overwrite="true">
 			<filterset>
-				<filter token="IO_STORAGE_DIRECTORY" value="${data.services.io.storage.directory}" />
-				<filter token="IO_STORAGE_SQL_JNDI_NAME" value="${data.services.sql.datasource.jndi.name}" />
-				<filter token="IO_STORAGE_SQL_JNDI_SERVER_NAME" value="${data.services.sql.datasource.server.name}" />
-				<filter token="IO_STORAGE_SQL_USERNAME" value="${data.services.sql.datasource.user.name}" />
-				<filter token="IO_STORAGE_SQL_PASSWORD" value="${data.services.sql.datasource.password}" />
+				<filter token="IO_STORAGE_DIRECTORY" value="${ingest.io.storage.directory}" />
+				<filter token="IO_STORAGE_SQL_FIND_TABLE" value="${io.storage.sql.find.table}" />
 				<filter token="IO_STORAGE_SQL_CREATE_DEVICE_TABLE" value="${io.storage.sql.create.device.table}" />
 				<filter token="IO_STORAGE_SQL_CREATE_DEVICE_TABLE_PRIMARY_KEY" value="${io.storage.sql.create.device.table.primary.key}" />
 				<filter token="IO_STORAGE_SQL_CREATE_DEVICE_TABLE_INDEX" value="${io.storage.sql.create.device.table.index}" />
-				<filter token="IO_STORAGE_SQL_TEMPLATE_FIND_TABLE" value="${io.storage.sql.template.find.table}" />
 				<filter token="IO_STORAGE_SQL_TEMPLATE_COUNT_NUMBER_OF_ROWS" value="${io.storage.sql.template.count.number.of.rows}" />
-				<filter token="IO_STORAGE_SQL_TEMPLATE_COUNT_NUMBER_OF_ROWS_WITH_RECORD_TYPE" value="${io.storage.sql.template.count.number.of.rows.with.record.type}" />
 				<filter token="IO_STORAGE_SQL_TEMPLATE_LATEST_TIMESTAMP_SECONDS" value="${io.storage.sql.template.latest.timestamp.seconds}" />
-				<filter token="IO_STORAGE_SQL_TEMPLATE_LATEST_TIMESTAMP_SECONDS_WITH_RECORD_TYPE" value="${io.storage.sql.template.latest.timestamp.seconds.with.record.type}" />
 				<filter token="IO_STORAGE_SQL_TEMPLATE_LATEST_TIMESTAMP_NANOSECONDS" value="${io.storage.sql.template.latest.timestamp.nanoseconds}" />
-				<filter token="IO_STORAGE_SQL_TEMPLATE_LATEST_TIMESTAMP_NANOSECONDS_WITH_RECORD_TYPE" value="${io.storage.sql.template.latest.timestamp.nanoseconds.with.record.type}" />
-				<filter token="IO_STORAGE_SQL_TEMPLATE_SELECT_PACKETS_BY_TIME" value="${io.storage.sql.template.select.packets.by.time}" />
-				<filter token="IO_STORAGE_SQL_TEMPLATE_SELECT_PACKETS_BY_TIME_WITH_RECORD_TYPE" value="${io.storage.sql.template.select.packets.by.time.with.record.type}" />
+				<filter token="IO_STORAGE_SQL_TEMPLATE_LAST_NUMBER_PACKETS" value="${io.storage.sql.template.last.number.packets}" />
 				<filter token="IO_STORAGE_SQL_TABLE_DELIMITER" value="${io.storage.sql.table.delimiter}" />
 				<filter token="IO_STORAGE_SQL_LASTNUMBER_PREAMBLE" value="${io.storage.sql.lastnumber.preamble}" />
 				<filter token="IO_STORAGE_SQL_LASTNUMBER_POSTAMBLE" value="${io.storage.sql.lastnumber.postamble}" />
@@ -297,11 +289,11 @@
 			<filterset>
 				<filter token="METADATA_HIBERNATE_SERVICE_NAME" value="${metadata.hibernate.service.name}" />
 				<filter token="METADATA_HIBERNATE_DATASOURCE_JNDI_NAME" value="${metadata.datasource.jndi.name}" />
-				<filter token="METADATA_HIBERNATE_DIALECT" value="${metadata.hibernate.dialect}" />
+				<filter token="METADATA_HIBERNATE_DIALECT" value="${hibernate.dialect}" />
 				<filter token="METADATA_HIBERNATE_JNDI_NAME" value="${metadata.hibernate.jndi.name}" />
 				<filter token="METADATA_HIBERNATE_CACHE_PROVIDER_CLASS" value="${metadata.hibernate.cache.provider.class}" />
 				<filter token="METADATA_HIBERNATE_HBM2DDLAUTO" value="${metadata.hibernate.hbm2ddlauto}" />
-				<filter token="METADATA_HIBERNATE_DEFAULT_SCHEMA" value="${metadata.hibernate.default.schema}" />
+				<filter token="METADATA_HIBERNATE_DEFAULT_SCHEMA" value="${hibernate.schema}" />
 			</filterset>
 		</copy>
 		<!-- Copy the graphing properties file over -->
@@ -310,7 +302,7 @@
 				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DIRECTORY" value="${client.graphing.device.qc.plot.directory}" />
 				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_URLBASE" value="${client.graphing.device.qc.plot.urlbase}" />
 				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DATABASE_JDBC_CLASS_NAME" value="${client.graphing.device.qc.plot.database.jdbc.class.name}" />
-				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DATABASE_JDBC_URL" value="${client.graphing.device.qc.plot.database.jdbc.url}" />
+				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DATABASE_JDBC_URL" value="${database.data.driver.url}" />
 				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DATABASE_USERNAME" value="${client.graphing.device.qc.plot.database.username}" />
 				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DATABASE_PASSWORD" value="${client.graphing.device.qc.plot.database.password}" />
 			</filterset>
@@ -323,7 +315,7 @@
 				<filter token="CLIENT_UDPATEBOT_NETCDF_URLBASE" value="${client.updateBot.netcdf.urlbase}" />
 				<filter token="CLIENT_UDPATEBOT_DODS_URLBASE" value="${client.updateBot.dods.urlbase}" />
 				<filter token="CLIENT_UPDATEBOT_DATABASE_JDBC_CLASS_NAME" value="${client.updateBot.database.jdbc.class.name}" />
-				<filter token="CLIENT_UPDATEBOT_DATABASE_JDBC_URL" value="${client.updateBot.database.jdbc.url}" />
+				<filter token="CLIENT_UPDATEBOT_DATABASE_JDBC_URL" value="${database.metadata.driver.url}" />
 				<filter token="CLIENT_UDPATEBOT_DATABASE_USERNAME" value="${client.updateBot.database.username}" />
 				<filter token="CLIENT_UPDATEBOT_DATABASE_PASSWORD" value="${client.updateBot.database.password}" />
 				<filter token="CLIENT_UPDATEBOT_MAIL_HOST" value="${client.updateBot.mail.host}" />
@@ -506,7 +498,7 @@
 		<copy file="${resources.build}/moos/ssds/jms/jms_template.properties" tofile="${project.build}/client-pub/moos/ssds/jms/jms.properties" overwrite="true">
 			<filterset>
 				<filter token="JMS_TOPIC" value="${client.updateBot.subscriber.topic.name}" />
-				<filter token="JMS_TOPIC_CONNECTION_FACTORY_JNDI_NAME" value="${client.publisher.jms.topic.connection.factory.jndi.name}" />
+				<filter token="JMS_TOPIC_CONNECTION_FACTORY_JNDI_NAME" value="${transmogrify.connection.factory.jndi.name}" />
 			</filterset>
 		</copy>
 		<!-- Now construct the udpateBot client jar -->
@@ -719,27 +711,29 @@
 		<copy file="${project.lib}/${blazeds.flex.tomcat.common.jar}" todir="${jboss.home}/server/${jboss.server.type}/lib" />
 		<copy file="${project.lib}/${blazeds.flex.tomcat.server.jar}" todir="${jboss.home}/server/${jboss.server.type}/lib" />
 		<!-- Copy data DataSource xml configurations over -->
-		<copy file="${resources.build}/jboss/ssds-ds_template.xml" tofile="${jboss.home}/server/${jboss.server.type}/deploy/ssds-data-ds.xml" overwrite="true">
+		<copy file="${resources.build}/jboss/ssds-ds_template.xml" tofile="${ingest.deployment.location}/ssds-data-ds.xml" overwrite="true">
 			<filterset>
-				<filter token="DATASOURCE_JNDI_NAME" value="${data.services.sql.datasource.jndi.name}" />
-				<filter token="DATASOURCE_CONNECTION_URL" value="${data.services.sql.datasource.connection.url}" />
-				<filter token="DATASOURCE_DRIVER_CLASS" value="${data.services.sql.datasource.driver.class}" />
-				<filter token="DATASOURCE_USER_LOGIN_NAME" value="${data.services.sql.datasource.user.name}" />
-				<filter token="DATASOURCE_PASSWORD" value="${data.services.sql.datasource.password}" />
-				<filter token="DATASOURCE_TRANSACTION_ISOLATION" value="${data.services.sql.datasource.transaction.isolation}" />
+				<filter token="DATASOURCE_JNDI_NAME" value="SSDS_Data" />
+				<filter token="DATASOURCE_CONNECTION_URL" value="${database.data.driver.url}" />
+				<filter token="DATASOURCE_DRIVER_CLASS" value="${database.driver.class}" />
+				<filter token="DATASOURCE_USER_LOGIN_NAME" value="${database.server.login.username}" />
+				<filter token="DATASOURCE_PASSWORD" value="${database.server.login.password}" />
+				<filter token="DATASOURCE_TRANSACTION_ISOLATION" value="TRANSACTION_READ_UNCOMMITTED" />
+				<filter token="DATASOURCE_CHECK_VALID_CONNECTION_SQL" value="${database.check.valid.connection.sql}" />
 				<filter token="DATASOURCE_TYPE_MAPPING" value="${database.driver.type.mapping}" />
 			</filterset>
 		</copy>
 		<!-- Copy metadata DataSource xml configurations over -->
 		<copy file="${resources.build}/jboss/ssds-ds_template.xml" tofile="${jboss.home}/server/${jboss.server.type}/deploy/ssds-metadata-ds.xml" overwrite="true">
 			<filterset>
-				<filter token="DATASOURCE_JNDI_NAME" value="${metadata.datasource.jndi.name}" />
-				<filter token="DATASOURCE_CONNECTION_URL" value="${metadata.datasource.connection.url}" />
-				<filter token="DATASOURCE_DRIVER_CLASS" value="${metadata.datasource.driver.class}" />
-				<filter token="DATASOURCE_USER_LOGIN_NAME" value="${metadata.datasource.user.name}" />
-				<filter token="DATASOURCE_PASSWORD" value="${metadata.datasource.password}" />
-				<filter token="DATASOURCE_TRANSACTION_ISOLATION" value="${metadata.datasource.transaction.isolation}" />
-				<filter token="DATASOURCE_TYPE_MAPPING" value="${metadata.datasource.type.mapping}" />
+				<filter token="DATASOURCE_JNDI_NAME" value="SSDS_Metadata" />
+				<filter token="DATASOURCE_CONNECTION_URL" value="${database.metadata.driver.url}" />
+				<filter token="DATASOURCE_DRIVER_CLASS" value="${database.driver.class}" />
+				<filter token="DATASOURCE_USER_LOGIN_NAME" value="${database.server.login.username}" />
+				<filter token="DATASOURCE_PASSWORD" value="${database.server.login.password}" />
+				<filter token="DATASOURCE_TRANSACTION_ISOLATION" value="TRANSACTION_READ_UNCOMMITTED" />
+				<filter token="DATASOURCE_CHECK_VALID_CONNECTION_SQL" value="${database.check.valid.connection.sql}" />
+				<filter token="DATASOURCE_TYPE_MAPPING" value="${database.driver.type.mapping}" />
 			</filterset>
 		</copy>
 		<!-- Now deploy the EAR -->
