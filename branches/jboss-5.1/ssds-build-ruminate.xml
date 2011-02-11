@@ -22,7 +22,7 @@
 	<!-- Define the ejb-doclet task -->
 	<taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
 		<classpath>
-			<pathelement location="${jboss.client.jar.directory}/${jboss-j2ee.jar}" />
+			<pathelement location="${jboss.client.jar.directory}/${jboss.client.jboss.javaee.jar}" />
 			<fileset dir="${xdoclet.path}">
 				<include name="*.jar" />
 			</fileset>
