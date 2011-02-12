@@ -76,7 +76,7 @@ public class TestDateUtil extends TestCase {
 	public void testGetNanosecondsFromEpochMillis() {
 		Date date = new Date(123456789L);
 		assertEquals("Extraction of nanoseconds from millis should be OK",
-				789000, DateUtils.getNanosecondsFromEpochMillis(date.getTime()));
+				789000000, DateUtils.getNanosecondsFromEpochMillis(date.getTime()));
 	}
 
 	/**
@@ -91,7 +91,7 @@ public class TestDateUtil extends TestCase {
 		assertEquals("The epoch millis should be constructed correctly",
 				123456789, DateUtils
 						.constructEpochMillisFromEpochSecondsAndNanoseconds(
-								123456, 789000));
+								123456, 789000000));
 	}
 
 	/**
