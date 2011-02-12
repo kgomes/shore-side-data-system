@@ -12,6 +12,7 @@ import junit.framework.TestCase;
 import moos.ssds.io.util.PacketUtility;
 import moos.ssds.jms.PublisherComponent;
 import moos.ssds.jms.SubscriberComponent;
+import moos.ssds.util.DateUtils;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -88,8 +89,8 @@ public class TransmogrifyMDBTest extends TestCase {
 		ExportablePacket exportablePacket = new ExportablePacket();
 
 		// MetadataPacket comes first
-		MetadataPacket metadataPacket = new MetadataPacket(101,
-				("Cause").getBytes(), ("Buffer bytes").getBytes());
+		MetadataPacket metadataPacket = new MetadataPacket(101, ("Cause")
+				.getBytes(), ("Buffer bytes").getBytes());
 		metadataPacket.setMetadataRef(0);
 		metadataPacket.setParentId(100);
 		metadataPacket.setRecordType(0);
@@ -132,13 +133,22 @@ public class TransmogrifyMDBTest extends TestCase {
 			// Test that it is what we expect
 			assertTrue(
 					"The received bytes message should be in SSDS format",
-					TestPacketUtility.testSSDSByteArray(
-							PacketUtility
-									.extractByteArrayFromBytesMessage(receivedBytesMessage),
-							101, 100, 1, 0, 0, 0,
-							metadataPacketDate.getTime() / 1000,
-							(metadataPacketDate.getTime() % 1000) * 1000, 1,
-							("Buffer bytes").getBytes(), "Cause".getBytes()));
+					TestPacketUtility
+							.testSSDSByteArray(
+									PacketUtility
+											.extractByteArrayFromBytesMessage(receivedBytesMessage),
+									101,
+									100,
+									1,
+									0,
+									0,
+									0,
+									DateUtils
+											.getEpochTimestampSeconds(metadataPacketDate),
+									DateUtils
+											.getNanoseconds(metadataPacketDate),
+									1, ("Buffer bytes").getBytes(), "Cause"
+											.getBytes()));
 			// Now clear it
 			transmogrifyMDBTestMessageListener.clearCurrentBytesMessage();
 		} else {
@@ -168,13 +178,22 @@ public class TransmogrifyMDBTest extends TestCase {
 			// Test that it is what we expect
 			assertTrue(
 					"The received bytes message should be in SSDS format",
-					TestPacketUtility.testSSDSByteArray(
-							PacketUtility
-									.extractByteArrayFromBytesMessage(receivedBytesMessage),
-							101, 100, 1, 0, 0, 0,
-							metadataPacketDate.getTime() / 1000,
-							(metadataPacketDate.getTime() % 1000) * 1000, 1,
-							("Buffer bytes").getBytes(), "Cause".getBytes()));
+					TestPacketUtility
+							.testSSDSByteArray(
+									PacketUtility
+											.extractByteArrayFromBytesMessage(receivedBytesMessage),
+									101,
+									100,
+									1,
+									0,
+									0,
+									0,
+									DateUtils
+											.getEpochTimestampSeconds(metadataPacketDate),
+									DateUtils
+											.getNanoseconds(metadataPacketDate),
+									1, ("Buffer bytes").getBytes(), "Cause"
+											.getBytes()));
 			// Now clear it
 			transmogrifyMDBTestMessageListener.clearCurrentBytesMessage();
 		} else {
