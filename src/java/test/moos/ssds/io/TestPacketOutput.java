@@ -11,6 +11,7 @@ import moos.ssds.io.PacketOutput;
 import moos.ssds.io.PacketOutputManager;
 import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.io.util.PacketUtility;
+import moos.ssds.util.DateUtils;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -62,9 +63,8 @@ public class TestPacketOutput extends TestCase {
 		long metadataSequenceNumber = 0;
 		long dataDescriptionVersion = 0;
 		Date now = new Date();
-		// TODO kgomes this needs to be change after but SSDS-77 is fixed
-		long timestampSeconds = now.getTime() / 1000;
-		long timestampNanoseconds = (now.getTime() % 1000) * 1000;
+		long timestampSeconds = DateUtils.getEpochTimestampSeconds(now);
+		long timestampNanoseconds = DateUtils.getNanoseconds(now);
 		long sequenceNumber = 1;
 		byte[] firstBuffer = "Sensor Data First Buffer".getBytes();
 		byte[] secondBuffer = "SensorData Second Buffer (ignored)".getBytes();
