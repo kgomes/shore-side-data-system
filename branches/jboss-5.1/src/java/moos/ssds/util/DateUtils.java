@@ -32,10 +32,6 @@ public class DateUtils {
 	/**
 	 * This method extract the time in epoch seconds from epoch millis
 	 * 
-	 * TODO kgomes This is currently associated with bug SSDS-77 and when the
-	 * database is corrected, this will have to be adjusted (actually, I think
-	 * it is mostly the getNanoseconds, but this will need to be checked)
-	 * 
 	 * @param date
 	 * @return
 	 */
@@ -56,14 +52,11 @@ public class DateUtils {
 	/**
 	 * This method extracts the nanoseconds from the date supplied.
 	 * 
-	 * TODO kgomes This is currently associated with bug SSDS-77 and when the
-	 * database is corrected, this will have to be adjusted
-	 * 
 	 * @param date
 	 * @return
 	 */
 	public static long getNanosecondsFromEpochMillis(long epochMillis) {
-		return (epochMillis % 1000) * 1000;
+		return (epochMillis % 1000) * 1000000;
 	}
 
 	/**
@@ -86,16 +79,13 @@ public class DateUtils {
 	 * This method takes in epoch seconds and a nanoseconds portion and
 	 * constructs the appropriate timestamp in epoch millis to match that time
 	 * 
-	 * TODO kgomes This is currently associated with bug SSDS-77 and when the
-	 * database is corrected, this will have to be adjusted
-	 * 
 	 * @param epochSeconds
 	 * @param nanoseconds
 	 * @return
 	 */
 	public static long constructEpochMillisFromEpochSecondsAndNanoseconds(
 			long epochSeconds, long nanoseconds) {
-		return (epochSeconds * 1000) + (nanoseconds / 1000);
+		return (epochSeconds * 1000) + (nanoseconds / 1000000);
 	}
 
 	/**
