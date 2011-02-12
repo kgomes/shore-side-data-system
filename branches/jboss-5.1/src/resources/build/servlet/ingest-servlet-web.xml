@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app>
+	<distributable />
+	<!--
+		Define the Ingest servlet and the class associated with it
+	-->
+	<servlet>
+		<servlet-name>IngestServlet</servlet-name>
+		<display-name>Servlet to ingest packets in SSDS format</display-name>
+		<servlet-class>moos.ssds.services.servlet.data.IngestServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<!-- Create the URL mappings for it -->
+	<servlet-mapping>
+		<servlet-name>IngestServlet</servlet-name>
+		<url-pattern>/Ingest/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>IngestServlet</servlet-name>
+		<url-pattern>*.Ingest</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>IngestServlet</servlet-name>
+		<url-pattern>/Ingest</url-pattern>
+	</servlet-mapping>
+</web-app>
