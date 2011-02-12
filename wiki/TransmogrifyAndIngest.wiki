@@ -233,12 +233,12 @@ http://your.host.com:8080/transmogrify/Transmogrify?
  # response=true (this indicates if you want the call to send back and HTTP response or not)
  # &SourceID=101 (this is the ID of the device that is sending the packet)
  # &Timestamp=2011-02-11T18:50:00 (this is the timestamp on the packet expressed in ISO form)
- # &SequenceNumber=1 (this is the sequence number on the packet)
+ # &!SequenceNumber=1 (this is the sequence number on the packet)
  # &SecondStreamID=0x102 (this is important as it defines the type of packet that is being sent.  The options are: 0x101 for a metadata packet, 0x102 for a sensor or summary data packet, 0x103 for a device message packet)
- # &FirstBuffer=SGVsbG8gSW5nZXN0IQ== (this is the byte array in 64 bit encoded form)
- # &RecordType=1 (if the second stream ID indicates this packet is a sensor data packet, this field defines a type identifier to specify which type of data is being sent.  Some devices can send multiple kinds of data)
+ # &!FirstBuffer=SGVsbG8gSW5nZXN0IQ== (this is the byte array in 64 bit encoded form)
+ # &!RecordType=1 (if the second stream ID indicates this packet is a sensor data packet, this field defines a type identifier to specify which type of data is being sent.  Some devices can send multiple kinds of data)
  # &ParentID=100 (the id of the parent that the source ID was attached to when it created the packet)
- # &MetadataRef=0 (this is the sequence number of the metadata packet that contains the information that describes what is in the payload of this packet)
+ # &!MetadataRef=0 (this is the sequence number of the metadata packet that contains the information that describes what is in the payload of this packet)
 
 For the Ingest servlet, the parameters are:	
 
@@ -246,12 +246,12 @@ http://your.host.com:8080/ingest/Ingest?
  # response=true (this indicates if you want the call to send back and HTTP response or not)
  # &SourceID=101 (this is the ID of the device that is sending the packet)
  # &ParentID=100 (the id of the parent that the source ID was attached to when it created the packet)
- # &PacketType=1 (this is the type of packet being sent: 0 = data packet, 1 = metadata packet, 4 = device message packet)
- # &PacketSubType=1 (this is the type of payload if the packet is a data packet)
- # &MetadataSequenceNumber=0 (this is the sequence number of the packet that contains the metadata describing the payload of this packet)
- # &DataDescriptionVersion=0 ()
+ # &!PacketType=1 (this is the type of packet being sent: 0 = data packet, 1 = metadata packet, 4 = device message packet)
+ # &!PacketSubType=1 (this is the type of payload if the packet is a data packet)
+ # &!MetadataSequenceNumber=0 (this is the sequence number of the packet that contains the metadata describing the payload of this packet)
+ # &!DataDescriptionVersion=0 ()
  # &Timestamp=2011-02-11T18:50:00 (this is the timestamp on the packet expressed in ISO form)
- # &SequenceNumber=1 (this is the sequence number on the packet)
- # &FirstBuffer=SGVsbG8gSW5nZXN0IQ== (this is the byte array in 64 bit encoded form)
+ # &!SequenceNumber=1 (this is the sequence number on the packet)
+ # &!FirstBuffer=SGVsbG8gSW5nZXN0IQ== (this is the byte array in 64 bit encoded form)
 
 
