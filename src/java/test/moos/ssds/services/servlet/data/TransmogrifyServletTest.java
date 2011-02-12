@@ -3,9 +3,9 @@ package test.moos.ssds.services.servlet.data;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
@@ -21,8 +21,6 @@ import moos.ssds.jms.SubscriberComponent;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-
-import test.moos.ssds.io.util.TestPacketUtility;
 
 public class TransmogrifyServletTest extends TestCase {
 
@@ -68,7 +66,7 @@ public class TransmogrifyServletTest extends TestCase {
 		logger.debug("Will listen for messages on topic " + republishTopicName);
 
 		SubscriberComponent subscriberComponent = null;
-		TransmogrifyServletTestMessageListener transmogrifyMDBTestMessageListener = new TransmogrifyServletTestMessageListener();
+		LastMessageMessageListener transmogrifyMDBTestMessageListener = new LastMessageMessageListener();
 
 		// Create the subscriber
 		if (subscriberComponent == null)
@@ -93,8 +91,8 @@ public class TransmogrifyServletTest extends TestCase {
 		// Make sure we found it
 		String hostname = null;
 		if (javaNamingPropertyUrl != null)
-			hostname = javaNamingPropertyUrl.substring(6,
-					javaNamingPropertyUrl.indexOf(':', 6));
+			hostname = javaNamingPropertyUrl.substring(6, javaNamingPropertyUrl
+					.indexOf(':', 6));
 
 		// Create the URL to call to send a message for device 101, with the
 		// current date and time, a sequence number of 1 and with a payload of
@@ -120,7 +118,7 @@ public class TransmogrifyServletTest extends TestCase {
 		// Now send the current packet by calling the URL
 		try {
 			URL transmogrifyServletUrl = new URL(transmogrifyServletURLString);
-			URLConnection transmogrifyServletUrlConnection = transmogrifyServletUrl
+			HttpURLConnection transmogrifyServletUrlConnection = (HttpURLConnection) transmogrifyServletUrl
 					.openConnection();
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					transmogrifyServletUrlConnection.getInputStream()));
@@ -175,16 +173,16 @@ public class TransmogrifyServletTest extends TestCase {
 							.getTime().getTime() / 1000);
 
 			// Check sequence number
-			assertTrue("Sequence number should be 1",
-					ssdsDevicePacket.sequenceNo() == 1);
+			assertTrue("Sequence number should be 1", ssdsDevicePacket
+					.sequenceNo() == 1);
 
 			// PacketType should be 0
-			assertTrue("PacketType should be 1",
-					ssdsDevicePacket.getPacketType() == 1);
+			assertTrue("PacketType should be 1", ssdsDevicePacket
+					.getPacketType() == 1);
 
 			// RecordType should be 1
-			assertTrue("RecordType should be 1",
-					ssdsDevicePacket.getRecordType() == 1);
+			assertTrue("RecordType should be 1", ssdsDevicePacket
+					.getRecordType() == 1);
 
 			// Parent should be 100
 			assertTrue("Parent should be 100",
