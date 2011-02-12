@@ -7,18 +7,18 @@ import javax.jms.MessageListener;
 import org.apache.log4j.Logger;
 
 /**
- * This class is used to test the transmogrify component. It is simply a message
+ * This class is used to test messaging components. It is simply a message
  * handler that takes in a message and assigns it to a local variable which a
  * client can check.
  * 
  * @author kgomes
  * 
  */
-public class TransmogrifyServletTestMessageListener implements MessageListener {
+public class LastMessageMessageListener implements MessageListener {
 
 	// A logger
 	private static Logger logger = Logger
-			.getLogger(TransmogrifyServletTestMessageListener.class);
+			.getLogger(LastMessageMessageListener.class);
 
 	// The local BytesMessage that will be assigned to an incoming message
 	private BytesMessage currentBytesMessage = null;
