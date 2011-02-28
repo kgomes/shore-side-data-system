@@ -110,7 +110,7 @@ public class DataContainerGroupDAO extends MetadataDAO {
 	/**
 	 * @see IMetadataDAO#findAllIDs()
 	 */
-	public Collection findAllIDs() throws MetadataAccessException {
+	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		// The collection to be returned
 		Collection dataContainerGroupIDs = new ArrayList();
 
@@ -170,9 +170,10 @@ public class DataContainerGroupDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             is something goes awry
 	 */
-	public Collection findByName(String name, boolean exactMatch,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataContainerGroup> findByName(String name,
+			boolean exactMatch, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The collection to be returned
 		Collection results = new ArrayList();
@@ -249,7 +250,7 @@ public class DataContainerGroupDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something went wrong in the method call.
 	 */
-	public Collection findAllNames() throws MetadataAccessException {
+	public Collection<String> findAllNames() throws MetadataAccessException {
 		// The collection of names to return
 		Collection dataContainerGroupNames = new ArrayList();
 
@@ -304,8 +305,9 @@ public class DataContainerGroupDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes awry
 	 */
-	public Collection findByDataContainer(DataContainer dataContainer,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataContainerGroup> findByDataContainer(
+			DataContainer dataContainer, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// TODO kgomes 20060327 add orderByPropertyName and ascending or
 		// descending.
@@ -320,8 +322,8 @@ public class DataContainerGroupDAO extends MetadataDAO {
 			// not use the DataContainer DAO to look it up
 			Long dataContainerId = dataContainer.getId();
 			if ((dataContainerId == null) || (dataContainerId.longValue() <= 0)) {
-				DataContainerDAO dataContainerDAO = new DataContainerDAO(this
-						.getSession());
+				DataContainerDAO dataContainerDAO = new DataContainerDAO(
+						this.getSession());
 				dataContainerId = dataContainerDAO.findId(dataContainer);
 			}
 			// Now if something (somewhere) was found, use it to look up the
@@ -370,8 +372,8 @@ public class DataContainerGroupDAO extends MetadataDAO {
 			Long dataContainerId = dataContainer.getId();
 			if ((dataContainerId == null) || (dataContainerId.longValue() <= 0)) {
 				// If no valid ID found, look up the matching ID
-				DataContainerDAO dataContainerDAO = new DataContainerDAO(this
-						.getSession());
+				DataContainerDAO dataContainerDAO = new DataContainerDAO(
+						this.getSession());
 				dataContainerId = dataContainerDAO.findId(dataContainer);
 			}
 			// Check if we have ID
@@ -444,7 +446,8 @@ public class DataContainerGroupDAO extends MetadataDAO {
 							+ "auto-generated name on a DataContainerGroup:"
 							+ e.getMessage());
 				}
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"An incoming DataContainerGroup did not have a name, "
 								+ "so SSDS auto-generated one:<br><ul><li>"
 								+ dataContainerGroup
@@ -488,9 +491,8 @@ public class DataContainerGroupDAO extends MetadataDAO {
 				.findEquivalentPersistentObject(dataContainerGroup, false);
 		// If no matching dataContainerGroup was found, throw an exception
 		if (persistentDataContainerGroup == null) {
-			logger
-					.debug("No matching dataContainerGroup could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching dataContainerGroup could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// If we are here, we need to make sure all the connections to any
 			// DataContainers are removed before removing the DataContainerGroup
@@ -508,13 +510,11 @@ public class DataContainerGroupDAO extends MetadataDAO {
 					DataContainer tempDC = (DataContainer) associatedDCsIter
 							.next();
 					// Remove the group
-					tempDC
-							.removeDataContainerGroup(persistentDataContainerGroup);
+					tempDC.removeDataContainerGroup(persistentDataContainerGroup);
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentDataContainerGroup);
 			} catch (HibernateException e) {

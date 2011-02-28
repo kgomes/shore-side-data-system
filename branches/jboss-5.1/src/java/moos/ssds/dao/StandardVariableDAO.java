@@ -81,8 +81,8 @@ public class StandardVariableDAO extends MetadataDAO {
 		// If not found, try to find by name and namespaceUri
 		if (standardVariableToReturn == null)
 			standardVariableToReturn = this.findByNameAndNamespaceUri(
-					standardVariable.getName(), standardVariable
-							.getNamespaceUriString(), false);
+					standardVariable.getName(),
+					standardVariable.getNamespaceUriString(), false);
 
 		// Check for object graph
 		if (returnFullObjectGraph)
@@ -101,7 +101,7 @@ public class StandardVariableDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllIDs() throws MetadataAccessException {
+	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		Collection standardVariableIDs = null;
 
 		// Create the query and run it
@@ -147,7 +147,8 @@ public class StandardVariableDAO extends MetadataDAO {
 	 * @return a <code>Collection</code> of <code>StandardVariable</code>s whose
 	 *         names exactly match the one specified as the parameter.
 	 */
-	public Collection findByName(String name) throws MetadataAccessException {
+	public Collection<StandardVariable> findByName(String name)
+			throws MetadataAccessException {
 
 		// Make sure argument is not null
 		logger.debug("name = " + name);
@@ -183,7 +184,7 @@ public class StandardVariableDAO extends MetadataDAO {
 	 * @return a <code>Collection</code> of <code>StandardVariable</code>s that
 	 *         have names like the one specified as the parameter.
 	 */
-	public Collection findByLikeName(String likeName)
+	public Collection<StandardVariable> findByLikeName(String likeName)
 			throws MetadataAccessException {
 
 		// Make sure argument is not null
@@ -219,7 +220,7 @@ public class StandardVariableDAO extends MetadataDAO {
 	 *         currently in the system. If there are no names, an empty
 	 *         collection is returned
 	 */
-	public Collection findAllNames() throws MetadataAccessException {
+	public Collection<String> findAllNames() throws MetadataAccessException {
 
 		// Create the collection to return
 		Collection names = new ArrayList();
@@ -254,8 +255,8 @@ public class StandardVariableDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong with the search
 	 */
-	public Collection findByReferenceScale(String referenceScale)
-			throws MetadataAccessException {
+	public Collection<StandardVariable> findByReferenceScale(
+			String referenceScale) throws MetadataAccessException {
 
 		// First check to see if the referenceScale is null
 		logger.debug("findByReferenceScale called with referenceScale = "
@@ -295,8 +296,8 @@ public class StandardVariableDAO extends MetadataDAO {
 	 * @return a <code>Collection</code> of <code>StandardVariable</code>s that
 	 *         have referenceScales like the one specified as the parameter.
 	 */
-	public Collection findByLikeReferenceScale(String likeReferenceScale)
-			throws MetadataAccessException {
+	public Collection<StandardVariable> findByLikeReferenceScale(
+			String likeReferenceScale) throws MetadataAccessException {
 
 		// Make sure argument is not null
 		logger.debug("likeReferenceScale = " + likeReferenceScale);
@@ -334,7 +335,8 @@ public class StandardVariableDAO extends MetadataDAO {
 	 *         are currently in the system. If there are no referenceScales, an
 	 *         empty collection is returned
 	 */
-	public Collection findAllReferenceScales() throws MetadataAccessException {
+	public Collection<String> findAllReferenceScales()
+			throws MetadataAccessException {
 
 		// Create the collection to return
 		Collection referenceScales = new ArrayList();
@@ -365,8 +367,8 @@ public class StandardVariableDAO extends MetadataDAO {
 	public StandardVariable findByNameAndNamespaceUri(String name,
 			URI namespaceUri, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
-		return this.findByNameAndNamespaceUri(name, namespaceUri
-				.toASCIIString(), returnFullObjectGraph);
+		return this.findByNameAndNamespaceUri(name,
+				namespaceUri.toASCIIString(), returnFullObjectGraph);
 	}
 
 	/**
@@ -615,7 +617,8 @@ public class StandardVariableDAO extends MetadataDAO {
 					.toStringRepresentation("<li>");
 			if (this.updateDestinationObject(standardVariable,
 					persistentStandardVariable)) {
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A StandardVariable was changed in SSDS<br><b>Before</b><ul><li>"
 								+ standardVariableBeforeUpdate
 								+ "</ul><br><b>After</b><ul><li>"
@@ -643,7 +646,8 @@ public class StandardVariableDAO extends MetadataDAO {
 							+ "the name of a StandardVariable: "
 							+ e.getMessage());
 				}
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A name was auto-generated "
 								+ "for a StandardVariable:<br><ul><li>"
 								+ standardVariable
@@ -668,8 +672,8 @@ public class StandardVariableDAO extends MetadataDAO {
 			if (Hibernate.isInitialized(standardVariable.getStandardUnits())) {
 
 				// Grab the DAO for StandardUnit
-				StandardUnitDAO standardUnitDAO = new StandardUnitDAO(this
-						.getSession());
+				StandardUnitDAO standardUnitDAO = new StandardUnitDAO(
+						this.getSession());
 
 				// Make sure the are standardUnits to iterate over
 				if (standardVariable.getStandardUnits().size() > 0) {
@@ -737,7 +741,8 @@ public class StandardVariableDAO extends MetadataDAO {
 		// If the StandardVariable was not persisted before, save it
 		if (!persistedBefore) {
 			getSession().save(standardVariableToPersist);
-			addMessage(ssdsAdminEmailToAddress,
+			addMessage(
+					ssdsAdminEmailToAddress,
 					"A new StandardVariable was added to SSDS<br><ul><li>"
 							+ standardVariableToPersist
 									.toStringRepresentation("<li>")
@@ -769,9 +774,8 @@ public class StandardVariableDAO extends MetadataDAO {
 
 		// If no matching standardVariable was found, do nothing
 		if (persistentStandardVariable == null) {
-			logger
-					.debug("No matching standardVariable could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching standardVariable could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// Clear the StandardUnits
 			persistentStandardVariable.clearStandardUnits();
@@ -793,11 +797,11 @@ public class StandardVariableDAO extends MetadataDAO {
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentStandardVariable);
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A StandardVariable was removed from SSDS<br><ul><li>"
 								+ persistentStandardVariable
 										.toStringRepresentation("<li>")
@@ -825,8 +829,7 @@ public class StandardVariableDAO extends MetadataDAO {
 	private StandardVariable checkIncomingMetadataObject(
 			IMetadataObject metadataObject) throws MetadataAccessException {
 
-		logger
-				.debug("Checking incoming object to see if it is StandardVariable");
+		logger.debug("Checking incoming object to see if it is StandardVariable");
 		// Check for null argument
 		if (metadataObject == null) {
 			throw new MetadataAccessException(
@@ -842,8 +845,7 @@ public class StandardVariableDAO extends MetadataDAO {
 					"Could not cast the incoming object into a StandardVariable");
 		}
 
-		logger
-				.debug("Yep, conversion to StandardVariable went OK, will return");
+		logger.debug("Yep, conversion to StandardVariable went OK, will return");
 		return standardVariable;
 	}
 

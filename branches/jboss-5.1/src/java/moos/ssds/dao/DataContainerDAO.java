@@ -104,15 +104,15 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// If one was not found, look up by URI string
 		if (dataContainerToReturn == null)
-			dataContainerToReturn = this.findByURIString(dataContainer
-					.getUriString(), false);
+			dataContainerToReturn = this.findByURIString(
+					dataContainer.getUriString(), false);
 
 		// If not found and there is a DODS URL, try by that
 		if ((dataContainerToReturn == null)
 				&& (dataContainer.getDodsUrlString() != null)
 				&& (!dataContainer.getDodsUrlString().equals(""))) {
-			dataContainerToReturn = this.findByDODSURLString(dataContainer
-					.getDodsUrlString(), false);
+			dataContainerToReturn = this.findByDODSURLString(
+					dataContainer.getDodsUrlString(), false);
 		}
 
 		// Check for return full object graph
@@ -191,9 +191,10 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong.
 	 */
-	public Collection findByName(String name, boolean exactMatch,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataContainer> findByName(String name,
+			boolean exactMatch, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 		// Make sure argument is not null
 		logger.debug("name = " + name);
 		if ((name == null) && (name.equals(""))) {
@@ -269,7 +270,7 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllNames() throws MetadataAccessException {
+	public Collection<String> findAllNames() throws MetadataAccessException {
 		Collection dataContainerNames = null;
 
 		// Create the query and run it
@@ -307,10 +308,10 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @return a <code>Collection</code> of <code>DataContainer</code>s that
 	 *         match the type specified as the parameter.
 	 */
-	public Collection findByDataContainerTypeAndName(String dataContainerType,
-			String name, boolean exactMatch, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataContainer> findByDataContainerTypeAndName(
+			String dataContainerType, String name, boolean exactMatch,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// The collection to be returned
 		Collection results = new ArrayList();
@@ -391,8 +392,8 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @return all <code>DataContainer</code>s that contains any data within
 	 *         that time window
 	 */
-	public Collection findWithDataWithinTimeWindow(Date startDate,
-			boolean allDataAfterStartDate, Date endDate,
+	public Collection<DataContainer> findWithDataWithinTimeWindow(
+			Date startDate, boolean allDataAfterStartDate, Date endDate,
 			boolean allDataBeforeEndDate, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -501,9 +502,10 @@ public class DataContainerDAO extends MetadataDAO {
 		return dataContainerToReturn;
 	}
 
-	public Collection findByURIString(String uriString, boolean exactMatch,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataContainer> findByURIString(String uriString,
+			boolean exactMatch, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The results
 		Collection results = new ArrayList();
@@ -559,15 +561,15 @@ public class DataContainerDAO extends MetadataDAO {
 		return count;
 	}
 
-	public Collection findByURI(URI uri, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataContainer> findByURI(URI uri,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		return new ArrayList();
 	}
 
-	public Collection findByURL(URL url, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataContainer> findByURL(URL url,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		return new ArrayList();
 	}
 
@@ -581,7 +583,8 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllURIStrings() throws MetadataAccessException {
+	public Collection<String> findAllURIStrings()
+			throws MetadataAccessException {
 		Collection dataContainerURIStrings = null;
 
 		// Create the query and run it
@@ -597,7 +600,7 @@ public class DataContainerDAO extends MetadataDAO {
 		return dataContainerURIStrings;
 	}
 
-	public Collection findByMimeType(String mimeType,
+	public Collection<DataContainer> findByMimeType(String mimeType,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		return new ArrayList();
@@ -644,7 +647,7 @@ public class DataContainerDAO extends MetadataDAO {
 		return dataContainerToReturn;
 	}
 
-	public Collection findByDODSURLString(String dodsUrlString,
+	public Collection<DataContainer> findByDODSURLString(String dodsUrlString,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -726,12 +729,12 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @return A <code>Collection</code> of <code>DataContainer</code>s that
 	 *         have data within that cube.
 	 */
-	public Collection findWithinGeospatialCube(Double geospatialLatMin,
-			Double geospatialLatMax, Double geospatialLonMin,
-			Double geospatialLonMax, Float geospatialVerticalMin,
-			Float geospatialVerticalMax, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataContainer> findWithinGeospatialCube(
+			Double geospatialLatMin, Double geospatialLatMax,
+			Double geospatialLonMin, Double geospatialLonMax,
+			Float geospatialVerticalMin, Float geospatialVerticalMax,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// The results
 		Collection results = null;
 
@@ -808,12 +811,13 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @return A <code>Collection</code> of <code>DataContainer</code>s that
 	 *         have data within that cube.
 	 */
-	public Collection findWithinTimeAndGeospatialCube(Date startDate,
-			Date endDate, Double geospatialLatMin, Double geospatialLatMax,
-			Double geospatialLonMin, Double geospatialLonMax,
-			Float geospatialVerticalMin, Float geospatialVerticalMax,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataContainer> findWithinTimeAndGeospatialCube(
+			Date startDate, Date endDate, Double geospatialLatMin,
+			Double geospatialLatMax, Double geospatialLonMin,
+			Double geospatialLonMax, Float geospatialVerticalMin,
+			Float geospatialVerticalMax, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The results
 		Collection results = null;
@@ -874,9 +878,9 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @return a <code>Collection</code> of devices that are linked to that
 	 *         person.
 	 */
-	public Collection findByPerson(Person person, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataContainer> findByPerson(Person person,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// The collection to return
 		Collection dataContainers = new ArrayList();
@@ -952,18 +956,17 @@ public class DataContainerDAO extends MetadataDAO {
 
 	}
 
-	public Collection findByRecordVariableName(String recordVariableName,
-			boolean exactMatch, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataContainer> findByRecordVariableName(
+			String recordVariableName, boolean exactMatch,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// The collection to return
 		Collection dataContainers = new ArrayList();
 
 		// First make sure the incoming value is not null
 		if ((recordVariableName == null) || (recordVariableName.equals(""))) {
-			logger
-					.debug("Failed: incoming recordVariableName was null or empty");
+			logger.debug("Failed: incoming recordVariableName was null or empty");
 			return dataContainers;
 		}
 
@@ -984,8 +987,8 @@ public class DataContainerDAO extends MetadataDAO {
 				orderByPropertyName, ascendingOrDescending));
 
 		try {
-			dataContainers = this.getSession().createQuery(
-					sqlStringBuffer.toString()).list();
+			dataContainers = this.getSession()
+					.createQuery(sqlStringBuffer.toString()).list();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e.getMessage());
 		}
@@ -996,24 +999,23 @@ public class DataContainerDAO extends MetadataDAO {
 		return dataContainers;
 	}
 
-	public Collection findByLikeRecordVariableName(
+	public Collection<DataContainer> findByLikeRecordVariableName(
 			String likeRecordVariableName, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 		return new ArrayList();
 	}
 
-	public Collection findByStandardVariableName(String standardVariableName,
-			boolean exactMatch, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataContainer> findByStandardVariableName(
+			String standardVariableName, boolean exactMatch,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// The collection to return
 		Collection dataContainers = new ArrayList();
 
 		// First make sure the incoming value is not null
 		if ((standardVariableName == null) || (standardVariableName.equals(""))) {
-			logger
-					.debug("Failed: incoming standardVariableName was null or empty");
+			logger.debug("Failed: incoming standardVariableName was null or empty");
 			return dataContainers;
 		}
 
@@ -1035,8 +1037,8 @@ public class DataContainerDAO extends MetadataDAO {
 				orderByPropertyName, ascendingOrDescending));
 
 		try {
-			dataContainers = this.getSession().createQuery(
-					sqlStringBuffer.toString()).list();
+			dataContainers = this.getSession()
+					.createQuery(sqlStringBuffer.toString()).list();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e.getMessage());
 		}
@@ -1047,14 +1049,14 @@ public class DataContainerDAO extends MetadataDAO {
 		return dataContainers;
 	}
 
-	public Collection findByLikeStandardVariableName(
+	public Collection<DataContainer> findByLikeStandardVariableName(
 			String likeStandardVariableName, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 		return new ArrayList();
 	}
 
-	public Collection findByDataContainerGroup(
+	public Collection<DataContainer> findByDataContainerGroup(
 			DataContainerGroup dataContainerGroup, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -1097,14 +1099,14 @@ public class DataContainerDAO extends MetadataDAO {
 		return dataContainersToReturn;
 	}
 
-	public Collection findByDataContainerGroupName(
+	public Collection<DataContainer> findByDataContainerGroupName(
 			String dataContainerGroupName, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 		return new ArrayList();
 	}
 
-	public Collection findByLikeDataContainerGroupName(
+	public Collection<DataContainer> findByLikeDataContainerGroupName(
 			String likeDataContainerGroupName, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -1134,9 +1136,10 @@ public class DataContainerDAO extends MetadataDAO {
 	 *             if the incoming keywordName is not valid or something goes
 	 *             wrong in the search
 	 */
-	public Collection findByKeywordName(String keywordName, boolean exactMatch,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataContainer> findByKeywordName(String keywordName,
+			boolean exactMatch, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		logger.debug("findByKeywordName called with:");
 		logger.debug("keywordName = " + keywordName);
@@ -1205,8 +1208,9 @@ public class DataContainerDAO extends MetadataDAO {
 		}
 
 		try {
-			count = ((Long) this.getSession().createQuery(
-					sqlStringBuffer.toString()).uniqueResult()).intValue();
+			count = ((Long) this.getSession()
+					.createQuery(sqlStringBuffer.toString()).uniqueResult())
+					.intValue();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e.getMessage());
 		}
@@ -1214,7 +1218,7 @@ public class DataContainerDAO extends MetadataDAO {
 		return count;
 	}
 
-	public Collection findByResource(Resource resource,
+	public Collection<DataContainer> findByResource(Resource resource,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 
@@ -1274,51 +1278,52 @@ public class DataContainerDAO extends MetadataDAO {
 		return results;
 	}
 
-	public Collection findAllIndirectCreators(DataContainer dataContainer,
-			int fetchDepth, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
-		return new ArrayList();
-	}
-
-	public Collection findCreatorChain(DataContainer dataContainer,
-			int fetchDepth, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
-		return new ArrayList();
-	}
-
-	public Collection findAllIndirectConsumers(DataContainer dataContainer,
-			int fetchDepth, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
-		return new ArrayList();
-	}
-
-	public Collection findAllConsumers(DataContainer dataContainer,
-			int fetchDepth, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
-		return new ArrayList();
-	}
-
-	public Collection findDirectInputs(DataContainer dataContainer,
+	public Collection<DataProducer> findAllIndirectCreators(
+			DataContainer dataContainer, int fetchDepth,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		return new ArrayList();
 	}
 
-	public Collection findAllInputs(DataContainer dataContainer,
+	public Collection<DataProducer> findCreatorChain(
+			DataContainer dataContainer, int fetchDepth,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
+		return new ArrayList();
+	}
+
+	public Collection<DataProducer> findAllIndirectConsumers(
+			DataContainer dataContainer, int fetchDepth,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
+		return new ArrayList();
+	}
+
+	public Collection<DataProducer> findAllConsumers(
+			DataContainer dataContainer, int fetchDepth,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
+		return new ArrayList();
+	}
+
+	public Collection<DataContainer> findDirectInputs(
+			DataContainer dataContainer, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
+		return new ArrayList();
+	}
+
+	public Collection<DataContainer> findAllInputs(DataContainer dataContainer,
 			int fetchDepth, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 		return new ArrayList();
 	}
 
-	public Collection findAllDerivedOutputs(DataContainer dataContainer,
-			int fetchDepth, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataContainer> findAllDerivedOutputs(
+			DataContainer dataContainer, int fetchDepth,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		return new ArrayList();
 	}
 
@@ -1354,10 +1359,10 @@ public class DataContainerDAO extends MetadataDAO {
 		}
 	}
 
-	public Collection findAllDerivedOutputs(DataProducer dataProducer,
-			int fetchDepth, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataContainer> findAllDerivedOutputs(
+			DataProducer dataProducer, int fetchDepth,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// The ArrayList to return
 		Collection derivedOutputs = new ArrayList();
@@ -1410,9 +1415,10 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong
 	 */
-	public Collection findInputsByDataProducer(DataProducer dataProducer,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataContainer> findInputsByDataProducer(
+			DataProducer dataProducer, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The collection to return
 		Collection results = new ArrayList();
@@ -1465,9 +1471,10 @@ public class DataContainerDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong
 	 */
-	public Collection findOutputsByDataProducer(DataProducer dataProducer,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataContainer> findOutputsByDataProducer(
+			DataProducer dataProducer, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The collection to return
 		Collection outputs = new HashSet();
@@ -1494,35 +1501,35 @@ public class DataContainerDAO extends MetadataDAO {
 		return null;
 	}
 
-	public Collection findByRecordVariableNameAndDataWithinTimeWindow(
+	public Collection<DataContainer> findByRecordVariableNameAndDataWithinTimeWindow(
 			String recordVariableName, Date startDate, Date endDate,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		return new ArrayList();
 	}
 
-	public Collection findByLikeRecordVariableNameAndDataWithinTimeWindow(
+	public Collection<DataContainer> findByLikeRecordVariableNameAndDataWithinTimeWindow(
 			String likeRecordVariableName, Date startDate, Date endDate,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		return new ArrayList();
 	}
 
-	public Collection findByStandardVariableNameAndDataWithinTimeWindow(
+	public Collection<DataContainer> findByStandardVariableNameAndDataWithinTimeWindow(
 			String standardVariableName, Date startDate, Date endDate,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		return new ArrayList();
 	}
 
-	public Collection findByLikeStandardVariableNameAndDataWithinTimeWindow(
+	public Collection<DataContainer> findByLikeStandardVariableNameAndDataWithinTimeWindow(
 			String likeStandardVariableName, Date startDate, Date endDate,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		return new ArrayList();
 	}
 
-	public Collection findByRecordVariableNameAndWithinGeospatialCube(
+	public Collection<DataContainer> findByRecordVariableNameAndWithinGeospatialCube(
 			String recordVariableName, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
 			Double geospatialLonMax, Float geospatialVerticalMin,
@@ -1532,7 +1539,7 @@ public class DataContainerDAO extends MetadataDAO {
 		return new ArrayList();
 	}
 
-	public Collection findByLikeRecordVariableNameAndWithinGeospatialCube(
+	public Collection<DataContainer> findByLikeRecordVariableNameAndWithinGeospatialCube(
 			String likeRecordVariableName, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
 			Double geospatialLonMax, Float geospatialVerticalMin,
@@ -1542,7 +1549,7 @@ public class DataContainerDAO extends MetadataDAO {
 		return new ArrayList();
 	}
 
-	public Collection findByStandardVariableNameAndWithinGeospatialCube(
+	public Collection<DataContainer> findByStandardVariableNameAndWithinGeospatialCube(
 			String standardVariableName, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
 			Double geospatialLonMax, Float geospatialVerticalMin,
@@ -1552,7 +1559,7 @@ public class DataContainerDAO extends MetadataDAO {
 		return new ArrayList();
 	}
 
-	public Collection findByLikeStandardVariableNameAndWithinGeospatialCube(
+	public Collection<DataContainer> findByLikeStandardVariableNameAndWithinGeospatialCube(
 			String likeStandardVariableName, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
 			Double geospatialLonMax, Float geospatialVerticalMin,
@@ -1562,7 +1569,7 @@ public class DataContainerDAO extends MetadataDAO {
 		return new ArrayList();
 	}
 
-	public Collection findByRecordVariableNameWithinTimeAndWithinGeospatialCube(
+	public Collection<DataContainer> findByRecordVariableNameWithinTimeAndWithinGeospatialCube(
 			String recordVariableName, Date startDate, Date endDate,
 			Double geospatialLatMin, Double geospatialLatMax,
 			Double geospatialLonMin, Double geospatialLonMax,
@@ -1572,7 +1579,7 @@ public class DataContainerDAO extends MetadataDAO {
 		return new ArrayList();
 	}
 
-	public Collection findByLikeRecordVariableNameWithinTimeAndWithinGeospatialCube(
+	public Collection<DataContainer> findByLikeRecordVariableNameWithinTimeAndWithinGeospatialCube(
 			String likeRecordVariableName, Date startDate, Date endDate,
 			Double geospatialLatMin, Double geospatialLatMax,
 			Double geospatialLonMin, Double geospatialLonMax,
@@ -1582,7 +1589,7 @@ public class DataContainerDAO extends MetadataDAO {
 		return new ArrayList();
 	}
 
-	public Collection findByStandardVariableNameWithinTimeAndWithinGeospatialCube(
+	public Collection<DataContainer> findByStandardVariableNameWithinTimeAndWithinGeospatialCube(
 			String standardVariableName, Date startDate, Date endDate,
 			Double geospatialLatMin, Double geospatialLatMax,
 			Double geospatialLonMin, Double geospatialLonMax,
@@ -1592,7 +1599,7 @@ public class DataContainerDAO extends MetadataDAO {
 		return new ArrayList();
 	}
 
-	public Collection findByLikeStandardVariableNameWithinTimeAndWithinGeospatialCube(
+	public Collection<DataContainer> findByLikeStandardVariableNameWithinTimeAndWithinGeospatialCube(
 			String likeStandardVariableName, Date startDate, Date endDate,
 			Double geospatialLatMin, Double geospatialLatMax,
 			Double geospatialLonMin, Double geospatialLonMax,
@@ -1632,7 +1639,8 @@ public class DataContainerDAO extends MetadataDAO {
 					.toStringRepresentation("<li>");
 			if (this.updateDestinationObject(dataContainer,
 					persistentDataContainer)) {
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A DataContainer was updated in SSDS:<br><b>Before</b><br><ul><li>"
 								+ persistedDataContainerBeforeString
 								+ "</ul><br><b>After</b><ul><li>"
@@ -1670,10 +1678,9 @@ public class DataContainerDAO extends MetadataDAO {
 							+ dataContainer.getDataContainerType() + "/"
 							+ getUniqueNameSuffix());
 				} catch (MetadataException e) {
-					logger
-							.error("MetadataExceptin caught trying to auto-generate "
-									+ "the URIString for an incoming DataContainer: "
-									+ e.getMessage());
+					logger.error("MetadataExceptin caught trying to auto-generate "
+							+ "the URIString for an incoming DataContainer: "
+							+ e.getMessage());
 				}
 				addMessage(
 						ssdsAdminEmailToAddress,
@@ -1960,12 +1967,10 @@ public class DataContainerDAO extends MetadataDAO {
 											.getRecordDescription());
 							// Now we need to update the RecordVariables from
 							// the incoming to the persistent one
-							this
-									.updateDestinationRecordDescriptionWithRecordVariables(
-											dataContainer
-													.getRecordDescription(),
-											persistentDataContainer
-													.getRecordDescription());
+							this.updateDestinationRecordDescriptionWithRecordVariables(
+									dataContainer.getRecordDescription(),
+									persistentDataContainer
+											.getRecordDescription());
 						}
 					} else {
 						// In this case, we will assume the one existing is the
@@ -2259,9 +2264,8 @@ public class DataContainerDAO extends MetadataDAO {
 						try {
 							this.updateDestinationObject(rvToMigrate, targetRV);
 						} catch (MetadataAccessException e) {
-							logger
-									.error("MetadataAccessException caught trying to update one RecordVariable with another:"
-											+ e.getMessage());
+							logger.error("MetadataAccessException caught trying to update one RecordVariable with another:"
+									+ e.getMessage());
 						}
 						// Set the flag that a matching variable was found and
 						// bail out of the comparison
@@ -2304,9 +2308,8 @@ public class DataContainerDAO extends MetadataDAO {
 
 		// If no matching dataContainer was found, do nothing
 		if (persistentDataContainer == null) {
-			logger
-					.debug("No matching dataContainer could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching dataContainer could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// Clear from the inputs of DataProducers
 			DataProducerDAO dpDAO = new DataProducerDAO(getSession());
@@ -2326,17 +2329,14 @@ public class DataContainerDAO extends MetadataDAO {
 			persistentDataContainer.clearKeywords();
 			persistentDataContainer.clearResources();
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				logger.debug("Going to delete DataContainer "
 						+ persistentDataContainer.toStringRepresentation("|"));
 				if (persistentDataContainer.getRecordDescription() != null) {
-					logger
-							.debug("RecordDescription associated with DataContainer is "
-									+ persistentDataContainer
-											.getRecordDescription()
-											.toStringRepresentation("|"));
+					logger.debug("RecordDescription associated with DataContainer is "
+							+ persistentDataContainer.getRecordDescription()
+									.toStringRepresentation("|"));
 					if (persistentDataContainer.getRecordDescription()
 							.getRecordVariables() != null) {
 						logger.debug("There are "
@@ -2348,8 +2348,7 @@ public class DataContainerDAO extends MetadataDAO {
 						logger.debug("No record variables to remove");
 					}
 				} else {
-					logger
-							.debug("No RecordDescription on persistentDataContainer to remove");
+					logger.debug("No RecordDescription on persistentDataContainer to remove");
 				}
 				// Now the container itself
 				getSession().delete(persistentDataContainer);

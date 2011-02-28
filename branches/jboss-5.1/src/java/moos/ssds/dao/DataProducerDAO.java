@@ -118,7 +118,7 @@ public class DataProducerDAO extends MetadataDAO {
 	/**
 	 * @see IMetadataDAO#findAllIDs()
 	 */
-	public Collection findAllIDs() throws MetadataAccessException {
+	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		Collection dataProducerIDs = new ArrayList();
 
 		// Create the query and run it
@@ -182,8 +182,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByProperties(String name, boolean exactMatch,
-			String dataProducerType, Date startDate,
+	public Collection<DataProducer> findByProperties(String name,
+			boolean exactMatch, String dataProducerType, Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			Double geospatialLatMin, Double geospatialLatMax,
 			Double geospatialLonMin, Double geospatialLonMax,
@@ -297,7 +297,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong with the query
 	 */
-	public Collection findByName(String name, boolean exactMatch,
+	public Collection<DataProducer> findByName(String name, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 
@@ -395,10 +395,10 @@ public class DataProducerDAO extends MetadataDAO {
 	 *             dataProducerType does not match a constant defined in the
 	 *             <code>DataProducer</code> class.
 	 */
-	public Collection findByDataProducerTypeAndName(String dataProducerType,
-			String name, boolean exactMatch, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findByDataProducerTypeAndName(
+			String dataProducerType, String name, boolean exactMatch,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// The results to return
 		Collection results = new ArrayList();
 
@@ -464,9 +464,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findParentlessDeployments(String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findParentlessDeployments(
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// The results to return
 		Collection parentlessDeployments = new ArrayList();
 		StringBuffer sqlStringBuffer = new StringBuffer();
@@ -480,8 +480,8 @@ public class DataProducerDAO extends MetadataDAO {
 					orderByPropertyName, ascendingOrDescending));
 
 		try {
-			parentlessDeployments = this.getSession().createQuery(
-					sqlStringBuffer.toString()).list();
+			parentlessDeployments = this.getSession()
+					.createQuery(sqlStringBuffer.toString()).list();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e.getMessage());
 		}
@@ -531,9 +531,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findParentlessDataProducers(String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findParentlessDataProducers(
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// The results to return
 		Collection parentlessDataProducers = new ArrayList();
 		StringBuffer sqlStringBuffer = new StringBuffer();
@@ -545,8 +545,8 @@ public class DataProducerDAO extends MetadataDAO {
 					orderByPropertyName, ascendingOrDescending));
 
 		try {
-			parentlessDataProducers = this.getSession().createQuery(
-					sqlStringBuffer.toString()).list();
+			parentlessDataProducers = this.getSession()
+					.createQuery(sqlStringBuffer.toString()).list();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e.getMessage());
 		}
@@ -628,7 +628,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 *             after end date, both start and end dates are null, etc.) or
 	 *             if something goes wrong with the query.
 	 */
-	public Collection findByDateRangeAndName(Date startDate,
+	public Collection<DataProducer> findByDateRangeAndName(Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			String name, boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -707,12 +707,12 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByGeospatialCube(Double geospatialLatMin,
-			Double geospatialLatMax, Double geospatialLonMin,
-			Double geospatialLonMax, Float geospatialVerticalMin,
-			Float geospatialVerticalMax, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findByGeospatialCube(
+			Double geospatialLatMin, Double geospatialLatMax,
+			Double geospatialLonMin, Double geospatialLonMax,
+			Float geospatialVerticalMin, Float geospatialVerticalMax,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// The collection to return
 		Collection results = new ArrayList();
@@ -803,7 +803,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByTimeAndGeospatialCube(Date startDate,
+	public Collection<DataProducer> findByTimeAndGeospatialCube(Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			Double geospatialLatMin, Double geospatialLatMax,
 			Double geospatialLonMin, Double geospatialLonMax,
@@ -902,7 +902,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByNameAndGeospatialCube(String name,
+	public Collection<DataProducer> findByNameAndGeospatialCube(String name,
 			boolean exactMatch, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
 			Double geospatialLonMax, Float geospatialVerticalMin,
@@ -1002,14 +1002,14 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByNameAndTimeAndGeospatialCube(String name,
-			boolean exactMatch, Date startDate, boolean boundedByStartDate,
-			Date endDate, boolean boundedByEndDate, Double geospatialLatMin,
-			Double geospatialLatMax, Double geospatialLonMin,
-			Double geospatialLonMax, Float geospatialVerticalMin,
-			Float geospatialVerticalMax, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findByNameAndTimeAndGeospatialCube(
+			String name, boolean exactMatch, Date startDate,
+			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
+			Double geospatialLatMin, Double geospatialLatMax,
+			Double geospatialLonMin, Double geospatialLonMax,
+			Float geospatialVerticalMin, Float geospatialVerticalMax,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// The results to return
 		Collection results = new ArrayList();
 		// Check for exceptional conditions on the query
@@ -1102,7 +1102,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByHostName(String hostName,
+	public Collection<DataProducer> findByHostName(String hostName,
 			boolean exactHostNameMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -1175,9 +1175,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return the <code>Collection</code> of <code>DataProducer</code>s
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByPerson(Person person, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findByPerson(Person person,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// First make sure the person exists
 		PersonDAO personDAO = new PersonDAO(getSession());
@@ -1263,9 +1263,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 *         are directly associated with that device
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByDevice(Device device, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findByDevice(Device device,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// First make sure the device exists
 		DeviceDAO deviceDAO = new DeviceDAO(getSession());
 
@@ -1307,9 +1307,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByDeviceId(Long deviceID, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findByDeviceId(Long deviceID,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		if (deviceID == null) {
 			return new ArrayList();
 		}
@@ -1331,7 +1331,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByDeviceTypeName(String deviceTypeName,
+	public Collection<DataProducer> findByDeviceTypeName(String deviceTypeName,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -1354,8 +1354,8 @@ public class DataProducerDAO extends MetadataDAO {
 				orderByPropertyName, ascendingOrDescending));
 
 		try {
-			collectionToReturn = this.getSession().createQuery(
-					sqlStringBuffer.toString()).list();
+			collectionToReturn = this.getSession()
+					.createQuery(sqlStringBuffer.toString()).list();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e);
 		}
@@ -1404,8 +1404,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByDeviceAndTimeWindow(Device device, Date startDate,
-			Date endDate, String orderByPropertyName,
+	public Collection<DataProducer> findByDeviceAndTimeWindow(Device device,
+			Date startDate, Date endDate, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 
@@ -1431,12 +1431,14 @@ public class DataProducerDAO extends MetadataDAO {
 					DataProducer.TYPE_DEPLOYMENT));
 			// Add the time criteria
 			if (startDate != null) {
-				criteria.add(Restrictions.or(Restrictions.gt("endDate",
-						startDate), Restrictions.isNull("endDate")));
+				criteria.add(Restrictions.or(
+						Restrictions.gt("endDate", startDate),
+						Restrictions.isNull("endDate")));
 			}
 			if (endDate != null) {
-				criteria.add(Restrictions.or(Restrictions.lt("startDate",
-						endDate), Restrictions.isNull("startDate")));
+				criteria.add(Restrictions.or(
+						Restrictions.lt("startDate", endDate),
+						Restrictions.isNull("startDate")));
 			}
 			addOrderByCriteria(criteria, orderByPropertyName,
 					ascendingOrDescending);
@@ -1456,7 +1458,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * This method returns all the <code>DataProducer</code> that have no end
 	 * date, no parent, and are of type Deployment.
 	 */
-	public Collection findCurrentParentlessDeployments(
+	public Collection<DataProducer> findCurrentParentlessDeployments(
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 
@@ -1490,8 +1492,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 * This method returns all the <code>DataProducer</code> that have no
 	 * parent, are of type Deployment, and match the name criteria given
 	 */
-	public Collection findParentlessDeploymentsByName(String name,
-			boolean exactMatch, String orderByPropertyName,
+	public Collection<DataProducer> findParentlessDeploymentsByName(
+			String name, boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 
@@ -1534,9 +1536,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @param returnFullObjectGraph
 	 * @return
 	 */
-	public Collection findCurrentDeployments(String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findCurrentDeployments(
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// The collection to return
 		Collection dataProducersToReturn = new ArrayList();
@@ -1569,9 +1571,10 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @param returnFullObjectGraph
 	 * @return
 	 */
-	public Collection findCurrentDeploymentsOfDevice(Device device,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataProducer> findCurrentDeploymentsOfDevice(
+			Device device, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 		// First make sure the device exists
 		DeviceDAO deviceDAO = new DeviceDAO(getSession());
 
@@ -1619,9 +1622,10 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @param returnFullObjectGraph
 	 * @return
 	 */
-	public Collection findCurrentDeploymentsOfDeviceId(Long deviceID,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataProducer> findCurrentDeploymentsOfDeviceId(
+			Long deviceID, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 		if (deviceID == null) {
 			return new ArrayList();
 		}
@@ -1647,7 +1651,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @throws MetadataException
 	 * @throws MetadataAccessException
 	 */
-	public Collection findCurrentDeploymentsByRole(String role,
+	public Collection<DataProducer> findCurrentDeploymentsByRole(String role,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException,
 			MetadataException {
@@ -1695,10 +1699,11 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @throws MetadataException
 	 * @throws MetadataAccessException
 	 */
-	public Collection findCurrentDeploymentsByRoleAndName(String role,
-			String name, boolean exactMatch, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException, MetadataException {
+	public Collection<DataProducer> findCurrentDeploymentsByRoleAndName(
+			String role, String name, boolean exactMatch,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException,
+			MetadataException {
 
 		if (!DataProducer.isValidRole(role)) {
 			throw new MetadataException("The role specified (" + role
@@ -1744,7 +1749,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findBySoftware(Software software,
+	public Collection<DataProducer> findBySoftware(Software software,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// First make sure the device exists
@@ -1899,8 +1904,9 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong
 	 */
-	public Collection findChildDataProducers(DataProducer dataProducer,
-			boolean returnFullObjectGraphs) throws MetadataAccessException {
+	public Collection<DataProducer> findChildDataProducers(
+			DataProducer dataProducer, boolean returnFullObjectGraphs)
+			throws MetadataAccessException {
 		// The collection to return
 		Collection results = new ArrayList();
 
@@ -1976,8 +1982,9 @@ public class DataProducerDAO extends MetadataDAO {
 				+ parentID.toString() + "'");
 
 		try {
-			countToReturn = ((Long) this.getSession().createQuery(
-					sqlStringBuffer.toString()).uniqueResult()).intValue();
+			countToReturn = ((Long) this.getSession()
+					.createQuery(sqlStringBuffer.toString()).uniqueResult())
+					.intValue();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e);
 		}
@@ -1992,7 +1999,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByDataProducerGroup(
+	public Collection<DataProducer> findByDataProducerGroup(
 			DataProducerGroup dataProducerGroup, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -2016,8 +2023,8 @@ public class DataProducerDAO extends MetadataDAO {
 			Criteria criteria = getSession().createCriteria(DataProducer.class);
 			criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
 			criteria.createAlias("dataProducerGroups", "dpgs");
-			criteria.add(Restrictions.eq("dpgs.id", persistentDataProducerGroup
-					.getId()));
+			criteria.add(Restrictions.eq("dpgs.id",
+					persistentDataProducerGroup.getId()));
 			addOrderByCriteria(criteria, orderByPropertyName,
 					ascendingOrDescending);
 			dataProducersToReturn = criteria.list();
@@ -2072,10 +2079,10 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong
 	 */
-	public Collection findByDataProducerGroupName(String dataProducerGroupName,
-			boolean exactMatch, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	public Collection<DataProducer> findByDataProducerGroupName(
+			String dataProducerGroupName, boolean exactMatch,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// The Collection to return
 		Collection results = new ArrayList();
 
@@ -2153,7 +2160,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByInput(DataContainer dataContainer,
+	public Collection<DataProducer> findByInput(DataContainer dataContainer,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// First make sure the dataContainer exists
@@ -2266,7 +2273,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByResource(Resource resource,
+	public Collection<DataProducer> findByResource(Resource resource,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// The results to return
@@ -2339,9 +2346,10 @@ public class DataProducerDAO extends MetadataDAO {
 	/**
 	 * TODO kgomes document this
 	 */
-	public Collection findByKeywordName(String keywordName, boolean exactMatch,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataProducer> findByKeywordName(String keywordName,
+			boolean exactMatch, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The collection to return
 		Collection results = new ArrayList();
@@ -2397,8 +2405,9 @@ public class DataProducerDAO extends MetadataDAO {
 		}
 
 		try {
-			count = ((Long) this.getSession().createQuery(
-					sqlStringBuffer.toString()).uniqueResult()).intValue();
+			count = ((Long) this.getSession()
+					.createQuery(sqlStringBuffer.toString()).uniqueResult())
+					.intValue();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e.getMessage());
 		}
@@ -2434,7 +2443,7 @@ public class DataProducerDAO extends MetadataDAO {
 
 	/**
 	 */
-	public Collection findAllDeploymentsOfDeviceTypeFromParent(
+	public Collection<DataProducer> findAllDeploymentsOfDeviceTypeFromParent(
 			DataProducer parentDeployment, String deviceTypeName,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -2465,8 +2474,8 @@ public class DataProducerDAO extends MetadataDAO {
 				+ "'");
 
 		try {
-			allDeployments = this.getSession().createQuery(
-					sqlStringBuffer.toString()).list();
+			allDeployments = this.getSession()
+					.createQuery(sqlStringBuffer.toString()).list();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e);
 		}
@@ -2552,8 +2561,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 *         duplicates are removed and if no deployments were found, an empty
 	 *         collection is returned.
 	 */
-	public Collection findAllDeploymentsOfDeviceTypeFromParent(Long parentID,
-			String deviceTypeName, Double nominalLongitude,
+	public Collection<DataProducer> findAllDeploymentsOfDeviceTypeFromParent(
+			Long parentID, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
 			Double latitudeTolerance, Float nominalDepth,
 			Double depthTolerance, String orderByPropertyName,
@@ -2636,8 +2645,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @param depthTolerance
 	 * @return
 	 */
-	public Collection findDevicesByParentByTypeAndByLocation(Long parentID,
-			String deviceTypeName, Double nominalLongitude,
+	public Collection<Device> findDevicesByParentByTypeAndByLocation(
+			Long parentID, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
 			Double latitudeTolerance, Float nominalDepth,
 			Double depthTolerance, String orderByPropertyName,
@@ -2746,8 +2755,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @param depthTolerance
 	 * @return
 	 */
-	public Collection findDevicesByParentByTypeAndByLocation(String parentName,
-			String deviceTypeName, Double nominalLongitude,
+	public Collection<Device> findDevicesByParentByTypeAndByLocation(
+			String parentName, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
 			Double latitudeTolerance, Float nominalDepth,
 			Double depthTolerance, String orderByPropertyName,
@@ -2842,7 +2851,7 @@ public class DataProducerDAO extends MetadataDAO {
 	 *         oldest deployment. Each device is listed only once in the return
 	 *         collection
 	 */
-	public Collection findAllDevicesByParentDeploymentByTypeAndByLocation(
+	public Collection<Device> findAllDevicesByParentDeploymentByTypeAndByLocation(
 			DataProducer parentDeployment, String deviceTypeName,
 			Double nominalLongitude, Double longitudeTolerance,
 			Double nominalLatitude, Double latitudeTolerance,
@@ -2951,8 +2960,8 @@ public class DataProducerDAO extends MetadataDAO {
 	 * @param depthTolerance
 	 * @return
 	 */
-	public Collection findAllDevicesByParentByTypeAndByLocation(Long parentID,
-			String deviceTypeName, Double nominalLongitude,
+	public Collection<Device> findAllDevicesByParentByTypeAndByLocation(
+			Long parentID, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
 			Double latitudeTolerance, Float nominalDepth,
 			Double depthTolerance, String orderByPropertyName,
@@ -3205,8 +3214,7 @@ public class DataProducerDAO extends MetadataDAO {
 			throws MetadataAccessException {
 
 		// Print some debug information
-		logger
-				.debug("createDuplicateDeepDeployment called with the following:");
+		logger.debug("createDuplicateDeepDeployment called with the following:");
 		if (deploymentToCopy != null) {
 			logger.debug("Deployment to copy: "
 					+ deploymentToCopy.toStringRepresentation("|"));
@@ -3252,9 +3260,7 @@ public class DataProducerDAO extends MetadataDAO {
 		try {
 			deepClone = (DataProducer) persistentOneToCopy.deepCopy();
 		} catch (CloneNotSupportedException e) {
-			logger
-					.error("CloneNotSupportedException caught: "
-							+ e.getMessage());
+			logger.error("CloneNotSupportedException caught: " + e.getMessage());
 		}
 		if (deepClone == null)
 			throw new MetadataAccessException(
@@ -3407,10 +3413,10 @@ public class DataProducerDAO extends MetadataDAO {
 						try {
 							deviceID = new Long(oldDeviceIDString);
 						} catch (Exception e) {
-							logger
-									.error("Could not convert oldDeviceIDString of "
-											+ oldDeviceIDString
-											+ " to a Long: " + e.getMessage());
+							logger.error("Could not convert oldDeviceIDString of "
+									+ oldDeviceIDString
+									+ " to a Long: "
+									+ e.getMessage());
 						}
 					}
 					// If the parent ID was passed in use that if not, use the
@@ -3422,11 +3428,10 @@ public class DataProducerDAO extends MetadataDAO {
 							try {
 								parentID = new Long(oldParentIDString);
 							} catch (Exception e) {
-								logger
-										.error("Could not convert oldParentIDString of "
-												+ oldParentIDString
-												+ " to a Long: "
-												+ e.getMessage());
+								logger.error("Could not convert oldParentIDString of "
+										+ oldParentIDString
+										+ " to a Long: "
+										+ e.getMessage());
 							}
 						}
 					}
@@ -3438,11 +3443,9 @@ public class DataProducerDAO extends MetadataDAO {
 							try {
 								packetSubType = new Long(oldPacketSubTypeString);
 							} catch (Exception e) {
-								logger
-										.error("Could not convert oldPacketSubTypeString of "
-												+ oldPacketSubTypeString
-												+ " to a Long: "
-												+ e.getMessage());
+								logger.error("Could not convert oldPacketSubTypeString of "
+										+ oldPacketSubTypeString
+										+ " to a Long: " + e.getMessage());
 							}
 						}
 					}
@@ -3471,9 +3474,10 @@ public class DataProducerDAO extends MetadataDAO {
 		Iterator childDeploymentIter = deployment.getChildDataProducers()
 				.iterator();
 		while (childDeploymentIter.hasNext()) {
-			deepUpdateDeploymentAndOutputs((DataProducer) childDeploymentIter
-					.next(), startDate, endDate, generateNewDataStreamUris,
-					parentDeviceID, packetSubTypeID, baseDataStreamUri);
+			deepUpdateDeploymentAndOutputs(
+					(DataProducer) childDeploymentIter.next(), startDate,
+					endDate, generateNewDataStreamUris, parentDeviceID,
+					packetSubTypeID, baseDataStreamUri);
 		}
 	}
 
@@ -3514,17 +3518,16 @@ public class DataProducerDAO extends MetadataDAO {
 			if (dataProducer.getParentDataProducer() != null) {
 				DataProducer parentDataProducer = dataProducer
 						.getParentDataProducer();
-				logger
-						.debug("The incoming DataProducer has a parent attached ("
-								+ parentDataProducer + ")");
+				logger.debug("The incoming DataProducer has a parent attached ("
+						+ parentDataProducer + ")");
 				if (!getSession()
 						.contains(dataProducer.getParentDataProducer())) {
 					logger.debug("The incoming DataProducer's parent"
 							+ " is not in the session yet, "
 							+ "will try to load the matching one in.");
 					DataProducer persistentParentDataProducer = (DataProducer) this
-							.findEquivalentPersistentObject(dataProducer
-									.getParentDataProducer(), false);
+							.findEquivalentPersistentObject(
+									dataProducer.getParentDataProducer(), false);
 					if (persistentParentDataProducer != null) {
 						logger.debug("The matching persistent parent "
 								+ "DataProducer was found to be: "
@@ -3544,9 +3547,8 @@ public class DataProducerDAO extends MetadataDAO {
 
 				// Now if the parent is in the session, add the persistent child
 				if (getSession().contains(parentDataProducer)) {
-					logger
-							.debug("OK, the parent DataProducer is in the session, so"
-									+ "so will attach the persistent child");
+					logger.debug("OK, the parent DataProducer is in the session, so"
+							+ "so will attach the persistent child");
 					// Remove the transient one
 					parentDataProducer.removeChildDataProducer(dataProducer);
 					// Add the persistent one as a child DP
@@ -3927,8 +3929,8 @@ public class DataProducerDAO extends MetadataDAO {
 
 				// Create a copy of the collection associated with the
 				// dataProducer to prevent concurrent modifications
-				Collection dataProducerKeywordCopy = new ArrayList(dataProducer
-						.getKeywords());
+				Collection dataProducerKeywordCopy = new ArrayList(
+						dataProducer.getKeywords());
 
 				// Now we need to make the correct associations. Currently, you
 				// have a collection of Keyword objects that have their values
@@ -4063,8 +4065,8 @@ public class DataProducerDAO extends MetadataDAO {
 			if (Hibernate.isInitialized(dataProducer.getInputs())) {
 
 				// Grab the DAO for DataContainers
-				DataContainerDAO dataContainerDAO = new DataContainerDAO(this
-						.getSession());
+				DataContainerDAO dataContainerDAO = new DataContainerDAO(
+						this.getSession());
 
 				// Make sure the are inputs to iterate over
 				if (dataProducer.getInputs().size() > 0) {
@@ -4080,8 +4082,8 @@ public class DataProducerDAO extends MetadataDAO {
 
 				// Create a copy of the collection associated with the
 				// dataProducer to prevent concurrent modifications
-				Collection dataProducerInputCopy = new ArrayList(dataProducer
-						.getInputs());
+				Collection dataProducerInputCopy = new ArrayList(
+						dataProducer.getInputs());
 
 				// Now we need to make the correct associations. Currently, you
 				// have a collection of DataContainer objects that have their
@@ -4143,8 +4145,8 @@ public class DataProducerDAO extends MetadataDAO {
 			if (Hibernate.isInitialized(dataProducer.getOutputs())) {
 
 				// Grab the DAO for DataContainers
-				DataContainerDAO dataContainerDAO = new DataContainerDAO(this
-						.getSession());
+				DataContainerDAO dataContainerDAO = new DataContainerDAO(
+						this.getSession());
 
 				// Make sure the are outputs to iterate over
 				if (dataProducer.getOutputs().size() > 0) {
@@ -4160,8 +4162,8 @@ public class DataProducerDAO extends MetadataDAO {
 
 				// Create a copy of the collection associated with the
 				// dataProducer to prevent concurrent modifications
-				Collection dataProducerOutputCopy = new ArrayList(dataProducer
-						.getOutputs());
+				Collection dataProducerOutputCopy = new ArrayList(
+						dataProducer.getOutputs());
 
 				// Now we need to make the correct associations. Currently, you
 				// have a collection of DataContainer objects that have their
@@ -4254,10 +4256,9 @@ public class DataProducerDAO extends MetadataDAO {
 											.addChildDataProducer(currentChild);
 								}
 							} else {
-								logger
-										.error("The child's parent is not in the Hibernate "
-												+ "session and the parent was not persisted before, this "
-												+ "will cause an Exception when the child is persisted!");
+								logger.error("The child's parent is not in the Hibernate "
+										+ "session and the parent was not persisted before, this "
+										+ "will cause an Exception when the child is persisted!");
 							}
 						}
 
@@ -4335,9 +4336,8 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// If no matching dataProducer was found, do nothing
 		if (persistentDataProducer == null) {
-			logger
-					.debug("No matching dataProducer could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching dataProducer could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// Handle the relationships
 			persistentDataProducer.setPerson(null);
@@ -4351,8 +4351,7 @@ public class DataProducerDAO extends MetadataDAO {
 			persistentDataProducer.clearOutputs();
 			persistentDataProducer.clearChildDataProducers();
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentDataProducer);
 			} catch (HibernateException e) {
@@ -4391,17 +4390,16 @@ public class DataProducerDAO extends MetadataDAO {
 
 		// If no matching dataProducer was found, do nothing
 		if (persistentDataProducer == null) {
-			logger
-					.debug("No matching dataProducer could be found in the persistent store, "
-							+ "no deep delete performed");
+			logger.debug("No matching dataProducer could be found in the persistent store, "
+					+ "no deep delete performed");
 		} else {
 			// Grab all the object that need to be made transient
-			Collection outputs = new ArrayList(persistentDataProducer
-					.getOutputs());
-			Collection events = new ArrayList(persistentDataProducer
-					.getEvents());
-			Collection resources = new ArrayList(persistentDataProducer
-					.getResources());
+			Collection outputs = new ArrayList(
+					persistentDataProducer.getOutputs());
+			Collection events = new ArrayList(
+					persistentDataProducer.getEvents());
+			Collection resources = new ArrayList(
+					persistentDataProducer.getResources());
 			Collection childDataProducers = new ArrayList(
 					persistentDataProducer.getChildDataProducers());
 
@@ -4410,10 +4408,9 @@ public class DataProducerDAO extends MetadataDAO {
 
 			// Now walk all the relationships and make them transient
 			if ((outputs != null) && (outputs.size() > 0)) {
-				logger
-						.debug("There are initialized outputs, so will make those transient");
-				DataContainerDAO dataContainerDAO = new DataContainerDAO(this
-						.getSession());
+				logger.debug("There are initialized outputs, so will make those transient");
+				DataContainerDAO dataContainerDAO = new DataContainerDAO(
+						this.getSession());
 				Iterator outputIter = outputs.iterator();
 				while (outputIter.hasNext()) {
 					DataContainer tempDC = (DataContainer) outputIter.next();
@@ -4426,8 +4423,7 @@ public class DataProducerDAO extends MetadataDAO {
 			}
 			// Grab any events
 			if ((events != null) && (events.size() > 0)) {
-				logger
-						.debug("There were some initialized events, so will make those transient");
+				logger.debug("There were some initialized events, so will make those transient");
 				EventDAO eventDAO = new EventDAO(this.getSession());
 				Iterator eventIter = events.iterator();
 				while (eventIter.hasNext()) {
@@ -4436,8 +4432,7 @@ public class DataProducerDAO extends MetadataDAO {
 			}
 			// Grab the resources
 			if ((resources != null) && (resources.size() > 0)) {
-				logger
-						.debug("There were some initialized resources, so will make those transient");
+				logger.debug("There were some initialized resources, so will make those transient");
 				ResourceDAO resourceDAO = new ResourceDAO(this.getSession());
 				Iterator resourceIter = resources.iterator();
 				while (resourceIter.hasNext()) {
@@ -4446,8 +4441,7 @@ public class DataProducerDAO extends MetadataDAO {
 			}
 			// Grab the child data producers
 			if ((childDataProducers != null) && (childDataProducers.size() > 0)) {
-				logger
-						.debug("There were some initialized childDataProducers, so will make those deep transient also");
+				logger.debug("There were some initialized childDataProducers, so will make those deep transient also");
 				Iterator childDataProducerIter = childDataProducers.iterator();
 				while (childDataProducerIter.hasNext()) {
 					this.makeDeepTransient((DataProducer) childDataProducerIter
@@ -4579,15 +4573,17 @@ public class DataProducerDAO extends MetadataDAO {
 						dataProducerType));
 			}
 			if (startDate != null) {
-				criteria.add(Restrictions.or(Restrictions.gt("endDate",
-						startDate), Restrictions.isNull("endDate")));
+				criteria.add(Restrictions.or(
+						Restrictions.gt("endDate", startDate),
+						Restrictions.isNull("endDate")));
 				if (boundedByStartDate) {
 					criteria.add(Restrictions.gt("startDate", startDate));
 				}
 			}
 			if (endDate != null) {
-				criteria.add(Restrictions.or(Restrictions.lt("startDate",
-						endDate), Restrictions.isNull("startDate")));
+				criteria.add(Restrictions.or(
+						Restrictions.lt("startDate", endDate),
+						Restrictions.isNull("startDate")));
 				if (boundedByEndDate) {
 					criteria.add(Restrictions.lt("endDate", endDate));
 				}

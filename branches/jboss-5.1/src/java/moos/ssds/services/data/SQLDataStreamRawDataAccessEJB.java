@@ -15,13 +15,11 @@
  */
 package moos.ssds.services.data;
 
-import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -32,57 +30,27 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.Stateless;
 import javax.sql.DataSource;
 
-import moos.ssds.io.PacketSQLInput;
-import moos.ssds.io.SSDSGeoLocatedDevicePacket;
+import moos.ssds.io.SSDSDevicePacket;
+import moos.ssds.io.util.PacketUtility;
 import moos.ssds.util.XmlDateFormat;
 
 import org.apache.log4j.Logger;
+import org.jboss.ejb3.annotation.LocalBinding;
+import org.jboss.ejb3.annotation.RemoteBinding;
 
 /**
  * @author kgomes
- * @ejb.bean name="SQLDataStreamRawDataAccess" type="Stateless"
- *           jndi-name="moos/ssds/services/data/SQLDataStreamRawDataAccess"
- *           local-jndi-name=
- *           "moos/ssds/services/data/SQLDataStreamRawDataAccessLocal"
- *           view-type="both"
- * @ejb.home create="true"
- *           local-class="moos.ssds.services.data.SQLDataStreamRawDataAccessLocalHome"
- *           remote
- *           -class="moos.ssds.services.data.SQLDataStreamRawDataAccessHome"
- * @ejb.interface create="true"
- *                local-class="moos.ssds.services.data.SQLDataStreamRawDataAccessLocal"
- *                remote
- *                -class="moos.ssds.services.data.SQLDataStreamRawDataAccess"
  */
-public class SQLDataStreamRawDataAccessEJB implements SessionBean {
-
-	/**
-	 * These are the constants that define the types of sorting and filtering
-	 * can be done by this service
-	 */
-	public static final String BY_SEQUENCE_NUMBER = "sequenceNumber";
-	public static final String BY_TIMESTAMP = "timestamp";
-
-	/**
-	 * Some constants to define what properties are available
-	 */
-	public static final String NUMBER_OF_RECORDS = "numRecords";
-	public static final String DATE_OF_LAST_RECORD = "lastRecordDate";
-	public static final String AVERAGE_SAMPLE_INTERVAL_IN_MILLIS = "averageSampleIntervalInMillis";
-	public static final String TIME_ONLY_GAP = "timeGap";
-	public static final String SEQ_ONLY_GAP = "seqGap";
-	public static final String TIME_SEQ_GAP = "timeSeqGap";
-	public static final String SERVICE_CALCULATED = "serviceCalculated";
-	public static final String USER_SPECIFIED = "userSpecified";
+@Stateless
+@RemoteBinding(jndiBinding = "moos/ssds/services/data/SQLDataStreamRawDataAccess")
+@LocalBinding(jndiBinding = "moos/ssds/services/data/SQLDataStreamRawDataAccessLocal")
+public class SQLDataStreamRawDataAccessEJB implements
+		SQLDataStreamRawDataAccess, SQLDataStreamRawDataAccessLocal {
 
 	/**
 	 * This is the <code>DataSource</code> that the EJB will use to interact
@@ -90,17 +58,11 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 	 * 
 	 * @associates DataSource
 	 */
-	private static DataSource dataSource = null;
+	@Resource(mappedName = "java:/SSDS_Data")
+	private static DataSource dataSource;
 
-	/**
-	 * This is the host where the DataSource will be looked up
-	 */
-	private String jndiHostName = null;
-
-	/**
-	 * This is the JNDI name of the data source that will be used
-	 */
-	private String dataSourceJndiName = null;
+	@Resource(mappedName = "moos/ssds/services/data/SSDSByteArrayAccessLocal")
+	private SSDSByteArrayAccessLocal ssdsByteArrayAccessLocal;
 
 	/**
 	 * The IO Properties for the PacketInput/Output
@@ -183,34 +145,10 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 			.getLogger(SQLDataStreamRawDataAccessEJB.class);
 
 	/**
-	 * @see javax.ejb.SessionBean#ejbActivate()
-	 */
-	public void ejbActivate() throws EJBException, RemoteException {
-	}
-
-	/**
-	 * @see javax.ejb.SessionBean#ejbPassivate()
-	 */
-	public void ejbPassivate() throws EJBException, RemoteException {
-	}
-
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 */
-	public void ejbRemove() throws EJBException, RemoteException {
-	}
-
-	/**
-	 * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
-	 */
-	public void setSessionContext(SessionContext arg0) throws EJBException,
-			RemoteException {
-	}
-
-	/**
 	 * The EJB callback that is used when the bean is created
 	 */
-	public void ejbCreate() throws CreateException {
+	@PostConstruct
+	public void ejbCreate() throws SQLException {
 
 		// Create and load the io properties
 		ioProperties = new Properties();
@@ -270,54 +208,16 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 		this.sqlLastNumberOfPacketsPostamble = ioProperties
 				.getProperty("io.storage.sql.lastnumber.postamble");
 
-		// Grab the host name for the JNDI service
-		this.jndiHostName = ioProperties
-				.getProperty("io.storage.sql.jndi.server.name");
-		// logger.debug("jndiHostName set to: " + this.jndiHostName);
-		this.dataSourceJndiName = "java:/"
-				+ ioProperties.getProperty("io.storage.sql.jndi.name");
-		// logger.debug("dataSourceJndiName set to " + this.dataSourceJndiName);
-
-		// Now grab the DataSource from the JNDI
-		Context jndiContext = null;
-		try {
-			jndiContext = new InitialContext();
-			if ((this.jndiHostName != null) && (!this.jndiHostName.equals(""))) {
-				jndiContext.removeFromEnvironment(Context.PROVIDER_URL);
-				jndiContext.addToEnvironment(Context.PROVIDER_URL,
-						this.jndiHostName + ":1099");
-			}
-			// logger.debug("JNDI environment = " +
-			// jndiContext.getEnvironment());
-		} catch (NamingException ne) {
-			logger.error("!!--> A naming exception was caught while trying "
-					+ "to get an initial context: " + ne.getMessage());
-			return;
-		} catch (Exception e) {
-			logger.error("!!--> An unknown exception was caught while trying "
-					+ "to get an initial context: " + e.getMessage());
-			return;
-		}
-		try {
-			dataSource = (DataSource) jndiContext
-					.lookup(this.dataSourceJndiName);
-		} catch (NamingException e1) {
-			logger.error("Could not get DataSource: " + e1.getMessage());
-		}
-
 	}
 
-	/**
-	 * @throws CreateException
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.data.SQLDataStreamRawDataAccess#getDataProducingDeviceIDs
+	 * ()
 	 */
-	public void ejbPostCreate() throws CreateException {
-	}
-
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @return
-	 * @throws SQLException
-	 */
+	@Override
 	public Collection getDataProducingDeviceIDs() throws SQLException {
 		// The Collection to return
 		Collection deviceIDs = new ArrayList();
@@ -340,9 +240,8 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 		try {
 			dbm = connection.getMetaData();
 		} catch (SQLException e1) {
-			logger
-					.error("SQLException caught trying to get DataSource metadata: "
-							+ e1.getMessage());
+			logger.error("SQLException caught trying to get DataSource metadata: "
+					+ e1.getMessage());
 			throw e1;
 		}
 
@@ -387,11 +286,13 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 		return deviceIDs;
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @return
-	 * @throws SQLException
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.data.SQLDataStreamRawDataAccess#
+	 * getParentChildDataProducerTrees()
 	 */
+	@Override
 	public TreeMap getParentChildDataProducerTrees() throws SQLException {
 
 		logger.debug("getParentChildDataProducerTrees called");
@@ -451,23 +352,16 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 		return parentChildMap;
 	}
 
-	/**
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @ejb.interface-method view-type="both"
-	 * 
-	 * @param deviceID
-	 * @param recordType
-	 * @param checkForGaps
-	 * @param typeOfGap
-	 * @param marginMillis
-	 * @param gapSpec
-	 * @param numberOfRecords
-	 * @param intervalCalcStartWindow
-	 * @param intervalCalcEndWindow
-	 * @param gapInMillis
-	 * @return
-	 * @throws SQLException
+	 * @see
+	 * moos.ssds.services.data.SQLDataStreamRawDataAccess#getDataStreamProperties
+	 * (java.lang.Long, java.lang.Long, java.lang.Boolean, java.util.Date,
+	 * java.util.Date, java.lang.String, java.lang.Long, java.lang.String,
+	 * java.lang.Long, java.util.Date, java.util.Date, java.lang.Long)
 	 */
+	@Override
 	public Properties getDataStreamProperties(Long deviceID, Long recordType,
 			Boolean checkForGaps, Date startGapCheckWindow,
 			Date endGapCheckWindow, String typeOfGap, Long marginInMillis,
@@ -499,13 +393,17 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 		if (tableExists) {
 			// The number of rows for the device and record type
 			long numberOfRows = getNumberOfRows(deviceID, recordType);
-			propertiesToReturn.put(NUMBER_OF_RECORDS, "" + numberOfRows);
+			propertiesToReturn.put(
+					SQLDataStreamRawDataAccess.NUMBER_OF_RECORDS, ""
+							+ numberOfRows);
 
 			// Grab the latest date for the device and record Type
 			Date latestDate = this.findDatetimeOfLatestPacketReceived(deviceID,
 					recordType);
 			if (latestDate != null)
-				propertiesToReturn.put(DATE_OF_LAST_RECORD, latestDate);
+				propertiesToReturn.put(
+						SQLDataStreamRawDataAccess.DATE_OF_LAST_RECORD,
+						latestDate);
 
 			// If the call includes gaps, find them
 			if (checkForGaps != null && checkForGaps.booleanValue() == true) {
@@ -530,8 +428,8 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 					Date endDate = (Date) gapMap.get(startDate);
 					if (startDate != null && endDate != null) {
 						propertiesToReturn.put(
-								"dataGap" + gapCounter + "Start", xmlDateFormat
-										.format(startDate));
+								"dataGap" + gapCounter + "Start",
+								xmlDateFormat.format(startDate));
 						propertiesToReturn.put("dataGap" + gapCounter + "End",
 								xmlDateFormat.format(endDate));
 					}
@@ -583,14 +481,12 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 				logger.debug("Does device table " + deviceID + " exist? "
 						+ tableExists);
 			} catch (SQLException e) {
-				logger
-						.error("SQLException caught try to see if a table for device "
-								+ deviceID + " exists: " + e.getMessage());
+				logger.error("SQLException caught try to see if a table for device "
+						+ deviceID + " exists: " + e.getMessage());
 				connection.close();
 			} catch (Exception e) {
-				logger
-						.error("SQLException caught try to see if a table for device "
-								+ deviceID + " exists: " + e.getMessage());
+				logger.error("SQLException caught try to see if a table for device "
+						+ deviceID + " exists: " + e.getMessage());
 				connection.close();
 			}
 		}
@@ -636,8 +532,8 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 			// If the record type is defined, use that template
 			if (recordType != null) {
 				sqlString = this.sqlCountNumberOfRowsWithRecordTypeTemplate
-						.replaceAll("@RECORD_TYPE@", ""
-								+ recordType.longValue());
+						.replaceAll("@RECORD_TYPE@",
+								"" + recordType.longValue());
 			} else {
 				sqlString = this.sqlCountNumberOfRowsTemplate;
 			}
@@ -720,8 +616,8 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 			// Check for the use of recordType first
 			if (recordType != null) {
 				sqlString = this.sqlLatestTimestampSecondsWithRecordTypeTemplate
-						.replaceAll("@RECORD_TYPE@", ""
-								+ recordType.longValue());
+						.replaceAll("@RECORD_TYPE@",
+								"" + recordType.longValue());
 			} else {
 				sqlString = this.sqlLatestTimestampSecondsTemplate;
 			}
@@ -771,8 +667,8 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 			// Check for use of recordType first
 			if (recordType != null) {
 				sqlString = this.sqlLatestTimestampNanosecondsWithRecordTypeTemplate
-						.replaceAll("@RECORD_TYPE@", ""
-								+ recordType.longValue());
+						.replaceAll("@RECORD_TYPE@",
+								"" + recordType.longValue());
 			} else {
 				sqlString = this.sqlLatestTimestampNanosecondsTemplate;
 			}
@@ -797,14 +693,12 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 				logger.debug("Max timestamp nanoseconds is "
 						+ latestTimestampNanoseconds);
 			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to query for max nanoseconds: "
-								+ e.getMessage());
+				logger.error("SQLException caught trying to query for max nanoseconds: "
+						+ e.getMessage());
 				connection.close();
 			} catch (Exception e) {
-				logger
-						.error("Exception caught trying to query for max nanoseconds: "
-								+ e.getMessage());
+				logger.error("Exception caught trying to query for max nanoseconds: "
+						+ e.getMessage());
 				connection.close();
 			}
 		}
@@ -885,7 +779,7 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 
 		// Next, does the gap criteria need to be calculated, or do we use the
 		// one supplied?
-		if (gapSpec.equalsIgnoreCase(USER_SPECIFIED)) {
+		if (gapSpec.equalsIgnoreCase(SQLDataStreamRawDataAccess.USER_SPECIFIED)) {
 			// If the user said they want to specify the gap criteria and didn't
 			// send in a margin, simply return the empty treemap
 			if (marginMillis == null)
@@ -917,20 +811,20 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 			// If the record type is specified, use that template
 			if (recordType != null) {
 				sqlString = this.sqlSelectPacketsByTimeWithRecordTypeTemplate
-						.replaceAll("@RECORD_TYPE@", ""
-								+ recordType.longValue());
+						.replaceAll("@RECORD_TYPE@",
+								"" + recordType.longValue());
 			} else {
 				sqlString = this.sqlSelectPacketsByTimeTemplate;
 			}
 
 			// Replace the device ID
-			sqlString = sqlString.replaceAll("@DEVICE_ID@", ""
-					+ deviceID.longValue());
+			sqlString = sqlString.replaceAll("@DEVICE_ID@",
+					"" + deviceID.longValue());
 
 			// Replace date and times
 			sqlString = sqlString.replaceAll(
-					"@START_TIMESTAMP_WINDOW_SECONDS@", ""
-							+ queryStartDate.getTime() / 1000);
+					"@START_TIMESTAMP_WINDOW_SECONDS@",
+					"" + queryStartDate.getTime() / 1000);
 			sqlString = sqlString.replaceAll("@END_TIMESTAMP_WINDOW_SECONDS@",
 					"" + queryEndDate.getTime() / 1000);
 
@@ -973,16 +867,13 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 						// If the gap is more than the specified gap + margin,
 						// mark it as a gap
 						if (currentGapInMillis > (gapInMillisToUse + marginInMillisToUse)) {
-							logger
-									.debug("It appears that "
-											+ currentGapInMillis
-											+ " is greater than the gapInMillisToUse + marginInMillisToUse ("
-											+ gapInMillisToUse
-											+ " + "
-											+ marginInMillisToUse
-											+ " = "
-											+ (gapInMillisToUse + marginInMillisToUse)
-											+ ")");
+							logger.debug("It appears that "
+									+ currentGapInMillis
+									+ " is greater than the gapInMillisToUse + marginInMillisToUse ("
+									+ gapInMillisToUse + " + "
+									+ marginInMillisToUse + " = "
+									+ (gapInMillisToUse + marginInMillisToUse)
+									+ ")");
 							// Increment gap counter
 							gapCounter++;
 							Date startGapDate = new Date();
@@ -1002,10 +893,8 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 				connection.close();
 
 			} catch (SQLException e) {
-				logger
-						.error("SQLException caught trying to calculate "
-								+ "the average time between samples: "
-								+ e.getMessage());
+				logger.error("SQLException caught trying to calculate "
+						+ "the average time between samples: " + e.getMessage());
 				// Close the connection
 				connection.close();
 			} catch (Exception e) {
@@ -1019,40 +908,20 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 		return gaps;
 	}
 
-	/**
-	 * Note: This method returns a TreeMap with either sequence numbers or
-	 * timestamps as the key and a <b><code>Collection</code></b> of
-	 * SSDSDevicePackets (or data buffers depending on the input parameters) as
-	 * the corresponding value
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @ejb.interface-method view-type="both"
-	 * @param deviceID
-	 * @param startParentID
-	 * @param endParentID
-	 * @param startPacketType
-	 * @param endPacketType
-	 * @param startPacketSubType
-	 * @param endPacketSubType
-	 * @param startDataDescriptionID
-	 * @param endDataDescriptionID
-	 * @param startDataDescriptionVersion
-	 * @param endDataDescriptionVersion
-	 * @param startTimestampSeconds
-	 * @param endTimestampSeconds
-	 * @param startTimestampNanoseconds
-	 * @param endTimestampNanoseconds
-	 * @param startSequenceNumber
-	 * @param endSequenceNumber
-	 * @param startLatitude
-	 * @param endLatitude
-	 * @param startLongitude
-	 * @param endLongitude
-	 * @param startDepth
-	 * @param endDepth
-	 * @param orderBy
-	 * @param returnAsSSDSDevicePackets
-	 * @return
+	 * @see
+	 * moos.ssds.services.data.SQLDataStreamRawDataAccess#getSortedRawData(java
+	 * .lang.Long, java.lang.Long, java.lang.Long, java.lang.Integer,
+	 * java.lang.Integer, java.lang.Long, java.lang.Long, java.lang.Long,
+	 * java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long,
+	 * java.lang.Long, java.lang.Long, java.lang.Long, java.lang.Long,
+	 * java.lang.Long, java.lang.Long, java.lang.Double, java.lang.Double,
+	 * java.lang.Double, java.lang.Double, java.lang.Float, java.lang.Float,
+	 * java.lang.String, boolean)
 	 */
+	@Override
 	public TreeMap getSortedRawData(Long deviceID, Long startParentID,
 			Long endParentID, Integer startPacketType, Integer endPacketType,
 			Long startPacketSubType, Long endPacketSubType,
@@ -1071,171 +940,122 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 			throw new SQLException("The deviceID must be specified");
 		}
 
-		// Create a PacketSQLInput
-		PacketSQLInput packetSQLInput = new PacketSQLInput(null, deviceID, null);
-		// Set the right SQL delimiter
-		// packetSQLInput.setSqlTableDelimiter(this.sqlTableDelimiter);
-		//
-		// // Set the pre and post ambles for last number of packets query
-		// packetSQLInput
-		// .setSqlLastNumberOfPacketsPreamble(this.sqlLastNumberOfPacketsPreamble);
-		// packetSQLInput
-		// .setSqlLastNumberOfPacketsPostamble(this.sqlLastNumberOfPacketsPostamble);
+		// Set all the query values on the byte array access
+		ssdsByteArrayAccessLocal.setDeviceID(deviceID);
 
-		// Set all the values
-		packetSQLInput.setDeviceID(deviceID.longValue());
 		if (startParentID != null) {
-			packetSQLInput.setStartParentID(startParentID.longValue());
-		} else {
-			packetSQLInput.setStartParentID(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal
+					.setStartParentID(startParentID.longValue());
 		}
 		if (endParentID != null) {
-			packetSQLInput.setEndParentID(endParentID.longValue());
-		} else {
-			packetSQLInput.setEndParentID(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setEndParentID(endParentID.longValue());
 		}
 		if (startPacketType != null) {
-			packetSQLInput.setStartPacketType(startPacketType.intValue());
-		} else {
-			packetSQLInput.setStartPacketType(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setStartPacketType(startPacketType
+					.intValue());
 		}
 		if (endPacketType != null) {
-			packetSQLInput.setEndPacketType(endPacketType.intValue());
-		} else {
-			packetSQLInput.setEndPacketType(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setEndPacketType(endPacketType.intValue());
 		}
 		if (startPacketSubType != null) {
-			packetSQLInput
-					.setStartPacketSubType(startPacketSubType.longValue());
-		} else {
-			packetSQLInput.setStartPacketSubType(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setStartPacketSubType(startPacketSubType
+					.longValue());
 		}
 		if (endPacketSubType != null) {
-			packetSQLInput.setEndPacketSubType(endPacketSubType.longValue());
-		} else {
-			packetSQLInput.setEndPacketSubType(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setEndPacketSubType(endPacketSubType
+					.longValue());
 		}
 		if (startDataDescriptionID != null) {
-			packetSQLInput.setStartDataDescriptionID(startDataDescriptionID
-					.longValue());
-		} else {
-			packetSQLInput
-					.setStartDataDescriptionID(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal
+					.setStartDataDescriptionID(startDataDescriptionID
+							.longValue());
 		}
 		if (endDataDescriptionID != null) {
-			packetSQLInput.setEndDataDescriptionID(endDataDescriptionID
-					.longValue());
-		} else {
-			packetSQLInput
-					.setEndDataDescriptionID(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal
+					.setEndDataDescriptionID(endDataDescriptionID.longValue());
 		}
 		if (startDataDescriptionVersion != null) {
-			packetSQLInput
+			ssdsByteArrayAccessLocal
 					.setStartDataDescriptionVersion(startDataDescriptionVersion
 							.longValue());
-		} else {
-			packetSQLInput
-					.setStartDataDescriptionVersion(PacketSQLInput.MISSING_VALUE);
 		}
 		if (endDataDescriptionVersion != null) {
-			packetSQLInput
+			ssdsByteArrayAccessLocal
 					.setEndDataDescriptionVersion(endDataDescriptionVersion
 							.longValue());
-		} else {
-			packetSQLInput
-					.setEndDataDescriptionVersion(PacketSQLInput.MISSING_VALUE);
 		}
 		if (startTimestampSeconds != null) {
-			packetSQLInput.setStartTimestampSeconds(startTimestampSeconds
-					.longValue());
-		} else {
-			packetSQLInput
-					.setStartTimestampSeconds(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal
+					.setStartTimestampSeconds(startTimestampSeconds.longValue());
 		}
 		if (endTimestampSeconds != null) {
-			packetSQLInput.setEndTimestampSeconds(endTimestampSeconds
+			ssdsByteArrayAccessLocal.setEndTimestampSeconds(endTimestampSeconds
 					.longValue());
-		} else {
-			packetSQLInput.setEndTimestampSeconds(PacketSQLInput.MISSING_VALUE);
-		}
-		if (startTimestampNanoseconds != null) {
-			packetSQLInput
-					.setStartTimestampNanoseconds(startTimestampNanoseconds
-							.longValue());
-		} else {
-			packetSQLInput
-					.setStartTimestampNanoseconds(PacketSQLInput.MISSING_VALUE);
-		}
-		if (endTimestampNanoseconds != null) {
-			packetSQLInput.setEndTimestampNanoseconds(endTimestampNanoseconds
-					.longValue());
-		} else {
-			packetSQLInput
-					.setEndTimestampNanoseconds(PacketSQLInput.MISSING_VALUE);
 		}
 		if (startSequenceNumber != null) {
-			packetSQLInput.setStartSequenceNumber(startSequenceNumber
+			ssdsByteArrayAccessLocal.setStartSequenceNumber(startSequenceNumber
 					.longValue());
-		} else {
-			packetSQLInput.setStartSequenceNumber(PacketSQLInput.MISSING_VALUE);
 		}
 		if (endSequenceNumber != null) {
-			packetSQLInput.setEndSequenceNumber(endSequenceNumber.longValue());
-		} else {
-			packetSQLInput.setEndSequenceNumber(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setEndSequenceNumber(endSequenceNumber
+					.longValue());
 		}
 		if (lastNumberOfPackets != null) {
-			packetSQLInput.setLastNumberOfPackets(lastNumberOfPackets
+			ssdsByteArrayAccessLocal.setLastNumberOfPackets(lastNumberOfPackets
 					.longValue());
-		} else {
-			packetSQLInput.setLastNumberOfPackets(PacketSQLInput.MISSING_VALUE);
 		}
 		if (startLatitude != null) {
-			packetSQLInput.setStartLatitude(startLatitude.doubleValue());
-		} else {
-			packetSQLInput.setStartLatitude(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setStartLatitude(startLatitude
+					.doubleValue());
 		}
 		if (endLatitude != null) {
-			packetSQLInput.setEndLatitude(endLatitude.doubleValue());
-		} else {
-			packetSQLInput.setEndLatitude(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setEndLatitude(endLatitude.doubleValue());
 		}
 		if (startLongitude != null) {
-			packetSQLInput.setStartLongitude(startLatitude.doubleValue());
-		} else {
-			packetSQLInput.setStartLongitude(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setStartLongitude(startLatitude
+					.doubleValue());
 		}
 		if (endLongitude != null) {
-			packetSQLInput.setEndLongitude(endLatitude.doubleValue());
-		} else {
-			packetSQLInput.setEndLongitude(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setEndLongitude(endLatitude.doubleValue());
 		}
 		if (startDepth != null) {
-			packetSQLInput.setStartDepth(startDepth.floatValue());
-		} else {
-			packetSQLInput.setStartDepth(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setStartDepth(startDepth.floatValue());
 		}
 		if (endDepth != null) {
-			packetSQLInput.setEndDepth(endDepth.floatValue());
-		} else {
-			packetSQLInput.setEndDepth(PacketSQLInput.MISSING_VALUE);
+			ssdsByteArrayAccessLocal.setEndDepth(endDepth.floatValue());
 		}
 		if ((orderBy == null)
 				|| (!orderBy
-						.equals(SQLDataStreamRawDataAccessEJB.BY_SEQUENCE_NUMBER) && !orderBy
-						.equals(SQLDataStreamRawDataAccessEJB.BY_TIMESTAMP))) {
-			orderBy = SQLDataStreamRawDataAccessEJB.BY_TIMESTAMP;
+						.equals(SQLDataStreamRawDataAccess.BY_SEQUENCE_NUMBER) && !orderBy
+						.equals(SQLDataStreamRawDataAccess.BY_TIMESTAMP))) {
+			orderBy = SQLDataStreamRawDataAccess.BY_TIMESTAMP;
 		}
 		// This is the TreeMap that will be returned
 		TreeMap treeMapToReturn = new TreeMap();
 
-		// Fire the query off
-		packetSQLInput.queryForData();
+		// Run the query
+		try {
+			ssdsByteArrayAccessLocal.queryForData();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-		// Now start looking through the results
-		while (packetSQLInput.hasMoreElements()) {
-			SSDSGeoLocatedDevicePacket ssdsDevicePacket = (SSDSGeoLocatedDevicePacket) packetSQLInput
-					.nextElement();
+		// Now grab the byte array
+		while (ssdsByteArrayAccessLocal.hasMoreElements()) {
+			byte[] returnedByteArray = ssdsByteArrayAccessLocal.nextElement();
+
+			// Convert it to SSDS format
+			byte[] ssdsFormat = null;
+			if (returnedByteArray != null)
+				ssdsFormat = PacketUtility
+						.stripOffVersionAndAddDeviceIDInFront(
+								returnedByteArray, 101);
+
+			// Now convert it to SSDSDevice Packet
+			SSDSDevicePacket ssdsDevicePacket = PacketUtility
+					.convertVersion3SSDSByteArrayToSSDSDevicePacket(ssdsFormat,
+							true);
 
 			// If there is a packet, add it correctly
 			if (ssdsDevicePacket != null) {
@@ -1243,7 +1063,7 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 				// number)
 				Long key = null;
 				if (orderBy
-						.equalsIgnoreCase(SQLDataStreamRawDataAccessEJB.BY_SEQUENCE_NUMBER)) {
+						.equalsIgnoreCase(SQLDataStreamRawDataAccess.BY_SEQUENCE_NUMBER)) {
 					key = new Long(ssdsDevicePacket.sequenceNo());
 				} else {
 					key = new Long(ssdsDevicePacket.systemTime());
@@ -1269,7 +1089,7 @@ public class SQLDataStreamRawDataAccessEJB implements SessionBean {
 			}
 		}
 		// Close the PacketSQLInput
-		packetSQLInput.close();
+		ssdsByteArrayAccessLocal.remove();
 		// Now return the results
 		return treeMapToReturn;
 	}

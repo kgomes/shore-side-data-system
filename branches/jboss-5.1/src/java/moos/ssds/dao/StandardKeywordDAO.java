@@ -75,16 +75,17 @@ public class StandardKeywordDAO extends MetadataDAO {
 		return count;
 	}
 
-	public Collection findByName(String name) throws MetadataAccessException {
-		return null;
-	}
-
-	public Collection findByLikeName(String likeName)
+	public Collection<StandardKeyword> findByName(String name)
 			throws MetadataAccessException {
 		return null;
 	}
 
-	public Collection findAllNames() throws MetadataAccessException {
+	public Collection<StandardKeyword> findByLikeName(String likeName)
+			throws MetadataAccessException {
+		return null;
+	}
+
+	public Collection<String> findAllNames() throws MetadataAccessException {
 		return null;
 	}
 
@@ -117,7 +118,8 @@ public class StandardKeywordDAO extends MetadataDAO {
 					.toStringRepresentation("<li>");
 			if (this.updateDestinationObject(standardKeyword,
 					persistentStandardKeyword)) {
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A StandardKeyword was changed in SSDS:<br><b>Before</b><ul><li>"
 								+ standardKeywordBefore
 								+ "</ul><br><b>After</b><br><ul><li>"
@@ -144,7 +146,8 @@ public class StandardKeywordDAO extends MetadataDAO {
 							+ "auto-generate a name for a StandardKeyword: "
 							+ e.getMessage());
 				}
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"An incoming StandardKeyword did not have a name, "
 								+ "so SSDS auto-generated one:<br><ul><li>"
 								+ standardKeyword
@@ -162,7 +165,8 @@ public class StandardKeywordDAO extends MetadataDAO {
 		// If it was not persisted before, save it
 		if (!persistedBefore) {
 			getSession().save(standardKeywordToPersist);
-			addMessage(ssdsAdminEmailToAddress,
+			addMessage(
+					ssdsAdminEmailToAddress,
 					"A new StandardKeyword was inserted into SSDS: <br><ul><li>"
 							+ standardKeywordToPersist
 									.toStringRepresentation("<li>")
@@ -195,9 +199,8 @@ public class StandardKeywordDAO extends MetadataDAO {
 
 		// If no matching standardKeyword was found, do nothing
 		if (persistentStandardKeyword == null) {
-			logger
-					.debug("No matching standardKeyword could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching standardKeyword could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// Clear any associations with RecordVariable
 			Collection recordVariablesByStandardKeyword = null;
@@ -216,11 +219,11 @@ public class StandardKeywordDAO extends MetadataDAO {
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentStandardKeyword);
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A StandardKeyword was removed from SSDS:<br><ul><li>"
 								+ persistentStandardKeyword
 										.toStringRepresentation("<li>")
@@ -265,10 +268,10 @@ public class StandardKeywordDAO extends MetadataDAO {
 		return standardKeyword;
 	}
 
-//	protected void initializeRelationships(IMetadataObject metadataObject)
-//			throws MetadataAccessException {
-//
-//	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	//
+	// }
 
 	/**
 	 * A log4j logger

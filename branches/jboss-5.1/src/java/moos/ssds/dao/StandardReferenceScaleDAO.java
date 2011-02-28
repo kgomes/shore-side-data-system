@@ -52,7 +52,7 @@ public class StandardReferenceScaleDAO extends MetadataDAO {
 		return null;
 	}
 
-	public Collection findAllIDs() throws MetadataAccessException {
+	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		return null;
 	}
 
@@ -77,16 +77,17 @@ public class StandardReferenceScaleDAO extends MetadataDAO {
 		return count;
 	}
 
-	public Collection findByName(String name) throws MetadataAccessException {
-		return null;
-	}
-
-	public Collection findByLikeName(String likeNames)
+	public Collection<StandardReferenceScale> findByName(String name)
 			throws MetadataAccessException {
 		return null;
 	}
 
-	public Collection findAllNames() throws MetadataAccessException {
+	public Collection<StandardReferenceScale> findByLikeName(String likeNames)
+			throws MetadataAccessException {
+		return null;
+	}
+
+	public Collection<String> findAllNames() throws MetadataAccessException {
 		return null;
 	}
 
@@ -120,7 +121,8 @@ public class StandardReferenceScaleDAO extends MetadataDAO {
 					.toStringRepresentation("<li>");
 			if (this.updateDestinationObject(standardReferenceScale,
 					persistentStandardReferenceScale)) {
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A StandardReferenceScale was changed in SSDS:<br><b>Before</b><ul><li>"
 								+ standardReferenceScaleBefore
 								+ "</ul><br><b>After</b><br><ul><li>"
@@ -144,12 +146,12 @@ public class StandardReferenceScaleDAO extends MetadataDAO {
 					standardReferenceScale.setName("StandardReferenceScale_"
 							+ getUniqueNameSuffix());
 				} catch (MetadataException e) {
-					logger
-							.error("MetadataException caught trying to "
-									+ "auto-generate a name for a StandardReferenceScale: "
-									+ e.getMessage());
+					logger.error("MetadataException caught trying to "
+							+ "auto-generate a name for a StandardReferenceScale: "
+							+ e.getMessage());
 				}
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"An incoming StandardReferenceScale did not have a name, "
 								+ "so SSDS auto-generated one:<br><ul><li>"
 								+ standardReferenceScale
@@ -167,7 +169,8 @@ public class StandardReferenceScaleDAO extends MetadataDAO {
 		// If it was not persisted before, save it
 		if (!persistedBefore) {
 			getSession().save(standardReferenceScaleToPersist);
-			addMessage(ssdsAdminEmailToAddress,
+			addMessage(
+					ssdsAdminEmailToAddress,
 					"A new StandardReferenceScale was inserted into SSDS: <br><ul><li>"
 							+ standardReferenceScaleToPersist
 									.toStringRepresentation("<li>")
@@ -200,9 +203,8 @@ public class StandardReferenceScaleDAO extends MetadataDAO {
 
 		// If no matching standardReferenceScale was found, do nothing
 		if (persistentStandardReferenceScale == null) {
-			logger
-					.debug("No matching standardReferenceScale could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching standardReferenceScale could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// Clear any associations with RecordVariable
 			Collection recordVariablesByStandardReferenceScale = null;
@@ -221,11 +223,11 @@ public class StandardReferenceScaleDAO extends MetadataDAO {
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentStandardReferenceScale);
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A StandardReferenceScale was removed from SSDS:<br><ul><li>"
 								+ persistentStandardReferenceScale
 										.toStringRepresentation("<li>")
@@ -271,10 +273,10 @@ public class StandardReferenceScaleDAO extends MetadataDAO {
 		return standardReferenceScale;
 	}
 
-//	protected void initializeRelationships(IMetadataObject metadataObject)
-//			throws MetadataAccessException {
-//
-//	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	//
+	// }
 
 	/**
 	 * A log4j logger

@@ -18,8 +18,7 @@ package moos.ssds.services.servlet.metadata;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
+import javax.annotation.Resource;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -30,27 +29,25 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.PropertyException;
 
-import org.apache.log4j.Logger;
-
 import moos.ssds.dao.util.MetadataAccessException;
 import moos.ssds.metadata.DataProducer;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataFactory;
 import moos.ssds.services.metadata.DataProducerAccessLocal;
-import moos.ssds.services.metadata.DataProducerAccessLocalHome;
-import moos.ssds.services.metadata.DataProducerAccessUtil;
 import moos.ssds.wrapper.ogc.sensorml.SensorMLFactory;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author kgomes
  * @version 1.0
- * @web.servlet name="SensorMLConverterServlet" display-name="Servlet to Convert
- *              a given DataProducer to SensorML"
- * @web.servlet-mapping url-pattern="/SensorMLConverterServlet/*"
- * @web.servlet-mapping url-pattern="*.SensorMLConverterServlet"
- * @web.servlet-mapping url-pattern="/SensorMLConverterServlet"
  */
 public class SensorMLConverterServlet extends HttpServlet {
+
+	static Logger logger = Logger.getLogger(SensorMLConverterServlet.class);
+
+	@Resource(mappedName = "moos/ssds/services/metadata/DataProducerAccessLocal")
+	private DataProducerAccessLocal dpal;
 
 	/**
 	 * Override the init method to do the one time setup things
@@ -101,8 +98,7 @@ public class SensorMLConverterServlet extends HttpServlet {
 				&& (!dataProducerStringRepresentation.equals(""))) {
 			// Since we have a string, convert it to a DataProducer
 			DataProducer dp = null;
-			logger
-					.debug("Going to try and create DataProducer from string representation");
+			logger.debug("Going to try and create DataProducer from string representation");
 			try {
 				dp = (DataProducer) MetadataFactory
 						.createMetadataObjectFromStringRepresentation(
@@ -113,59 +109,42 @@ public class SensorMLConverterServlet extends HttpServlet {
 
 			// If the DataProducer is not null, find a matching one in SSDS
 			if (dp != null) {
-				DataProducerAccessLocalHome dpalh = null;
-				try {
-					dpalh = DataProducerAccessUtil.getLocalHome();
-				} catch (NamingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				if (dpalh != null) {
-					DataProducerAccessLocal dpal = null;
+				if (dpal != null) {
+					DataProducer persistentDataProducer = null;
 					try {
-						dpal = dpalh.create();
-					} catch (CreateException e) {
+						persistentDataProducer = (DataProducer) dpal
+								.findEquivalentPersistentObject(dp, true);
+					} catch (MetadataAccessException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					if (dpal != null) {
-						DataProducer persistentDataProducer = null;
+					if (persistentDataProducer != null) {
+						// If there was a data record
+						byte[] dataRecordBytes = null;
+						if (dataRecord != null && !dataRecord.equals(""))
+							dataRecordBytes = dataRecord.getBytes();
+						// Convert it
+						Object sensorMLObject = SensorMLFactory
+								.createSensorMLFromMetadataObject(
+										persistentDataProducer, dataRecordBytes);
+
 						try {
-							persistentDataProducer = (DataProducer) dpal
-									.findEquivalentPersistentObject(dp, true);
-						} catch (MetadataAccessException e) {
+							JAXBContext jaxbContext = JAXBContext
+									.newInstance("net.opengis.sensorml.v_1_0_1");
+							Marshaller omMarshaller = jaxbContext
+									.createMarshaller();
+							omMarshaller.setProperty(
+									Marshaller.JAXB_FORMATTED_OUTPUT,
+									Boolean.TRUE);
+							omMarshaller.marshal(sensorMLObject, out);
+						} catch (PropertyException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (JAXBException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						if (persistentDataProducer != null) {
-							// If there was a data record
-							byte[] dataRecordBytes = null;
-							if (dataRecord != null && !dataRecord.equals(""))
-								dataRecordBytes = dataRecord.getBytes();
-							// Convert it
-							Object sensorMLObject = SensorMLFactory
-									.createSensorMLFromMetadataObject(
-											persistentDataProducer,
-											dataRecordBytes);
 
-							try {
-								JAXBContext jaxbContext = JAXBContext
-										.newInstance("net.opengis.sensorml.v_1_0_1");
-								Marshaller omMarshaller = jaxbContext
-										.createMarshaller();
-								omMarshaller.setProperty(
-										Marshaller.JAXB_FORMATTED_OUTPUT,
-										Boolean.TRUE);
-								omMarshaller.marshal(sensorMLObject, out);
-							} catch (PropertyException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (JAXBException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-
-						}
 					}
 				}
 			}
@@ -176,5 +155,4 @@ public class SensorMLConverterServlet extends HttpServlet {
 		out.close();
 	}
 
-	static Logger logger = Logger.getLogger(SensorMLConverterServlet.class);
 }

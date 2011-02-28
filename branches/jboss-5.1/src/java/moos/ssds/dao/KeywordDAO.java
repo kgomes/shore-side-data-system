@@ -136,16 +136,17 @@ public class KeywordDAO extends MetadataDAO {
 	 *         given name
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByName(String name, boolean exactMatch)
+	@SuppressWarnings("unchecked")
+	public Collection<Keyword> findByName(String name, boolean exactMatch)
 			throws MetadataAccessException {
 		// Make sure argument is not null
 		logger.debug("findByName where name = " + name + " called.");
-		if ((name == null) && (name.equals(""))) {
-			return new ArrayList();
+		if ((name == null) || (name.equals(""))) {
+			return new ArrayList<Keyword>();
 		}
 
 		// The collection to be returned
-		Collection results = new ArrayList();
+		Collection<Keyword> results = new ArrayList<Keyword>();
 
 		// Construct and run the query
 		try {
@@ -177,15 +178,11 @@ public class KeywordDAO extends MetadataDAO {
 		}
 		// Log any results
 		if (results != null && results.size() > 0) {
-			for (Iterator<Object> iterator = results.iterator(); iterator.hasNext();) {
-				Object object = (Object) iterator.next();
-				if (object instanceof Keyword) {
-					logger.debug("Matching Keyword: "
-							+ ((Keyword) object).toStringRepresentation("|"));
-				} else {
-					logger.debug("Matching object found, but not Keyword: "
-							+ object);
-				}
+			for (Iterator<Keyword> iterator = results.iterator(); iterator
+					.hasNext();) {
+				Keyword keyword = (Keyword) iterator.next();
+				logger.debug("Matching Keyword: "
+						+ keyword.toStringRepresentation("|"));
 			}
 		} else {
 			logger.debug("No matching keywords found");
@@ -204,8 +201,9 @@ public class KeywordDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllNames() throws MetadataAccessException {
-		Collection keywordNames = null;
+	@SuppressWarnings("unchecked")
+	public Collection<String> findAllNames() throws MetadataAccessException {
+		Collection<String> keywordNames = null;
 
 		// Create the query and run it
 		try {
@@ -231,14 +229,15 @@ public class KeywordDAO extends MetadataDAO {
 	 *         empty collection if none are found
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByMetadataObject(IMetadataObject metadataObject)
-			throws MetadataAccessException {
-		Collection keywords = new ArrayList();
+	@SuppressWarnings("unchecked")
+	public Collection<Keyword> findByMetadataObject(
+			IMetadataObject metadataObject) throws MetadataAccessException {
+		Collection<Keyword> keywords = new ArrayList<Keyword>();
 
 		// Build the query and run
 		if (metadataObject instanceof DataContainer) {
-			DataContainerDAO dataContainerDAO = new DataContainerDAO(this
-					.getSession());
+			DataContainerDAO dataContainerDAO = new DataContainerDAO(
+					this.getSession());
 			Long dataContainerId = dataContainerDAO.findId(metadataObject);
 			if (dataContainerId != null) {
 				Query query = getSession().createQuery(
@@ -291,9 +290,8 @@ public class KeywordDAO extends MetadataDAO {
 				try {
 					keyword.setName("Keyword_" + getUniqueNameSuffix());
 				} catch (MetadataException e) {
-					logger
-							.error("MetadataException caught trying to auto-generate "
-									+ "a name for a keyword: " + e.getMessage());
+					logger.error("MetadataException caught trying to auto-generate "
+							+ "a name for a keyword: " + e.getMessage());
 				}
 				addMessage(
 						ssdsAdminEmailToAddress,
@@ -338,9 +336,8 @@ public class KeywordDAO extends MetadataDAO {
 
 		// If no matching keyword was found, throw an exception
 		if (persistentKeyword == null) {
-			logger
-					.debug("No matching keyword could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching keyword could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// Now before actually deleting the keyword, we need to clear the
 			// following relationships:
@@ -388,8 +385,7 @@ public class KeywordDAO extends MetadataDAO {
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentKeyword);
 			} catch (HibernateException e) {
@@ -432,10 +428,10 @@ public class KeywordDAO extends MetadataDAO {
 		return keyword;
 	}
 
-//	protected void initializeRelationships(IMetadataObject metadataObject)
-//			throws MetadataAccessException {
-//
-//	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	//
+	// }
 
 	/**
 	 * The Log4J Logger
