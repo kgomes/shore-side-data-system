@@ -17,8 +17,6 @@ package moos.ssds.ruminate;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,27 +24,21 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.TimeZone;
-import java.util.logging.XMLFormatter;
 
-import javax.ejb.CreateException;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.naming.Context;
-import javax.naming.NamingException;
 
 import moos.ssds.dao.util.MetadataAccessException;
 import moos.ssds.jms.PublisherComponent;
 import moos.ssds.metadata.DataContainer;
 import moos.ssds.metadata.DataProducer;
-import moos.ssds.metadata.DataProducerGroup;
 import moos.ssds.metadata.Device;
 import moos.ssds.metadata.DeviceType;
 import moos.ssds.metadata.IMetadataObject;
@@ -56,18 +48,10 @@ import moos.ssds.metadata.ResourceType;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.ObjectBuilder;
 import moos.ssds.metadata.util.XmlBuilder;
-import moos.ssds.services.metadata.DataContainerAccess;
-import moos.ssds.services.metadata.DataContainerAccessHome;
-import moos.ssds.services.metadata.DataContainerAccessUtil;
-import moos.ssds.services.metadata.DataProducerAccess;
-import moos.ssds.services.metadata.DataProducerAccessHome;
-import moos.ssds.services.metadata.DataProducerAccessUtil;
-import moos.ssds.services.metadata.DataProducerGroupAccess;
-import moos.ssds.services.metadata.DataProducerGroupAccessHome;
-import moos.ssds.services.metadata.DataProducerGroupAccessUtil;
-import moos.ssds.services.metadata.DeviceAccess;
-import moos.ssds.services.metadata.DeviceAccessHome;
-import moos.ssds.services.metadata.DeviceAccessUtil;
+import moos.ssds.services.metadata.DataContainerAccessLocal;
+import moos.ssds.services.metadata.DataProducerAccessLocal;
+import moos.ssds.services.metadata.DataProducerGroupAccessLocal;
+import moos.ssds.services.metadata.DeviceAccessLocal;
 import moos.ssds.util.XmlDateFormat;
 
 import org.apache.log4j.Logger;
@@ -83,6 +67,107 @@ import org.apache.log4j.Logger;
  * @version :
  */
 public class MetadataHandler implements Handler {
+
+	/**
+	 * The ruminate properties for this instance
+	 */
+	private static Properties properties = new Properties();
+
+	/**
+	 * A boolean to indicate if ruminate is connected to the services of SSDS.
+	 */
+	private boolean connected = false;
+
+	/**
+	 * The remote services interfaces
+	 */
+	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DataProducerGroupAccessLocal")
+	private DataProducerGroupAccessLocal dataProducerGroupAccessLocal = null;
+	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DataProducerAccessLocal")
+	private DataProducerAccessLocal dataProducerAccessLocal = null;
+	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DeviceAccessLocal")
+	private DeviceAccessLocal deviceAccessLocal = null;
+	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DataContainerAccessLocal")
+	private DataContainerAccessLocal dataContainerAccessLocal = null;
+
+	/**
+	 * This is the base URL of the data stream access
+	 */
+	private String dataStreamBaseURL = null;
+
+	/**
+	 * A PublisherComponent that will re-publish updated metadata
+	 */
+	private PublisherComponent publisherComponent = null;
+
+	/**
+	 * The incoming packets information
+	 */
+	private long deviceID = -999999;
+	private long parentID = -999999;
+	private int packetType = -999999;
+	private long packetSubType = -999999;
+	private long dataDescriptionID = -999999;
+	private long dataDescriptionVersion = -999999;
+	private long timestampSeconds = -999999;
+	private long timestampNanoseconds = -999999;
+	private long sequenceNumber = -999999;
+	private int bufferLen = 1;
+	private byte[] bufferBytes = new byte[bufferLen];
+	private int bufferTwoLen = 1;
+	private byte[] bufferTwoBytes = new byte[bufferTwoLen];
+
+	// Some helpers
+	private Date packetDate = null;
+
+	// A data formatter
+	private XmlDateFormat xmlDateFormat = new XmlDateFormat();
+
+	/**
+	 * This is a String that holds the actual metadata that was extracted from
+	 * the incoming packet
+	 */
+	private String metadataString = null;
+
+	/**
+	 * This is the File where the incoming XML will be written to
+	 */
+	private java.io.File xmlFile;
+
+	/**
+	 * An object builder for building the model classes from the XML
+	 */
+	private ObjectBuilder objectBuilder;
+
+	/**
+	 * A boolean to indicate if the incoming XML is considered "new" metadata
+	 */
+	boolean newMetadata = true;
+
+	/**
+	 * This is a Log4JLogger that is used to log information to
+	 */
+	static Logger logger = Logger.getLogger(MetadataHandler.class);
+
+	/**
+	 * This collection is built in persistToDatabase and is used by to
+	 * triggerTasks.
+	 */
+	// private Collection outputsToBuildNetCDSfrom = null;
+	private static Properties ioProperties = new Properties();
+
+	// Not sure
+	private static final int revision = 1;
+
+	/**
+	 * This is the naming context for incoming packets
+	 */
+	private Context jndiContext = null;
+
+	/**
+	 * The naming context for the republishing of metadata
+	 */
+	private Context jmsJndiContext = null;
 
 	/**
 	 * This is the default constructor for the metadata handler
@@ -120,49 +205,16 @@ public class MetadataHandler implements Handler {
 
 	private boolean connectToSSDS() {
 		boolean connectedToSSDS = true;
-		// Grab all the services from the SSDS server
-		try {
-			// DataProducerGroup
-			DataProducerGroupAccessHome dataProducerGroupAccessHome = DataProducerGroupAccessUtil
-					.getHome();
-			dataProducerGroupAccess = dataProducerGroupAccessHome.create();
-			// DataProducer
-			DataProducerAccessHome dataProducerAccessHome = DataProducerAccessUtil
-					.getHome();
-			dataProducerAccess = dataProducerAccessHome.create();
-			// Device
-			DeviceAccessHome deviceAccessHome = DeviceAccessUtil.getHome();
-			deviceAccess = deviceAccessHome.create();
-			// DataContainer
-			DataContainerAccessHome dataContainerAccessHome = DataContainerAccessUtil
-					.getHome();
-			dataContainerAccess = dataContainerAccessHome.create();
-		} catch (NamingException e1) {
-			logger.error("Could not get initial context, naming exception: "
-					+ e1.getMessage());
-			connectedToSSDS = false;
-		} catch (CreateException e1) {
-			logger
-					.error("Could not connect create interface to SSDS services: "
-							+ e1.getMessage());
-			connectedToSSDS = false;
-		} catch (Throwable t) {
-			logger
-					.error("Caught throwable trying to get ssds service interfaces: "
-							+ t.getMessage());
-			connectedToSSDS = false;
-		}
 		// Now create the publisher component to send on processed messages
-		logger
-				.debug("Going to create a Publisher component and point it to topic "
-						+ properties
-								.getProperty("ssds.ruminate.republish.topic.name")
-						+ " on host "
-						+ properties
-								.getProperty("ssds.ruminate.republish.host.name.long"));
-		this.publisherComponent = new PublisherComponent(properties
-				.getProperty("ssds.ruminate.republish.topic.name"), properties
-				.getProperty("ssds.ruminate.republish.host.name.long"));
+		logger.debug("Going to create a Publisher component and point it to topic "
+				+ properties.getProperty("ssds.ruminate.republish.topic.name")
+				+ " on host "
+				+ properties
+						.getProperty("ssds.ruminate.republish.host.name.long"));
+		this.publisherComponent = new PublisherComponent(
+				properties.getProperty("ssds.ruminate.republish.topic.name"),
+				properties
+						.getProperty("ssds.ruminate.republish.host.name.long"));
 
 		// Now return the result
 		return connectedToSSDS;
@@ -212,8 +264,7 @@ public class MetadataHandler implements Handler {
 
 		// Connect if not connected to SSDS
 		if (!connected) {
-			logger
-					.debug("MetadataHandler was not connected to SSDS, will try to do so now");
+			logger.debug("MetadataHandler was not connected to SSDS, will try to do so now");
 			connected = this.connectToSSDS();
 		}
 		if (connected) {
@@ -244,8 +295,7 @@ public class MetadataHandler implements Handler {
 				if (ptdbOK) {
 					// First re-publish data to next topic for other clients to
 					// use
-					logger
-							.debug("Going to republish the updated model for downstream processing");
+					logger.debug("Going to republish the updated model for downstream processing");
 					republishModel();
 
 					// // Now do the ruminate thing
@@ -268,8 +318,7 @@ public class MetadataHandler implements Handler {
 			}
 			logger.debug("Done with process method");
 		} else {
-			logger
-					.debug("Could not connect to SSDS, ruminate will not ruminate");
+			logger.debug("Could not connect to SSDS, ruminate will not ruminate");
 		}
 	}
 
@@ -292,9 +341,8 @@ public class MetadataHandler implements Handler {
 		if (indexOfMetadataStartTag < 0) {
 			indexOfMetadataStartTag = dataBufferString.indexOf("<metadata>");
 		}
-		logger
-				.debug("After searching for metadata xml, the index of the starting tag is : "
-						+ indexOfMetadataStartTag);
+		logger.debug("After searching for metadata xml, the index of the starting tag is : "
+				+ indexOfMetadataStartTag);
 		if (indexOfMetadataStartTag >= 0) {
 			int indexOfMetadataEndTag = dataBufferString.indexOf("</metadata>");
 			if ((indexOfMetadataEndTag > 0)
@@ -303,8 +351,8 @@ public class MetadataHandler implements Handler {
 				metadataString = originalDataBufferString.substring(
 						indexOfMetadataStartTag, indexOfMetadataEndTag + 11);
 				logger.debug("Metadata found and is: " + metadataString);
-				File xmlPath = new File(properties
-						.getProperty("ruminate.storage.xml"));
+				File xmlPath = new File(
+						properties.getProperty("ruminate.storage.xml"));
 				// Check to see if the directory exists, if not, create it
 				if (!xmlPath.exists())
 					xmlPath.mkdirs();
@@ -355,13 +403,11 @@ public class MetadataHandler implements Handler {
 			objectBuilder = new ObjectBuilder(xmlFile.toURL());
 			objectBuilder.unmarshal();
 		} catch (MalformedURLException e) {
-			logger
-					.error("Caught MalformedURLException trying to unmarshal the XML into objects:"
-							+ e.getMessage());
+			logger.error("Caught MalformedURLException trying to unmarshal the XML into objects:"
+					+ e.getMessage());
 		} catch (Throwable t) {
-			logger
-					.error("Caught throwable trying to unmarshal the XML into objects: "
-							+ t.getMessage());
+			logger.error("Caught throwable trying to unmarshal the XML into objects: "
+					+ t.getMessage());
 		}
 	}
 
@@ -405,10 +451,8 @@ public class MetadataHandler implements Handler {
 		try {
 			xmlResourceType.setName("application/xhtml+xml");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to set the "
-							+ "name of the ResourceType for the XML: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to set the "
+					+ "name of the ResourceType for the XML: " + e.getMessage());
 		}
 		resource.setMimeType("application/xhtml+xml");
 		resource.setResourceType(xmlResourceType);
@@ -452,9 +496,8 @@ public class MetadataHandler implements Handler {
 			try {
 				currentDataProducer = (DataProducer) obj;
 			} catch (Exception ex) {
-				logger
-						.warn("During check for DataStream objects, could not cast object "
-								+ obj + " to IDeployment");
+				logger.warn("During check for DataStream objects, could not cast object "
+						+ obj + " to IDeployment");
 			}
 
 			// See if the deployment tree has DataStreams
@@ -465,32 +508,22 @@ public class MetadataHandler implements Handler {
 				// Grab the parent device
 				Device parentDevice = null;
 				try {
-					parentDevice = (Device) deviceAccess.findById(parentID,
-							true);
-				} catch (RemoteException e) {
-					logger
-							.error("RemoteException caught trying to get the parent device: "
-									+ e.getMessage());
+					parentDevice = (Device) deviceAccessLocal.findById(
+							parentID, true);
 				} catch (MetadataAccessException e) {
-					logger
-							.error("MetadataAccessException caught trying to get the parent device: "
-									+ e.getMessage());
+					logger.error("MetadataAccessException caught trying to get the parent device: "
+							+ e.getMessage());
 				}
 				DeviceType parentDeviceType = null;
 				if (parentDevice != null)
 					parentDeviceType = parentDevice.getDeviceType();
 				Device currentDevice = null;
 				try {
-					currentDevice = (Device) deviceAccess.findById(deviceID,
-							true);
-				} catch (RemoteException e) {
-					logger
-							.error("RemoteException caught trying to get the current device: "
-									+ e.getMessage());
+					currentDevice = (Device) deviceAccessLocal.findById(
+							deviceID, true);
 				} catch (MetadataAccessException e) {
-					logger
-							.error("MetadataAccessException caught trying to get the current device: "
-									+ e.getMessage());
+					logger.error("MetadataAccessException caught trying to get the current device: "
+							+ e.getMessage());
 				}
 				DeviceType currentDeviceType = null;
 				if (currentDevice != null)
@@ -500,17 +533,12 @@ public class MetadataHandler implements Handler {
 				// clean up things
 				Collection currentDeviceDeployments = null;
 				try {
-					currentDeviceDeployments = dataProducerAccess.findByDevice(
-							currentDevice, null, null, false);
-				} catch (RemoteException e) {
-					logger.error("RemoteException caught trying to get "
+					currentDeviceDeployments = dataProducerAccessLocal
+							.findByDevice(currentDevice, null, null, false);
+				} catch (MetadataAccessException e) {
+					logger.error("MetadataAccessException caught trying to get "
 							+ "the current device's deployments: "
 							+ e.getMessage());
-				} catch (MetadataAccessException e) {
-					logger
-							.error("MetadataAccessException caught trying to get "
-									+ "the current device's deployments: "
-									+ e.getMessage());
 				}
 				if (currentDeviceDeployments != null) {
 					Iterator currentDeviceDeploymentsIterator = currentDeviceDeployments
@@ -521,19 +549,13 @@ public class MetadataHandler implements Handler {
 						if (tempDataProducer.getEndDate() == null) {
 							tempDataProducer.setEndDate(packetDate);
 							try {
-								dataProducerAccess.update(tempDataProducer);
-							} catch (RemoteException e) {
-								logger
-										.error("RemoteException caught trying to close out a "
-												+ "current deployment by setting it's endDate "
-												+ "then doing an update: "
-												+ e.getMessage());
+								dataProducerAccessLocal
+										.update(tempDataProducer);
 							} catch (MetadataAccessException e) {
-								logger
-										.error("MetadataAccessException caught trying to close out a "
-												+ "current deployment by setting it's endDate "
-												+ "then doing an update: "
-												+ e.getMessage());
+								logger.error("MetadataAccessException caught trying to close out a "
+										+ "current deployment by setting it's endDate "
+										+ "then doing an update: "
+										+ e.getMessage());
 							}
 						}
 					}
@@ -542,17 +564,12 @@ public class MetadataHandler implements Handler {
 				// Grab any deployments of the parent device
 				Collection parentDataProducers = null;
 				try {
-					parentDataProducers = dataProducerAccess.findByDevice(
+					parentDataProducers = dataProducerAccessLocal.findByDevice(
 							parentDevice, "startDate", null, false);
-				} catch (RemoteException e) {
-					logger.error("RemoteException caught trying to find "
+				} catch (MetadataAccessException e) {
+					logger.error("MetadataAccessException caught trying to find "
 							+ "the parent device's deployments: "
 							+ e.getMessage());
-				} catch (MetadataAccessException e) {
-					logger
-							.error("MetadataAccessException caught trying to find "
-									+ "the parent device's deployments: "
-									+ e.getMessage());
 				}
 
 				// Now grab the last one (the most recent)
@@ -574,10 +591,9 @@ public class MetadataHandler implements Handler {
 						currentParentDataProducer
 								.setDataProducerType(DataProducer.TYPE_DEPLOYMENT);
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "data producer type on the new parent deployment: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "data producer type on the new parent deployment: "
+								+ e.getMessage());
 					}
 					if (parentDeviceType != null) {
 						try {
@@ -587,10 +603,9 @@ public class MetadataHandler implements Handler {
 									+ xmlDateFormat.format(packetDate)
 									+ ") UUID=" + parentDevice.getUuid());
 						} catch (MetadataException e) {
-							logger
-									.error("MetadataException caught trying to set the "
-											+ "name on the new parent deployment: "
-											+ e.getMessage());
+							logger.error("MetadataException caught trying to set the "
+									+ "name on the new parent deployment: "
+									+ e.getMessage());
 						}
 					} else {
 						try {
@@ -598,10 +613,9 @@ public class MetadataHandler implements Handler {
 									+ xmlDateFormat.format(packetDate)
 									+ ") UUID=" + parentDevice.getUuid());
 						} catch (MetadataException e) {
-							logger
-									.error("MetadataException caught trying to set the "
-											+ "name on the new parent deployment: "
-											+ e.getMessage());
+							logger.error("MetadataException caught trying to set the "
+									+ "name on the new parent deployment: "
+									+ e.getMessage());
 						}
 					}
 					try {
@@ -609,20 +623,18 @@ public class MetadataHandler implements Handler {
 								.setDescription("This deployment was created by SSDS because the device was "
 										+ "a parent on a incoming deployment, but it was not deployed itself");
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "description on the new parent deployment: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "description on the new parent deployment: "
+								+ e.getMessage());
 					}
 					currentParentDataProducer.setStartDate(packetDate);
 					try {
 						currentParentDataProducer
 								.setRole(DataProducer.ROLE_PLATFORM);
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "role on the new parent deployment: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "role on the new parent deployment: "
+								+ e.getMessage());
 					}
 					currentParentDataProducer.setDevice(parentDevice);
 				}
@@ -636,9 +648,8 @@ public class MetadataHandler implements Handler {
 				// time
 				if (currentDataProducer.getStartDate() == null) {
 					currentDataProducer.setStartDate(packetDate);
-					logger
-							.debug("Set the current deployment's start date to the packet timestamp which is "
-									+ xmlDateFormat.format(packetDate));
+					logger.debug("Set the current deployment's start date to the packet timestamp which is "
+							+ xmlDateFormat.format(packetDate));
 				}
 
 				// Now check to see if the deployment has a name, if not create
@@ -663,10 +674,9 @@ public class MetadataHandler implements Handler {
 										+ xmlDateFormat.format(packetDate)
 										+ ") UUID=" + currentDevice.getUuid());
 							} catch (MetadataException e) {
-								logger
-										.error("MetadataException caught trying to set the "
-												+ "name on the new current deployment: "
-												+ e.getMessage());
+								logger.error("MetadataException caught trying to set the "
+										+ "name on the new current deployment: "
+										+ e.getMessage());
 							}
 						} else {
 							try {
@@ -674,10 +684,9 @@ public class MetadataHandler implements Handler {
 										+ xmlDateFormat.format(packetDate)
 										+ ") UUID=UNKNOWN");
 							} catch (MetadataException e) {
-								logger
-										.error("MetadataException caught trying to set the "
-												+ "name on the new current deployment: "
-												+ e.getMessage());
+								logger.error("MetadataException caught trying to set the "
+										+ "name on the new current deployment: "
+										+ e.getMessage());
 							}
 						}
 					}
@@ -689,10 +698,9 @@ public class MetadataHandler implements Handler {
 					try {
 						currentDataProducer.setDescription("");
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "description on the new current deployment: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "description on the new current deployment: "
+								+ e.getMessage());
 					}
 				}
 
@@ -702,10 +710,9 @@ public class MetadataHandler implements Handler {
 						currentDataProducer
 								.setRole(DataProducer.ROLE_INSTRUMENT);
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "role on the new current deployment: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "role on the new current deployment: "
+								+ e.getMessage());
 					}
 				}
 
@@ -751,9 +758,8 @@ public class MetadataHandler implements Handler {
 												+ packetSubType
 												+ "&numHourOffset=24");
 							} catch (MetadataException e) {
-								logger
-										.error("Could not set the URIString for the DataContainer: "
-												+ e.getMessage());
+								logger.error("Could not set the URIString for the DataContainer: "
+										+ e.getMessage());
 							}
 						}
 						// Start date
@@ -775,10 +781,9 @@ public class MetadataHandler implements Handler {
 														.format(tempDataContainer
 																.getStartDate()));
 							} catch (MetadataException e) {
-								logger
-										.error("MetadataException caught trying to set the "
-												+ "description of the data container: "
-												+ e.getMessage());
+								logger.error("MetadataException caught trying to set the "
+										+ "description of the data container: "
+										+ e.getMessage());
 							}
 						}
 					}
@@ -806,8 +811,8 @@ public class MetadataHandler implements Handler {
 		if (childDataProducers != null) {
 			Iterator iterator = childDataProducers.iterator();
 			while (iterator.hasNext()) {
-				addResourceToDataProducerAndChildren((DataProducer) iterator
-						.next(), resource);
+				addResourceToDataProducerAndChildren(
+						(DataProducer) iterator.next(), resource);
 			}
 		}
 	}
@@ -863,15 +868,10 @@ public class MetadataHandler implements Handler {
 			Object obj = it.next();
 			try {
 				if (obj instanceof DataProducer)
-					dataProducerAccess.insert((DataProducer) obj);
-			} catch (RemoteException e) {
-				logger
-						.error("RemoteException caught trying to insert the whole data producer: "
-								+ e.getMessage());
+					dataProducerAccessLocal.insert((DataProducer) obj);
 			} catch (MetadataAccessException e) {
-				logger
-						.error("MetadataAccessException caught trying to insert the whole data producer: "
-								+ e.getMessage());
+				logger.error("MetadataAccessException caught trying to insert the whole data producer: "
+						+ e.getMessage());
 			}
 		}
 
@@ -1116,101 +1116,5 @@ public class MetadataHandler implements Handler {
 	// email.start();
 	// }
 	// *********** LOCAL VARIABLES ********************//
-	/**
-	 * The ruminate properties for this instance
-	 */
-	private static Properties properties = new Properties();
-
-	/**
-	 * A boolean to indicate if ruminate is connected to the services of SSDS.
-	 */
-	private boolean connected = false;
-
-	/**
-	 * The remote services interfaces
-	 */
-	private DataProducerGroupAccess dataProducerGroupAccess = null;
-	private DataProducerAccess dataProducerAccess = null;
-	private DeviceAccess deviceAccess = null;
-	private DataContainerAccess dataContainerAccess = null;
-
-	/**
-	 * This is the base URL of the data stream access
-	 */
-	private String dataStreamBaseURL = null;
-
-	/**
-	 * A PublisherComponent that will re-publish updated metadata
-	 */
-	private PublisherComponent publisherComponent = null;
-
-	/**
-	 * The incoming packets information
-	 */
-	private long deviceID = -999999;
-	private long parentID = -999999;
-	private int packetType = -999999;
-	private long packetSubType = -999999;
-	private long dataDescriptionID = -999999;
-	private long dataDescriptionVersion = -999999;
-	private long timestampSeconds = -999999;
-	private long timestampNanoseconds = -999999;
-	private long sequenceNumber = -999999;
-	private int bufferLen = 1;
-	private byte[] bufferBytes = new byte[bufferLen];
-	private int bufferTwoLen = 1;
-	private byte[] bufferTwoBytes = new byte[bufferTwoLen];
-
-	// Some helpers
-	private Date packetDate = null;
-
-	// A data formatter
-	private XmlDateFormat xmlDateFormat = new XmlDateFormat();
-
-	/**
-	 * This is a String that holds the actual metadata that was extracted from
-	 * the incoming packet
-	 */
-	private String metadataString = null;
-
-	/**
-	 * This is the File where the incoming XML will be written to
-	 */
-	private java.io.File xmlFile;
-
-	/**
-	 * An object builder for building the model classes from the XML
-	 */
-	private ObjectBuilder objectBuilder;
-
-	/**
-	 * A boolean to indicate if the incoming XML is considered "new" metadata
-	 */
-	boolean newMetadata = true;
-
-	/**
-	 * This is a Log4JLogger that is used to log information to
-	 */
-	static Logger logger = Logger.getLogger(MetadataHandler.class);
-
-	/**
-	 * This collection is built in persistToDatabase and is used by to
-	 * triggerTasks.
-	 */
-	// private Collection outputsToBuildNetCDSfrom = null;
-	private static Properties ioProperties = new Properties();
-
-	// Not sure
-	private static final int revision = 1;
-
-	/**
-	 * This is the naming context for incoming packets
-	 */
-	private Context jndiContext = null;
-
-	/**
-	 * The naming context for the republishing of metadata
-	 */
-	private Context jmsJndiContext = null;
 
 }

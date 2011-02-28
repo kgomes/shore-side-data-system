@@ -19,16 +19,6 @@
 	<!-- Import some path definitions -->
 	<import file="path-defs.xml" />
 
-	<!-- Define the ejb-doclet task -->
-	<taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
-		<classpath>
-			<pathelement location="${jboss.client.jar.directory}/${jboss.client.jboss.javaee.jar}" />
-			<fileset dir="${xdoclet.path}">
-				<include name="*.jar" />
-			</fileset>
-		</classpath>
-	</taskdef>
-
 	<!-- Do stuff that you want everytime ant is run -->
 	<target name="init">
 		<!-- Initialize the date/time -->
@@ -57,19 +47,6 @@
 	<!-- The clean targets -->
 	<target name="clean" depends="remove-working-dirs,rebuild-project-dirs" />
 
-	<!-- The target to run xdoclet on the ruminate specific classes -->
-	<target name="ejb-doclet" depends="init">
-		<!-- First, run ejbdoclet for the ruminate MDB -->
-		<ejbdoclet ejbspec="${ruminate.xdoclet.ejb.spec.version}" destDir="${src.gen}" verbose="true" force="false">
-			<!-- Run on any classes that are MDB's in ruminate -->
-			<fileset dir="${src.java}">
-				<include name="moos/ssds/ruminate/**/*MDB.java" />
-			</fileset>
-			<!-- Create the generic J2EE deployment descriptor -->
-			<deploymentdescriptor destdir="${project.build}/ruminate/META-INF" destinationFile="ejb-jar.xml" validatexml="true" />
-		</ejbdoclet>
-	</target>
-
 	<!-- Compile the necessary code source code -->
 	<target name="compile" depends="init">
 		<!-- Run the appropriate javac -->
@@ -92,8 +69,7 @@
 		classes, run all the necessary XDoclet tasks, and compile the source code" />
 
 	<!-- The distribution target -->
-	<target name="dist" depends="build,ejb-doclet" description="This target runs the clean, compile
-		and then builds this distributions">
+	<target name="dist" depends="build" description="This target runs the clean, compile and then builds this distributions">
 		<!-- Delete old jar files -->
 		<delete file="${project.dist}/ssds-ruminate.jar" />
 		<!-- Now create the properties file that the RuminateMDB will use -->
@@ -141,16 +117,12 @@
 			<fileset dir="${build.classes}">
 				<include name="moos/ssds/ruminate/**/*.class" />
 				<include name="moos/ssds/metadata/**/*.class" />
-				<include name="moos/ssds/dao/util/**/*.class" />
-				<include name="moos/ssds/services/metadata/**/*.class" />
+				<include name="moos/ssds/dao/**/*.class" />
+				<include name="moos/ssds/services/metadata/**/*Local.class" />
 			</fileset>
 			<!-- Include all necessary resources -->
 			<fileset dir="${project.build}/ruminate">
 				<include name="moos/ssds/ruminate/**/*.properties" />
-			</fileset>
-			<!-- Include the metadata for the generic deployment descriptor -->
-			<fileset dir="${project.build}/ruminate">
-				<include name="META-INF/*.xml" />
 			</fileset>
 			<fileset dir="${project.dir}" includes="lib/${siam.jar}" />
 		</jar>

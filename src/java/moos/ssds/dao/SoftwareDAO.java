@@ -67,8 +67,8 @@ public class SoftwareDAO extends MetadataDAO {
 			softwareToReturn = (Software) this.findById(software.getId(),
 					returnFullObjectGraph);
 		if (softwareToReturn == null)
-			softwareToReturn = this.findByNameAndSoftwareVersion(software
-					.getName(), software.getSoftwareVersion(),
+			softwareToReturn = this.findByNameAndSoftwareVersion(
+					software.getName(), software.getSoftwareVersion(),
 					returnFullObjectGraph);
 
 		// Double check that if the incoming software has an ID, it matches
@@ -117,16 +117,17 @@ public class SoftwareDAO extends MetadataDAO {
 		return count;
 	}
 
-	public Collection findByName(String name) throws MetadataAccessException {
-		return null;
-	}
-
-	public Collection findByLikeName(String likeName)
+	public Collection<Software> findByName(String name)
 			throws MetadataAccessException {
 		return null;
 	}
 
-	public Collection findAllNames() throws MetadataAccessException {
+	public Collection<Software> findByLikeName(String likeName)
+			throws MetadataAccessException {
+		return null;
+	}
+
+	public Collection<String> findAllNames() throws MetadataAccessException {
 		return null;
 	}
 
@@ -140,9 +141,9 @@ public class SoftwareDAO extends MetadataDAO {
 
 		// Now build and perform the query
 		Software softwareToReturn = (Software) this.getSession()
-				.createCriteria(Software.class).add(
-						Restrictions.eq("name", name)).add(
-						Restrictions.eq("softwareVersion", softwareVersion))
+				.createCriteria(Software.class)
+				.add(Restrictions.eq("name", name))
+				.add(Restrictions.eq("softwareVersion", softwareVersion))
 				.uniqueResult();
 
 		// Check for full object graph
@@ -153,29 +154,32 @@ public class SoftwareDAO extends MetadataDAO {
 		return softwareToReturn;
 	}
 
-	public Collection findByURIString(String uriString)
+	public Collection<Software> findByURIString(String uriString)
 			throws MetadataAccessException {
 		return null;
 	}
 
-	public Collection findByURI(URI uri) throws MetadataAccessException {
-		return null;
-	}
-
-	public Collection findByURL(URL url) throws MetadataAccessException {
-		return null;
-	}
-
-	public Collection findByPerson(Person person)
+	public Collection<Software> findByURI(URI uri)
 			throws MetadataAccessException {
 		return null;
 	}
 
-	public Collection findByResource(Resource resource,
+	public Collection<Software> findByURL(URL url)
+			throws MetadataAccessException {
+		return null;
+	}
+
+	public Collection<Software> findByPerson(Person person)
+			throws MetadataAccessException {
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Collection<Software> findByResource(Resource resource,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// The results to return
-		Collection results = new ArrayList();
+		Collection<Software> results = new ArrayList<Software>();
 
 		// If the resource is null return null
 		if (resource == null)
@@ -223,7 +227,7 @@ public class SoftwareDAO extends MetadataDAO {
 		results = query.list();
 
 		if (returnFullObjectGraph)
-			results = getRealObjectsAndRelationships(results);
+			results = (Collection<Software>) getRealObjectsAndRelationships(results);
 
 		return results;
 	}
@@ -281,10 +285,9 @@ public class SoftwareDAO extends MetadataDAO {
 					software.setSoftwareVersion("Software_Version_"
 							+ getUniqueNameSuffix());
 				} catch (MetadataException e) {
-					logger
-							.error("MetadataException caught trying to "
-									+ "auto-generate a softwareVersion for a Software: "
-									+ e.getMessage());
+					logger.error("MetadataException caught trying to "
+							+ "auto-generate a softwareVersion for a Software: "
+							+ e.getMessage());
 				}
 				addMessage(ssdsAdminEmailToAddress,
 						"An incoming software had no softwareVersion so "
@@ -371,8 +374,8 @@ public class SoftwareDAO extends MetadataDAO {
 				// Create a copy of the collection associated with the software
 				// to
 				// prevent concurrent modifications
-				Collection softwareResourceCopy = new ArrayList(software
-						.getResources());
+				Collection softwareResourceCopy = new ArrayList(
+						software.getResources());
 
 				// Now we need to make the correct associations. Currently, you
 				// have a collection of Resource objects that have their values
@@ -449,9 +452,8 @@ public class SoftwareDAO extends MetadataDAO {
 
 		// If no matching software was found, do nothing
 		if (persistentSoftware == null) {
-			logger
-					.debug("No matching software could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching software could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// Handle the relationships
 			persistentSoftware.setPerson(null);
@@ -471,8 +473,7 @@ public class SoftwareDAO extends MetadataDAO {
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentSoftware);
 			} catch (HibernateException e) {

@@ -98,7 +98,7 @@
 				</compc> -->
 
 				<!-- Run the flex compiler on the explorer MXML file -->
-				<mxmlc file="${src.web}/src/explorer.mxml" output="${project.build}/webapp/explorer.swf" context-root="/ssds" services="${resources.build}/flex/WEB-INF/flex/services-config.xml">
+				<mxmlc file="${src.web}/src/explorer.mxml" output="${project.build}/webapp/explorer.swf" context-root="/ssds" services="${resources.build}/flex/blazeds/WEB-INF/flex/services-config.xml">
 					<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
 					<source-path path-element="${FLEX_HOME}/frameworks" />
 					<!-- List of SWC files or directories that contain SWC files. -->
@@ -113,6 +113,12 @@
 					</compiler.external-library-path> -->
 				</mxmlc>
 
+				<!-- Compile the server side java components for the blaze service -->
+				<javac destdir="${src.resources}/build/flex/blazeds/WEB-INF/classes" debug="${debug}" fork="yes">
+					<src path="${src.java}" />
+					<include name="moos/ssds/services/blazeds/**/*.java" />
+					<classpath refid="compile-classpath" />
+				</javac>
 			</then>
 			<!-- Build and deploy the GWT application -->
 			<else>
@@ -133,6 +139,14 @@
 			<!-- Simply call the targets to clean and compile the flash application -->
 			<then>
 				<antcall inheritall="true" target="build" />
+				<!-- Now build the blazeds war file -->
+				<jar jarfile="${project.dist}/blazeds.war">
+					<!-- Include the class -->
+					<fileset dir="${src.resources}/build/flex/blazeds">
+						<include name="**/*" />
+					</fileset>
+				</jar>
+
 			</then>
 
 			<!-- Simply call the target to build the GWT war file -->
@@ -150,6 +164,8 @@
 		<!-- Delete either the directory (if exploded) or file (if not) -->
 		<delete dir="${webapp.deployment.location}" />
 		<delete file="${webapp.deployment.location}" />
+		<!-- Remove the blazeds war -->
+		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/blazeds.war" />
 		<!-- Remove the cached version -->
 		<delete failonerror="false" dir="${webapp.deployment.cache.location}" />
 	</target>
@@ -162,6 +178,8 @@
 			<equals arg1="${web.application.type.to.deploy}" arg2="FLASH" />
 			<!-- Build the flash application -->
 			<then>
+				<!-- Deploy the blazeds war -->
+				<copy file="${project.dist}/blazeds.war" tofile="${jboss.home}/server/${jboss.server.type}/deploy/blazeds.war" overwrite="true" />
 				<!-- Create the directory on the deployed server for the exploded WAR -->
 				<mkdir dir="${webapp.deployment.location}" />
 
@@ -183,6 +201,13 @@
 						<exclude name="**/*.as" />
 					</fileset>
 				</copy>
+
+				<!-- Copy over the metadata service client jar -->
+				<copy file="${project.dist}/ssds-services-metadata-client.jar" tofile="${webapp.deployment.location}/WEB-INF/lib/ssds-services-metadata-client.jar" overwrite="true" />
+				<!-- Supporting libs -->
+				<copy file="${project.lib}/${apache.commons.lang.jar}" tofile="${webapp.deployment.location}/WEB-INF/lib/${apache.commons.lang.jar}" />
+				<copy file="${project.lib}/${jfreechart.jar}" tofile="${webapp.deployment.location}/WEB-INF/lib/${jfreechart.jar}" />
+				<copy file="${project.lib}/${jcommon.jar}" tofile="${webapp.deployment.location}/WEB-INF/lib/${jcommon.jar}" />
 			</then>
 			<!-- Build and deploy the GWT application -->
 			<else>

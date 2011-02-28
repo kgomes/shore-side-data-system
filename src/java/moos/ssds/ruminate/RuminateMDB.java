@@ -30,10 +30,12 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.TimeZone;
 
-import javax.ejb.CreateException;
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.MessageDriven;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
@@ -57,16 +59,10 @@ import moos.ssds.metadata.ResourceType;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.ObjectBuilder;
 import moos.ssds.metadata.util.XmlBuilder;
-import moos.ssds.services.metadata.DataContainerAccessLocalHome;
-import moos.ssds.services.metadata.DataContainerAccessUtil;
+import moos.ssds.services.metadata.DataContainerAccessLocal;
 import moos.ssds.services.metadata.DataProducerAccessLocal;
-import moos.ssds.services.metadata.DataProducerAccessLocalHome;
-import moos.ssds.services.metadata.DataProducerAccessUtil;
-import moos.ssds.services.metadata.DataProducerGroupAccessLocalHome;
-import moos.ssds.services.metadata.DataProducerGroupAccessUtil;
+import moos.ssds.services.metadata.DataProducerGroupAccessLocal;
 import moos.ssds.services.metadata.DeviceAccessLocal;
-import moos.ssds.services.metadata.DeviceAccessLocalHome;
-import moos.ssds.services.metadata.DeviceAccessUtil;
 import moos.ssds.util.XmlDateFormat;
 
 import org.apache.log4j.Logger;
@@ -166,15 +162,143 @@ import org.apache.log4j.Logger;
  * 
  *          From here down is XDoclet Stuff for generating deployment
  *          configuration files
- * @ejb.bean name="Ruminate" display-name="Ruminate Message-Driven Bean"
- *           description="Extracts metadata and processes it into SSDS"
- *           transaction-type="Bean" acknowledge-mode="Auto-acknowledge"
- *           destination-type="javax.jms.Topic"
- *           subscription-durability="NonDurable"
- * @jboss.destination-jndi-name name="topic/${ruminate.topic.name}"
  */
-public class RuminateMDB implements javax.ejb.MessageDrivenBean,
-		javax.jms.MessageListener {
+@MessageDriven(activationConfig = {
+		@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
+		@ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/SSDSRuminateTopic"),
+		@ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "NonDurable") })
+public class RuminateMDB implements MessageListener {
+
+	/**
+	 * The ruminate properties for this instance
+	 */
+	private static Properties properties = new Properties();
+
+	/**
+	 * A boolean to indicate if ruminate is connected to the services of SSDS.
+	 */
+	private boolean connected = false;
+
+	/**
+	 * The SSDS Services
+	 */
+	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DataProducerGroupAccessLocal")
+	private DataProducerGroupAccessLocal dataProducerGroupAccessLocal;
+	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DataProducerAccessLocal")
+	private DataProducerAccessLocal dataProducerAccessLocal;
+	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DeviceAccessLocal")
+	private DeviceAccessLocal deviceAccessLocal;
+	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DataContainerAccessLocal")
+	private DataContainerAccessLocal dataContainerAccessLocal;
+
+	/**
+	 * This is the base URL of the data stream access
+	 */
+	private String dataStreamBaseURL = null;
+
+	/**
+	 * The incoming packets information
+	 */
+	private long deviceID = -999999;
+	private long parentID = -999999;
+	private int packetType = -999999;
+	private long packetSubType = -999999;
+	private long dataDescriptionID = -999999;
+	private long dataDescriptionVersion = -999999;
+	private long timestampSeconds = -999999;
+	private long timestampNanoseconds = -999999;
+	private long sequenceNumber = -999999;
+	private int bufferLen = 1;
+	private byte[] bufferBytes = new byte[bufferLen];
+	private int bufferTwoLen = 1;
+	private byte[] bufferTwoBytes = new byte[bufferTwoLen];
+
+	/**
+	 * This is the MessageDrivenContext that is from the container
+	 */
+	private javax.ejb.MessageDrivenContext ctx;
+
+	/**
+	 * A log4j logger
+	 */
+	static Logger logger = Logger.getLogger(RuminateMDB.class);
+
+	// Some helpers
+	private Date packetDate = null;
+
+	// A data formatter
+	private static XmlDateFormat xmlDateFormat = new XmlDateFormat();
+
+	/**
+	 * This is a String that holds the actual metadata that was extracted from
+	 * the incoming packet
+	 */
+	private String metadataString = null;
+
+	/**
+	 * This is the File where the incoming XML will be written to
+	 */
+	private java.io.File xmlFile;
+
+	/**
+	 * An object builder for building the model classes from the XML
+	 */
+	private ObjectBuilder objectBuilder;
+
+	/**
+	 * A boolean to indicate if the incoming XML is considered "new" metadata
+	 */
+	boolean newMetadata = true;
+
+	/**
+	 * A static counter that can be used to make sure that incoming deployment
+	 * names are unique
+	 */
+	private static int counter = 0;
+
+	/**
+	 * This is the name of the topic that the packets will be republished to
+	 */
+	private String republishTopicName = null;
+
+	/**
+	 * This is the JNDI Context that will be used (Naming Service) to locate the
+	 * appropriate remote classes to use for publishing messages.
+	 */
+	private Context jndiContext = null;
+
+	/**
+	 * The TopicConnectionFactory that will be used to republish messages
+	 */
+	private TopicConnectionFactory topicConnectionFactory = null;
+
+	/**
+	 * This is the connection to the topic that the messages will be published
+	 * to
+	 */
+	private TopicConnection topicConnection = null;
+
+	/**
+	 * This is the JMS topic that will be used for publishing
+	 */
+	private Topic topic = null;
+
+	/**
+	 * This is a session that the publishing of messages will be run in.
+	 */
+	private TopicSession topicSession = null;
+
+	/**
+	 * This is the topic publisher that is actually used to send messages to the
+	 * topic
+	 */
+	private TopicPublisher topicPublisher = null;
+
+	/**
+	 * This is a boolean to indicated if the publishing is setup and working
+	 * correctly
+	 */
+	private boolean publishingSetup = false;
 
 	/**
 	 * This is the default constructor
@@ -227,25 +351,6 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 
 	private boolean connectToSSDS() {
 		boolean connectedToSSDS = true;
-		// Grab all the local home interfaces the SSDS server
-		try {
-			dataProducerGroupAccessLocalHome = DataProducerGroupAccessUtil
-					.getLocalHome();
-			dataProducerAccessLocalHome = DataProducerAccessUtil.getLocalHome();
-			deviceAccessLocalHome = DeviceAccessUtil.getLocalHome();
-			dataContainerAccessLocalHome = DataContainerAccessUtil
-					.getLocalHome();
-		} catch (NamingException e1) {
-			logger.error("Could not get initial context, naming exception: "
-					+ e1.getMessage());
-			connectedToSSDS = false;
-		} catch (Throwable t) {
-			logger
-					.error("Caught throwable trying to get ssds service interfaces: "
-							+ t.getMessage());
-			connectedToSSDS = false;
-		}
-
 		// Now return the result
 		return connectedToSSDS;
 	}
@@ -403,8 +508,7 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 
 			// Connect if not connected to SSDS
 			if (!connected) {
-				logger
-						.debug("MetadataHandler was not connected to SSDS, will try to do so now");
+				logger.debug("MetadataHandler was not connected to SSDS, will try to do so now");
 				connected = this.connectToSSDS();
 			}
 			if (connected) {
@@ -422,24 +526,20 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 						logger.debug("OK, now marshall XML to objects");
 						marshallObjects();
 
-						logger
-								.debug("Marshalled. Now update model with XML files");
+						logger.debug("Marshalled. Now update model with XML files");
 						updateModel();
-						logger
-								.debug("Was able to run the object builder and update the model");
+						logger.debug("Was able to run the object builder and update the model");
 
 						logger.debug("Updated. Now will persist.");
 						ptdbOK = persistToDatabase();
-						logger
-								.debug("Reply from persist to DB as to success = "
-										+ ptdbOK);
+						logger.debug("Reply from persist to DB as to success = "
+								+ ptdbOK);
 					}
 
 					if (ptdbOK) {
 						// First re-publish data to next topic for other clients
 						// to use
-						logger
-								.debug("Going to republish the updated model for downstream processing");
+						logger.debug("Going to republish the updated model for downstream processing");
 						republishModel();
 					} else {
 						logger.error("Failed to persist to database.");
@@ -447,8 +547,7 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 				}
 				logger.debug("Done with process method");
 			} else {
-				logger
-						.debug("Could not connect to SSDS, ruminate will not ruminate");
+				logger.debug("Could not connect to SSDS, ruminate will not ruminate");
 			}
 		}
 	}
@@ -470,9 +569,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 		if (indexOfMetadataStartTag < 0) {
 			indexOfMetadataStartTag = dataBufferString.indexOf("<metadata>");
 		}
-		logger
-				.debug("After searching for metadata xml, the index of the starting tag is : "
-						+ indexOfMetadataStartTag);
+		logger.debug("After searching for metadata xml, the index of the starting tag is : "
+				+ indexOfMetadataStartTag);
 		if (indexOfMetadataStartTag >= 0) {
 			int indexOfMetadataEndTag = dataBufferString.indexOf("</metadata>");
 			if ((indexOfMetadataEndTag > 0)
@@ -481,8 +579,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 				metadataString = originalDataBufferString.substring(
 						indexOfMetadataStartTag, indexOfMetadataEndTag + 11);
 				logger.debug("Metadata found and is: " + metadataString);
-				File xmlPath = new File(properties
-						.getProperty("ruminate.storage.xml"));
+				File xmlPath = new File(
+						properties.getProperty("ruminate.storage.xml"));
 				// If the directory does not exist, create it
 				if (!xmlPath.exists())
 					xmlPath.mkdirs();
@@ -535,13 +633,11 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 			objectBuilder = new ObjectBuilder(xmlFile.toURL());
 			objectBuilder.unmarshal();
 		} catch (MalformedURLException e) {
-			logger
-					.error("Caught MalformedURLException trying to unmarshal the XML into objects:"
-							+ e.getMessage());
+			logger.error("Caught MalformedURLException trying to unmarshal the XML into objects:"
+					+ e.getMessage());
 		} catch (Throwable t) {
-			logger
-					.error("Caught throwable trying to unmarshal the XML into objects: "
-							+ t.getMessage());
+			logger.error("Caught throwable trying to unmarshal the XML into objects: "
+					+ t.getMessage());
 		}
 	}
 
@@ -588,10 +684,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 		try {
 			xmlResourceType.setName("application/xhtml+xml");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to set the "
-							+ "name of the ResourceType for the XML: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to set the "
+					+ "name of the ResourceType for the XML: " + e.getMessage());
 		}
 		resource.setMimeType("application/xhtml+xml");
 		resource.setResourceType(xmlResourceType);
@@ -636,14 +730,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 
 		// Grab a local interface
 		try {
-			DeviceAccessLocal deviceAccessLocal = deviceAccessLocalHome
-					.create();
 			parentDeviceFromPacket = (Device) deviceAccessLocal.findById(
 					parentID, true);
-		} catch (CreateException e2) {
-			logger.error("CreateException caught trying to get the parent "
-					+ "Device from the parent ID on the packet:"
-					+ e2.getMessage());
 		} catch (MetadataAccessException e2) {
 			logger.error("CreateException caught trying to get the parent "
 					+ "Device from the parent ID on the packet:"
@@ -674,18 +762,11 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 		// on the packet
 		Device deviceFromPacketID = null;
 		try {
-			DeviceAccessLocal deviceAccessLocal = deviceAccessLocalHome
-					.create();
 			deviceFromPacketID = (Device) deviceAccessLocal.findById(deviceID,
 					true);
-		} catch (CreateException e2) {
-			logger.error("CreateException caught trying to get the device "
-					+ "from the device ID on the packet:" + e2.getMessage());
 		} catch (MetadataAccessException e2) {
-			logger
-					.error("MetadataAccessException caught trying to get the device "
-							+ "from the device ID on the packet:"
-							+ e2.getMessage());
+			logger.error("MetadataAccessException caught trying to get the device "
+					+ "from the device ID on the packet:" + e2.getMessage());
 		}
 
 		// Check to see if it was found
@@ -721,9 +802,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 			try {
 				currentDataProducer = (DataProducer) obj;
 			} catch (Exception ex) {
-				logger
-						.warn("During check for DataStream objects, could not cast object "
-								+ obj + " to IDeployment");
+				logger.warn("During check for DataStream objects, could not cast object "
+						+ obj + " to IDeployment");
 			}
 
 			// As a first check it would be nice to know if the dataproducer has
@@ -755,27 +835,19 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 				Collection parentDataProducers = null;
 				try {
 					parentDataProducers = null;
-					DataProducerAccessLocal dataProducerAccessLocal = dataProducerAccessLocalHome
-							.create();
 					parentDataProducers = dataProducerAccessLocal.findByDevice(
 							parentDeviceFromPacket, "startDate", "desc", false);
-				} catch (CreateException e1) {
-					logger.error("CreateException caught trying to get "
+				} catch (MetadataAccessException e1) {
+					logger.error("MetadataAccessException caught trying to get "
 							+ "deployments of the parent device: "
 							+ e1.getMessage());
-				} catch (MetadataAccessException e1) {
-					logger
-							.error("MetadataAccessException caught trying to get "
-									+ "deployments of the parent device: "
-									+ e1.getMessage());
 				}
 
 				// Now grab the first one as it should be the most recent
 				if (parentDataProducers != null) {
-					logger
-							.debug("There were "
-									+ parentDataProducers.size()
-									+ " parent deployments, so I will grab the first one");
+					logger.debug("There were "
+							+ parentDataProducers.size()
+							+ " parent deployments, so I will grab the first one");
 					Iterator parentDataProducerIterator = parentDataProducers
 							.iterator();
 					if (parentDataProducerIterator.hasNext()) {
@@ -788,11 +860,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 					if (currentParentDataProducer != null) {
 						// To make sure we work OK, let's get the full object
 						// graph.
-						logger
-								.debug("To make sure we are working with a full object graph, grab it");
+						logger.debug("To make sure we are working with a full object graph, grab it");
 						try {
-							DataProducerAccessLocal dataProducerAccessLocal = dataProducerAccessLocalHome
-									.create();
 							currentParentDataProducer = (DataProducer) dataProducerAccessLocal
 									.getMetadataObjectGraph(currentParentDataProducer);
 							if (currentParentDataProducer == null) {
@@ -802,16 +871,10 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 										+ currentParentDataProducer
 												.toStringRepresentation("|"));
 							}
-						} catch (CreateException e1) {
-							logger
-									.error("CreateException trying to get full object graph "
-											+ "for the current parent data producer: "
-											+ e1.getMessage());
 						} catch (MetadataAccessException e1) {
-							logger
-									.error("MetadataAccessException trying to get full object graph "
-											+ "for the current parent data producer: "
-											+ e1.getMessage());
+							logger.error("MetadataAccessException trying to get full object graph "
+									+ "for the current parent data producer: "
+									+ e1.getMessage());
 						}
 					}
 				}
@@ -828,10 +891,9 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 						currentParentDataProducer
 								.setDataProducerType(DataProducer.TYPE_DEPLOYMENT);
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "data producer type on the new parent deployment: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "data producer type on the new parent deployment: "
+								+ e.getMessage());
 					}
 					// If the parent device type is not null, use that in the
 					// name
@@ -847,10 +909,9 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 											+ ") UUID="
 											+ parentDeviceFromPacket.getUuid());
 						} catch (MetadataException e) {
-							logger
-									.error("MetadataException caught trying to set the "
-											+ "name on the new parent deployment: "
-											+ e.getMessage());
+							logger.error("MetadataException caught trying to set the "
+									+ "name on the new parent deployment: "
+									+ e.getMessage());
 						}
 					} else {
 						if (parentDeviceFromPacket != null) {
@@ -862,10 +923,9 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 										+ ") UUID="
 										+ parentDeviceFromPacket.getUuid());
 							} catch (MetadataException e) {
-								logger
-										.error("MetadataException caught trying to set the "
-												+ "name on the new parent deployment: "
-												+ e.getMessage());
+								logger.error("MetadataException caught trying to set the "
+										+ "name on the new parent deployment: "
+										+ e.getMessage());
 							}
 						} else {
 							try {
@@ -875,10 +935,9 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 										+ " - " + getNextSuffixCounter()
 										+ ") UUID=UNKNOWN");
 							} catch (MetadataException e) {
-								logger
-										.error("MetadataException caught trying to set the "
-												+ "name on the new parent deployment: "
-												+ e.getMessage());
+								logger.error("MetadataException caught trying to set the "
+										+ "name on the new parent deployment: "
+										+ e.getMessage());
 							}
 						}
 					}
@@ -888,10 +947,9 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 								.setDescription("This deployment was created by SSDS because the device was "
 										+ "a parent on a incoming deployment, but it was not deployed itself");
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "description on the new parent deployment: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "description on the new parent deployment: "
+								+ e.getMessage());
 					}
 					// Set the start date of the parent deployment
 					currentParentDataProducer.setStartDate(packetDate);
@@ -899,21 +957,18 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 						currentParentDataProducer
 								.setRole(DataProducer.ROLE_PLATFORM);
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "role on the new parent deployment: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "role on the new parent deployment: "
+								+ e.getMessage());
 					}
 					// Now assign the parent device
 					currentParentDataProducer.setDevice(parentDeviceFromPacket);
 				}
 
 				// So we now have the current parent deployment
-				logger
-						.debug("right before I add a child deployment, "
-								+ "the currentParentDataProducer is "
-								+ currentParentDataProducer
-										.toStringRepresentation("|"));
+				logger.debug("right before I add a child deployment, "
+						+ "the currentParentDataProducer is "
+						+ currentParentDataProducer.toStringRepresentation("|"));
 				currentParentDataProducer
 						.addChildDataProducer(currentDataProducer);
 
@@ -922,9 +977,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 				// time
 				if (currentDataProducer.getStartDate() == null) {
 					currentDataProducer.setStartDate(packetDate);
-					logger
-							.debug("Set the current deployment's start date to the packet timestamp which is "
-									+ xmlDateFormat.format(packetDate));
+					logger.debug("Set the current deployment's start date to the packet timestamp which is "
+							+ xmlDateFormat.format(packetDate));
 				}
 			} else {
 				// DataProducer does not contain any DataStreams, so don't do
@@ -950,8 +1004,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 		if (childDataProducers != null) {
 			Iterator iterator = childDataProducers.iterator();
 			while (iterator.hasNext()) {
-				addResourceToDataProducerAndChildren((DataProducer) iterator
-						.next(), resource);
+				addResourceToDataProducerAndChildren(
+						(DataProducer) iterator.next(), resource);
 			}
 		}
 	}
@@ -1007,18 +1061,12 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 		DeviceAccessLocal deviceAccessLocal = null;
 		if (dataProducer.getDevice() != null) {
 			try {
-				deviceAccessLocal = deviceAccessLocalHome.create();
 				currentDevice = (Device) deviceAccessLocal
-						.findEquivalentPersistentObject(dataProducer
-								.getDevice(), true);
-			} catch (CreateException e1) {
-				logger
-						.error("CreateException trying to get the equivalent device from SSDS: "
-								+ e1.getMessage());
+						.findEquivalentPersistentObject(
+								dataProducer.getDevice(), true);
 			} catch (MetadataAccessException e1) {
-				logger
-						.error("MetadataAccessException trying to get the equivalent device from SSDS: "
-								+ e1.getMessage());
+				logger.error("MetadataAccessException trying to get the equivalent device from SSDS: "
+						+ e1.getMessage());
 			}
 		} else {
 			logger.debug("The incoming dataProducer ("
@@ -1030,14 +1078,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 		Collection currentDeviceDeployments = null;
 		if (currentDevice != null) {
 			try {
-				DataProducerAccessLocal dataProducerAccessLocal = dataProducerAccessLocalHome
-						.create();
 				currentDeviceDeployments = dataProducerAccessLocal
 						.findByDevice(currentDevice, null, null, false);
-			} catch (CreateException e2) {
-				logger.error("CreateException trying to get the "
-						+ "dataProducers for the current Device:"
-						+ e2.getMessage());
 			} catch (MetadataAccessException e2) {
 				logger.error("CreateException trying to get the "
 						+ "dataProducers for the current Device:"
@@ -1057,11 +1099,10 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 						+ " needs closing");
 				if (tempDataProducer.getEndDate() == null) {
 					if (dataProducer.getStartDate() != null) {
-						logger
-								.debug("Yep, will assign the end date to the start "
-										+ "date of the incoming deployment ("
-										+ xmlDateFormat.format(dataProducer
-												.getStartDate()));
+						logger.debug("Yep, will assign the end date to the start "
+								+ "date of the incoming deployment ("
+								+ xmlDateFormat.format(dataProducer
+										.getStartDate()));
 						tempDataProducer
 								.setEndDate(dataProducer.getStartDate());
 					} else {
@@ -1071,19 +1112,11 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 					}
 					// Now update the changed deployment
 					try {
-						DataProducerAccessLocal dataProducerAccessLocal = dataProducerAccessLocalHome
-								.create();
 						dataProducerAccessLocal.update(tempDataProducer);
-					} catch (CreateException e) {
-						logger
-								.error("CreateException trying to update a device "
-										+ "deployment after setting it's end date"
-										+ e.getMessage());
 					} catch (MetadataAccessException e) {
-						logger
-								.error("MetadataAccessException trying to update a device "
-										+ "deployment after setting it's end date"
-										+ e.getMessage());
+						logger.error("MetadataAccessException trying to update a device "
+								+ "deployment after setting it's end date"
+								+ e.getMessage());
 					}
 				} else {
 					logger.debug("Nope, it already has an end date");
@@ -1115,9 +1148,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 							+ "dataProducer's name to "
 							+ dataProducer.getName());
 				} catch (MetadataException e) {
-					logger
-							.error("MetadataException caught trying to set the name: "
-									+ e.getMessage());
+					logger.error("MetadataException caught trying to set the name: "
+							+ e.getMessage());
 				}
 			} else {
 				// Since no device type was available, see if the device is at
@@ -1128,14 +1160,12 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 								+ xmlDateFormat.format(packetDate) + " - "
 								+ getNextSuffixCounter() + ") UUID="
 								+ currentDevice.getUuid());
-						logger
-								.debug("Found device, but no device type, so set name to "
-										+ dataProducer.getName());
+						logger.debug("Found device, but no device type, so set name to "
+								+ dataProducer.getName());
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "name on the new current deployment: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "name on the new current deployment: "
+								+ e.getMessage());
 					}
 				} else {
 					// Since we don't have much information, do the best we can
@@ -1146,10 +1176,9 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 						logger.debug("Did not know much, so set name to "
 								+ dataProducer.getName());
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "name on the new current deployment: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "name on the new current deployment: "
+								+ e.getMessage());
 					}
 				}
 			}
@@ -1266,9 +1295,8 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 						tempDataContainer.setUriString(uriStringBuffer
 								.toString());
 					} catch (MetadataException e) {
-						logger
-								.error("Could not set the URIString for the DataContainer: "
-										+ e.getMessage());
+						logger.error("Could not set the URIString for the DataContainer: "
+								+ e.getMessage());
 					}
 				}
 				// Start date
@@ -1287,10 +1315,9 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 												.format(tempDataContainer
 														.getStartDate()));
 					} catch (MetadataException e) {
-						logger
-								.error("MetadataException caught trying to set the "
-										+ "description of the data container: "
-										+ e.getMessage());
+						logger.error("MetadataException caught trying to set the "
+								+ "description of the data container: "
+								+ e.getMessage());
 					}
 				}
 				logger.debug("After examination DataContainer = "
@@ -1323,9 +1350,6 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 		while (it.hasNext()) {
 			Object obj = it.next();
 			try {
-				DataProducerAccessLocal dataProducerAccessLocal = dataProducerAccessLocalHome
-						.create();
-
 				// OK, this is a bit of a hack, but the way I had things,
 				// RuminateMDB will create a *new* parent deployment if none
 				// exists for the parent ID associated with the device. This is
@@ -1351,28 +1375,18 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 					}
 				}
 				success = true;
-			} catch (CreateException e) {
-				logger
-						.error("CreateException caught trying to "
-								+ "persist the DataProducer to SSDS: "
-								+ e.getMessage());
 			} catch (MetadataAccessException e) {
-				logger
-						.error("MetadataAccessException caught trying to "
-								+ "persist the DataProducer to SSDS: "
-								+ e.getMessage());
+				logger.error("MetadataAccessException caught trying to "
+						+ "persist the DataProducer to SSDS: " + e.getMessage());
 			} catch (Throwable e) {
-				logger
-						.error("Throwable caught trying to "
-								+ "persist the DataProducer to SSDS: "
-								+ e.getMessage());
+				logger.error("Throwable caught trying to "
+						+ "persist the DataProducer to SSDS: " + e.getMessage());
 				e.printStackTrace();
 			}
 			// If the persist fails, wait a sec, then try to submit it again
 			if (!success) {
-				logger
-						.error("Something went wrong in the attempt to persist the "
-								+ "data producer to SSDS, will wait and try again");
+				logger.error("Something went wrong in the attempt to persist the "
+						+ "data producer to SSDS, will wait and try again");
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
@@ -1380,16 +1394,10 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 							+ e.getMessage());
 				}
 				try {
-					DataProducerAccessLocal dataProducerAccessLocal = dataProducerAccessLocalHome
-							.create();
 					if (obj instanceof DataProducer)
 						dataProducerAccessLocal
 								.makePersistent((DataProducer) obj);
 					success = true;
-				} catch (CreateException e) {
-					logger.error("CreateException caught trying to "
-							+ "persist the DataProducer to SSDS: "
-							+ e.getMessage());
 				} catch (MetadataAccessException e) {
 					logger.error("MetadataAccessException caught trying to "
 							+ "persist the DataProducer to SSDS: "
@@ -1445,22 +1453,15 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 				// If it a DataProducer, grab the one from SSDS
 				if (nextObject instanceof DataProducer) {
 					try {
-						DataProducerAccessLocal dataProducerAccessLocal = dataProducerAccessLocalHome
-								.create();
 						Object persistentObject = dataProducerAccessLocal
 								.findById(((DataProducer) nextObject).getId(),
 										true);
 						if (persistentObject != null)
 							nextObject = persistentObject;
-					} catch (CreateException e) {
-						logger.error("CreateException caught trying to "
+					} catch (MetadataAccessException e) {
+						logger.error("MetadataAccessException caught trying to "
 								+ "retrieve DataProducer from SSDS: "
 								+ e.getMessage());
-					} catch (MetadataAccessException e) {
-						logger
-								.error("MetadataAccessException caught trying to "
-										+ "retrieve DataProducer from SSDS: "
-										+ e.getMessage());
 					} catch (Throwable e) {
 						logger.error("Throwable caught trying to "
 								+ "retrieve DataProducer from SSDS: "
@@ -1481,155 +1482,24 @@ public class RuminateMDB implements javax.ejb.MessageDrivenBean,
 				textMessage = topicSession.createTextMessage(xmlBuilder
 						.toFormattedXML());
 			} catch (UnsupportedEncodingException e) {
-				logger
-						.error("UnsupportedEncodingException caught trying to build text message: "
-								+ e.getMessage());
+				logger.error("UnsupportedEncodingException caught trying to build text message: "
+						+ e.getMessage());
 			} catch (JMSException e) {
-				logger
-						.error("JMSException caught trying to build text message: "
-								+ e.getMessage());
+				logger.error("JMSException caught trying to build text message: "
+						+ e.getMessage());
 			} catch (IOException e) {
-				logger
-						.error("IOException caught trying to build text message: "
-								+ e.getMessage());
+				logger.error("IOException caught trying to build text message: "
+						+ e.getMessage());
 			}
 
 			if (textMessage != null) {
 				try {
 					topicPublisher.publish(textMessage);
 				} catch (JMSException e) {
-					logger
-							.error("JMSException caught trying to publish text message");
+					logger.error("JMSException caught trying to publish text message");
 				}
 			}
 		}
 	}
-
-	/**
-	 * The ruminate properties for this instance
-	 */
-	private static Properties properties = new Properties();
-
-	/**
-	 * A boolean to indicate if ruminate is connected to the services of SSDS.
-	 */
-	private boolean connected = false;
-
-	/**
-	 * The local service home interfaces
-	 */
-	DataProducerGroupAccessLocalHome dataProducerGroupAccessLocalHome = null;
-	DataProducerAccessLocalHome dataProducerAccessLocalHome = null;
-	DeviceAccessLocalHome deviceAccessLocalHome = null;
-	DataContainerAccessLocalHome dataContainerAccessLocalHome = null;
-
-	/**
-	 * This is the base URL of the data stream access
-	 */
-	private String dataStreamBaseURL = null;
-
-	/**
-	 * The incoming packets information
-	 */
-	private long deviceID = -999999;
-	private long parentID = -999999;
-	private int packetType = -999999;
-	private long packetSubType = -999999;
-	private long dataDescriptionID = -999999;
-	private long dataDescriptionVersion = -999999;
-	private long timestampSeconds = -999999;
-	private long timestampNanoseconds = -999999;
-	private long sequenceNumber = -999999;
-	private int bufferLen = 1;
-	private byte[] bufferBytes = new byte[bufferLen];
-	private int bufferTwoLen = 1;
-	private byte[] bufferTwoBytes = new byte[bufferTwoLen];
-
-	/**
-	 * This is the MessageDrivenContext that is from the container
-	 */
-	private javax.ejb.MessageDrivenContext ctx;
-
-	/**
-	 * A log4j logger
-	 */
-	static Logger logger = Logger.getLogger(RuminateMDB.class);
-
-	// Some helpers
-	private Date packetDate = null;
-
-	// A data formatter
-	private static XmlDateFormat xmlDateFormat = new XmlDateFormat();
-
-	/**
-	 * This is a String that holds the actual metadata that was extracted from
-	 * the incoming packet
-	 */
-	private String metadataString = null;
-
-	/**
-	 * This is the File where the incoming XML will be written to
-	 */
-	private java.io.File xmlFile;
-
-	/**
-	 * An object builder for building the model classes from the XML
-	 */
-	private ObjectBuilder objectBuilder;
-
-	/**
-	 * A boolean to indicate if the incoming XML is considered "new" metadata
-	 */
-	boolean newMetadata = true;
-
-	/**
-	 * A static counter that can be used to make sure that incoming deployment
-	 * names are unique
-	 */
-	private static int counter = 0;
-
-	/**
-	 * This is the name of the topic that the packets will be republished to
-	 */
-	private String republishTopicName = null;
-
-	/**
-	 * This is the JNDI Context that will be used (Naming Service) to locate the
-	 * appropriate remote classes to use for publishing messages.
-	 */
-	private Context jndiContext = null;
-
-	/**
-	 * The TopicConnectionFactory that will be used to republish messages
-	 */
-	private TopicConnectionFactory topicConnectionFactory = null;
-
-	/**
-	 * This is the connection to the topic that the messages will be published
-	 * to
-	 */
-	private TopicConnection topicConnection = null;
-
-	/**
-	 * This is the JMS topic that will be used for publishing
-	 */
-	private Topic topic = null;
-
-	/**
-	 * This is a session that the publishing of messages will be run in.
-	 */
-	private TopicSession topicSession = null;
-
-	/**
-	 * This is the topic publisher that is actually used to send messages to the
-	 * topic
-	 */
-	private TopicPublisher topicPublisher = null;
-
-	/**
-	 * This is a boolean to indicated if the publishing is setup and working
-	 * correctly
-	 */
-	private boolean publishingSetup = false;
 
 } // End RuminateMDB

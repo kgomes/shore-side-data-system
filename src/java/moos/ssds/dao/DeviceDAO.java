@@ -19,9 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
-
 import moos.ssds.dao.util.MetadataAccessException;
 import moos.ssds.metadata.DataProducer;
 import moos.ssds.metadata.Device;
@@ -31,9 +28,6 @@ import moos.ssds.metadata.Person;
 import moos.ssds.metadata.RecordVariable;
 import moos.ssds.metadata.Resource;
 import moos.ssds.metadata.util.MetadataException;
-import moos.ssds.services.metadata.DataProducerAccessLocal;
-import moos.ssds.services.metadata.DataProducerAccessLocalHome;
-import moos.ssds.services.metadata.DataProducerAccessUtil;
 
 import org.apache.log4j.Logger;
 import org.doomdark.uuid.EthernetAddress;
@@ -46,7 +40,6 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.proxy.HibernateProxy;
 
 /**
  * This Data Access Object (DAO) provides methods for interacting with the
@@ -130,7 +123,7 @@ public class DeviceDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllIDs() throws MetadataAccessException {
+	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		Collection deviceIDs = null;
 
 		// Create the query and run it
@@ -212,7 +205,8 @@ public class DeviceDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByName(String name, boolean exactMatch,
+	@SuppressWarnings("unchecked")
+	public Collection<Device> findByName(String name, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 
@@ -223,7 +217,7 @@ public class DeviceDAO extends MetadataDAO {
 		logger.debug("->ascendingOrDescending = " + ascendingOrDescending);
 		logger.debug("->returnFullObjectGraph = " + returnFullObjectGraph);
 		// The devices to return
-		Collection devicesToReturn = new ArrayList();
+		Collection<Device> devicesToReturn = new ArrayList<Device>();
 
 		// If no name was specified just return an empty collection
 		if ((name == null) || (name.equals("")))
@@ -241,7 +235,7 @@ public class DeviceDAO extends MetadataDAO {
 
 		// Check for relationship init
 		if (returnFullObjectGraph)
-			devicesToReturn = getRealObjectsAndRelationships(devicesToReturn);
+			devicesToReturn = (Collection<Device>) getRealObjectsAndRelationships(devicesToReturn);
 
 		// Now return the results
 		if (devicesToReturn != null) {
@@ -281,8 +275,9 @@ public class DeviceDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllNames() throws MetadataAccessException {
-		Collection deviceNames = null;
+	@SuppressWarnings("unchecked")
+	public Collection<String> findAllNames() throws MetadataAccessException {
+		Collection<String> deviceNames = null;
 
 		// Create the query and run it
 		try {
@@ -314,31 +309,19 @@ public class DeviceDAO extends MetadataDAO {
 	 *         deployed under the given parent deployment
 	 * @throws MetadataAccessException
 	 */
-	public Collection findAllDeviceDeployedUnderParent(
+	public Collection<Device> findAllDeviceDeployedUnderParent(
 			DataProducer parentDataProducer, boolean currentOnly)
 			throws MetadataAccessException {
 		// This is the collection of devices to return
-		Collection deployedDevices = new ArrayList();
+		Collection<Device> deployedDevices = new ArrayList<Device>();
 
-		// Grab the DataProducer interface
-		DataProducerAccessLocalHome dpalh = null;
-		DataProducerAccessLocal dpal = null;
-		try {
-			dpalh = DataProducerAccessUtil.getLocalHome();
-		} catch (NamingException e) {
-			throw new MetadataAccessException(e);
-		}
-		if (dpalh != null) {
-			try {
-				dpal = dpalh.create();
-			} catch (CreateException e) {
-				throw new MetadataAccessException(e);
-			}
-		}
+		// Grab the DataProducer DAO
+		DataProducerDAO dataProducerDAO = new DataProducerDAO(getSession());
+
 		// Find the equivalent DataProducer
 		DataProducer realParentDataProducer = null;
-		if (dpal != null) {
-			realParentDataProducer = (DataProducer) dpal
+		if (dataProducerDAO != null) {
+			realParentDataProducer = (DataProducer) dataProducerDAO
 					.findEquivalentPersistentObject(parentDataProducer, true);
 		}
 		if (realParentDataProducer != null) {
@@ -352,14 +335,15 @@ public class DeviceDAO extends MetadataDAO {
 			// Now grab any child devices
 			if ((realParentDataProducer.getChildDataProducers() != null)
 					&& (realParentDataProducer.getChildDataProducers().size() > 0)) {
-				Iterator childDPIter = realParentDataProducer
+				Iterator<DataProducer> childDPIter = realParentDataProducer
 						.getChildDataProducers().iterator();
 				while (childDPIter.hasNext()) {
 					DataProducer childDP = (DataProducer) childDPIter.next();
-					Collection devices = this.findAllDeviceDeployedUnderParent(
-							childDP, currentOnly);
+					Collection<Device> devices = this
+							.findAllDeviceDeployedUnderParent(childDP,
+									currentOnly);
 					if ((devices != null) && (devices.size() > 0)) {
-						Iterator deviceIter = devices.iterator();
+						Iterator<Device> deviceIter = devices.iterator();
 						while (deviceIter.hasNext()) {
 							Device tempDevice = (Device) deviceIter.next();
 							if (!deployedDevices.contains(tempDevice))
@@ -407,12 +391,13 @@ public class DeviceDAO extends MetadataDAO {
 	 *         attributes that exactly match those that were specified as query
 	 *         parameters.
 	 */
-	public Collection findByNameAndMfgInfo(String name, boolean nameExactMatch,
-			String mfgName, boolean mfgNameExactMatch, String mfgModel,
-			boolean mfgModelExactMatch, String mfgSerialNumber,
-			boolean mfgSerialNumberExactMatch, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@SuppressWarnings("unchecked")
+	public Collection<Device> findByNameAndMfgInfo(String name,
+			boolean nameExactMatch, String mfgName, boolean mfgNameExactMatch,
+			String mfgModel, boolean mfgModelExactMatch,
+			String mfgSerialNumber, boolean mfgSerialNumberExactMatch,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// Make sure all the arguments are not null
 		logger.debug("name = " + name + "\n" + "mfgName = " + mfgName + "\n"
@@ -421,11 +406,11 @@ public class DeviceDAO extends MetadataDAO {
 		if (((name == null) || (name.equals("")))
 				&& ((mfgName == null) || (mfgName.equals("")))
 				&& ((mfgModel == null) || (mfgModel.equals("")))
-				&& ((mfgSerialNumber == null) && (mfgSerialNumber.equals("")))) {
-			return new ArrayList();
+				&& ((mfgSerialNumber == null) || (mfgSerialNumber.equals("")))) {
+			return new ArrayList<Device>();
 		}
 
-		Collection matchingDevices = new ArrayList();
+		Collection<Device> matchingDevices = new ArrayList<Device>();
 
 		try {
 			Criteria criteria = this.formulatePropertyCriteria(false, null,
@@ -439,7 +424,7 @@ public class DeviceDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			matchingDevices = getRealObjectsAndRelationships(matchingDevices);
+			matchingDevices = (Collection<Device>) getRealObjectsAndRelationships(matchingDevices);
 
 		// Return the result
 		return matchingDevices;
@@ -488,12 +473,13 @@ public class DeviceDAO extends MetadataDAO {
 	 * @return a <code>Collection</code> of devices that are linked to that
 	 *         person.
 	 */
-	public Collection findByPerson(Person person, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@SuppressWarnings("unchecked")
+	public Collection<Device> findByPerson(Person person,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// The collection to return
-		Collection devices = new ArrayList();
+		Collection<Device> devices = new ArrayList<Device>();
 
 		// First validate the incoming person
 		if (person == null) {
@@ -532,7 +518,7 @@ public class DeviceDAO extends MetadataDAO {
 
 		// Check relationship init
 		if (returnFullObjectGraph)
-			devices = getRealObjectsAndRelationships(devices);
+			devices = (Collection<Device>) getRealObjectsAndRelationships(devices);
 
 		// Now return the real objects
 		return devices;
@@ -554,12 +540,13 @@ public class DeviceDAO extends MetadataDAO {
 	 * @return a <code>Collection</code> of devices that are categorized by the
 	 *         given <code>DeviceType</code>
 	 */
-	public Collection findByDeviceType(DeviceType deviceType,
+	@SuppressWarnings("unchecked")
+	public Collection<Device> findByDeviceType(DeviceType deviceType,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// The collection to return
-		Collection devices = new ArrayList();
+		Collection<Device> devices = new ArrayList<Device>();
 
 		// First validate the incoming deviceType
 		if (deviceType == null) {
@@ -598,7 +585,7 @@ public class DeviceDAO extends MetadataDAO {
 		}
 
 		if (returnFullObjectGraph)
-			devices = getRealObjectsAndRelationships(devices);
+			devices = (Collection<Device>) getRealObjectsAndRelationships(devices);
 
 		// Now return the real objects
 		return devices;
@@ -619,9 +606,11 @@ public class DeviceDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes haywire.
 	 */
-	public Collection findAllManufacturerNames() throws MetadataAccessException {
+	@SuppressWarnings("unchecked")
+	public Collection<String> findAllManufacturerNames()
+			throws MetadataAccessException {
 		// The Collection to return
-		Collection mfgNames = null;
+		Collection<String> mfgNames = null;
 
 		// Construct the query
 		try {
@@ -654,21 +643,22 @@ public class DeviceDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes haywire.
 	 */
-	public Collection findMfgModels(String mfgName)
+	@SuppressWarnings("unchecked")
+	public Collection<String> findMfgModels(String mfgName)
 			throws MetadataAccessException {
 
 		// The collection to return
-		Collection mfgModels = new ArrayList();
+		Collection<String> mfgModels = new ArrayList<String>();
 
 		if ((mfgName == null) || (mfgName.equals("")))
 			return mfgModels;
 
 		// Construct the query
 		try {
-			Query query = getSession()
-					.createQuery(
-							"select distinct device.mfgModel from "
-									+ "Device device where device.mfgName = :mfgName order by device.mfgModel");
+			Query query = getSession().createQuery(
+					"select distinct device.mfgModel from "
+							+ "Device device where device.mfgName = "
+							+ ":mfgName order by device.mfgModel");
 			query.setString("mfgName", mfgName);
 			mfgModels = query.list();
 		} catch (HibernateException e) {
@@ -701,11 +691,12 @@ public class DeviceDAO extends MetadataDAO {
 	 *         the serial numbers for the devices that matched the manufacturer
 	 *         and the model (if available).
 	 */
-	public Collection findMfgSerialNumbers(String mfgName, String mfgModel)
-			throws MetadataAccessException {
+	@SuppressWarnings("unchecked")
+	public Collection<String> findMfgSerialNumbers(String mfgName,
+			String mfgModel) throws MetadataAccessException {
 
 		// Create empty array list for the return in case something goes wrong.
-		Collection mfgSerialNumbers = new ArrayList();
+		Collection<String> mfgSerialNumbers = new ArrayList<String>();
 
 		// Create a query buffer
 		StringBuffer queryBuffer = new StringBuffer();
@@ -733,7 +724,7 @@ public class DeviceDAO extends MetadataDAO {
 			throw new MetadataAccessException(e);
 		}
 
-		// Now return the collectin
+		// Now return the collection
 		return mfgSerialNumbers;
 	}
 
@@ -744,14 +735,15 @@ public class DeviceDAO extends MetadataDAO {
 		return count;
 	}
 
-	public Collection findBySearchingFields(String id, String uuid,
+	@SuppressWarnings("unchecked")
+	public Collection<Device> findBySearchingFields(String id, String uuid,
 			String name, String description, String mfgModel, String mfgName,
 			String mfgSerialNumber, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 
 		// The Collection to return
-		Collection devices = new ArrayList();
+		Collection<Device> devices = new ArrayList<Device>();
 
 		// First check to see if all fields are empty, if they are, just return
 		// the empty collection
@@ -845,15 +837,13 @@ public class DeviceDAO extends MetadataDAO {
 						+ mfgSerialNumber + "%");
 			logger.debug("Query string = " + query.getQueryString());
 			devices = query.list();
-			logger
-					.debug("Found " + devices.size()
-							+ " devices from that query");
+			logger.debug("Found " + devices.size() + " devices from that query");
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e);
 		}
 
 		if (returnFullObjectGraph)
-			devices = getRealObjectsAndRelationships(devices);
+			devices = (Collection<Device>) getRealObjectsAndRelationships(devices);
 
 		return devices;
 	}
@@ -869,11 +859,13 @@ public class DeviceDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findBySearchingAllFieldsAndType(String searchTerm,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	@SuppressWarnings("unchecked")
+	public Collection<Device> findBySearchingAllFieldsAndType(
+			String searchTerm, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 		// The Collection to return
-		Collection devices = new ArrayList();
+		Collection<Device> devices = new ArrayList<Device>();
 
 		// Formulate the query
 		StringBuffer queryBuffer = new StringBuffer();
@@ -902,15 +894,13 @@ public class DeviceDAO extends MetadataDAO {
 			query.setString("searchTerm", "%" + searchTerm + "%");
 			logger.debug("Query string = " + query.getQueryString());
 			devices = query.list();
-			logger
-					.debug("Found " + devices.size()
-							+ " devices from that query");
+			logger.debug("Found " + devices.size() + " devices from that query");
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e);
 		}
 
 		if (returnFullObjectGraph)
-			devices = getRealObjectsAndRelationships(devices);
+			devices = (Collection<Device>) getRealObjectsAndRelationships(devices);
 
 		return devices;
 	}
@@ -1075,7 +1065,8 @@ public class DeviceDAO extends MetadataDAO {
 			String deviceStringBefore = persistentDevice
 					.toStringRepresentation("<li>");
 			if (this.updateDestinationObject(device, persistentDevice)) {
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A device was updated in SSDS<br><b>Before:</b><br><ul><li>"
 								+ deviceStringBefore
 								+ "</ul><br><b>After:</b><br><ul><li>"
@@ -1111,13 +1102,11 @@ public class DeviceDAO extends MetadataDAO {
 
 			// Now check to make sure the UUID is real
 			if ((device.getUuid() == null) || (device.getUuid().equals(""))) {
-				logger
-						.debug("The incoming device had no UUID, one will be created");
+				logger.debug("The incoming device had no UUID, one will be created");
 				try {
 					device.setUuid(this.generateUUID());
 				} catch (MetadataException e) {
-					logger
-							.error("Could not set the newly create UUID on the incoming device");
+					logger.error("Could not set the newly create UUID on the incoming device");
 				}
 				addMessage(
 						ssdsAdminEmailToAddress,
@@ -1200,8 +1189,8 @@ public class DeviceDAO extends MetadataDAO {
 			// Now, since there is, check to see if it has been initialized
 			if (Hibernate.isInitialized(device.getDeviceType())) {
 				// Grab the DeviceType DAO to handle that relationship
-				DeviceTypeDAO deviceTypeDAO = new DeviceTypeDAO(this
-						.getSession());
+				DeviceTypeDAO deviceTypeDAO = new DeviceTypeDAO(
+						this.getSession());
 
 				// Now persist the deviceType
 				DeviceType tempDeviceType = device.getDeviceType();
@@ -1264,8 +1253,8 @@ public class DeviceDAO extends MetadataDAO {
 
 				// Create a copy of the collection associated with the device to
 				// prevent concurrent modifications
-				Collection deviceResourceCopy = new ArrayList(device
-						.getResources());
+				Collection deviceResourceCopy = new ArrayList(
+						device.getResources());
 
 				// Now we need to make the correct associations. Currently, you
 				// have a collection of Resource objects that have their values
@@ -1321,7 +1310,8 @@ public class DeviceDAO extends MetadataDAO {
 							+ "</ul><br>");
 			if ((sendUserMessages) && (deviceToPersist.getPerson() != null)
 					&& (deviceToPersist.getPerson().getEmail() != null)) {
-				addMessage(deviceToPersist.getPerson().getEmail(),
+				addMessage(
+						deviceToPersist.getPerson().getEmail(),
 						"A new device that was associated with your "
 								+ "email address was entered in the "
 								+ "Shore Side Data System<br><ul><li>"
@@ -1355,9 +1345,8 @@ public class DeviceDAO extends MetadataDAO {
 
 		// If no matching device was found, do nothing
 		if (persistentDevice == null) {
-			logger
-					.debug("No matching device could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching device could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// Handle the relationships
 			Person persistentPersonForEmail = persistentDevice.getPerson();
@@ -1379,11 +1368,11 @@ public class DeviceDAO extends MetadataDAO {
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentDevice);
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A Device was removed from SSDS:<br><ul><li>"
 								+ persistentDevice
 										.toStringRepresentation("<li>")

@@ -487,7 +487,7 @@ public interface SSDSByteArrayAccess extends Enumeration<byte[]> {
 	 * 
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public Class[] listFieldClasses();
 
 	/**

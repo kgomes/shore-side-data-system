@@ -17,11 +17,12 @@ package moos.ssds.services.metadata;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.Properties;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.DataProducerDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -36,91 +37,66 @@ import moos.ssds.metadata.Software;
 import moos.ssds.metadata.util.MetadataException;
 
 import org.apache.log4j.Logger;
-import org.hibernate.SessionFactory;
+import org.jboss.ejb3.annotation.LocalBinding;
+import org.jboss.ejb3.annotation.RemoteBinding;
 
 /**
  * Provides a facade that provides client services for DataProducer objects.
  * 
- * @ejb.bean name="DataProducerAccess" type="Stateless"
- *           jndi-name="moos/ssds/services/metadata/DataProducerAccess"
- *           local-jndi-name="moos/ssds/services/metadata/DataProducerAccessLocal"
- *           view-type="both" transaction-type="Container"
- * @ejb.home create="true"
- *           local-class="moos.ssds.services.metadata.DataProducerAccessLocalHome"
- *           remote-class="moos.ssds.services.metadata.DataProducerAccessHome"
- *           extends="javax.ejb.EJBHome"
- * @ejb.interface create="true"
- *                local-class="moos.ssds.services.metadata.DataProducerAccessLocal"
- *                local-extends="javax.ejb.EJBLocalObject,moos.ssds.services.metadata.IMetadataAccess"
- *                remote-class="moos.ssds.services.metadata.DataProducerAccess"
- *                extends="javax.ejb.EJBObject,moos.ssds.services.metadata.IMetadataAccessRemote"
- * @ejb.util generate="physical"
- * @soap.service urn="DataProducerAccess" scope="Request"
- * @axis.service urn="DataProducerAccess" scope="Request"
  * @see moos.ssds.services.metadata.IMetadataAccess
  * @author : $Author: kgomes $
  * @version : $Revision: 1.1.2.25 $
  */
+@Stateless
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/DataProducerAccess")
+@LocalBinding(jndiBinding = "moos/ssds/services/metadata/DataProducerAccessLocal")
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class DataProducerAccessEJB extends AccessBean implements
-		IMetadataAccess {
+		DataProducerAccess, DataProducerAccessLocal {
 
 	/**
-	 * This is the ejb callback that the container calls when the EJB is first
-	 * created. In this case it sets up the Hibernate session factory and sets
-	 * the class that is associate with the bean
+	 * A log4j logger
+	 */
+	static Logger logger = Logger.getLogger(DataProducerAccessEJB.class);
+
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * This method is called after the EJB is constructed and it sets the
+	 * <code>Class</code> on the super class that defines the type of EJB access
+	 * class it will work with.
 	 * 
 	 * @throws CreateException
 	 */
-	public void ejbCreate() throws CreateException {
-		logger.debug("ejbCreate called");
-		logger.debug("Going to read in the properties");
-		servicesMetadataProperties = new Properties();
-		try {
-			servicesMetadataProperties
-					.load(this
-							.getClass()
-							.getResourceAsStream(
-									"/moos/ssds/services/metadata/servicesMetadata.properties"));
-		} catch (Exception e) {
-			logger.error("Exception trying to read in properties file: "
-					+ e.getMessage());
-		}
+	@PostConstruct
+	public void setUpEJBType() {
 
-		// Make sure the properties were read from the JAR OK
-		if (servicesMetadataProperties != null) {
-			logger.debug("Loaded props OK");
-		} else {
-			logger.warn("Could not load the servicesMetadata.properties.");
-		}
-
-		// Now create the intial context for looking up the hibernate session
-		// factory and look up the session factory
-		try {
-			InitialContext initialContext = new InitialContext();
-			sessionFactory = (SessionFactory) initialContext
-					.lookup(servicesMetadataProperties
-							.getProperty("metadata.hibernate.jndi.name"));
-		} catch (NamingException e) {
-			logger
-					.error("NamingException caught when trying to get hibernate's "
-							+ "SessionFactory from JNDI: " + e.getMessage());
-		}
-
-		// Now set the super persistent class to DataContainer
+		// Now set the super persistent class to DataProducer
 		super.setPersistentClass(DataProducer.class);
+		logger.debug("OK, set Persistent class to DataProducer");
+
 		// And the DAO
 		super.setDaoClass(DataProducerDAO.class);
+		logger.debug("OK, set DAO Class to DataProducerDAO");
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByProperties(String, boolean, String, Date,
-	 *      boolean, Date, boolean, Double, Double, Double, Double, Float,
-	 *      Float, Float, Float, String, boolean, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByProperties(java.
+	 * lang.String, boolean, java.lang.String, java.util.Date, boolean,
+	 * java.util.Date, boolean, java.lang.Double, java.lang.Double,
+	 * java.lang.Double, java.lang.Double, java.lang.Float, java.lang.Float,
+	 * java.lang.Float, java.lang.Float, java.lang.String, boolean,
+	 * java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByProperties(String name, boolean exactMatch,
-			String dataProducerType, Date startDate,
+	@Override
+	public Collection<DataProducer> findByProperties(String name,
+			boolean exactMatch, String dataProducerType, Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			Double geospatialLatMin, Double geospatialLatMax,
 			Double geospatialLonMin, Double geospatialLonMax,
@@ -144,13 +120,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 				orderByProperty, ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByProperties(String, boolean, String, Date,
-	 *      boolean, Date, boolean, Double, Double, Double, Double, Float,
-	 *      Float, Float, Float, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#countFindByProperties(
+	 * java.lang.String, boolean, java.lang.String, java.util.Date, boolean,
+	 * java.util.Date, boolean, java.lang.Double, java.lang.Double,
+	 * java.lang.Double, java.lang.Double, java.lang.Float, java.lang.Float,
+	 * java.lang.Float, java.lang.Float, java.lang.String, boolean)
 	 */
+	@Override
 	public int countFindByProperties(String name, boolean exactMatch,
 			String dataProducerType, Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
@@ -173,12 +153,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				geospatialBenthicAltitudeMax, hostName, exactHostNameMatch);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByName(String, boolean, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByName(java.lang.String
+	 * , boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByName(String name, boolean exactMatch,
+	@Override
+	public Collection<DataProducer> findByName(String name, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -191,11 +174,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByName(String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#countFindByName(java.lang
+	 * .String, boolean)
 	 */
+	@Override
 	public int countFindByName(String name, boolean exactMatch)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -206,14 +192,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 		return dataProducerDAO.countFindByName(name, exactMatch);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByDataProducerTypeAndName(String, String,
-	 *      boolean, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByDataProducerTypeAndName
+	 * (java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+	 * boolean, boolean)
 	 */
-	public Collection findByDataProducerTypeAndName(String dataProducerType,
-			String name, String orderByPropertyName,
+	@Override
+	public Collection<DataProducer> findByDataProducerTypeAndName(
+			String dataProducerType, String name, String orderByPropertyName,
 			String ascendingOrDescending, boolean exactMatch,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -226,12 +215,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByDataProducerTypeAndName(String, String,
-	 *      boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * countFindByDataProducerTypeAndName(java.lang.String, java.lang.String,
+	 * boolean)
 	 */
+	@Override
 	public int countFindByDataProducerTypeAndName(String dataProducerType,
 			String name, boolean exactMatch) throws MetadataAccessException {
 		// Grab the DAO
@@ -243,14 +234,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 				dataProducerType, name, exactMatch);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findParentlessDeployments(String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findParentlessDeployments
+	 * (java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findParentlessDeployments(String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findParentlessDeployments(
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -260,11 +254,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindParentlessDeployments()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#countFindParentlessDeployments
+	 * ()
 	 */
+	@Override
 	public int countFindParentlessDeployments() throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
@@ -274,14 +271,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 		return dataProducerDAO.countFindParentlessDeployments();
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findParentlessDataProducer(String, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findParentlessDataProducers
+	 * (java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findParentlessDataProducers(String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findParentlessDataProducers(
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -291,11 +291,13 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindParentlessDataProducers()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * countFindParentlessDataProducers()
 	 */
+	@Override
 	public int countFindParentlessDataProducers()
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -306,13 +308,16 @@ public class DataProducerAccessEJB extends AccessBean implements
 		return dataProducerDAO.countFindParentlessDataProducers();
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByDateRangeAndName(Date, boolean, Date, boolean,
-	 *      String, boolean, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByDateRangeAndName
+	 * (java.util.Date, boolean, java.util.Date, boolean, java.lang.String,
+	 * boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByDateRangeAndName(Date startDate,
+	@Override
+	public Collection<DataProducer> findByDateRangeAndName(Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			String name, boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -328,12 +333,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByDateRangeAndName(Date, boolean, Date,
-	 *      boolean, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#countFindByDateRangeAndName
+	 * (java.util.Date, boolean, java.util.Date, boolean, java.lang.String,
+	 * boolean)
 	 */
+	@Override
 	public int countFindByDateRangeAndName(Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			String name, boolean exactMatch) throws MetadataAccessException {
@@ -347,18 +355,22 @@ public class DataProducerAccessEJB extends AccessBean implements
 						endDate, boundedByEndDate, name, exactMatch);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByGeospatialCube(Double, Double, Double, Double,
-	 *      Float, Float, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByGeospatialCube(java
+	 * .lang.Double, java.lang.Double, java.lang.Double, java.lang.Double,
+	 * java.lang.Float, java.lang.Float, java.lang.String, java.lang.String,
+	 * boolean)
 	 */
-	public Collection findByGeospatialCube(Double geospatialLatMin,
-			Double geospatialLatMax, Double geospatialLonMin,
-			Double geospatialLonMax, Float geospatialVerticalMin,
-			Float geospatialVerticalMax, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findByGeospatialCube(
+			Double geospatialLatMin, Double geospatialLatMax,
+			Double geospatialLonMin, Double geospatialLonMax,
+			Float geospatialVerticalMin, Float geospatialVerticalMax,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -371,12 +383,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByGeospatialCube(Double, Double, Double,
-	 *      Double, Float, Float)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#countFindByGeospatialCube
+	 * (java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Double,
+	 * java.lang.Float, java.lang.Float)
 	 */
+	@Override
 	public int countFindByGeospatialCube(Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
 			Double geospatialLonMax, Float geospatialVerticalMin,
@@ -391,14 +406,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 				geospatialVerticalMin, geospatialVerticalMax);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByTimeAndGeospatialCube(Date, boolean, Date,
-	 *      boolean, Double, Double, Double, Double, Float, Float, String,
-	 *      boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByTimeAndGeospatialCube
+	 * (java.util.Date, boolean, java.util.Date, boolean, java.lang.Double,
+	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
+	 * java.lang.Float, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByTimeAndGeospatialCube(Date startDate,
+	@Override
+	public Collection<DataProducer> findByTimeAndGeospatialCube(Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			Double geospatialLatMin, Double geospatialLatMax,
 			Double geospatialLonMin, Double geospatialLonMax,
@@ -418,12 +436,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByTimeAndGeospatialCube(Date, boolean,
-	 *      Date, boolean, Double, Double, Double, Double, Float, Float)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * countFindByTimeAndGeospatialCube(java.util.Date, boolean, java.util.Date,
+	 * boolean, java.lang.Double, java.lang.Double, java.lang.Double,
+	 * java.lang.Double, java.lang.Float, java.lang.Float)
 	 */
+	@Override
 	public int countFindByTimeAndGeospatialCube(Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			Double geospatialLatMin, Double geospatialLatMax,
@@ -440,13 +461,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 				geospatialLonMax, geospatialVerticalMin, geospatialVerticalMax);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByNameAndGeospatialCube(String, boolean, Double,
-	 *      Double, Double, Double, Float, Float, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByNameAndGeospatialCube
+	 * (java.lang.String, boolean, java.lang.Double, java.lang.Double,
+	 * java.lang.Double, java.lang.Double, java.lang.Float, java.lang.Float,
+	 * java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByNameAndGeospatialCube(String name,
+	@Override
+	public Collection<DataProducer> findByNameAndGeospatialCube(String name,
 			boolean exactMatch, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
 			Double geospatialLonMax, Float geospatialVerticalMin,
@@ -465,12 +490,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByNameAndGeospatialCube(String, boolean,
-	 *      Double, Double, Double, Double, Float, Float)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * countFindByNameAndGeospatialCube(java.lang.String, boolean,
+	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Double,
+	 * java.lang.Float, java.lang.Float)
 	 */
+	@Override
 	public int countFindByNameAndGeospatialCube(String name,
 			boolean exactMatch, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
@@ -487,21 +515,24 @@ public class DataProducerAccessEJB extends AccessBean implements
 				geospatialVerticalMax);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByNameAndTimeAndGeospatialCube(String, boolean,
-	 *      Date, boolean, Date, boolean, Double, Double, Double, Double, Float,
-	 *      Float, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findByNameAndTimeAndGeospatialCube(java.lang.String, boolean,
+	 * java.util.Date, boolean, java.util.Date, boolean, java.lang.Double,
+	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
+	 * java.lang.Float, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByNameAndTimeAndGeospatialCube(String name,
-			boolean exactMatch, Date startDate, boolean boundedByStartDate,
-			Date endDate, boolean boundedByEndDate, Double geospatialLatMin,
-			Double geospatialLatMax, Double geospatialLonMin,
-			Double geospatialLonMax, Float geospatialVerticalMin,
-			Float geospatialVerticalMax, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findByNameAndTimeAndGeospatialCube(
+			String name, boolean exactMatch, Date startDate,
+			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
+			Double geospatialLatMin, Double geospatialLatMax,
+			Double geospatialLonMin, Double geospatialLonMax,
+			Float geospatialVerticalMin, Float geospatialVerticalMax,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -515,13 +546,16 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByNameAndTimeAndGeospatialCube(String,
-	 *      boolean, Date, boolean, Date, boolean, Double, Double, Double,
-	 *      Double, Float, Float, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * countFindByNameAndTimeAndGeospatialCube(java.lang.String, boolean,
+	 * java.util.Date, boolean, java.util.Date, boolean, java.lang.Double,
+	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
+	 * java.lang.Float)
 	 */
+	@Override
 	public int countFindByNameAndTimeAndGeospatialCube(String name,
 			boolean exactMatch, Date startDate, boolean boundedByStartDate,
 			Date endDate, boolean boundedByEndDate, Double geospatialLatMin,
@@ -540,14 +574,18 @@ public class DataProducerAccessEJB extends AccessBean implements
 				geospatialVerticalMax);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByHostName(String, boolean, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByHostName(java.lang
+	 * .String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByHostName(String hostName, boolean exactMatch,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findByHostName(String hostName,
+			boolean exactMatch, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -558,11 +596,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByHostName(String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#countFindByHostName(java
+	 * .lang.String, boolean)
 	 */
+	@Override
 	public int countFindByHostName(String hostName, boolean exactMatch)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -573,14 +614,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 		return dataProducerDAO.countFindByHostName(hostName, exactMatch);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByPerson(Person, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByPerson(moos.ssds
+	 * .metadata.Person, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByPerson(Person person, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findByPerson(Person person,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -590,11 +634,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByPerson(Person)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#countFindByPerson(moos
+	 * .ssds.metadata.Person)
 	 */
+	@Override
 	public int countFindByPerson(Person person) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
@@ -604,14 +651,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 		return dataProducerDAO.countFindByPerson(person);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByDevice(Device, String, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByDevice(moos.ssds
+	 * .metadata.Device, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByDevice(Device device, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findByDevice(Device device,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -621,14 +671,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByDeviceId(Long, String, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByDeviceId(java.lang
+	 * .Long, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByDeviceId(Long deviceId, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findByDeviceId(Long deviceId,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -638,14 +691,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByDeviceAndTimeWindow(Device, Date, Date,
-	 *      String, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByDeviceAndTimeWindow
+	 * (moos.ssds.metadata.Device, java.util.Date, java.util.Date,
+	 * java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByDeviceAndTimeWindow(Device device, Date startDate,
-			Date endDate, String orderByPropertyName,
+	@Override
+	public Collection<DataProducer> findByDeviceAndTimeWindow(Device device,
+			Date startDate, Date endDate, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -658,13 +714,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByDeviceTypeName(String, boolean, String,
-	 *      String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByDeviceTypeName(java
+	 * .lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByDeviceTypeName(String deviceTypeName,
+	@Override
+	public Collection<DataProducer> findByDeviceTypeName(String deviceTypeName,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -678,13 +736,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findCurrentParentlessDeployments(String, String,
-	 *      boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findCurrentParentlessDeployments(java.lang.String, java.lang.String,
+	 * boolean)
 	 */
-	public Collection findCurrentParentlessDeployments(
+	@Override
+	public Collection<DataProducer> findCurrentParentlessDeployments(
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -697,14 +757,16 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findParentlessDeploymentsByName(String, boolean,
-	 *      String, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findParentlessDeploymentsByName(java.lang.String, boolean,
+	 * java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findParentlessDeploymentsByName(String name,
-			boolean exactMatch, String orderByPropertyName,
+	@Override
+	public Collection<DataProducer> findParentlessDeploymentsByName(
+			String name, boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -717,14 +779,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findCurrentDeployments(String, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findCurrentDeployments
+	 * (java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findCurrentDeployments(String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findCurrentDeployments(
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -734,15 +799,18 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findCurrentDeploymentsOfDevice(Device, String,
-	 *      String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findCurrentDeploymentsOfDevice
+	 * (moos.ssds.metadata.Device, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findCurrentDeploymentsOfDevice(Device device,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findCurrentDeploymentsOfDevice(
+			Device device, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -753,15 +821,18 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findCurrentDeploymentsOfDeviceId(Long, String,
-	 *      String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findCurrentDeploymentsOfDeviceId(java.lang.Long, java.lang.String,
+	 * java.lang.String, boolean)
 	 */
-	public Collection findCurrentDeploymentsOfDeviceId(Long deviceId,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findCurrentDeploymentsOfDeviceId(
+			Long deviceId, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -772,15 +843,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @throws MetadataAccessException
-	 * @throws MetadataException
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findCurrentDeploymentsByRole(String, String, String,
-	 *      boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findCurrentDeploymentsByRole
+	 * (java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findCurrentDeploymentsByRole(String role,
+	@Override
+	public Collection<DataProducer> findCurrentDeploymentsByRole(String role,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException,
 			MetadataException {
@@ -794,18 +865,19 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @throws MetadataAccessException
-	 * @throws MetadataException
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findCurrentDeploymentsByRoleAndName(Device, String,
-	 *      String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findCurrentDeploymentsByRoleAndName(java.lang.String, java.lang.String,
+	 * boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findCurrentDeploymentsByRoleAndName(String role,
-			String name, boolean exactMatch, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException, MetadataException {
+	@Override
+	public Collection<DataProducer> findCurrentDeploymentsByRoleAndName(
+			String role, String name, boolean exactMatch,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException,
+			MetadataException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -817,12 +889,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findBySoftware(Software, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findBySoftware(moos.ssds
+	 * .metadata.Software, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findBySoftware(Software software,
+	@Override
+	public Collection<DataProducer> findBySoftware(Software software,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -834,11 +909,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findParentDataProducer(DataProducer)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findParentDataProducer
+	 * (moos.ssds.metadata.DataProducer, boolean)
 	 */
+	@Override
 	public DataProducer findParentDataProducer(DataProducer dataProducer,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -850,11 +928,13 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findClosestParentDataProducerLatitude
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findClosestParentDataProducerLatitude(moos.ssds.metadata.DataProducer)
 	 */
+	@Override
 	public Double findClosestParentDataProducerLatitude(
 			DataProducer dataProducer) throws MetadataAccessException {
 		// Grab the DAO
@@ -866,13 +946,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 				.findClosestParentDataProducerLatitude(dataProducer);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findChildDataProducers(DataProducer, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findChildDataProducers
+	 * (moos.ssds.metadata.DataProducer, boolean)
 	 */
-	public Collection findChildDataProducers(DataProducer dataProducer,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findChildDataProducers(
+			DataProducer dataProducer, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -882,11 +966,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindChildDataProducers(DataProducer)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#countFindChildDataProducers
+	 * (moos.ssds.metadata.DataProducer)
 	 */
+	@Override
 	public int countFindChildDataProducers(DataProducer dataProducer)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -897,13 +984,16 @@ public class DataProducerAccessEJB extends AccessBean implements
 		return dataProducerDAO.countFindChildDataProducers(dataProducer);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByDataProducerGroup(DataProducerGroup, String,
-	 *      boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByDataProducerGroup
+	 * (moos.ssds.metadata.DataProducerGroup, java.lang.String,
+	 * java.lang.String, boolean)
 	 */
-	public Collection findByDataProducerGroup(
+	@Override
+	public Collection<DataProducer> findByDataProducerGroup(
 			DataProducerGroup dataProducerGroup, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -917,16 +1007,18 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByDataProducerGroupName(String, boolean, String,
-	 *      boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByDataProducerGroupName
+	 * (java.lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByDataProducerGroupName(String dataProducerGroupName,
-			boolean exactMatch, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findByDataProducerGroupName(
+			String dataProducerGroupName, boolean exactMatch,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -937,11 +1029,13 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#countFindByDataProducerGroupName(String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * countFindByDataProducerGroupName(java.lang.String, boolean)
 	 */
+	@Override
 	public int countFindByDataProducerGroupName(String dataProducerGroupName,
 			boolean exactMatch) throws MetadataAccessException {
 		// Grab the DAO
@@ -953,12 +1047,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				dataProducerGroupName, exactMatch);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByInput(DataContainer, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByInput(moos.ssds.
+	 * metadata.DataContainer, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByInput(DataContainer dataContainer,
+	@Override
+	public Collection<DataProducer> findByInput(DataContainer dataContainer,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -970,11 +1067,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByOutput(DataContainer, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByOutput(moos.ssds
+	 * .metadata.DataContainer, java.lang.String, java.lang.String, boolean)
 	 */
+	@Override
 	public DataProducer findByOutput(DataContainer dataContainer,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -987,12 +1087,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByResource(Resource, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByResource(moos.ssds
+	 * .metadata.Resource, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByResource(Resource resource,
+	@Override
+	public Collection<DataProducer> findByResource(Resource resource,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -1004,15 +1107,18 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByKeywordName(String, boolean, String, String,
-	 *      boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByKeywordName(java
+	 * .lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByKeywordName(String keywordName, boolean exactMatch,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findByKeywordName(String keywordName,
+			boolean exactMatch, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -1023,14 +1129,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#findByEvent(Event, String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#findByEvent(moos.ssds.
+	 * metadata.Event, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findByEvent(Event event, String orderByPropertyName,
-			String ascendingOrDescending, boolean returnFullObjectGraph)
-			throws MetadataAccessException {
+	@Override
+	public Collection<DataProducer> findByEvent(Event event,
+			String orderByPropertyName, String ascendingOrDescending,
+			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
 				.getMetadataDAO();
@@ -1040,54 +1149,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * This method takes in a <code>IDeployment</code> and a DeviceType name,
-	 * and some nominal location coordinates and then tries to return a
-	 * <code>Collection</code> of <code>IDeployment</code>s the have a similar
-	 * device type name, that were deployed on (or under) the given deployment
-	 * (parent-child relationship). It will do a &quot;deep&quot; search for
-	 * devices. In other words, it will check all deployments of the parent as
-	 * well as of any sub-deployments under that parent (i.e. it will &quot;Walk
-	 * the chain&quot;).
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @param parentDeployment
-	 *            This is a parent <code>IDeployment</code> to start the search
-	 *            from. It is the &quot;Root&quot; of the search tree.
-	 * @param deviceTypeName
-	 *            This is a <code>String</code> that will be used to search for
-	 *            devices that have a similar device type to that named with
-	 *            this string.
-	 * @param nominalLongitude
-	 *            This is the longitude that the device should be deployed at.
-	 *            It is used as the point of a search and then you can use the
-	 *            <code>longitudeTolerance</code> to declare a +/- search
-	 *            window.
-	 * @param longitudeTolerance
-	 *            This is the +/- that will be added to the
-	 *            <code>nominalLongitude</code> parameter for window searches.
-	 * @param nominalLatitude
-	 *            This is the lattitude that the device should be deployed at.
-	 *            It is used as the point of a search and then you can use the
-	 *            <code>lattitudeTolerance</code> to declare a +/- search
-	 *            window.
-	 * @param lattitudeTolerance
-	 *            This is the +/- that will be added to the
-	 *            <code>nominalLatitude</code> parameter for window searches.
-	 * @param nominalDepth
-	 *            This is the depth that the device should be deployed at. It is
-	 *            used as the point of a search and then you can use the
-	 *            <code>depthTolerance</code> to declare a +/- search window.
-	 * @param depthTolerance
-	 *            This is the +/- that will be added to the
-	 *            <code>nominalDepth</code> parameter for window searches.
-	 * @return a <code>Collection</code> of <code>IDeployment</code>s that meet
-	 *         the search criteria defined by the incoming parameters. No
-	 *         duplicates are removed and if no deployments were found, an empty
-	 *         collection is returned.
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findAllDeploymentsOfDeviceTypeFromParent(moos.ssds.metadata.DataProducer,
+	 * java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findAllDeploymentsOfDeviceTypeFromParent(
+	@Override
+	public Collection<DataProducer> findAllDeploymentsOfDeviceTypeFromParent(
 			DataProducer parentDeployment, String deviceTypeName,
 			String orderByProperty, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -1102,55 +1172,18 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * This method takes in a deviceID, a DeviceType name, and some nominal
-	 * location coordinates and then tries to return a <code>Collection</code>
-	 * of <code>IDeployment</code>s the have a similar device type name, that
-	 * were deployed on (or under) the given deployment (parent-child
-	 * relationship). It will do a &quot;deep&quot; search for devices. In other
-	 * words, it will check all deployments of the parent as well as of any
-	 * sub-deployments under that parent (i.e. it will &quot;Walk the
-	 * chain&quot;).
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @param parentDeployment
-	 *            This is a parent <code>IDeployment</code> to start the search
-	 *            from. It is the &quot;Root&quot; of the search tree.
-	 * @param deviceTypeName
-	 *            This is a <code>String</code> that will be used to search for
-	 *            devices that have a similar device type to that named with
-	 *            this string.
-	 * @param nominalLongitude
-	 *            This is the longitude that the device should be deployed at.
-	 *            It is used as the point of a search and then you can use the
-	 *            <code>longitudeTolerance</code> to declare a +/- search
-	 *            window.
-	 * @param longitudeTolerance
-	 *            This is the +/- that will be added to the
-	 *            <code>nominalLongitude</code> parameter for window searches.
-	 * @param nominalLatitude
-	 *            This is the lattitude that the device should be deployed at.
-	 *            It is used as the point of a search and then you can use the
-	 *            <code>lattitudeTolerance</code> to declare a +/- search
-	 *            window.
-	 * @param lattitudeTolerance
-	 *            This is the +/- that will be added to the
-	 *            <code>nominalLatitude</code> parameter for window searches.
-	 * @param nominalDepth
-	 *            This is the depth that the device should be deployed at. It is
-	 *            used as the point of a search and then you can use the
-	 *            <code>depthTolerance</code> to declare a +/- search window.
-	 * @param depthTolerance
-	 *            This is the +/- that will be added to the
-	 *            <code>nominalDepth</code> parameter for window searches.
-	 * @return a <code>Collection</code> of <code>IDeployment</code>s that meet
-	 *         the search criteria defined by the incoming parameters. No
-	 *         duplicates are removed and if no deployments were found, an empty
-	 *         collection is returned.
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findAllDeploymentsOfDeviceTypeFromParent(java.lang.Long,
+	 * java.lang.String, java.lang.Double, java.lang.Double, java.lang.Double,
+	 * java.lang.Double, java.lang.Float, java.lang.Double, java.lang.String,
+	 * java.lang.String, boolean)
 	 */
-	public Collection findAllDeploymentsOfDeviceTypeFromParent(Long parentID,
-			String deviceTypeName, Double nominalLongitude,
+	@Override
+	public Collection<DataProducer> findAllDeploymentsOfDeviceTypeFromParent(
+			Long parentID, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
 			Double latitudeTolerance, Float nominalDepth,
 			Double depthTolerance, String orderByProperty,
@@ -1169,28 +1202,18 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * This method takes in the ID of a parent <code>IDevice</code>, the name of
-	 * a <code>IDeviceType</code>, and some nominal location coordinates and
-	 * then tries to return a <code>Collection</code> of <code>IDevice</code>s
-	 * with the given type, that were deployed on the given device
-	 * (parent-child) relationship. This will only look for direct child
-	 * deployments, it won't walk any of the sub deployments.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @param parentID
-	 * @param deviceTypeName
-	 * @param nominalLongitude
-	 * @param longitudeTolerance
-	 * @param nominalLatitude
-	 * @param latitudeTolerance
-	 * @param nominalDepth
-	 * @param depthTolerance
-	 * @return
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findDevicesByParentByTypeAndByLocation(java.lang.Long, java.lang.String,
+	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Double,
+	 * java.lang.Float, java.lang.Double, java.lang.String, java.lang.String,
+	 * boolean)
 	 */
-	public Collection findDevicesByParentByTypeAndByLocation(Long parentID,
-			String deviceTypeName, Double nominalLongitude,
+	@Override
+	public Collection<Device> findDevicesByParentByTypeAndByLocation(
+			Long parentID, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
 			Double latitudeTolerance, Float nominalDepth,
 			Double depthTolerance, String orderByProperty,
@@ -1208,28 +1231,18 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * This method takes in the name of a <code>IDevice</code>, the name of a
-	 * <code>IDeviceType</code>, and some nominal location coordinates and then
-	 * tries to return a <code>Collection</code> of <code>IDevices</code> with
-	 * the given type, that were deployed on the given device (parent-child)
-	 * relationship. This will only look for direct child deployments, it won't
-	 * walk any of the sub deployments.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @param parentName
-	 * @param deviceTypeName
-	 * @param nominalLongitude
-	 * @param longitudeTolerance
-	 * @param nominalLatitude
-	 * @param latitudeTolerance
-	 * @param nominalDepth
-	 * @param depthTolerance
-	 * @return
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findDevicesByParentByTypeAndByLocation(java.lang.String,
+	 * java.lang.String, java.lang.Double, java.lang.Double, java.lang.Double,
+	 * java.lang.Double, java.lang.Float, java.lang.Double, java.lang.String,
+	 * java.lang.String, boolean)
 	 */
-	public Collection findDevicesByParentByTypeAndByLocation(String parentName,
-			String deviceTypeName, Double nominalLongitude,
+	@Override
+	public Collection<Device> findDevicesByParentByTypeAndByLocation(
+			String parentName, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
 			Double latitudeTolerance, Float nominalDepth,
 			Double depthTolerance, String orderByProperty,
@@ -1247,55 +1260,17 @@ public class DataProducerAccessEJB extends AccessBean implements
 				ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * This method takes in a <code>IDeployment</code> and a
-	 * <code>DeviceType</code> name, and some nominal location coordinates and
-	 * then tries to return a list of <code>IDevice</code>s the have a similar
-	 * device type name, that were deployed on the given device (parent-child)
-	 * relationship. It will do a &quot;deep&quot; search for devices. In other
-	 * words, it will check all deployments of the parent as well as of any
-	 * sub-deployments under that parent (i.e. it will &quot;Walk the
-	 * chain&quot;).
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @param parentDeployment
-	 *            This is a parent <code>IDeployment</code> to start the search
-	 *            from. It is the &quot;Root&quot; of the search tree.
-	 * @param deviceTypeName
-	 *            This is a <code>String</code> that will be used to search for
-	 *            devices that have a similar device type to that named with
-	 *            this string.
-	 * @param nominalLongitude
-	 *            This is the longitude that the device should be deployed at.
-	 *            It is used as the point of a search and then you can use the
-	 *            <code>longitudeTolerance</code> to declare a +/- search
-	 *            window.
-	 * @param longitudeTolerance
-	 *            This is the +/- that will be added to the
-	 *            <code>nominalLongitude</code> parameter for window searches.
-	 * @param nominalLatitude
-	 *            This is the lattitude that the device should be deployed at.
-	 *            It is used as the point of a search and then you can use the
-	 *            <code>lattitudeTolerance</code> to declare a +/- search
-	 *            window.
-	 * @param lattitudeTolerance
-	 *            This is the +/- that will be added to the
-	 *            <code>nominalLatitude</code> parameter for window searches.
-	 * @param nominalDepth
-	 *            This is the depth that the device should be deployed at. It is
-	 *            used as the point of a search and then you can use the
-	 *            <code>depthTolerance</code> to declare a +/- search window.
-	 * @param depthTolerance
-	 *            This is the +/- that will be added to the
-	 *            <code>nominalDepth</code> parameter for window searches.
-	 * @return a <code>Collection</code> of <code>IDevice</code>s that meet the
-	 *         search criteria defined by the incoming parameters. The devices
-	 *         are listed from the most recent deployment first (index 0) to the
-	 *         oldest deployment. Each device is listed only once in the return
-	 *         collection
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findAllDevicesByParentDeploymentByTypeAndByLocation
+	 * (moos.ssds.metadata.DataProducer, java.lang.String, java.lang.Double,
+	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
+	 * java.lang.Double, java.lang.String, java.lang.String, boolean)
 	 */
-	public Collection findAllDevicesByParentDeploymentByTypeAndByLocation(
+	@Override
+	public Collection<Device> findAllDevicesByParentDeploymentByTypeAndByLocation(
 			DataProducer parentDeployment, String deviceTypeName,
 			Double nominalLongitude, Double longitudeTolerance,
 			Double nominalLatitude, Double latitudeTolerance,
@@ -1316,22 +1291,18 @@ public class DataProducerAccessEJB extends AccessBean implements
 						ascendingOrDescending, returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @param parentID
-	 * @param deviceTypeName
-	 * @param nominalLongitude
-	 * @param longitudeTolerance
-	 * @param nominalLatitude
-	 * @param latitudeTolerance
-	 * @param nominalDepth
-	 * @param depthTolerance
-	 * @return
-	 * @throws MetadataAccessException
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.DataProducerAccess#
+	 * findAllDevicesByParentByTypeAndByLocation(java.lang.Long,
+	 * java.lang.String, java.lang.Double, java.lang.Double, java.lang.Double,
+	 * java.lang.Double, java.lang.Float, java.lang.Double, java.lang.String,
+	 * java.lang.String, boolean)
 	 */
-	public Collection findAllDevicesByParentByTypeAndByLocation(Long parentID,
-			String deviceTypeName, Double nominalLongitude,
+	@Override
+	public Collection<Device> findAllDevicesByParentByTypeAndByLocation(
+			Long parentID, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
 			Double latitudeTolerance, Float nominalDepth,
 			Double depthTolerance, String orderByProperty,
@@ -1350,11 +1321,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				returnFullObjectGraph);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#addChildDataProducer(DataProducer, DataProducer)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#addChildDataProducer(moos
+	 * .ssds.metadata.DataProducer, moos.ssds.metadata.DataProducer)
 	 */
+	@Override
 	public void addChildDataProducer(DataProducer parentDataProducer,
 			DataProducer childDataProducer) throws MetadataAccessException {
 		// Grab the DAO
@@ -1366,11 +1340,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				childDataProducer);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#addResource(DataProducer, Resource)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#addResource(moos.ssds.
+	 * metadata.DataProducer, moos.ssds.metadata.Resource)
 	 */
+	@Override
 	public void addResource(DataProducer dataProducer, Resource resourceToAdd)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -1381,11 +1358,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 		dataProducerDAO.addResource(dataProducer, resourceToAdd);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#removeResource(DataProducer, Resource)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#removeResource(moos.ssds
+	 * .metadata.DataProducer, moos.ssds.metadata.Resource)
 	 */
+	@Override
 	public void removeResource(DataProducer dataProducer, Resource resource)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -1396,12 +1376,15 @@ public class DataProducerAccessEJB extends AccessBean implements
 		dataProducerDAO.removeResource(dataProducer, resource);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#createDuplicateDeepDeployment(DataProducer, Date,
-	 *      boolean, Date, String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#createDuplicateDeepDeployment
+	 * (moos.ssds.metadata.DataProducer, java.util.Date, boolean,
+	 * java.util.Date, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public Long createDuplicateDeepDeployment(DataProducer deploymentToCopy,
 			Date newStartDate, boolean closeOld, Date oldEndDate,
 			String newHeadDeploymentName, String baseDataStreamUri)
@@ -1417,11 +1400,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 				baseDataStreamUri);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#makeDeepTransient(DataProducer)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#deepDelete(moos.ssds.metadata
+	 * .DataProducer)
 	 */
+	@Override
 	public void deepDelete(DataProducer dataProducer)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -1432,11 +1418,14 @@ public class DataProducerAccessEJB extends AccessBean implements
 		dataProducerDAO.makeDeepTransient(dataProducer);
 	}
 
-	/**
-	 * @ejb.interface-method view-type="both"
-	 * @ejb.transaction type="Required"
-	 * @see DataProducerDAO#makeDeepTransient(DataProducer)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.DataProducerAccess#makeDeepTransient(moos
+	 * .ssds.metadata.DataProducer)
 	 */
+	@Override
 	public void makeDeepTransient(DataProducer dataProducer)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -1446,14 +1435,4 @@ public class DataProducerAccessEJB extends AccessBean implements
 		// Now call the method
 		dataProducerDAO.makeDeepTransient(dataProducer);
 	}
-
-	/**
-	 * This is the version that we can control for serialization purposes
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * A log4j logger
-	 */
-	static Logger logger = Logger.getLogger(DataProducerAccessEJB.class);
 }

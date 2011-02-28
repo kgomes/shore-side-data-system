@@ -19,28 +19,8 @@
 	<!-- Import various path definitions -->
 	<import file="path-defs.xml" />
 
-	<!-- Define the ejb-doclet task -->
-	<taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
-		<classpath>
-			<fileset refid="jboss-common-lib-jar-fileset" />
-			<fileset dir="${xdoclet.path}">
-				<include name="*.jar" />
-			</fileset>
-		</classpath>
-	</taskdef>
-
 	<!-- Hibernate taskdefs -->
 	<taskdef name="hibernatedoclet" classname="xdoclet.modules.hibernate.HibernateDocletTask">
-		<classpath>
-			<fileset refid="jboss-common-lib-jar-fileset" />
-			<fileset dir="${xdoclet.path}">
-				<include name="*.jar" />
-			</fileset>
-		</classpath>
-	</taskdef>
-
-	<!-- Define the web-doclet task -->
-	<taskdef name="webdoclet" classname="xdoclet.modules.web.WebDocletTask">
 		<classpath>
 			<fileset refid="jboss-common-lib-jar-fileset" />
 			<fileset dir="${xdoclet.path}">
@@ -65,14 +45,11 @@
 	<!-- need to be removed when a clean build is to be done                   -->
 	<target name="remove-working-dirs" depends="init">
 		<!-- Delete directories where classes are compiled to -->
-		<delete dir="${project.build}/classes/moos/ssds/clients/graphing" />
-		<delete dir="${project.build}/classes/moos/ssds/clients/updateBot" />
 		<delete dir="${project.build}/classes/moos/ssds/data" />
 		<delete dir="${project.build}/classes/moos/ssds/metadata" />
 		<delete dir="${project.build}/classes/moos/ssds/services/data" />
 		<delete dir="${project.build}/classes/moos/ssds/services/metadata" />
 		<delete dir="${project.build}/classes/moos/ssds/services/servlet" />
-		<delete dir="${project.build}/classes/moos/ssds/services/blazeds" />
 		<delete dir="${project.build}/classes/moos/ssds/ingest" />
 		<delete dir="${project.build}/classes/moos/ssds/jms" />
 		<delete dir="${project.build}/classes/moos/ssds/io" />
@@ -82,17 +59,9 @@
 		<delete dir="${project.build}/classes/moos/ssds/dao" />
 		<!-- Now delete the configuration directories -->
 		<delete dir="${project.build}/metadata" />
-		<delete dir="${project.build}/clients/graphing" />
-		<delete dir="${project.build}/clients/updateBot" />
-		<delete dir="${project.build}/clients/logging" />
 		<delete dir="${project.build}/data" />
 		<delete dir="${project.build}/servlet" />
 		<delete dir="${project.build}/ear" />
-		<!-- Delete XDoclet generated code -->
-		<delete dir="${src.gen}/moos/ssds/services/data" />
-		<delete dir="${src.gen}/moos/ssds/services/metadata" />
-		<!-- Delete the Web Services configuration stuff -->
-		<delete dir="${project.build}/web-services" />
 		<!-- Client publishing jar -->
 		<delete dir="${project.build}/client-pub" />
 		<!-- Utility jar config -->
@@ -105,9 +74,6 @@
 		<!-- Base project directories -->
 		<mkdir dir="${project.build}" />
 		<mkdir dir="${project.build}/classes" />
-		<mkdir dir="${project.build}/clients/graphing" />
-		<mkdir dir="${project.build}/clients/updateBot" />
-		<mkdir dir="${project.build}/clients/logging" />
 		<mkdir dir="${project.build}/data/moos/ssds/io" />
 		<mkdir dir="${project.build}/data/moos/ssds/services/data" />
 		<mkdir dir="${project.build}/metadata/services/META-INF" />
@@ -115,46 +81,14 @@
 		<mkdir dir="${project.build}/metadata/moos/ssds/services/metadata" />
 		<mkdir dir="${project.build}/metadata/jndi" />
 		<mkdir dir="${project.build}/servlet/WEB-INF" />
-		<mkdir dir="${project.build}/servlet/mappings" />
 		<mkdir dir="${project.build}/ear/META-INF" />
-		<mkdir dir="${project.build}/client-pub" />
 		<mkdir dir="${project.build}/utility" />
-		<mkdir dir="${project.build}/web-services/WEB-INF" />
 		<mkdir dir="${project.dist}" />
-		<mkdir dir="${src.gen}" />
-		<mkdir dir="${gen.doc}" />
-		<mkdir dir="${gen.html}" />
-		<mkdir dir="${gen.java2html}" />
 		<mkdir dir="${gen.test}" />
 	</target>
 
 	<!-- The clean targets -->
 	<target name="clean" depends="remove-working-dirs,rebuild-project-dirs" />
-
-	<!-- This target runs the XDoclet stuff on the EJB's -->
-	<target name="ejb-doclet" depends="init">
-		<ejbdoclet ejbspec="${metadata.xdoclet.ejb.spec.version}" destDir="${src.gen}" verbose="${metadata.xdoclet.verbose}" force="${metadata.xdoclet.force}">
-			<!-- Include any classes that end in EJB in the metadata package -->
-			<fileset dir="${src.java}">
-				<include name="moos/ssds/services/data/**/*EJB.java" />
-				<include name="moos/ssds/services/metadata/*EJB.java" />
-				<include name="moos/ssds/services/metadata/AccessBean.java" />
-				<exclude name="moos/ssds/services/data/SQLByteArrayAccessEJB.java"/>
-			</fileset>
-			<!-- Generate the home and remote interfaces -->
-			<homeinterface />
-			<remoteinterface />
-			<!-- Generate all the local interfaces -->
-			<localinterface />
-			<localhomeinterface />
-			<!-- Create the utility objects -->
-			<utilobject kind="physical" />
-			<!-- Create the generic J2EE deployment descriptor -->
-			<deploymentdescriptor destdir="${project.build}/metadata/services/META-INF" destinationFile="ejb-jar.xml" validatexml="true" />
-			<!-- Create the deployment file for jboss -->
-			<jboss version="${metadata.xdoclet.jboss.version}" destDir="${project.build}/metadata/services/META-INF" />
-		</ejbdoclet>
-	</target>
 
 	<!-- This target generates the hibernate deployment files -->
 	<target name="hibernate-doclet" depends="init">
@@ -166,49 +100,16 @@
 		</hibernatedoclet>
 	</target>
 
-	<!-- Run the webdoclet task on the various servlets -->
-	<target name="web-doclet" depends="init">
-		<!-- First copy the merge file that has the JFreeChart servlet specs -->
-		<copy file="${resources.build}/servlet/servlet-mappings.template.xml" tofile="${project.build}/servlet/mappings/servlet-mappings.xml" overwrite="true" />
-
-		<!-- Now run webdoclet on servlets and merge in jfreechart stuff -->
-		<webdoclet destDir="${src.gen}" mergeDir="${project.build}/servlet/mappings">
-			<fileset dir="${src.java}">
-				<include name="moos/ssds/services/servlet/**/*Servlet.java" />
-			</fileset>
-			<!-- generate the generic web.xml -->
-			<deploymentdescriptor servletspec="${metadata.xdoclet.servlet.spec.version}" destdir="${project.build}/servlet/WEB-INF" />
-			<jbosswebxml securitydomain="java:/jaas/ssds" version="${metadata.xdoclet.servlet.jboss.version}" destDir="${project.build}/servlet/WEB-INF" />
-		</webdoclet>
-	</target>
-
-	<!-- Now, run ejb doclet on the web services classes -->
-	<target name="web-services-doclet" depends="init">
-		<ejbdoclet ejbspec="${metadata.xdoclet.ejb.spec.version}" destDir="${src.gen}" verbose="${metadata.xdoclet.verbose}" force="${metadata.xdoclet.force}">
-			<!-- Include any classes that end in WS -->
-			<fileset dir="${src.java}">
-				<include name="moos/ssds/services/metadata/*EJB.java" />
-				<include name="moos/ssds/services/data/*EJB.java" />
-			</fileset>
-			<!-- Create the web service deployment descriptors -->
-			<axisdeploy destdir="${project.build}/web-services" />
-		</ejbdoclet>
-	</target>
-
 	<!-- Compile the metadata source code -->
-	<target name="compile" depends="init,ejb-doclet">
+	<target name="compile" depends="init">
 		<!-- Run the appropriate javac -->
 		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
 			<src path="${src.java}" />
 			<src path="${src.gen}" />
-			<include name="moos/ssds/clients/graphing/**/*.java" />
-			<include name="moos/ssds/clients/updateBot/**/*.java" />
-			<include name="moos/ssds/data/**/*.java" />
 			<include name="moos/ssds/metadata/**/*.java" />
 			<include name="moos/ssds/services/data/**/*.java" />
 			<include name="moos/ssds/services/metadata/**/*.java" />
 			<include name="moos/ssds/services/servlet/**/*.java" />
-			<include name="moos/ssds/services/blazeds/**/*.java" />
 			<include name="moos/ssds/util/**/*.java" />
 			<include name="moos/ssds/io/**/*.java" />
 			<include name="moos/ssds/wrapper/**/*.java" />
@@ -231,17 +132,15 @@
 	<target name="build" depends="clean,compile,jibx-gen" description="This will clean all the compiled classes, run all the necessary XDoclet tasks, and compile the source code" />
 
 	<!-- The distribution target -->
-	<target name="dist" depends="build,hibernate-doclet,web-doclet,web-services-doclet" description="This target runs the clean, compile and then builds this distributions">
+	<target name="dist" depends="build,hibernate-doclet" description="This target runs the clean, compile and then builds this distributions">
 		<!-- Delete old server jar files -->
 		<delete file="${project.dist}/ssds-metadata.har" />
 		<delete file="${project.dist}/ssds-services-metadata.jar" />
 		<delete file="${project.dist}/ssds-services-metadata-client.jar" failonerror="false" />
-		<delete file="${project.dist}/ssds-graphing-client.jar" failonerror="false" />
-		<delete file="${project.dist}/ssds-updateBot-client.jar" failonerror="false" />
 		<delete file="${project.dist}/servlet.war" />
 		<delete file="${project.dist}/ssds-client-pub.jar" />
-		<!-- Delete the web services war -->
-		<delete file="${project.dist}/axis.war" />
+		<!-- Delete the web services war
+		<delete file="${project.dist}/axis.war" /> -->
 		<!-- Copy the IO properties file over -->
 		<copy file="${resources.build}/moos/ssds/io/io_template.properties" tofile="${project.build}/data/moos/ssds/io/io.properties" overwrite="true">
 			<filterset>
@@ -285,46 +184,15 @@
 		<!-- Copy supporting files and images over to build/classes -->
 		<copy file="${src.java}/moos/ssds/data/graphing/anchor.gif" tofile="${build.classes}/moos/ssds/data/graphing/anchor.gif" overwrite="true" />
 		<!-- First copy the Hibernate HAR service descriptor to the config location -->
-		<copy file="${resources.build}/jboss/hibernate-service.xml" tofile="${project.build}/metadata/hibernate/META-INF/hibernate-service.xml" overwrite="true">
+		<copy file="${resources.build}/jboss/service-hibernate.xml" tofile="${project.build}/metadata/hibernate/META-INF/service-hibernate.xml" overwrite="true">
 			<filterset>
-				<filter token="METADATA_HIBERNATE_SERVICE_NAME" value="${metadata.hibernate.service.name}" />
+				<!-- <filter token="METADATA_HIBERNATE_SERVICE_NAME" value="${metadata.hibernate.service.name}" /> -->
 				<filter token="METADATA_HIBERNATE_DATASOURCE_JNDI_NAME" value="${metadata.datasource.jndi.name}" />
 				<filter token="METADATA_HIBERNATE_DIALECT" value="${hibernate.dialect}" />
-				<filter token="METADATA_HIBERNATE_JNDI_NAME" value="${metadata.hibernate.jndi.name}" />
-				<filter token="METADATA_HIBERNATE_CACHE_PROVIDER_CLASS" value="${metadata.hibernate.cache.provider.class}" />
+				<!-- <filter token="METADATA_HIBERNATE_JNDI_NAME" value="${metadata.hibernate.jndi.name}" /> -->
+				<!-- <filter token="METADATA_HIBERNATE_CACHE_PROVIDER_CLASS" value="${metadata.hibernate.cache.provider.class}" /> -->
 				<filter token="METADATA_HIBERNATE_HBM2DDLAUTO" value="${metadata.hibernate.hbm2ddlauto}" />
-				<filter token="METADATA_HIBERNATE_DEFAULT_SCHEMA" value="${hibernate.schema}" />
-			</filterset>
-		</copy>
-		<!-- Copy the graphing properties file over -->
-		<copy file="${resources.build}/moos/ssds/clients/graphing/graphing_template.properties" tofile="${project.build}/clients/graphing/moos/ssds/clients/graphing/graphing.properties" overwrite="true">
-			<filterset>
-				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DIRECTORY" value="${client.graphing.device.qc.plot.directory}" />
-				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_URLBASE" value="${client.graphing.device.qc.plot.urlbase}" />
-				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DATABASE_JDBC_CLASS_NAME" value="${client.graphing.device.qc.plot.database.jdbc.class.name}" />
-				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DATABASE_JDBC_URL" value="${database.data.driver.url}" />
-				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DATABASE_USERNAME" value="${client.graphing.device.qc.plot.database.username}" />
-				<filter token="CLIENT_GRAPHING_DEVICE_QC_PLOT_DATABASE_PASSWORD" value="${client.graphing.device.qc.plot.database.password}" />
-			</filterset>
-		</copy>
-		<!-- Copy the updateBot properties file over -->
-		<copy file="${resources.build}/moos/ssds/clients/updateBot/updateBot_template.properties" tofile="${project.build}/clients/updateBot/moos/ssds/clients/updateBot/updateBot.properties" overwrite="true">
-			<filterset>
-				<filter token="CLIENT_UPDATEBOT_NETCDF_BASE_WORKING_DIRECTORY" value="${client.updateBot.netcdf.base.working.directory}" />
-				<filter token="CLIENT_UPDATEBOT_NETCDF_BASE_DIRECTORY" value="${client.updateBot.netcdf.base.directory}" />
-				<filter token="CLIENT_UDPATEBOT_NETCDF_URLBASE" value="${client.updateBot.netcdf.urlbase}" />
-				<filter token="CLIENT_UDPATEBOT_DODS_URLBASE" value="${client.updateBot.dods.urlbase}" />
-				<filter token="CLIENT_UPDATEBOT_DATABASE_JDBC_CLASS_NAME" value="${client.updateBot.database.jdbc.class.name}" />
-				<filter token="CLIENT_UPDATEBOT_DATABASE_JDBC_URL" value="${database.metadata.driver.url}" />
-				<filter token="CLIENT_UDPATEBOT_DATABASE_USERNAME" value="${client.updateBot.database.username}" />
-				<filter token="CLIENT_UPDATEBOT_DATABASE_PASSWORD" value="${client.updateBot.database.password}" />
-				<filter token="CLIENT_UPDATEBOT_MAIL_HOST" value="${client.updateBot.mail.host}" />
-				<filter token="CLIENT_UPDATEBOT_SEND_USER_EMAIL" value="${client.updateBot.send.user.email}" />
-				<filter token="CLIENT_UPDATEBOT_SEND_ADMIN_EMAIL" value="${client.updateBot.send.admin.email}" />
-				<filter token="CLIENT_UDPATEBOT_ADMIN_EMAIL_ADDRESS" value="${client.updateBot.admin.email.address}" />
-				<filter token="CLIENT_UDPATEBOT_SUBSCRIBER_HOST_NAME_LONG" value="${client.updateBot.subscriber.host.name.long}" />
-				<filter token="CLIENT_UDPATEBOT_SUBSCRIBER_TOPIC_NAME" value="${client.updateBot.subscriber.topic.name}" />
-				<filter token="CLIENT_UDPATEBOT_SLEEP_TIME_SECONDS" value="${client.updateBot.sleep.time.seconds}" />
+				<!-- <filter token="METADATA_HIBERNATE_DEFAULT_SCHEMA" value="${hibernate.schema}" /> -->
 			</filterset>
 		</copy>
 		<!-- Now put in into a HAR file -->
@@ -372,25 +240,36 @@
 				<include name="moos/ssds/dao/**/*.properties" />
 			</fileset>
 		</jar>
-		<!-- Create a patternset for later use -->
-		<patternset id="java.source.patternset">
-			<include name="**/*.java" />
-			<exclude name="moos/ssds/jms/**/*.java" />
-			<exclude name="moos/ssds/ingest/**/*.java" />
-			<exclude name="moos/ssds/*.java" />
-			<exclude name="moos/ssds/access/**/*.java" />
-			<exclude name="moos/ssds/clients/**/*.java" />
-			<exclude name="moos/ssds/cimt/**/*.java" />
-			<exclude name="moos/ssds/dao/**/*.java" />
-			<exclude name="moos/ssds/ruminate/**/*.java" />
-			<exclude name="moos/ssds/services/servlet/**/*.java" />
-			<exclude name="moos/ssds/simulator/**/*.java" />
-			<exclude name="moos/ssds/tasks/**/*.java" />
-			<exclude name="moos/ssds/transmogrify/**/*.java" />
-			<exclude name="moos/ssds/wrappergenerator/**/*.java" />
-			<exclude name="test/**/*.java" />
-		</patternset>
-		<!-- Create the client jar(s) -->
+		<!-- Build the SSDS servlet services war file for the current server -->
+		<copy file="${resources.build}/servlet/core-servlet-web.xml" tofile="${project.build}/servlet/WEB-INF/web.xml" overwrite="true" />
+		<copy file="${resources.build}/servlet/core-jboss-web.xml" tofile="${project.build}/servlet/WEB-INF/jboss-web.xml" overwrite="true" />
+		<war destfile="${project.dist}/servlet.war" webxml="${project.build}/servlet/WEB-INF/web.xml">
+			<classes dir="${build.classes}">
+				<include name="moos/ssds/services/servlet/**/*.class" />
+			</classes>
+			<webinf dir="${project.build}/servlet/WEB-INF" includes="jboss-web.xml" />
+		</war>
+		<!-- Copy the MANIFEST.MF, application.xml and jboss-app.xml for the EAR file -->
+		<copy file="${resources.build}/manifest/MANIFEST_TEMPLATE.MF" tofile="${project.build}/ear/MANIFEST.MF" overwrite="true">
+			<filterset>
+				<filter token="CLASSPATH" value="${core.ear.classpath}" />
+				<filter token="MAIN_CLASS_STATEMENT" value="" />
+			</filterset>
+		</copy>
+		<copy file="${resources.build}/jboss/application.xml" tofile="${project.build}/ear/application.xml" overwrite="true" />
+		<copy file="${resources.build}/jboss/jboss-app.xml" tofile="${project.build}/ear/META-INF/jboss-app.xml" overwrite="true" />
+		<!-- Now create the EAR file -->
+		<ear destfile="${project.dist}/ssds.ear" appxml="${project.build}/ear/application.xml" manifest="${project.build}/ear/MANIFEST.MF">
+			<fileset file="${project.dist}/ssds-services-metadata.jar" />
+			<fileset file="${project.dist}/ssds-metadata.har" />
+			<fileset file="${project.dist}/servlet.war" />
+			<fileset refid="core-deploy-jar-fileset" />
+			<fileset dir="${project.build}/ear">
+				<include name="META-INF/jboss-app.xml" />
+			</fileset>
+		</ear>
+
+		<!-- Create the client jar -->
 		<!-- Copy over the jndi.properties file -->
 		<copy file="${resources.build}/jboss/jndi.properties" tofile="${project.build}/metadata/jndi/jndi.properties" overwrite="true">
 			<filterset>
@@ -413,7 +292,8 @@
 				<include name="moos/ssds/dao/*.class" />
 				<include name="moos/ssds/data/**/*.class" />
 				<include name="moos/ssds/metadata/**/*.class" />
-				<include name="moos/ssds/services/metadata/**/*.class" />
+				<include name="moos/ssds/services/metadata/**/*Access.class" />
+				<include name="moos/ssds/services/metadata/**/*AccessLocal.class" />
 				<include name="moos/ssds/dao/util/*Exception.class" />
 				<include name="moos/ssds/util/**/*.class" />
 				<include name="moos/ssds/services/data/**/*.class" />
@@ -433,163 +313,8 @@
 				<patternset refid="java.source.patternset" />
 			</fileset>
 		</jar>
-		<!-- Create the log4j.properties for the graph creation stuff -->
-		<copy file="${src.resources}/build/log4j/log4j_FileAppender_Template.properties" tofile="${project.build}/clients/graphing/log4j.properties" overwrite="true">
-			<filterset>
-				<filter token="LOG4J_LEVEL" value="${client.graphing.log4j.level}" />
-				<filter token="LOG4J_FILE_NAME" value="${client.graphing.log4j.file.name}" />
-				<filter token="LOG4J_DATE_PATTERN" value="${client.graphing.log4j.date.pattern}" />
-				<filter token="LOG4J_PATTERN_LAYOUT" value="${client.graphing.log4j.pattern.layout}" />
-			</filterset>
-		</copy>
-		<!-- The Manifest File for it -->
-		<copy file="${resources.build}/manifest/MANIFEST_TEMPLATE.MF" tofile="${project.build}/clients/graphing/MANIFEST.MF" overwrite="true">
-			<filterset>
-				<filter token="CLASSPATH" value="${client.graphing.classpath}" />
-				<filter token="MAIN_CLASS_STATEMENT" value="Main-Class: ${client.graphing.main.class}" />
-			</filterset>
-		</copy>
-		<!-- Now construct the graphing client jar -->
-		<jar jarfile="${project.dist}/ssds-graphing-client.jar" manifest="${project.build}/clients/graphing/MANIFEST.MF">
-			<!-- Include the class -->
-			<fileset dir="${project.build}/classes">
-				<include name="moos/ssds/clients/graphing/**/*.class" />
-				<include name="moos/ssds/data/**/*.class" />
-				<include name="moos/ssds/metadata/**/*.class" />
-				<include name="moos/ssds/services/metadata/**/*.class" />
-				<include name="moos/ssds/dao/util/*Exception.class" />
-				<include name="moos/ssds/util/**/*.class" />
-				<include name="moos/ssds/wrapper/**/*.class" />
-				<include name="moos/ssds/services/data/**/*.class" />
-				<include name="moos/ssds/transmogrify/SSDSDevicePacket.class" />
-				<include name="moos/ssds/transmogrify/SSDSGeoLocatedDevicePacket.class" />
-			</fileset>
-			<!-- The JNDI properties file -->
-			<fileset dir="${project.build}/metadata/jndi" includes="jndi.properties" />
-			<!-- The log4j properties file -->
-			<fileset dir="${project.build}/clients/graphing" includes="log4j.properties" />
-			<!-- The source code (if needed) -->
-			<fileset dir="${project.src}/java">
-				<patternset refid="java.source.patternset" />
-			</fileset>
-			<fileset dir="${project.src}/gen">
-				<patternset refid="java.source.patternset" />
-			</fileset>
-			<!-- The graphing properites -->
-			<fileset dir="${project.build}/clients/graphing" includes="moos/ssds/clients/graphing/graphing.properties" />
-		</jar>
-		<!-- Create the log4j.properties for the udpateBot stuff -->
-		<copy file="${src.resources}/build/log4j/log4j_FileAppender_Template.properties" tofile="${project.build}/clients/updateBot/log4j.properties" overwrite="true">
-			<filterset>
-				<filter token="LOG4J_LEVEL" value="${client.updateBot.log4j.level}" />
-				<filter token="LOG4J_FILE_NAME" value="${client.updateBot.log4j.file.name}" />
-				<filter token="LOG4J_DATE_PATTERN" value="${client.updateBot.log4j.date.pattern}" />
-				<filter token="LOG4J_PATTERN_LAYOUT" value="${client.updateBot.log4j.pattern.layout}" />
-			</filterset>
-		</copy>
-		<!-- The Manifest File for it -->
-		<copy file="${resources.build}/manifest/MANIFEST_TEMPLATE.MF" tofile="${project.build}/clients/updateBot/MANIFEST.MF" overwrite="true">
-			<filterset>
-				<filter token="CLASSPATH" value="${client.updatebot.classpath}" />
-				<filter token="MAIN_CLASS_STATEMENT" value="Main-Class: ${client.updatebot.main.class}" />
-			</filterset>
-		</copy>
-		<!-- Copy the JMS Properties -->
-		<copy file="${resources.build}/moos/ssds/jms/jms_template.properties" tofile="${project.build}/client-pub/moos/ssds/jms/jms.properties" overwrite="true">
-			<filterset>
-				<filter token="JMS_TOPIC" value="${client.updateBot.subscriber.topic.name}" />
-				<filter token="JMS_TOPIC_CONNECTION_FACTORY_JNDI_NAME" value="${transmogrify.connection.factory.jndi.name}" />
-			</filterset>
-		</copy>
-		<!-- Now construct the udpateBot client jar -->
-		<jar jarfile="${project.dist}/ssds-updateBot-client.jar" manifest="${project.build}/clients/updateBot/MANIFEST.MF">
-			<!-- Include the class -->
-			<fileset dir="${project.build}/classes">
-				<include name="moos/ssds/jms/Subscriber*.class" />
-				<include name="moos/ssds/clients/updateBot/**/*.class" />
-				<include name="moos/ssds/data/**/*.class" />
-				<include name="moos/ssds/metadata/**/*.class" />
-				<include name="moos/ssds/services/metadata/**/*.class" />
-				<include name="moos/ssds/dao/util/*Exception.class" />
-				<include name="moos/ssds/util/**/*.class" />
-				<include name="org/mbari/util/**/*.class" />
-				<include name="moos/ssds/wrapper/**/*.class" />
-			</fileset>
-			<!-- The JMS properties file -->
-			<fileset dir="${project.build}/client-pub" includes="moos/ssds/jms/jms.properties" />
-			<!-- The JNDI properties file -->
-			<fileset dir="${project.build}/metadata/jndi" includes="jndi.properties" />
-			<!-- The log4j properties file -->
-			<fileset dir="${project.build}/clients/updateBot" includes="log4j.properties" />
-			<!-- The source code (if needed) -->
-			<fileset dir="${project.src}/java">
-				<patternset refid="java.source.patternset" />
-			</fileset>
-			<fileset dir="${project.src}/gen">
-				<patternset refid="java.source.patternset" />
-			</fileset>
-			<!-- The graphing properites -->
-			<fileset dir="${project.build}/clients/updateBot" includes="moos/ssds/clients/updateBot/updateBot.properties" />
-		</jar>
-		<!-- Now construct the web services war file -->
-		<!-- Strip all the deployment information from the deployment descriptors so they can be merged -->
-		<replaceregexp match=".*xml version.*|.*deployment.*|.*xmlns.*" replace="" flags="g">
-			<fileset dir="${project.build}/web-services">
-				<include name="**/*.xml" />
-			</fileset>
-		</replaceregexp>
-		<!-- Copy over the top part of the wsdd file for Apache Axis -->
-		<concat destfile="${project.build}/web-services/WEB-INF/server-config.wsdd" append="false">
-			<filelist dir="${project.src}/resources/build/web-services" files="server-config.wsdd" />
-		</concat>
-		<!-- Now concatenate that with the web service deployment descriptors -->
-		<concat destfile="${project.build}/web-services/WEB-INF/server-config.wsdd" append="true">
-			<fileset dir="${project.build}/web-services">
-				<include name="**/*.xml" />
-			</fileset>
-		</concat>
-		<!-- Now concatenate (add) the footer portion of the Axis deployment template -->
-		<concat destfile="${project.build}/web-services/WEB-INF/server-config.wsdd" append="true">
-			<filelist dir="${project.src}/resources/build/web-services" files="server-config.wsdd.end" />
-		</concat>
-		<!-- Build the SSDS web services war file for the current server -->
-		<war destfile="${project.dist}/axis.war" webxml="${project.src}/resources/build/web-services/web.xml">
-			<fileset dir="${project.build}/web-services">
-				<include name="WEB-INF/server-config.wsdd" />
-			</fileset>
-			<lib file="${project.lib}/${axis.jar}" />
-			<lib file="${project.lib}/${jaxrpc.jar}" />
-			<lib file="${project.lib}/${wsdl4j.jar}" />
-			<lib file="${project.lib}/${apache.commons.discovery}" />
-		</war>
-		<!-- Build the SSDS servlet services war file for the current server -->
-		<war destfile="${project.dist}/servlet.war" webxml="${project.build}/servlet/WEB-INF/web.xml">
-			<classes dir="${build.classes}">
-				<include name="moos/ssds/services/servlet/**/*.class" />
-			</classes>
-			<webinf dir="${project.build}/servlet/WEB-INF" includes="jboss-web.xml" />
-			<webinf dir="${resources.build}/flex/WEB-INF" includes="*.xml" />
-			<webinf dir="${resources.build}/flex/WEB-INF" includes="flex/*.xml" />
-		</war>
-		<!-- Copy the MANIFEST.MF, application.xml and jboss-app.xml for the EAR file -->
-		<copy file="${resources.build}/manifest/MANIFEST_TEMPLATE.MF" tofile="${project.build}/ear/MANIFEST.MF" overwrite="true">
-			<filterset>
-				<filter token="CLASSPATH" value="${core.ear.classpath}" />
-				<filter token="MAIN_CLASS_STATEMENT" value="" />
-			</filterset>
-		</copy>
-		<copy file="${resources.build}/jboss/application.xml" tofile="${project.build}/ear/application.xml" overwrite="true" />
-		<copy file="${resources.build}/jboss/jboss-app.xml" tofile="${project.build}/ear/META-INF/jboss-app.xml" overwrite="true" />
-		<!-- Now create the EAR file -->
-		<ear destfile="${project.dist}/ssds.ear" appxml="${project.build}/ear/application.xml" manifest="${project.build}/ear/MANIFEST.MF">
-			<fileset file="${project.dist}/ssds-services-metadata.jar" />
-			<fileset file="${project.dist}/ssds-metadata.har" />
-			<fileset file="${project.dist}/servlet.war" />
-			<fileset refid="all-project-lib-jar-fileset" />
-			<fileset dir="${project.build}/ear">
-				<include name="META-INF/jboss-app.xml" />
-			</fileset>
-		</ear>
+		<!-- Copy it to the web app lib directory -->
+		<copy file="${project.dist}/ssds-services-metadata-client.jar" tofile="${src.gwt.webapp}/war/WEB-INF/lib/ssds-services-metadata-client.jar" />
 	</target>
 
 	<!-- The target to test the metdata services -->
@@ -739,38 +464,12 @@
 		<!-- Now deploy the EAR -->
 		<copy file="${project.dist}/ssds.ear" todir="${jboss.home}/server/${jboss.server.type}/deploy" />
 		<!-- Copy over the web services war -->
-		<copy file="${project.dist}/axis.war" todir="${jboss.home}/server/${jboss.server.type}/deploy" />
+		<!-- <copy file="${project.dist}/axis.war" todir="${jboss.home}/server/${jboss.server.type}/deploy" /> -->
 		<!-- Make sure the ssds-docs directory is there -->
 		<mkdir dir="${project.documentation.deploy.location}" />
 		<mkdir dir="${project.documentation.deploy.location}/client" />
 		<mkdir dir="${project.documentation.deploy.location}/xml" />
 		<mkdir dir="${project.documentation.deploy.location}/xml/schema" />
-
-		<!-- Now deploy the graphing app jar -->
-		<delete dir="${project.dist}/tempzip" />
-		<mkdir dir="${project.dist}/tempzip" />
-		<copy file="${resources.build}/doc/client/README_graphing_client.html" tofile="${project.dist}/tempzip/README.html" overwrite="true" />
-		<zip destfile="${project.documentation.deploy.location}/client/ssds-graphing-client.zip">
-			<fileset dir="${project.dist}/tempzip" includes="README.html" />
-			<fileset dir="${project.dist}" includes="ssds-graphing-client.jar" />
-			<zipfileset refid="jboss-client-jar-fileset" prefix="lib" />
-			<zipfileset refid="jboss-lib-jar-fileset" prefix="lib" />
-			<zipfileset refid="all-project-lib-flattened-jar-fileset" prefix="lib" />
-			<zipfileset dir="${project.lib}" includes="${client.graphing.device.qc.plot.jdbc.jar}" prefix="lib" />
-		</zip>
-
-		<!-- Now deploy the updateBot app jar -->
-		<delete dir="${project.dist}/tempzip" />
-		<mkdir dir="${project.dist}/tempzip" />
-		<copy file="${resources.build}/doc/client/README_updateBot_client.html" tofile="${project.dist}/tempzip/README.html" overwrite="true" />
-		<zip destfile="${project.documentation.deploy.location}/client/ssds-updateBot-client.zip">
-			<fileset dir="${project.dist}/tempzip" includes="README.html" />
-			<fileset dir="${project.dist}" includes="ssds-updatebot-client.jar" />
-			<zipfileset refid="jboss-client-jar-fileset" prefix="lib" />
-			<zipfileset refid="jboss-lib-jar-fileset" prefix="lib" />
-			<zipfileset refid="all-project-lib-flattened-jar-fileset" prefix="lib" />
-			<zipfileset dir="${project.lib}" includes="${client.updateBot.jdbc.jar}" prefix="lib" />
-		</zip>
 
 		<!-- Now zip up and deploy the client file -->
 		<delete dir="${project.dist}/tempzip" />
@@ -811,12 +510,6 @@
 		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/ssds-metadata-ds.xml" />
 		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/ssds.ear" />
 		<delete file="${project.documentation.deploy.location}/client/ssds-services-metadata-client.zip" />
-		<!-- Remove web services war -->
-		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/axis.war" />
-		<!-- Remove the graphing jar -->
-		<delete file="${project.documentation.deploy.location}/client/ssds-graphing-client.zip" />
-		<!-- UpdateBot jar -->
-		<delete file="${project.documentation.deploy.location}/client/ssds-updatebot-client.zip" />
 		<!-- Remove the XML schema -->
 		<delete file="${project.documentation.deploy.location}/xml/schema/SSDS_Metadata.xsd" />
 	</target>

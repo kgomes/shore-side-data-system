@@ -85,7 +85,7 @@ public class DataProducerGroupDAO extends MetadataDAO {
 	/**
 	 * @see IMetadataDAO#findAllIDs()
 	 */
-	public Collection findAllIDs() throws MetadataAccessException {
+	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		Collection dataProducerGroupIDs = null;
 
 		// Create the query and run it
@@ -139,9 +139,10 @@ public class DataProducerGroupDAO extends MetadataDAO {
 	 *         found
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByName(String name, boolean exactMatch,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataProducerGroup> findByName(String name,
+			boolean exactMatch, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 		// Make sure argument is not null
 		logger.debug("findByName where name = " + name + " called.");
 		if ((name == null) && (name.equals(""))) {
@@ -190,7 +191,7 @@ public class DataProducerGroupDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllNames() throws MetadataAccessException {
+	public Collection<String> findAllNames() throws MetadataAccessException {
 		Collection dataProducerGroupNames = null;
 
 		// Create the query and run it
@@ -234,15 +235,16 @@ public class DataProducerGroupDAO extends MetadataDAO {
 	 *         an empty collection if none are found
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByDataProducer(DataProducer dataProducer,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<DataProducerGroup> findByDataProducer(
+			DataProducer dataProducer, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		Collection dataProducerGroups = new ArrayList();
 
 		// Build the query and run
 		if (dataProducer != null) {
-			DataProducerDAO dataProducerDAO = new DataProducerDAO(this
-					.getSession());
+			DataProducerDAO dataProducerDAO = new DataProducerDAO(
+					this.getSession());
 			Long dataProducerId = dataProducerDAO.findId(dataProducer);
 			if (dataProducerId != null) {
 				Query query = getSession().createQuery(
@@ -267,8 +269,8 @@ public class DataProducerGroupDAO extends MetadataDAO {
 
 		// Build the query and run
 		if (dataProducer != null) {
-			DataProducerDAO dataProducerDAO = new DataProducerDAO(this
-					.getSession());
+			DataProducerDAO dataProducerDAO = new DataProducerDAO(
+					this.getSession());
 			Long dataProducerId = dataProducerDAO.findId(dataProducer);
 			if (dataProducerId != null) {
 				Collection dataProducerGroups = null;
@@ -377,9 +379,8 @@ public class DataProducerGroupDAO extends MetadataDAO {
 
 		// If no matching dataProducerGroup was found, do nothing
 		if (persistentDataProducerGroup == null) {
-			logger
-					.debug("No matching dataProducerGroup could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching dataProducerGroup could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// If we are here, we need to make sure all the connections to any
 			// DataProducers are removed before removing it
@@ -395,8 +396,7 @@ public class DataProducerGroupDAO extends MetadataDAO {
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentDataProducerGroup);
 			} catch (HibernateException e) {

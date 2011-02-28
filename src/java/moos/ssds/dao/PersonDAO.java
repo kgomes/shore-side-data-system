@@ -79,13 +79,13 @@ public class PersonDAO extends MetadataDAO {
 		// The Person that will be returned
 		Person personToReturn = null;
 
-		// Now check the ID and if ther is one, search by ID
+		// Now check the ID and if there is one, search by ID
 		if (person.getId() != null) {
-			Criteria criteria = this.formulatePropertyCriteria(false, person
-					.getId(), null, false, null, false, null, false, null,
-					false, null, false, null, false, null, false, null, false,
+			Criteria criteria = this.formulatePropertyCriteria(false,
+					person.getId(), null, false, null, false, null, false,
 					null, false, null, false, null, false, null, false, null,
-					null);
+					false, null, false, null, false, null, false, null, false,
+					null, null);
 			personToReturn = (Person) criteria.uniqueResult();
 		}
 		// If the person is still not found, try by username
@@ -100,10 +100,10 @@ public class PersonDAO extends MetadataDAO {
 
 		// If the person is still null, try to find by email
 		if ((personToReturn == null) && (person.getEmail() != null)) {
-			Collection personsWithEmail = new ArrayList();
+			Collection<Person> personsWithEmail = new ArrayList<Person>();
 			Criteria criteria = this.formulatePropertyCriteria(false, null,
-					null, false, null, false, null, false, null, false, person
-							.getEmail(), true, null, false, null, false, null,
+					null, false, null, false, null, false, null, false,
+					person.getEmail(), true, null, false, null, false, null,
 					false, null, false, null, false, null, false, null, false,
 					null, null);
 			personsWithEmail = criteria.list();
@@ -181,7 +181,8 @@ public class PersonDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong with the search
 	 */
-	public Collection findByEmail(String email, boolean exactMatch,
+	@SuppressWarnings("unchecked")
+	public Collection<Person> findByEmail(String email, boolean exactMatch,
 			String orderByProperty, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 
@@ -189,11 +190,11 @@ public class PersonDAO extends MetadataDAO {
 		logger.debug("findByEmail called with email = " + email);
 		if ((email == null) || (email.equals(""))) {
 			logger.debug("The incoming email address was not valid");
-			return new ArrayList();
+			return new ArrayList<Person>();
 		}
 
 		// The Collection to return
-		Collection personsToReturn = new ArrayList();
+		Collection<Person> personsToReturn = new ArrayList<Person>();
 
 		// Grab a session and run the query
 		try {
@@ -209,7 +210,7 @@ public class PersonDAO extends MetadataDAO {
 
 		// Check for relationship initialization
 		if (returnFullObjectGraph)
-			personsToReturn = getRealObjectsAndRelationships(personsToReturn);
+			personsToReturn = (Collection<Person>) getRealObjectsAndRelationships(personsToReturn);
 
 		// Return the collection
 		return personsToReturn;
@@ -270,11 +271,12 @@ public class PersonDAO extends MetadataDAO {
 	 *         are all the usernames that are currently in the system. If there
 	 *         are no usernames and empty collection is returned
 	 */
-	public Collection findAllUsernames() throws MetadataAccessException {
+	@SuppressWarnings("unchecked")
+	public Collection<String> findAllUsernames() throws MetadataAccessException {
 
 		logger.debug("findAllUsernames called");
 		// Create the collection to return
-		Collection usernames = new ArrayList();
+		Collection<String> usernames = new ArrayList<String>();
 
 		// Create the query and run it
 		try {
@@ -370,7 +372,8 @@ public class PersonDAO extends MetadataDAO {
 			String personStringBefore = persistentPerson
 					.toStringRepresentation("<li>");
 			if (this.updateDestinationObject(person, persistentPerson)) {
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A user account was updated in SSDS<br><b>Before:</b><br><ul><li>"
 								+ personStringBefore
 								+ "</ul><br><b>After:</b><br><ul><li>"
@@ -378,7 +381,8 @@ public class PersonDAO extends MetadataDAO {
 										.toStringRepresentation("<li>")
 								+ "</ul><br>");
 				if ((sendUserMessages) && (persistentPerson.getEmail() != null)) {
-					addMessage(persistentPerson.getEmail(),
+					addMessage(
+							persistentPerson.getEmail(),
 							"Your user account was updated in SSDS<br><b>Before:</b><br><ul><li>"
 									+ personStringBefore
 									+ "</ul><br><b>After:</b><br><ul><li>"
@@ -406,8 +410,8 @@ public class PersonDAO extends MetadataDAO {
 				String email = person.getEmail();
 				if ((email != null) && (!email.equals(""))) {
 					try {
-						person.setUsername(email.substring(0, email
-								.indexOf('@')));
+						person.setUsername(email.substring(0,
+								email.indexOf('@')));
 					} catch (MetadataException e) {
 					}
 				}
@@ -467,18 +471,16 @@ public class PersonDAO extends MetadataDAO {
 						UserGroup tempUserGroup = (UserGroup) userGroupIter
 								.next();
 						if (tempUserGroup != null)
-							logger
-									.debug("Will try to persist UserGroup: "
-											+ tempUserGroup
-													.toStringRepresentation("|"));
+							logger.debug("Will try to persist UserGroup: "
+									+ tempUserGroup.toStringRepresentation("|"));
 						userGroupDAO.makePersistent(tempUserGroup);
 					}
 
 					// Create a copy of the collection associated with the
 					// person to
 					// prevent concurrent modifications
-					Collection personUserGroupCopy = new ArrayList(person
-							.getUserGroups());
+					Collection personUserGroupCopy = new ArrayList(
+							person.getUserGroups());
 
 					// Now we need to make the correct associations. Currently,
 					// you
@@ -571,9 +573,8 @@ public class PersonDAO extends MetadataDAO {
 
 		// If no matching person was found, throw an exception
 		if (persistentPerson == null) {
-			logger
-					.debug("No matching person could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching person could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			logger.debug("The search for existing object returned "
 					+ persistentPerson.toStringRepresentation("|"));
@@ -591,8 +592,8 @@ public class PersonDAO extends MetadataDAO {
 
 			// DataContainers
 			Collection dataContainersByPerson = null;
-			DataContainerDAO dataContainerDAO = new DataContainerDAO(this
-					.getSession());
+			DataContainerDAO dataContainerDAO = new DataContainerDAO(
+					this.getSession());
 			dataContainersByPerson = dataContainerDAO.findByPerson(
 					persistentPerson, null, null, true);
 			if (dataContainersByPerson != null) {
@@ -608,8 +609,8 @@ public class PersonDAO extends MetadataDAO {
 
 			// DataProducers
 			Collection dataProducersByPerson = null;
-			DataProducerDAO dataProducerDAO = new DataProducerDAO(this
-					.getSession());
+			DataProducerDAO dataProducerDAO = new DataProducerDAO(
+					this.getSession());
 			dataProducersByPerson = dataProducerDAO.findByPerson(
 					persistentPerson, null, null, true);
 			if (dataProducersByPerson != null) {
@@ -666,8 +667,7 @@ public class PersonDAO extends MetadataDAO {
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentPerson);
 				if ((sendUserMessages) && (persistentPerson.getEmail() != null)) {

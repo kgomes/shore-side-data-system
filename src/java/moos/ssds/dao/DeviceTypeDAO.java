@@ -186,18 +186,19 @@ public class DeviceTypeDAO extends MetadataDAO {
 	 * @return a <code>Collection</code> of <code>DeviceType</code>s that have
 	 *         names like the one specified as the parameter.
 	 */
-	public Collection findByLikeName(String likeName,
+	@SuppressWarnings("unchecked")
+	public Collection<DeviceType> findByLikeName(String likeName,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// Make sure argument is not null
 		logger.debug("likeName = " + likeName);
-		if ((likeName == null) && (likeName.equals(""))) {
-			return new ArrayList();
+		if ((likeName == null) || (likeName.equals(""))) {
+			return new ArrayList<DeviceType>();
 		}
 
 		// The collection to be returned
-		Collection results = new ArrayList();
+		Collection<DeviceType> results = new ArrayList<DeviceType>();
 
 		Criteria criteria = this.formulatePropertyCriteria(false, null,
 				likeName, false, orderByPropertyName, ascendingOrDescending);
@@ -205,7 +206,7 @@ public class DeviceTypeDAO extends MetadataDAO {
 
 		// Check for relationship initialization
 		if (returnFullObjectGraph)
-			results = getRealObjectsAndRelationships(results);
+			results = (Collection<DeviceType>) getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -220,8 +221,9 @@ public class DeviceTypeDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllNames() throws MetadataAccessException {
-		Collection deviceTypeNames = null;
+	@SuppressWarnings("unchecked")
+	public Collection<String> findAllNames() throws MetadataAccessException {
+		Collection<String> deviceTypeNames = null;
 
 		// Create the query and run it
 		try {
@@ -310,7 +312,8 @@ public class DeviceTypeDAO extends MetadataDAO {
 		// Now if not persisted before, save it
 		if (!persistedBefore) {
 			getSession().save(deviceTypeToPersist);
-			addMessage(ssdsAdminEmailToAddress,
+			addMessage(
+					ssdsAdminEmailToAddress,
 					"A new DeviceType was entered into SSDS:<br><ul>"
 							+ deviceTypeToPersist
 									.toStringRepresentation("<li>")
@@ -346,9 +349,8 @@ public class DeviceTypeDAO extends MetadataDAO {
 
 		// If no matching deviceType was found, throw an exception
 		if (persistentDeviceType == null) {
-			logger
-					.debug("No matching deviceType could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching deviceType could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// Now before removing, let's break any ties with Devices
 			Collection devicesByType = null;
@@ -366,7 +368,8 @@ public class DeviceTypeDAO extends MetadataDAO {
 			logger.debug("Now let's try to delete it");
 			try {
 				getSession().delete(persistentDeviceType);
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A DeviceType was removed from SSDS<br><ul><li>"
 								+ persistentDeviceType
 										.toStringRepresentation("<li>")

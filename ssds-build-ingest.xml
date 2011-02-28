@@ -33,7 +33,6 @@
 		<delete dir="${project.build}/classes/moos/ssds/io" />
 		<delete dir="${project.build}/classes/moos/ssds/jms" />
 		<delete dir="${project.build}/classes/moos/ssds/util" />
-		<delete dir="${project.build}/classes/moos/ssds/services/data" />
 		<!-- Now delete the configuration directory -->
 		<delete dir="${project.build}/ingest" />
 		<!-- Delete the client publishing build directory -->
@@ -92,13 +91,6 @@
 			</filterset>
 		</copy>
 
-		<!-- And for data services jar -->
-		<copy file="${resources.build}/jboss/jndi.properties" tofile="${project.build}/client-data-services/jndi.properties" overwrite="true">
-			<filterset>
-				<filter token="SERVER_NAME" value="${data.services.host.name}" />
-			</filterset>
-		</copy>
-
 		<!-- Configure JMS properties as well -->
 		<copy file="${resources.build}/moos/ssds/jms/jms_template.properties" tofile="${project.build}/ingest-pub/moos/ssds/jms/jms.properties" overwrite="true">
 			<filterset>
@@ -109,16 +101,6 @@
 
 		<!-- log4j properties -->
 		<copy file="${src.resources}/build/log4j/log4j_ConsoleAndFileAppender_Template.properties" tofile="${project.build}/ingest-pub/log4j.properties" overwrite="true">
-			<filterset>
-				<filter token="LOG4J_LEVEL" value="${client.log4j.level}" />
-				<filter token="LOG4J_FILE_NAME" value="${client.log4j.file.name}" />
-				<filter token="LOG4J_DATE_PATTERN" value="${client.log4j.date.pattern}" />
-				<filter token="LOG4J_PATTERN_LAYOUT" value="${client.log4j.pattern.layout}" />
-			</filterset>
-		</copy>
-
-		<!-- One for data services client too -->
-		<copy file="${src.resources}/build/log4j/log4j_ConsoleAndFileAppender_Template.properties" tofile="${project.build}/client-data-services/log4j.properties" overwrite="true">
 			<filterset>
 				<filter token="LOG4J_LEVEL" value="${client.log4j.level}" />
 				<filter token="LOG4J_FILE_NAME" value="${client.log4j.file.name}" />
@@ -145,10 +127,10 @@
 		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
 			<src path="${src.java}" />
 			<include name="moos/ssds/ingest/**/*.java" />
+			<include name="moos/ssds/servlet/data/IngestServlet.java" />
 			<include name="moos/ssds/io/**/*.java" />
 			<include name="moos/ssds/jms/**/*.java" />
 			<include name="moos/ssds/util/**/*.java" />
-			<include name="moos/ssds/services/data/SSDSByteArray*.java" />
 			<classpath>
 				<fileset refid="jboss-common-lib-jar-fileset" />
 				<pathelement location="${project.lib}/${siam.jar}" />
@@ -181,21 +163,6 @@
 			</fileset>
 		</jar>
 
-		<!-- Create the jar for the data services -->
-		<jar jarfile="${project.dist}/ssds-data-services.jar">
-			<!-- Include the classes -->
-			<fileset dir="${build.classes}">
-				<include name="moos/ssds/io/**/*.class" />
-				<include name="moos/ssds/util/*.class" />
-				<include name="moos/ssds/services/data/SSDSByteArray*.class" />
-				<exclude name="moos/ssds/io/util/**/*.class" />
-			</fileset>
-			<!-- Include all necessary resources -->
-			<fileset dir="${project.build}/ingest">
-				<include name="moos/ssds/io/**/*.properties" />
-			</fileset>
-		</jar>
-
 		<!-- Build up the jar file that will allow people to publish to the topic ingest is listening to -->
 		<jar jarfile="${project.dist}/ssds-ingest-pub.jar">
 			<fileset dir="${build.classes}">
@@ -210,15 +177,6 @@
 			<fileset dir="${project.build}/ingest-pub" includes="log4j.properties" />
 			<fileset dir="${project.build}/ingest-pub" includes="jndi.properties" />
 			<fileset dir="${project.build}/ingest-pub" includes="moos/ssds/jms/jms.properties" />
-		</jar>
-
-		<!-- Build the jar for clients to use the SSDS data services -->
-		<jar jarfile="${project.dist}/ssds-client-data-services.jar">
-			<fileset dir="${build.classes}">
-				<include name="moos/ssds/services/data/SSDSByteArrayAccess.class" />
-			</fileset>
-			<fileset dir="${project.build}/client-data-services" includes="log4j.properties" />
-			<fileset dir="${project.build}/client-data-services" includes="jndi.properties" />
 		</jar>
 
 		<!-- Delete the old war file -->
@@ -267,20 +225,6 @@
 				<filter token="DATASOURCE_TYPE_MAPPING" value="${database.driver.type.mapping}" />
 			</filterset>
 		</copy>
-		<!-- Deploy to data service directory as well (this is most likely the same as -->
-		<!-- ingest, but you never know -->
-		<copy file="${resources.build}/jboss/ssds-ds_template.xml" tofile="${data.services.deployment.location}/ssds-data-ds.xml" overwrite="true">
-			<filterset>
-				<filter token="DATASOURCE_JNDI_NAME" value="SSDS_Data" />
-				<filter token="DATASOURCE_CONNECTION_URL" value="${database.data.driver.url}" />
-				<filter token="DATASOURCE_DRIVER_CLASS" value="${database.driver.class}" />
-				<filter token="DATASOURCE_USER_LOGIN_NAME" value="${database.server.login.username}" />
-				<filter token="DATASOURCE_PASSWORD" value="${database.server.login.password}" />
-				<filter token="DATASOURCE_TRANSACTION_ISOLATION" value="TRANSACTION_READ_UNCOMMITTED" />
-				<filter token="DATASOURCE_CHECK_VALID_CONNECTION_SQL" value="${database.check.valid.connection.sql}" />
-				<filter token="DATASOURCE_TYPE_MAPPING" value="${database.driver.type.mapping}" />
-			</filterset>
-		</copy>
 		<!-- Copy over the JMS topic files that ingest needs -->
 		<copy file="${resources.build}/jboss/ssds-jms-service_template.xml" tofile="${ingest.deployment.location}/ssds-ingest-service.xml" overwrite="true">
 			<filterset>
@@ -301,8 +245,6 @@
 		<copy file="${project.dist}/ssds-ingest.jar" todir="${ingest.deployment.location}" />
 		<!-- Now deploy the servlet war -->
 		<copy file="${project.dist}/ingest.war" todir="${ingest.deployment.location}" />
-		<!-- And the data services jar -->
-		<copy file="${project.dist}/ssds-data-services.jar" todir="${data.services.deployment.location}" />
 		<!-- Make sure the ssds-docs directory is there -->
 		<mkdir dir="${project.documentation.deploy.location}/client" />
 		<!-- Copy over the client publishing jar -->
@@ -320,7 +262,6 @@
 			<fileset dir="${project.dist}/tempzip" includes="packet-generator-ingest-template.properties" />
 			<fileset dir="${project.dist}/tempzip" includes="ExampleSSDSIngestClientPublisher.java" />
 			<fileset dir="${project.dist}" includes="ssds-ingest-pub.jar" />
-			<fileset dir="${project.dist}" includes="ssds-client-data-services.jar" />
 			<fileset dir="${project.lib}" includes="${siam.jar}" />
 			<fileset dir="${project.lib}" includes="${protocol-buffers.jar}" />
 			<fileset refid="jboss-client-jar-fileset" />
@@ -333,11 +274,9 @@
 	<target name="undeploy" depends="init">
 		<delete file="${ingest.deployment.location}/ssds-ingest.jar" />
 		<delete file="${ingest.deployment.location}/ingest.war" />
-		<delete file="${data.services.deployment.location}/ssds-data-services.jar" />
 		<delete file="${ingest.deployment.location}/ssds-ingest-service.xml" />
 		<delete file="${ingest.deployment.location}/ssds-ruminate-service.xml" />
 		<delete file="${ingest.deployment.location}/ssds-data-ds.xml" />
-		<delete file="${data.services.deployment.location}/ssds-data-ds.xml" />
 		<delete file="${ingest.io.sql.datasource.jdbc.jar.deployment.location}/${ingest.io.sql.datasource.jdbc.jar}" />
 		<!-- Undeploy dependencies -->
 		<delete file="${jboss.common.lib.location}/${database.driver.jar.file}" />

@@ -152,18 +152,20 @@ public class UserGroupDAO extends MetadataDAO {
 	 *         found
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByGroupName(String groupName, boolean exactMatch,
-			String orderByProperty, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	@SuppressWarnings("unchecked")
+	public Collection<UserGroup> findByGroupName(String groupName,
+			boolean exactMatch, String orderByProperty,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// Make sure argument is not null
 		logger.debug("findByName where groupName = " + groupName + " called.");
-		if ((groupName == null) && (groupName.equals(""))) {
-			return new ArrayList();
+		if ((groupName == null) || (groupName.equals(""))) {
+			return new ArrayList<UserGroup>();
 		}
 
 		// The collection to be returned
-		Collection results = new ArrayList();
+		Collection<UserGroup> results = new ArrayList<UserGroup>();
 
 		// Formulate the criteria using the groupName
 		try {
@@ -177,7 +179,7 @@ public class UserGroupDAO extends MetadataDAO {
 
 		// If the full object graph is requested, return it
 		if (returnFullObjectGraph)
-			results = getRealObjectsAndRelationships(results);
+			results = (Collection<UserGroup>) getRealObjectsAndRelationships(results);
 
 		// Return the results
 		return results;
@@ -235,9 +237,11 @@ public class UserGroupDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllGroupNames() throws MetadataAccessException {
+	@SuppressWarnings("unchecked")
+	public Collection<String> findAllGroupNames()
+			throws MetadataAccessException {
 		// The collection to return
-		Collection userGroupNames = null;
+		Collection<String> userGroupNames = null;
 
 		// Create the query and run it
 		try {
@@ -381,9 +385,8 @@ public class UserGroupDAO extends MetadataDAO {
 
 		// If no matching userGroup was found, throw an exception
 		if (persistentUserGroup == null) {
-			logger
-					.debug("No matching userGroup could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching userGroup could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// If we are here, we need to make sure all the connections to any
 			// Persons are removed before removing the UserGroup
@@ -397,10 +400,9 @@ public class UserGroupDAO extends MetadataDAO {
 				associatedPersons = personDAO.findByUserGroup(
 						persistentUserGroup, null, null, true);
 			} catch (MetadataAccessException e1) {
-				logger
-						.error("MetadataAccessException caught trying to break connections "
-								+ "between the Persons and the UserGroups: "
-								+ e1.getMessage());
+				logger.error("MetadataAccessException caught trying to break connections "
+						+ "between the Persons and the UserGroups: "
+						+ e1.getMessage());
 			}
 
 			// If they are there, loop through and break the connections
@@ -413,11 +415,11 @@ public class UserGroupDAO extends MetadataDAO {
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentUserGroup);
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A UserGroup was deleted from SSDS<br><ul><li>"
 								+ persistentUserGroup
 										.toStringRepresentation("<li>")

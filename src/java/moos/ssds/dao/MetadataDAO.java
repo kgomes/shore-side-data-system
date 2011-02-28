@@ -86,7 +86,7 @@ public abstract class MetadataDAO implements IMetadataDAO {
 	/**
 	 * This is the class that the particular DAO is responsible for
 	 */
-	private Class<?> persistentClass = null;
+	private Class<? extends IMetadataObject> persistentClass = null;
 
 	/**
 	 * This is the Hibernate session that is used to perform actions in the
@@ -139,8 +139,8 @@ public abstract class MetadataDAO implements IMetadataDAO {
 	 *            is the Hibernate <code>Session</code> that it will use to
 	 *            perform persistence operations
 	 */
-	public MetadataDAO(Class<?> persistentClass, Session session)
-			throws MetadataAccessException {
+	public MetadataDAO(Class<? extends IMetadataObject> persistentClass,
+			Session session) throws MetadataAccessException {
 
 		// Check construction dependencies
 		if (persistentClass == null) {
@@ -195,7 +195,7 @@ public abstract class MetadataDAO implements IMetadataDAO {
 	 * 
 	 * @return the <code>Class</code> that the DAO is operating in behalf of
 	 */
-	public Class<?> getPersistentClass() {
+	public Class<? extends IMetadataObject> getPersistentClass() {
 		return this.persistentClass;
 	}
 
@@ -207,7 +207,8 @@ public abstract class MetadataDAO implements IMetadataDAO {
 	 *            is the <code>Class</code> that the DAO will be acting on
 	 *            behalf of
 	 */
-	public void setPersistentClass(Class<?> persistentClass) {
+	public void setPersistentClass(
+			Class<? extends IMetadataObject> persistentClass) {
 		this.persistentClass = persistentClass;
 	}
 
@@ -611,22 +612,19 @@ public abstract class MetadataDAO implements IMetadataDAO {
 
 				// Swap out person if available
 				if (device.getPerson() != null)
-					device
-							.setPerson((Person) getRealObjectAndRelationships(device
-									.getPerson()));
+					device.setPerson((Person) getRealObjectAndRelationships(device
+							.getPerson()));
 
 				// Same with DeviceType
 				if (device.getDeviceType() != null)
-					device
-							.setDeviceType((DeviceType) getRealObjectAndRelationships(device
-									.getDeviceType()));
+					device.setDeviceType((DeviceType) getRealObjectAndRelationships(device
+							.getDeviceType()));
 
 				// Also with resources
 				if (device.getResources() != null
 						&& device.getResources().size() > 0)
-					device
-							.setResources((Collection<Resource>) getRealObjectsAndRelationships(device
-									.getResources()));
+					device.setResources((Collection<Resource>) getRealObjectsAndRelationships(device
+							.getResources()));
 			}
 
 			// HeaderDescription
@@ -643,7 +641,7 @@ public abstract class MetadataDAO implements IMetadataDAO {
 					// Clear the current collection and add the real objects
 					headerDescription.clearCommentTags();
 
-					for (Iterator iterator = commentTags.iterator(); iterator
+					for (Iterator<CommentTag> iterator = commentTags.iterator(); iterator
 							.hasNext();) {
 						CommentTag commentTag = (CommentTag) iterator.next();
 						headerDescription.addCommentTag(commentTag);
@@ -659,9 +657,8 @@ public abstract class MetadataDAO implements IMetadataDAO {
 				// Replace the user groups with the real objects
 				if (person.getUserGroups() != null
 						&& person.getUserGroups().size() > 0)
-					person
-							.setUserGroups((Collection<UserGroup>) getRealObjectsAndRelationships(person
-									.getUserGroups()));
+					person.setUserGroups((Collection<UserGroup>) getRealObjectsAndRelationships(person
+							.getUserGroups()));
 			}
 
 			// RecordDescription
@@ -679,8 +676,8 @@ public abstract class MetadataDAO implements IMetadataDAO {
 					recordDescription.clearRecordVariables();
 
 					// Now add the replacements
-					for (Iterator iterator = recordVariables.iterator(); iterator
-							.hasNext();) {
+					for (Iterator<RecordVariable> iterator = recordVariables
+							.iterator(); iterator.hasNext();) {
 						RecordVariable recordVariable = (RecordVariable) iterator
 								.next();
 						recordDescription.addRecordVariable(recordVariable);
@@ -892,7 +889,6 @@ public abstract class MetadataDAO implements IMetadataDAO {
 	 * @return a <code>boolean</code> to indicate if the destination object was
 	 *         changed (<code>true</code>) or not (<code>false</code>)
 	 */
-	@SuppressWarnings("unchecked")
 	protected boolean updateDestinationObject(
 			IMetadataObject sourceMetadataObject,
 			IMetadataObject destinationMetadataObject)
@@ -1106,6 +1102,7 @@ public abstract class MetadataDAO implements IMetadataDAO {
 								destinationUpdated = true;
 
 								// Grab the setter method
+								@SuppressWarnings("rawtypes")
 								Class[] parameterClass = new Class[1];
 								parameterClass[0] = fieldClass;
 								Method setterMethod = null;
@@ -1287,6 +1284,7 @@ public abstract class MetadataDAO implements IMetadataDAO {
 				// Grab the object
 				IMetadataObject objectToSort = iterator.next();
 				// Grab the class of the object
+				@SuppressWarnings("rawtypes")
 				Class objectClass = objectToSort.getClass();
 				// Make sure the property name starts with a capital letter
 				String propertyNameMethod = "get"

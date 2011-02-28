@@ -15,19 +15,19 @@
  */
 package moos.ssds.services.data;
 
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.SessionBean;
-import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
 
 import moos.ssds.io.PacketOutputManager;
 import moos.ssds.io.PacketSQLOutput;
 import moos.ssds.services.data.util.DataException;
 
 import org.apache.log4j.Logger;
+import org.jboss.ejb3.annotation.LocalBinding;
+import org.jboss.ejb3.annotation.RemoteBinding;
 
 /**
  * This EJB is a <code>SessionBean</code> that gives clients the capability of
@@ -35,47 +35,22 @@ import org.apache.log4j.Logger;
  * end up in the SQL database storage for the SSDS system.
  * 
  * @author kgomes
- * @ejb.bean name="PacketSubmissionAccess" type="Stateless"
- *           jndi-name="moos/ssds/services/data/PacketSubmissionAccess"
- *           local-jndi-name="moos/ssds/services/data/PacketSubmissionLocal"
- *           view-type="both"
- * @ejb.home create="true"
- *           local-class="moos.ssds.services.data.PacketSubmissionAccessLocalHome"
- *           remote-class="moos.ssds.services.data.PacketSubmissionAccessHome"
- * @ejb.interface create="true"
- *                local-class="moos.ssds.services.data.PacketSubmissionAccessLocal"
- *                remote-class="moos.ssds.services.data.PacketSubmissionAccess"
  */
-public class PacketSubmissionAccessEJB implements SessionBean {
+@Stateless
+@RemoteBinding(jndiBinding = "moos/ssds/services/data/PacketSubmissionAccess")
+@LocalBinding(jndiBinding = "moos/ssds/services/data/PacketSubmissionAccessLocal")
+public class PacketSubmissionAccessEJB implements PacketSubmissionAccess,
+		PacketSubmissionAccessLocal {
 
 	/**
-	 * @see javax.ejb.SessionBean#ejbActivate()
+	 * 
 	 */
-	public void ejbActivate() throws EJBException, RemoteException {
-	}
-
-	/**
-	 * @see javax.ejb.SessionBean#ejbPassivate()
-	 */
-	public void ejbPassivate() throws EJBException, RemoteException {
-	}
-
-	/**
-	 * @see javax.ejb.SessionBean#ejbRemove()
-	 */
-	public void ejbRemove() throws EJBException, RemoteException {
-	}
-
-	/**
-	 * @see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)
-	 */
-	public void setSessionContext(SessionContext arg0) throws EJBException,
-			RemoteException {
-	}
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The EJB callback that is used when the bean is created
 	 */
+	@PostConstruct
 	public void ejbCreate() throws CreateException {
 		logger.debug("Creating the PacketSubmissionEJB");
 
@@ -87,23 +62,14 @@ public class PacketSubmissionAccessEJB implements SessionBean {
 		logger.debug("OK, the instance should be created");
 	}
 
-	/**
-	 * @throws CreateException
-	 */
-	public void ejbPostCreate() throws CreateException {
-	}
-
-	/**
-	 * This is the method to submit a packet to the SQL storage mechanism.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @ejb.interface-method view-type="both"
-	 * @param deviceID
-	 *            This is the source of the packet and should be the SSDS ID of
-	 *            the device
-	 * @param packetBytes
-	 *            this is the byte array that contains the data in the format
-	 *            specified in the SSDS packet documentation
+	 * @see
+	 * moos.ssds.services.data.PacketSubmissionAccess#submitPacketAsByteArray
+	 * (long, byte[])
 	 */
+	@Override
 	public void submitPacketAsByteArray(long deviceID, byte[] packetBytes)
 			throws DataException {
 		// Grab the appropriate PacketSQLOutput
@@ -114,9 +80,8 @@ public class PacketSubmissionAccessEJB implements SessionBean {
 		try {
 			packetSQLOutput.writeBytes(packetBytes);
 		} catch (SQLException e) {
-			logger
-					.error("SQLException was caught trying to write bytes to SQL DataSource: "
-							+ e.getMessage());
+			logger.error("SQLException was caught trying to write bytes to SQL DataSource: "
+					+ e.getMessage());
 			throw new DataException(
 					"An SQLException was caught trying to insert the given bytes array: "
 							+ e.getMessage());

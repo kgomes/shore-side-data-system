@@ -31,6 +31,7 @@ import moos.ssds.io.PacketSQLQuery;
 import moos.ssds.io.PacketSQLQueryFactory;
 
 import org.apache.log4j.Logger;
+import org.jboss.ejb3.annotation.LocalBinding;
 import org.jboss.ejb3.annotation.RemoteBinding;
 
 /**
@@ -43,8 +44,9 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  */
 @Stateful
 @RemoteBinding(jndiBinding = "moos/ssds/services/data/SSDSByteArrayAccess")
+@LocalBinding(jndiBinding = "moos/ssds/services/data/SSDSByteArrayAccessLocal")
 public class SSDSByteArrayAccessEJB implements SSDSByteArrayAccess,
-		Enumeration<byte[]> {
+		SSDSByteArrayAccessLocal, Enumeration<byte[]> {
 
 	/**
 	 * A log4j logger
@@ -739,7 +741,7 @@ public class SSDSByteArrayAccessEJB implements SSDSByteArrayAccess,
 	 * 
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public Class[] listFieldClasses() {
 		return packetSQLQuery.listFieldClasses();
 	}

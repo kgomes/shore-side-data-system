@@ -16,228 +16,155 @@
 package moos.ssds.services.metadata;
 
 import java.util.Collection;
-import java.util.Properties;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
+import moos.ssds.dao.PersonDAO;
 import moos.ssds.dao.StandardUnitDAO;
 import moos.ssds.dao.util.MetadataAccessException;
-import moos.ssds.metadata.IMetadataObject;
+import moos.ssds.metadata.Person;
 import moos.ssds.metadata.StandardUnit;
 
 import org.apache.log4j.Logger;
-import org.hibernate.SessionFactory;
+import org.jboss.ejb3.annotation.LocalBinding;
+import org.jboss.ejb3.annotation.RemoteBinding;
 
 /**
  * Provides a facade that provides client services for StandardUnit objects.
  * 
- * @ejb.bean name="StandardUnitAccess" type="Stateless"
- *           jndi-name="moos/ssds/services/metadata/StandardUnitAccess"
- *           local-jndi-name="moos/ssds/services/metadata/StandardUnitAccessLocal"
- *           view-type="both" transaction-type="Container"
- * @ejb.home create="true"
- *           local-class="moos.ssds.services.metadata.StandardUnitAccessLocalHome"
- *           remote-class="moos.ssds.services.metadata.StandardUnitAccessHome"
- *           extends="javax.ejb.EJBHome"
- * @ejb.interface create="true"
- *                local-class="moos.ssds.services.metadata.StandardUnitAccessLocal"
- *                local-extends="javax.ejb.EJBLocalObject,moos.ssds.services.metadata.IMetadataAccess"
- *                remote-class="moos.ssds.services.metadata.StandardUnitAccess"
- *                extends="javax.ejb.EJBObject,moos.ssds.services.metadata.IMetadataAccessRemote"
- * @ejb.util generate="physical"
- * @soap.service urn="StandardUnitAccess" scope="Request"
- * @axis.service urn="StandardUnitAccess" scope="Request"
  * @see moos.ssds.services.metadata.IMetadataAccess
  * @author : $Author: kgomes $
  * @version : $Revision: 1.1.2.10 $
  */
-public class StandardUnitAccessEJB extends AccessBean
-    implements
-        IMetadataAccess {
+@Stateless
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/StandardUnitAccess")
+@LocalBinding(jndiBinding = "moos/ssds/services/metadata/StandardUnitAccessLocal")
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+public class StandardUnitAccessEJB extends AccessBean implements
+		StandardUnitAccess, StandardUnitAccessLocal {
 
-    /**
-     * This is the ejb callback that the container calls when the EJB is first
-     * created. In this case it sets up the Hibernate session factory and sets
-     * the class that is associate with the bean
-     * 
-     * @throws CreateException
-     */
-    public void ejbCreate() throws CreateException {
-        logger.debug("ejbCreate called");
-        logger.debug("Going to read in the properties");
-        servicesMetadataProperties = new Properties();
-        try {
-            servicesMetadataProperties
-                .load(this.getClass().getResourceAsStream(
-                    "/moos/ssds/services/metadata/servicesMetadata.properties"));
-        } catch (Exception e) {
-            logger.error("Exception trying to read in properties file: "
-                + e.getMessage());
-        }
+	/**
+	 * A log4j logger
+	 */
+	static Logger logger = Logger.getLogger(StandardUnitAccessEJB.class);
 
-        // Make sure the properties were read from the JAR OK
-        if (servicesMetadataProperties != null) {
-            logger.debug("Loaded props OK");
-        } else {
-            logger.warn("Could not load the servicesMetadata.properties.");
-        }
+	/**
+	 * This is the version that we can control for serialization purposes
+	 */
+	private static final long serialVersionUID = 1L;
 
-        // Now create the intial context for looking up the hibernate session
-        // factory and look up the session factory
-        try {
-            InitialContext initialContext = new InitialContext();
-            sessionFactory = (SessionFactory) initialContext
-                .lookup(servicesMetadataProperties
-                    .getProperty("metadata.hibernate.jndi.name"));
-        } catch (NamingException e) {
-            logger
-                .error("NamingException caught when trying to get hibernate's "
-                    + "SessionFactory from JNDI: " + e.getMessage());
-        }
+	/**
+	 * This method is called after the EJB is constructed and it sets the
+	 * <code>Class</code> on the super class that defines the type of EJB access
+	 * class it will work with.
+	 * 
+	 * @throws CreateException
+	 */
+	@PostConstruct
+	public void setUpEJBType() {
 
-        // Now set the super persistent class to StandardUnit
-        super.setPersistentClass(StandardUnit.class);
-        // And the DAO
-        super.setDaoClass(StandardUnitDAO.class);
-    }
+		// Now set the super persistent class to Person
+		super.setPersistentClass(Person.class);
+		logger.debug("OK, set Persistent class to Person");
 
-    /**
-     * This method tries to look up and instantiate a <code>StandardUnit</code>
-     * by its name
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     * @param name
-     *            is a <code>java.lang.String</code> that will be used to
-     *            search for matches of a <code>StandardUnit</code>'s name
-     * @return a <code>MetadataObject</code> of class
-     *         <code>StandardUnit</code> that has a name that matches the one
-     *         specified. If no matches were found, and empty collection is
-     *         returned
-     * @throws MetadataAccessException
-     *             if something goes wrong with the search
-     */
-    public IMetadataObject findByName(String name)
-        throws MetadataAccessException {
+		// And the DAO
+		super.setDaoClass(PersonDAO.class);
+		logger.debug("OK, set DAO Class to PersonDAO");
+	}
 
-        // Grab the DAO
-        StandardUnitDAO standardUnitDAO = (StandardUnitDAO) this
-            .getMetadataDAO();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.StandardUnitAccess#findByName(java.lang.String
+	 * )
+	 */
+	@Override
+	public StandardUnit findByName(String name) throws MetadataAccessException {
 
-        // Now make the correct call and return the result
-        return standardUnitDAO.findByName(name);
-    }
+		// Grab the DAO
+		StandardUnitDAO standardUnitDAO = (StandardUnitDAO) this
+				.getMetadataDAO();
 
-    /**
-     * This method looks for all <code>StandardUnit</code>s whose name
-     * contain the name supplied. It could be an exact match of just contain the
-     * name. For you wildcard folks, it is basically looking for all
-     * <code>StandardUnit</code>s whose names match *likeName*.
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     * @param likeName
-     *            is the name that will be used to search for. In SQL terms, it
-     *            will do a LIKE '%likeName%'
-     * @return a <code>Collection</code> of <code>StandardUnit</code>s that
-     *         have names like the one specified as the parameter.
-     */
-    public Collection findByLikeName(String likeName)
-        throws MetadataAccessException {
+		// Now make the correct call and return the result
+		return standardUnitDAO.findByName(name);
+	}
 
-        // Grab the DAO
-        StandardUnitDAO standardUnitDAO = (StandardUnitDAO) this
-            .getMetadataDAO();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.StandardUnitAccess#findByLikeName(java.lang
+	 * .String)
+	 */
+	@Override
+	public Collection<StandardUnit> findByLikeName(String likeName)
+			throws MetadataAccessException {
 
-        // Now make the correct call and return the result
-        return standardUnitDAO.findByLikeName(likeName);
-    }
+		// Grab the DAO
+		StandardUnitDAO standardUnitDAO = (StandardUnitDAO) this
+				.getMetadataDAO();
 
-    /**
-     * This method tries to look up all <code>StandardUnit</code>s by their
-     * symbol
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     * @param name
-     *            is a <code>java.lang.String</code> that will be used to
-     *            search for exact matches of a <code>StandardUnit</code>'s
-     *            symbol (this is case in-sensitive)
-     * @return a <code>Collection</code> of <code>StandardUnit</code>s that
-     *         have a symbol that exactly matches (case-insensitive) the one
-     *         specified. If no matches were found, an empty collection is
-     *         returned.
-     * @throws MetadataAccessException
-     *             if something goes wrong with the search
-     */
-    public Collection findBySymbol(String symbol)
-        throws MetadataAccessException {
+		// Now make the correct call and return the result
+		return standardUnitDAO.findByLikeName(likeName);
+	}
 
-        // Grab the DAO
-        StandardUnitDAO standardUnitDAO = (StandardUnitDAO) this
-            .getMetadataDAO();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.StandardUnitAccess#findBySymbol(java.lang
+	 * .String)
+	 */
+	@Override
+	public Collection<StandardUnit> findBySymbol(String symbol)
+			throws MetadataAccessException {
 
-        // Now make the correct call and return the result
-        return standardUnitDAO.findBySymbol(symbol);
-    }
+		// Grab the DAO
+		StandardUnitDAO standardUnitDAO = (StandardUnitDAO) this
+				.getMetadataDAO();
 
-    /**
-     * This method looks for all <code>StandardUnit</code>s whose symbol
-     * contain the symbol supplied. It could be an exact match of just contain
-     * the symbol. For you wildcard folks, it is basically looking for all
-     * <code>StandardUnit</code>s whose symbols match *likeSymbol*.
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     * @param likeSymbol
-     *            is the symbol that will be used to search for. In SQL terms,
-     *            it will do a LIKE '%likeSymbol%'
-     * @return a <code>Collection</code> of <code>StandardUnit</code>s that
-     *         have symbols like the one specified as the parameter.
-     */
-    public Collection findByLikeSymbol(String likeSymbol)
-        throws MetadataAccessException {
+		// Now make the correct call and return the result
+		return standardUnitDAO.findBySymbol(symbol);
+	}
 
-        // Grab the DAO
-        StandardUnitDAO standardUnitDAO = (StandardUnitDAO) this
-            .getMetadataDAO();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.StandardUnitAccess#findByLikeSymbol(java.
+	 * lang.String)
+	 */
+	@Override
+	public Collection<StandardUnit> findByLikeSymbol(String likeSymbol)
+			throws MetadataAccessException {
 
-        // Now make the correct call and return the result
-        return standardUnitDAO.findByLikeSymbol(likeSymbol);
-    }
+		// Grab the DAO
+		StandardUnitDAO standardUnitDAO = (StandardUnitDAO) this
+				.getMetadataDAO();
 
-    /**
-     * This method returns a collection of <code>java.lang.String</code>s
-     * that are all the names of the <code>StandardUnit</code>s in the
-     * database
-     * 
-     * @ejb.interface-method view-type="both"
-     * @ejb.transaction type="Required"
-     * @return a <code>Collection</code> of <code>java.lang.String</code>s
-     *         that are all the <code>StandardUnit</code> names that are
-     *         currently in the system. If there are no names, an empty
-     *         collection is returned
-     */
-    public Collection findAllNames() throws MetadataAccessException {
+		// Now make the correct call and return the result
+		return standardUnitDAO.findByLikeSymbol(likeSymbol);
+	}
 
-        // Grab the DAO
-        StandardUnitDAO standardUnitDAO = (StandardUnitDAO) this
-            .getMetadataDAO();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see moos.ssds.services.metadata.StandardUnitAccess#findAllNames()
+	 */
+	@Override
+	public Collection<String> findAllNames() throws MetadataAccessException {
 
-        // Now make the correct call and return the result
-        return standardUnitDAO.findAllNames();
-    }
+		// Grab the DAO
+		StandardUnitDAO standardUnitDAO = (StandardUnitDAO) this
+				.getMetadataDAO();
 
-    /**
-     * This is the version that we can control for serialization purposes
-     */
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * A log4j logger
-     */
-    static Logger logger = Logger.getLogger(StandardUnitAccessEJB.class);
+		// Now make the correct call and return the result
+		return standardUnitDAO.findAllNames();
+	}
 
 }

@@ -101,7 +101,7 @@ public class RecordVariableDAO extends MetadataDAO {
 	/**
 	 * @see IMetadataDAO#findAllIDs()
 	 */
-	public Collection findAllIDs() throws MetadataAccessException {
+	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		return null;
 	}
 
@@ -126,9 +126,10 @@ public class RecordVariableDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByStandardUnit(StandardUnit standardUnit,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<RecordVariable> findByStandardUnit(
+			StandardUnit standardUnit, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The Collection to return
 		Collection recordVariablesByStandardUnit = new HashSet();
@@ -199,9 +200,10 @@ public class RecordVariableDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByStandardVariable(StandardVariable standardVariable,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<RecordVariable> findByStandardVariable(
+			StandardVariable standardVariable, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The Collection to return
 		Collection recordVariablesByStandardVariable = new HashSet();
@@ -274,9 +276,10 @@ public class RecordVariableDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByStandardDomain(StandardDomain standardDomain,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<RecordVariable> findByStandardDomain(
+			StandardDomain standardDomain, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The Collection to return
 		Collection recordVariablesByStandardDomain = new HashSet();
@@ -348,7 +351,7 @@ public class RecordVariableDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByStandardReferenceScale(
+	public Collection<RecordVariable> findByStandardReferenceScale(
 			StandardReferenceScale standardReferenceScale,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -426,9 +429,10 @@ public class RecordVariableDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByStandardKeyword(StandardKeyword standardKeyword,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<RecordVariable> findByStandardKeyword(
+			StandardKeyword standardKeyword, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The Collection to return
 		Collection recordVariablesByStandardKeyword = new HashSet();
@@ -518,7 +522,8 @@ public class RecordVariableDAO extends MetadataDAO {
 					.toStringRepresentation("<li>");
 			if (this.updateDestinationObject(recordVariable,
 					persistentRecordVariable)) {
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A RecordVariable was changed in SSDS<br><b>Before</b><ul><li>"
 								+ recordVariableBeforeUpdate
 								+ "</ul><br><b>After</b><ul><li>"
@@ -599,7 +604,8 @@ public class RecordVariableDAO extends MetadataDAO {
 		// If the RecordVariable was not persisted before, save it
 		if (!persistedBefore) {
 			getSession().save(recordVariableToPersist);
-			addMessage(ssdsAdminEmailToAddress,
+			addMessage(
+					ssdsAdminEmailToAddress,
 					"A new RecordVariable was added to SSDS<br><ul><li>"
 							+ recordVariableToPersist
 									.toStringRepresentation("<li>")
@@ -690,7 +696,7 @@ public class RecordVariableDAO extends MetadataDAO {
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllNames() throws MetadataAccessException {
+	public Collection<String> findAllNames() throws MetadataAccessException {
 		Collection recordVariableNames = null;
 
 		// Create the query and run it
@@ -730,9 +736,10 @@ public class RecordVariableDAO extends MetadataDAO {
 	 * @return
 	 * @throws MetadataAccessException
 	 */
-	public Collection findByName(String name, boolean exactMatch,
-			String orderByPropertyName, String ascendingOrDescending,
-			boolean returnFullObjectGraph) throws MetadataAccessException {
+	public Collection<RecordVariable> findByName(String name,
+			boolean exactMatch, String orderByPropertyName,
+			String ascendingOrDescending, boolean returnFullObjectGraph)
+			throws MetadataAccessException {
 
 		// The recordVariables to return
 		Collection recordVariablesToReturn = new ArrayList();

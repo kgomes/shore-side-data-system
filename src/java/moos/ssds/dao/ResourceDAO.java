@@ -122,16 +122,17 @@ public class ResourceDAO extends MetadataDAO {
 		return count;
 	}
 
-	public Collection findByName(String name) throws MetadataAccessException {
-		return null;
-	}
-
-	public Collection findByLikeName(String likeName)
+	public Collection<Resource> findByName(String name)
 			throws MetadataAccessException {
 		return null;
 	}
 
-	public Collection findAllNames() throws MetadataAccessException {
+	public Collection<Resource> findByLikeName(String likeName)
+			throws MetadataAccessException {
+		return null;
+	}
+
+	public Collection<String> findAllNames() throws MetadataAccessException {
 		return null;
 	}
 
@@ -162,20 +163,22 @@ public class ResourceDAO extends MetadataDAO {
 		return resourceToReturn;
 	}
 
-	public Collection findByURI(URI uri) throws MetadataAccessException {
-		return null;
-	}
-
-	public Collection findByURL(URL url) throws MetadataAccessException {
-		return null;
-	}
-
-	public Collection findByMimeType(String mimeType)
+	public Collection<Resource> findByURI(URI uri)
 			throws MetadataAccessException {
 		return null;
 	}
 
-	public Collection findByPerson(Person person)
+	public Collection<Resource> findByURL(URL url)
+			throws MetadataAccessException {
+		return null;
+	}
+
+	public Collection<Resource> findByMimeType(String mimeType)
+			throws MetadataAccessException {
+		return null;
+	}
+
+	public Collection<Resource> findByPerson(Person person)
 			throws MetadataAccessException {
 		return null;
 	}
@@ -184,12 +187,13 @@ public class ResourceDAO extends MetadataDAO {
 	 * This method returns all <code>Resource</code>s that are of a certain
 	 * <code>ResourceType</code>
 	 */
-	public Collection findByResourceType(ResourceType resourceType,
+	@SuppressWarnings("unchecked")
+	public Collection<Resource> findByResourceType(ResourceType resourceType,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 
 		// The collection to return
-		Collection resources = new HashSet();
+		Collection<Resource> resources = new HashSet<Resource>();
 
 		// First validate the incoming deviceType
 		if (resourceType == null) {
@@ -237,7 +241,7 @@ public class ResourceDAO extends MetadataDAO {
 
 		// Check for full object graphs
 		if (returnFullObjectGraph)
-			resources = getRealObjectsAndRelationships(resources);
+			resources = (Collection<Resource>) getRealObjectsAndRelationships(resources);
 
 		// Now return the results
 		return resources;
@@ -304,8 +308,9 @@ public class ResourceDAO extends MetadataDAO {
 		}
 
 		try {
-			count = ((Long) this.getSession().createQuery(
-					sqlStringBuffer.toString()).uniqueResult()).intValue();
+			count = ((Long) this.getSession()
+					.createQuery(sqlStringBuffer.toString()).uniqueResult())
+					.intValue();
 		} catch (HibernateException e) {
 			throw new MetadataAccessException(e.getMessage());
 		}
@@ -344,7 +349,8 @@ public class ResourceDAO extends MetadataDAO {
 			String resourceBefore = persistentResource
 					.toStringRepresentation("<li>");
 			if (this.updateDestinationObject(resource, persistentResource)) {
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A Resource was updated in SSDS:<br><b>Before</b><ul><li>"
 								+ resourceBefore
 								+ "</ul><br><b>After</b><ul><li>"
@@ -419,8 +425,8 @@ public class ResourceDAO extends MetadataDAO {
 			// Now, since there is, check to see if it has been initialized
 			if (Hibernate.isInitialized(resource.getResourceType())) {
 				// Grab the ResourceType DAO to handle that relationship
-				ResourceTypeDAO resourceTypeDAO = new ResourceTypeDAO(this
-						.getSession());
+				ResourceTypeDAO resourceTypeDAO = new ResourceTypeDAO(
+						this.getSession());
 
 				// Now persist the resourceType
 				ResourceType tempResourceType = resource.getResourceType();
@@ -533,8 +539,8 @@ public class ResourceDAO extends MetadataDAO {
 				// Create a copy of the collection associated with the resource
 				// to
 				// prevent concurrent modifications
-				Collection resourceKeywordCopy = new ArrayList(resource
-						.getKeywords());
+				Collection resourceKeywordCopy = new ArrayList(
+						resource.getKeywords());
 
 				// Now we need to make the correct associations. Currently, you
 				// have a collection of Keyword objects that have their values
@@ -610,9 +616,8 @@ public class ResourceDAO extends MetadataDAO {
 
 		// If no matching resource was found, throw an exception
 		if (persistentResource == null) {
-			logger
-					.debug("No matching resource could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching resource could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			logger.debug("The search for existing object returned "
 					+ persistentResource);
@@ -689,8 +694,7 @@ public class ResourceDAO extends MetadataDAO {
 			}
 
 			// Now that the relationships are clear, remove the resource
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentResource);
 			} catch (HibernateException e) {

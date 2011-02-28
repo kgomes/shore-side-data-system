@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2009 MBARI -->
+<!-- -->
+<!-- Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 -->
+<!-- (the "License"); you may not use this file except in compliance -->
+<!-- with the License. You may obtain a copy of the License at -->
+<!-- -->
+<!-- http://www.gnu.org/copyleft/lesser.html -->
+<!-- -->
+<!-- Unless required by applicable law or agreed to in writing, software -->
+<!-- distributed under the License is distributed on an "AS IS" BASIS, -->
+<!-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. -->
+<!-- See the License for the specific language governing permissions and -->
+<!-- limitations under the License. -->
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+	version="2.4">
+	<distributable />
+
+	<servlet>
+		<servlet-name>GetOriginalDataServlet</servlet-name>
+		<servlet-class>moos.ssds.services.servlet.data.GetOriginalDataServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>GetOriginalDataServlet</servlet-name>
+		<url-pattern>/GetOriginalData/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>GetOriginalDataServlet</servlet-name>
+		<url-pattern>*.GetOriginalData</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>GetOriginalDataServlet</servlet-name>
+		<url-pattern>/GetOriginalDataServlet</url-pattern>
+	</servlet-mapping>
+
+
+	<servlet>
+		<servlet-name>DataAccessServlet</servlet-name>
+		<servlet-class>moos.ssds.services.servlet.data.DataAccessServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>DataAccessServlet</servlet-name>
+		<url-pattern>/DataAccessServlet/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>DataAccessServlet</servlet-name>
+		<url-pattern>*.DataAccessServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>DataAccessServlet</servlet-name>
+		<url-pattern>/DataAccessServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>SensorMLConverterServlet</servlet-name>
+		<servlet-class>moos.ssds.services.servlet.metadata.SensorMLConverterServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SensorMLConverterServlet</servlet-name>
+		<url-pattern>/SensorMLConverterServlet/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>SensorMLConverterServlet</servlet-name>
+		<url-pattern>*.SensorMLConverterServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>SensorMLConverterServlet</servlet-name>
+		<url-pattern>/SensorMLConverterServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>MetadataAccessServlet</servlet-name>
+		<servlet-class>moos.ssds.services.servlet.metadata.MetadataAccessServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>MetadataAccessServlet</servlet-name>
+		<url-pattern>/MetadataAccessServlet/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>MetadataAccessServlet</servlet-name>
+		<url-pattern>*.MetadataAccessServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>MetadataAccessServlet</servlet-name>
+		<url-pattern>/MetadataAccessServlet</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>GoogleMapsGPSData</servlet-name>
+		<servlet-class>moos.ssds.services.servlet.ajax.GoogleMapsGPSDataServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>GoogleMapsGPSData</servlet-name>
+		<url-pattern>/ajax/GoogleMapsGPSData</url-pattern>
+	</servlet-mapping>
+
+	<!-- JFree Chart Servlet Mappings -->
+	<servlet>
+		<servlet-name>DisplayChart</servlet-name>
+		<servlet-class>org.jfree.chart.servlet.DisplayChart</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>DisplayChart</servlet-name>
+		<url-pattern>/DisplayChart</url-pattern>
+	</servlet-mapping>
+</web-app>

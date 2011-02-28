@@ -20,14 +20,13 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 import javax.ejb.CreateException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import moos.ssds.io.PacketInput;
 import moos.ssds.io.SSDSDevicePacket;
 import moos.ssds.io.util.PacketUtility;
-import moos.ssds.services.data.PacketSubmissionAccess;
-import moos.ssds.services.data.PacketSubmissionAccessHome;
-import moos.ssds.services.data.PacketSubmissionAccessUtil;
 import moos.ssds.services.data.util.DataException;
 
 import org.apache.log4j.Logger;
@@ -77,38 +76,12 @@ public class PacketFileToSQLServicePublisher {
 			throw new IOException("The input file " + inputFile.getName()
 					+ " could not be found");
 		}
+		// Grab a naming context
+		Context context = new InitialContext();
 
-		// Now get the interface to the service bean
-		PacketSubmissionAccessHome packetSubmissionAccessHome = null;
-		try {
-			packetSubmissionAccessHome = PacketSubmissionAccessUtil.getHome();
-		} catch (NamingException e) {
-			logger.error("NamingException caught trying to get home"
-					+ " interface to packet submission service (message="
-					+ e.getMessage());
-			throw e;
-		} catch (Throwable e) {
-			logger
-					.error("Throwable caught trying to get home "
-							+ "interface to packet submission service (Exception class = "
-							+ e.getClass().getName() + ", message= "
-							+ e.getMessage());
-			throw e;
-		}
-		if (packetSubmissionAccessHome != null) {
-			try {
-				this.packetSubmissionAccess = packetSubmissionAccessHome
-						.create();
-			} catch (RemoteException e) {
-				logger.error("RemoteException caught trying to create "
-						+ "interface to packetSubmission: " + e.getMessage());
-				throw e;
-			} catch (CreateException e) {
-				logger.error("CreateException caught trying to create "
-						+ "interface to packetSubmission: " + e.getMessage());
-				throw e;
-			}
-		}
+		// Look up the remote bean
+		this.packetSubmissionAccess = (PacketSubmissionAccess) context
+				.lookup("moos/ssds/services/data/PacketSubmissionAccess");
 
 		if (packetSubmissionAccess == null) {
 			throw new Exception("I could not get the remote interface so "

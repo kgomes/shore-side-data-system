@@ -72,8 +72,8 @@ public class StandardUnitDAO extends MetadataDAO {
 		// The StandardUnit to return
 		StandardUnit standardUnitToReturn = null;
 		if (standardUnit.getId() != null)
-			standardUnitToReturn = (StandardUnit) this.findById(standardUnit
-					.getId(), false);
+			standardUnitToReturn = (StandardUnit) this.findById(
+					standardUnit.getId(), false);
 		if (standardUnitToReturn == null)
 			standardUnitToReturn = this.findByName(standardUnit.getName());
 
@@ -82,11 +82,10 @@ public class StandardUnitDAO extends MetadataDAO {
 		if (standardUnit.getId() != null) {
 			if (standardUnit.getId().longValue() != standardUnitToReturn
 					.getId().longValue()) {
-				logger
-						.error("The ID and the name of the incoming StandardUnit "
-								+ "did not match a ID/username combination of "
-								+ "anything in the persistent store, this should "
-								+ "not happen");
+				logger.error("The ID and the name of the incoming StandardUnit "
+						+ "did not match a ID/username combination of "
+						+ "anything in the persistent store, this should "
+						+ "not happen");
 				throw new MetadataAccessException(
 						"The ID and the name of the incoming StandardUnit "
 								+ "did not match a ID/username combination of "
@@ -103,15 +102,15 @@ public class StandardUnitDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method returns a <code>Collection</code> of <code>Long</code>s
-	 * that are the IDs of all the standardUnits that are in SSDS.
+	 * This method returns a <code>Collection</code> of <code>Long</code>s that
+	 * are the IDs of all the standardUnits that are in SSDS.
 	 * 
-	 * @return a <code>Collection</code> of <code>Long</code>s that are the
-	 *         IDs of all standardUnits in SSDS.
+	 * @return a <code>Collection</code> of <code>Long</code>s that are the IDs
+	 *         of all standardUnits in SSDS.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong in the method call.
 	 */
-	public Collection findAllIDs() throws MetadataAccessException {
+	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		Collection standardUnitIDs = null;
 
 		// Create the query and run it
@@ -152,12 +151,11 @@ public class StandardUnitDAO extends MetadataDAO {
 	 * by its name
 	 * 
 	 * @param name
-	 *            is a <code>java.lang.String</code> that will be used to
-	 *            search for matches of a <code>StandardUnit</code>'s name
-	 * @return a <code>MetadataObject</code> of class
-	 *         <code>StandardUnit</code> that has a name that matches the one
-	 *         specified. If no matches were found, and empty collection is
-	 *         returned
+	 *            is a <code>java.lang.String</code> that will be used to search
+	 *            for matches of a <code>StandardUnit</code>'s name
+	 * @return a <code>MetadataObject</code> of class <code>StandardUnit</code>
+	 *         that has a name that matches the one specified. If no matches
+	 *         were found, and empty collection is returned
 	 * @throws MetadataAccessException
 	 *             if something goes wrong with the search
 	 */
@@ -194,18 +192,18 @@ public class StandardUnitDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method looks for all <code>StandardUnit</code>s whose name
-	 * contain the name supplied. It could be an exact match of just contain the
-	 * name. For you wildcard folks, it is basically looking for all
+	 * This method looks for all <code>StandardUnit</code>s whose name contain
+	 * the name supplied. It could be an exact match of just contain the name.
+	 * For you wildcard folks, it is basically looking for all
 	 * <code>StandardUnit</code>s whose names match *likeName*.
 	 * 
 	 * @param likeName
 	 *            is the name that will be used to search for. In SQL terms, it
 	 *            will do a LIKE '%likeName%'
-	 * @return a <code>Collection</code> of <code>StandardUnit</code>s that
-	 *         have names like the one specified as the parameter.
+	 * @return a <code>Collection</code> of <code>StandardUnit</code>s that have
+	 *         names like the one specified as the parameter.
 	 */
-	public Collection findByLikeName(String likeName)
+	public Collection<StandardUnit> findByLikeName(String likeName)
 			throws MetadataAccessException {
 
 		// Make sure argument is not null
@@ -233,16 +231,15 @@ public class StandardUnitDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method returns a collection of <code>java.lang.String</code>s
-	 * that are all the names of the <code>StandardUnit</code>s in the
-	 * database
+	 * This method returns a collection of <code>java.lang.String</code>s that
+	 * are all the names of the <code>StandardUnit</code>s in the database
 	 * 
-	 * @return a <code>Collection</code> of <code>java.lang.String</code>s
-	 *         that are all the <code>StandardUnit</code> names that are
-	 *         currently in the system. If there are no names, an empty
-	 *         collection is returned
+	 * @return a <code>Collection</code> of <code>java.lang.String</code>s that
+	 *         are all the <code>StandardUnit</code> names that are currently in
+	 *         the system. If there are no names, an empty collection is
+	 *         returned
 	 */
-	public Collection findAllNames() throws MetadataAccessException {
+	public Collection<String> findAllNames() throws MetadataAccessException {
 
 		// Create the collection to return
 		Collection names = new ArrayList();
@@ -267,17 +264,17 @@ public class StandardUnitDAO extends MetadataDAO {
 	 * symbol
 	 * 
 	 * @param name
-	 *            is a <code>java.lang.String</code> that will be used to
-	 *            search for exact matches of a <code>StandardUnit</code>'s
-	 *            symbol (this is case in-sensitive)
-	 * @return a <code>Collection</code> of <code>StandardUnit</code>s that
-	 *         have a symbol that exactly matches (case-insensitive) the one
+	 *            is a <code>java.lang.String</code> that will be used to search
+	 *            for exact matches of a <code>StandardUnit</code>'s symbol
+	 *            (this is case in-sensitive)
+	 * @return a <code>Collection</code> of <code>StandardUnit</code>s that have
+	 *         a symbol that exactly matches (case-insensitive) the one
 	 *         specified. If no matches were found, an empty collection is
 	 *         returned.
 	 * @throws MetadataAccessException
 	 *             if something goes wrong with the search
 	 */
-	public Collection findBySymbol(String symbol)
+	public Collection<StandardUnit> findBySymbol(String symbol)
 			throws MetadataAccessException {
 
 		// First check to see if the symbol is null
@@ -304,18 +301,18 @@ public class StandardUnitDAO extends MetadataDAO {
 	}
 
 	/**
-	 * This method looks for all <code>StandardUnit</code>s whose symbol
-	 * contain the symbol supplied. It could be an exact match of just contain
-	 * the symbol. For you wildcard folks, it is basically looking for all
+	 * This method looks for all <code>StandardUnit</code>s whose symbol contain
+	 * the symbol supplied. It could be an exact match of just contain the
+	 * symbol. For you wildcard folks, it is basically looking for all
 	 * <code>StandardUnit</code>s whose symbols match *likeSymbol*.
 	 * 
 	 * @param likeSymbol
 	 *            is the symbol that will be used to search for. In SQL terms,
 	 *            it will do a LIKE '%likeSymbol%'
-	 * @return a <code>Collection</code> of <code>StandardUnit</code>s that
-	 *         have symbols like the one specified as the parameter.
+	 * @return a <code>Collection</code> of <code>StandardUnit</code>s that have
+	 *         symbols like the one specified as the parameter.
 	 */
-	public Collection findByLikeSymbol(String likeSymbol)
+	public Collection<StandardUnit> findByLikeSymbol(String likeSymbol)
 			throws MetadataAccessException {
 
 		// Make sure argument is not null
@@ -342,8 +339,8 @@ public class StandardUnitDAO extends MetadataDAO {
 		return results;
 	}
 
-	public Collection findStandardVariables(StandardUnit standardUnit)
-			throws MetadataAccessException {
+	public Collection<StandardVariable> findStandardVariables(
+			StandardUnit standardUnit) throws MetadataAccessException {
 		return null;
 	}
 
@@ -376,7 +373,8 @@ public class StandardUnitDAO extends MetadataDAO {
 					.toStringRepresentation("<li>");
 			if (this.updateDestinationObject(standardUnit,
 					persistentStandardUnit)) {
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A StandardUnit was changed in SSDS:<br><b>Before</b><ul><li>"
 								+ standardUnitBefore
 								+ "</ul><br><b>After</b><br><ul><li>"
@@ -420,7 +418,8 @@ public class StandardUnitDAO extends MetadataDAO {
 		// If it was not persisted before, save it
 		if (!persistedBefore) {
 			getSession().save(standardUnitToPersist);
-			addMessage(ssdsAdminEmailToAddress,
+			addMessage(
+					ssdsAdminEmailToAddress,
 					"A new StandardUnit was inserted into SSDS: <br><ul><li>"
 							+ standardUnitToPersist
 									.toStringRepresentation("<li>")
@@ -453,9 +452,8 @@ public class StandardUnitDAO extends MetadataDAO {
 
 		// If no matching standardUnit was found, do nothing
 		if (persistentStandardUnit == null) {
-			logger
-					.debug("No matching standardUnit could be found in the persistent store, "
-							+ "no delete performed");
+			logger.debug("No matching standardUnit could be found in the persistent store, "
+					+ "no delete performed");
 		} else {
 			// First clear any relationships with StandardVariable
 			StandardVariableDAO standardVariableDAO = new StandardVariableDAO(
@@ -489,11 +487,11 @@ public class StandardUnitDAO extends MetadataDAO {
 				}
 			}
 
-			logger
-					.debug("Existing object was found, so we will try to delete it");
+			logger.debug("Existing object was found, so we will try to delete it");
 			try {
 				getSession().delete(persistentStandardUnit);
-				addMessage(ssdsAdminEmailToAddress,
+				addMessage(
+						ssdsAdminEmailToAddress,
 						"A StandardUnit was removed from SSDS:<br><ul><li>"
 								+ persistentStandardUnit
 										.toStringRepresentation("<li>")
@@ -538,10 +536,10 @@ public class StandardUnitDAO extends MetadataDAO {
 		return standardUnit;
 	}
 
-//	protected void initializeRelationships(IMetadataObject metadataObject)
-//			throws MetadataAccessException {
-//
-//	}
+	// protected void initializeRelationships(IMetadataObject metadataObject)
+	// throws MetadataAccessException {
+	//
+	// }
 
 	/**
 	 * A log4j logger
