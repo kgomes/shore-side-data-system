@@ -95,6 +95,13 @@ database.server.type=
 # Credentials for the user that will connect to the database
 database.server.login.username=
 database.server.login.password=
+# For MSSQL, you may need to specify a domain (leave blank if
+# you are using MySQL or you don't need a domain).  If you
+# need one, specify it as:
+# ;domain=XXXXX
+# and make sure you include the ;domain= part as it will be
+# tacked on to the jtds URL
+database.server.domain=
 
 ################################################################
 #            JBoss Security (LDAP) Properties                  #

@@ -27,7 +27,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
@@ -35,8 +36,6 @@ import moos.ssds.dao.util.MetadataAccessException;
 import moos.ssds.jms.PublisherComponent;
 import moos.ssds.metadata.DataProducer;
 import moos.ssds.services.metadata.DataProducerAccess;
-import moos.ssds.services.metadata.DataProducerAccessHome;
-import moos.ssds.services.metadata.DataProducerAccessUtil;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
@@ -130,19 +129,15 @@ public class TestRuminate extends TestCase {
 		}
 
 		// Now read back the deployment by name
-		DataProducerAccessHome dpaccessHome = null;
 		DataProducerAccess dpaccess = null;
 		try {
 			logger.debug("Let's setup the access interfaces");
-			dpaccessHome = DataProducerAccessUtil.getHome();
-			dpaccess = dpaccessHome.create();
+			Context context = new InitialContext();
+			dpaccess = (DataProducerAccess) context
+					.lookup("moos/ssds/services/metadata/DataProducerAccess");
 			logger.debug("OK, they are set");
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (NamingException e) {
 			assertTrue("NamingException was thrown: " + e.getMessage(), false);
-		} catch (CreateException e) {
-			assertTrue("CreateException was thrown: " + e.getMessage(), false);
 		}
 		Collection dpsByName = null;
 		try {
@@ -150,8 +145,6 @@ public class TestRuminate extends TestCase {
 					+ this.headDataProducerName);
 			dpsByName = dpaccess.findByName(this.headDataProducerName, true,
 					null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataAccessException was thrown: " + e.getMessage(),
 					false);
@@ -166,13 +159,9 @@ public class TestRuminate extends TestCase {
 		// Remove it
 		try {
 			dpaccess.deepDelete(persistentDataProducer);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught trying to deep delete:"
-					+ e.getMessage());
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught trying to deep delete:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught trying to deep delete:"
+					+ e.getMessage());
 		}
 
 	}

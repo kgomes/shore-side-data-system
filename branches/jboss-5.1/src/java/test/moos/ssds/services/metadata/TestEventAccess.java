@@ -89,8 +89,7 @@ public class TestEventAccess extends TestAccessCase {
 		int initialEventCount = -9999;
 		try {
 			initialEventCount = EVENT_ACCESS.countFindAllIDs();
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -107,8 +106,7 @@ public class TestEventAccess extends TestAccessCase {
 		try {
 			eventOneId = EVENT_ACCESS.insert(EVENT_ONE);
 			eventTwoId = EVENT_ACCESS.insert(EVENT_TWO);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -123,8 +121,7 @@ public class TestEventAccess extends TestAccessCase {
 		Event foundOne = null;
 		try {
 			foundOne = (Event) EVENT_ACCESS.findById(eventOneId, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -139,8 +136,7 @@ public class TestEventAccess extends TestAccessCase {
 		try {
 			foundOne = (Event) EVENT_ACCESS.findById(eventOneId.longValue(),
 					false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -155,8 +151,7 @@ public class TestEventAccess extends TestAccessCase {
 		try {
 			foundOne = (Event) EVENT_ACCESS.findById(eventOneId.toString(),
 					false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -170,8 +165,7 @@ public class TestEventAccess extends TestAccessCase {
 		Long foundOneId = null;
 		try {
 			foundOneId = EVENT_ACCESS.findId(EVENT_ONE);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -182,18 +176,18 @@ public class TestEventAccess extends TestAccessCase {
 		// Now check find all
 		Collection<Event> allEvents = null;
 		try {
-			allEvents = EVENT_ACCESS.findAll(null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			allEvents = (Collection<Event>) EVENT_ACCESS.findAll(null, null,
+					false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		assertNotNull("Collection returned by findAll should not be null",
 				allEvents);
-		assertTrue("Collection should contain local event one", allEvents
-				.contains(EVENT_ONE));
-		assertTrue("Collection should contain local event two", allEvents
-				.contains(EVENT_TWO));
+		assertTrue("Collection should contain local event one",
+				allEvents.contains(EVENT_ONE));
+		assertTrue("Collection should contain local event two",
+				allEvents.contains(EVENT_TWO));
 		logger.debug("allEvents = " + allEvents);
 
 		// Now test the findEquivalent persistent object
@@ -201,8 +195,7 @@ public class TestEventAccess extends TestAccessCase {
 		try {
 			Long equivalentId = EVENT_ACCESS.findId(EVENT_ONE);
 			persistentOne = (Event) EVENT_ACCESS.findById(equivalentId, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -220,35 +213,32 @@ public class TestEventAccess extends TestAccessCase {
 		try {
 			eventsByName = EVENT_ACCESS.findByName(EVENT_ONE.getName(), true,
 					null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
-		assertTrue("Collection should contain local event one", eventsByName
-				.contains(EVENT_ONE));
+		assertTrue("Collection should contain local event one",
+				eventsByName.contains(EVENT_ONE));
 		assertTrue("Collection should NOT contain local event two",
 				!eventsByName.contains(EVENT_TWO));
 
 		try {
 			eventsByName = EVENT_ACCESS.findByName(EVENT_TWO.getName(), true,
 					null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		assertTrue("Collection should NOT contain local event one",
 				!eventsByName.contains(EVENT_ONE));
-		assertTrue("Collection should contain local event two", eventsByName
-				.contains(EVENT_TWO));
+		assertTrue("Collection should contain local event two",
+				eventsByName.contains(EVENT_TWO));
 
 		// Make sure all IDs are found
 		Collection<Long> allIds = null;
 		try {
 			allIds = EVENT_ACCESS.findAllIDs();
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -259,8 +249,7 @@ public class TestEventAccess extends TestAccessCase {
 		int newCountIds = -99;
 		try {
 			newCountIds = EVENT_ACCESS.countFindAllIDs();
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -274,13 +263,12 @@ public class TestEventAccess extends TestAccessCase {
 		try {
 			likeNamedEvents = EVENT_ACCESS.findByLikeName("est Event O", null,
 					null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
-		assertTrue("LikeNamedEvents contains event one", likeNamedEvents
-				.contains(EVENT_ONE));
+		assertTrue("LikeNamedEvents contains event one",
+				likeNamedEvents.contains(EVENT_ONE));
 		assertTrue("LikeNamedEvents does not containe event two",
 				!likeNamedEvents.contains(EVENT_TWO));
 
@@ -289,13 +277,12 @@ public class TestEventAccess extends TestAccessCase {
 		try {
 			likeNamedEvents = EVENT_ACCESS.findByLikeName(EVENT_ONE.getName(),
 					null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
-		assertTrue("LikeNamedEvents contains event one", likeNamedEvents
-				.contains(EVENT_ONE));
+		assertTrue("LikeNamedEvents contains event one",
+				likeNamedEvents.contains(EVENT_ONE));
 		assertTrue("LikeNamedEvents does not containe event two",
 				!likeNamedEvents.contains(EVENT_TWO));
 
@@ -303,24 +290,22 @@ public class TestEventAccess extends TestAccessCase {
 		Collection<String> allNames = null;
 		try {
 			allNames = EVENT_ACCESS.findAllNames();
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
-		assertTrue("All names contains event one name", allNames
-				.contains(EVENT_ONE.getName()));
-		assertTrue("All names contains event two name", allNames
-				.contains(EVENT_TWO.getName()));
+		assertTrue("All names contains event one name",
+				allNames.contains(EVENT_ONE.getName()));
+		assertTrue("All names contains event two name",
+				allNames.contains(EVENT_TWO.getName()));
 
 		// By name and dates
 		Event byNameAndDates = null;
 		try {
-			byNameAndDates = EVENT_ACCESS.findByNameAndDates(EVENT_ONE
-					.getName(), EVENT_ONE.getStartDate(), EVENT_ONE
-					.getEndDate(), false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			byNameAndDates = EVENT_ACCESS.findByNameAndDates(
+					EVENT_ONE.getName(), EVENT_ONE.getStartDate(),
+					EVENT_ONE.getEndDate(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -333,10 +318,10 @@ public class TestEventAccess extends TestAccessCase {
 		// Change the end date and should get null
 		byNameAndDates = null;
 		try {
-			byNameAndDates = EVENT_ACCESS.findByNameAndDates(EVENT_ONE
-					.getName(), EVENT_ONE.getStartDate(), new Date(), false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			byNameAndDates = EVENT_ACCESS.findByNameAndDates(
+					EVENT_ONE.getName(), EVENT_ONE.getStartDate(), new Date(),
+					false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -368,23 +353,21 @@ public class TestEventAccess extends TestAccessCase {
 		// Find event one
 		Collection<Event> foundEvents = null;
 		try {
-			foundEvents = EVENT_ACCESS.findWithinDateRange(cal1.getTime(), cal2
-					.getTime(), null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal1.getTime(),
+					cal2.getTime(), null, null, false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		assertTrue("Should contain event one", foundEvents.contains(EVENT_ONE));
-		assertTrue("Should not contain event two", !foundEvents
-				.contains(EVENT_TWO));
+		assertTrue("Should not contain event two",
+				!foundEvents.contains(EVENT_TWO));
 
 		foundEvents = null;
 		try {
-			foundEvents = EVENT_ACCESS.findWithinDateRange(cal1.getTime(), cal3
-					.getTime(), null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal1.getTime(),
+					cal3.getTime(), null, null, false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -393,10 +376,9 @@ public class TestEventAccess extends TestAccessCase {
 
 		foundEvents = null;
 		try {
-			foundEvents = EVENT_ACCESS.findWithinDateRange(cal2.getTime(), cal3
-					.getTime(), null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal2.getTime(),
+					cal3.getTime(), null, null, false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -405,10 +387,9 @@ public class TestEventAccess extends TestAccessCase {
 
 		foundEvents = null;
 		try {
-			foundEvents = EVENT_ACCESS.findWithinDateRange(cal2.getTime(), cal5
-					.getTime(), null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal2.getTime(),
+					cal5.getTime(), null, null, false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -417,10 +398,9 @@ public class TestEventAccess extends TestAccessCase {
 
 		foundEvents = null;
 		try {
-			foundEvents = EVENT_ACCESS.findWithinDateRange(cal1.getTime(), cal5
-					.getTime(), null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal1.getTime(),
+					cal5.getTime(), null, null, false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -429,15 +409,14 @@ public class TestEventAccess extends TestAccessCase {
 
 		foundEvents = null;
 		try {
-			foundEvents = EVENT_ACCESS.findWithinDateRange(cal4.getTime(), cal5
-					.getTime(), null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			foundEvents = EVENT_ACCESS.findWithinDateRange(cal4.getTime(),
+					cal5.getTime(), null, null, false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
-		assertTrue("Should not contain event one", !foundEvents
-				.contains(EVENT_ONE));
+		assertTrue("Should not contain event one",
+				!foundEvents.contains(EVENT_ONE));
 		assertTrue("Should contain event two", foundEvents.contains(EVENT_TWO));
 	}
 
@@ -457,9 +436,6 @@ public class TestEventAccess extends TestAccessCase {
 
 		try {
 			persistedEvent = (Event) EVENT_ACCESS.findById(eventId, false);
-		} catch (RemoteException e1) {
-			logger.error("RemoteException caught during findById: "
-					+ e1.getMessage());
 		} catch (MetadataAccessException e1) {
 			logger.error("MetadataAccessException caught during findById: "
 					+ e1.getMessage());
