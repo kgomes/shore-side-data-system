@@ -15,11 +15,9 @@
  */
 package test.moos.ssds.services.metadata;
 
-import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashMap;
 
-import javax.ejb.CreateException;
 import javax.naming.NamingException;
 
 import moos.ssds.dao.util.MetadataAccessException;
@@ -27,8 +25,6 @@ import moos.ssds.metadata.DeviceType;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataFactory;
 import moos.ssds.services.metadata.DeviceTypeAccess;
-import moos.ssds.services.metadata.DeviceTypeAccessHome;
-import moos.ssds.services.metadata.DeviceTypeAccessUtil;
 
 import org.apache.log4j.Logger;
 
@@ -42,406 +38,350 @@ import org.apache.log4j.Logger;
  */
 public class TestDeviceTypeAccess extends TestAccessCase {
 
-    /**
-     * A constructor
-     * 
-     * @param name
-     */
-    public TestDeviceTypeAccess(String name) {
-        super(name);
-    }
+	// The connection to the service classes
+	DeviceTypeAccess deviceTypeAccess = null;
 
-    /**
-     * Sets up the fixture, for example, open a network connection. This method
-     * is called before a test is executed.
-     */
-    protected void setUp() {
+	// The test DeviceTypes
+	String deviceTypeOneStringRep = "DeviceType|" + "name=DeviceTypeOne|"
+			+ "description=DeviceType One Description";
+	String deviceTypeTwoStringRep = "DeviceType|" + "name=DeviceTypeTwo|"
+			+ "description=DeviceType Two Description";
 
-        // Setup the super class
-        super.setUp();
+	// The delimiter
+	String delimiter = "|";
 
-        // Grab a deviceType facade
-        try {
-            deviceTypeAccessHome = DeviceTypeAccessUtil.getHome();
-        } catch (NamingException ex) {
-            logger
-                .error("NamingException caught while getting deviceTypeAccessHome "
-                    + "from app server: " + ex.getMessage());
-        }
-        try {
-            deviceTypeAccess = deviceTypeAccessHome.create();
-        } catch (RemoteException e) {
-            logger
-                .error("RemoteException caught while creating deviceTypeAccess interface: "
-                    + e.getMessage());
-        } catch (CreateException e) {
-            logger
-                .error("CreateException caught while creating deviceTypeAccess interface: "
-                    + e.getMessage());
-        }
+	// The objects
+	DeviceType deviceTypeOne = null;
+	DeviceType deviceTypeTwo = null;
 
-        try {
-            deviceTypeOne = (DeviceType) MetadataFactory
-                .createMetadataObjectFromStringRepresentation(
-                    deviceTypeOneStringRep, delimiter);
-            deviceTypeTwo = (DeviceType) MetadataFactory
-                .createMetadataObjectFromStringRepresentation(
-                    deviceTypeTwoStringRep, delimiter);
-        } catch (MetadataException e) {
-            logger
-                .error("MetadataException caught trying to create two DeviceType objects: "
-                    + e.getMessage());
-        } catch (ClassCastException cce) {
-            logger
-                .error("ClassCastException caught trying to create two DeviceType objects: "
-                    + cce.getMessage());
-        }
-    }
+	/**
+	 * A log4J logger
+	 */
+	static Logger logger = Logger.getLogger(TestDeviceTypeAccess.class);
 
-    /**
-     * Run suite of tests on deviceType one
-     */
-    public void testOne() {
-        logger.debug("DeviceType one is "
-            + deviceTypeOne.toStringRepresentation("|"));
-        this.deviceTypeTest(deviceTypeOne);
-        logger.debug("Done with test one");
-    }
+	/**
+	 * A constructor
+	 * 
+	 * @param name
+	 */
+	public TestDeviceTypeAccess(String name) {
+		super(name);
+	}
 
-    /**
-     * Run suite of tests on deviceType two
-     */
-    public void testTypeTwo() {
-        logger.debug("DeviceType two is "
-            + deviceTypeTwo.toStringRepresentation("|"));
-        deviceTypeTest(deviceTypeTwo);
-        logger.debug("Done with test two");
-    }
+	/**
+	 * Sets up the fixture, for example, open a network connection. This method
+	 * is called before a test is executed.
+	 */
+	protected void setUp() {
 
-    /**
-     * This is the suite of tests to run on a deviceType
-     * 
-     * @param device
-     */
-    private void deviceTypeTest(DeviceType deviceType) {
+		// Setup the super class
+		super.setUp();
 
-        // The ID of the deviceType
-        Long deviceTypeId = null;
-        deviceTypeId = testInsert(deviceType, deviceTypeAccess);
+		try {
+			deviceTypeAccess = (DeviceTypeAccess) context
+					.lookup("moos/ssds/sevices/metadata/DeviceTypeAccess");
+		} catch (NamingException e) {
+			logger.error("CreateException caught while creating deviceTypeAccess interface: "
+					+ e.getMessage());
+		}
 
-        // Now query back by ID and make sure all attributes are equal
-        DeviceType persistedDeviceType = null;
+		try {
+			deviceTypeOne = (DeviceType) MetadataFactory
+					.createMetadataObjectFromStringRepresentation(
+							deviceTypeOneStringRep, delimiter);
+			deviceTypeTwo = (DeviceType) MetadataFactory
+					.createMetadataObjectFromStringRepresentation(
+							deviceTypeTwoStringRep, delimiter);
+		} catch (MetadataException e) {
+			logger.error("MetadataException caught trying to create two DeviceType objects: "
+					+ e.getMessage());
+		} catch (ClassCastException cce) {
+			logger.error("ClassCastException caught trying to create two DeviceType objects: "
+					+ cce.getMessage());
+		}
+	}
 
-        try {
-            persistedDeviceType = (DeviceType) deviceTypeAccess.findById(
-                deviceTypeId, false);
-        } catch (RemoteException e1) {
-            logger.error("RemoteException caught during findById: "
-                + e1.getMessage());
-        } catch (MetadataAccessException e1) {
-            logger.error("MetadataAccessException caught during findById: "
-                + e1.getMessage());
-        }
+	/**
+	 * Run suite of tests on deviceType one
+	 */
+	public void testOne() {
+		logger.debug("DeviceType one is "
+				+ deviceTypeOne.toStringRepresentation("|"));
+		this.deviceTypeTest(deviceTypeOne);
+		logger.debug("Done with test one");
+	}
 
-        // Now check that they are equal
-        assertEquals("The two deviceTypes should be considered equal",
-            deviceType, persistedDeviceType);
+	/**
+	 * Run suite of tests on deviceType two
+	 */
+	public void testTypeTwo() {
+		logger.debug("DeviceType two is "
+				+ deviceTypeTwo.toStringRepresentation("|"));
+		deviceTypeTest(deviceTypeTwo);
+		logger.debug("Done with test two");
+	}
 
-        // Check all the getter methods are equal
-        testEqualityOfAllGetters(deviceType, persistedDeviceType);
+	/**
+	 * This is the suite of tests to run on a deviceType
+	 * 
+	 * @param device
+	 */
+	private void deviceTypeTest(DeviceType deviceType) {
 
-        // Create a map with the values to update
-        HashMap variablesToUpdate = new HashMap();
+		// The ID of the deviceType
+		Long deviceTypeId = null;
+		deviceTypeId = testInsert(deviceType, deviceTypeAccess);
 
-        // Change the description
-        Object[] variable2 = new Object[1];
-        variable2[0] = new String("Updated Description");
-        variablesToUpdate.put("Description", variable2);
+		// Now query back by ID and make sure all attributes are equal
+		DeviceType persistedDeviceType = null;
 
-        testUpdate(persistedDeviceType, variablesToUpdate, deviceTypeAccess);
+		try {
+			persistedDeviceType = (DeviceType) deviceTypeAccess.findById(
+					deviceTypeId, false);
+		} catch (MetadataAccessException e1) {
+			logger.error("MetadataAccessException caught during findById: "
+					+ e1.getMessage());
+		}
 
-        testDelete(persistedDeviceType, deviceTypeAccess);
-    }
+		// Now check that they are equal
+		assertEquals("The two deviceTypes should be considered equal",
+				deviceType, persistedDeviceType);
 
-    /**
-     * This test checks that all the find by methods work correctly
-     */
-    public void testFindBys() {
-        // OK, let's fist let's null out all ID's
-        deviceTypeOne.setId(null);
-        deviceTypeTwo.setId(null);
+		// Check all the getter methods are equal
+		testEqualityOfAllGetters(deviceType, persistedDeviceType);
 
-        // OK now insert all six deviceTypes
-        Long deviceTypeOneId = null;
-        Long deviceTypeTwoId = null;
-        try {
-            deviceTypeOneId = deviceTypeAccess.insert(deviceTypeOne);
-            deviceTypeTwoId = deviceTypeAccess.insert(deviceTypeTwo);
-        } catch (RemoteException e) {
-            logger
-                .error("RemoteException caught inserting deviceTypes in find by test: "
-                    + e.getMessage());
-            assertTrue(
-                "RemoteException caught inserting deviceTypes in find by test: "
-                    + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            logger
-                .error("MetadataAccessException caught inserting deviceTypes in find by test: "
-                    + e.getMessage());
-            assertTrue(
-                "MetadataAccessException caught inserting deviceTypes in find by test: "
-                    + e.getMessage(), false);
-        }
-        logger.debug("DeviceType one's ID is " + deviceTypeOneId);
-        logger.debug("DeviceType two's ID is " + deviceTypeTwoId);
+		// Create a map with the values to update
+		HashMap variablesToUpdate = new HashMap();
 
-        // OK, now let's do the find by id's
-        DeviceType persistedDeviceTypeOne = null;
-        try {
-            persistedDeviceTypeOne = (DeviceType) deviceTypeAccess.findById(
-                deviceTypeOneId, false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException caught trying to findById(Long):"
-                + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue(
-                "MetadataAccessException caught trying to findById(Long):"
-                    + e.getMessage(), false);
-        }
+		// Change the description
+		Object[] variable2 = new Object[1];
+		variable2[0] = new String("Updated Description");
+		variablesToUpdate.put("Description", variable2);
 
-        // Make sure they are equal
-        assertEquals("The two deviceType one's should be equal", deviceTypeOne,
-            persistedDeviceTypeOne);
+		testUpdate(persistedDeviceType, variablesToUpdate, deviceTypeAccess);
 
-        // Now by little long
-        persistedDeviceTypeOne = null;
-        try {
-            persistedDeviceTypeOne = (DeviceType) deviceTypeAccess.findById(
-                deviceTypeOneId.longValue(), false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException caught trying to findById(long):"
-                + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue(
-                "MetadataAccessException caught trying to findById(long):"
-                    + e.getMessage(), false);
-        }
-        // Make sure they are equal
-        assertEquals("The two deviceType one's should be equal", deviceTypeOne,
-            persistedDeviceTypeOne);
+		testDelete(persistedDeviceType, deviceTypeAccess);
+	}
 
-        // Now find by string
-        persistedDeviceTypeOne = null;
-        try {
-            persistedDeviceTypeOne = (DeviceType) deviceTypeAccess.findById(
-                deviceTypeOneId.toString(), false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException caught trying to findById(String):"
-                + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue(
-                "MetadataAccessException caught trying to findById(String):"
-                    + e.getMessage(), false);
-        }
-        // Make sure they are equal
-        assertEquals("The two deviceType one's should be equal", deviceTypeOne,
-            persistedDeviceTypeOne);
+	/**
+	 * This test checks that all the find by methods work correctly
+	 */
+	public void testFindBys() {
+		// OK, let's fist let's null out all ID's
+		deviceTypeOne.setId(null);
+		deviceTypeTwo.setId(null);
 
-        // Now try the find ID method
-        Long idByDeviceTypeFind = null;
-        try {
-            idByDeviceTypeFind = deviceTypeAccess.findId(deviceTypeOne);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException caught trying to findId(DeviceType):"
-                + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue(
-                "MetadataAccessException caught trying to findId(DeviceType):"
-                    + e.getMessage(), false);
-        }
-        assertEquals("DeviceType ids should be equal after findId(DeviceType)",
-            deviceTypeOneId, idByDeviceTypeFind);
+		// OK now insert all six deviceTypes
+		Long deviceTypeOneId = null;
+		Long deviceTypeTwoId = null;
+		try {
+			deviceTypeOneId = deviceTypeAccess.insert(deviceTypeOne);
+			deviceTypeTwoId = deviceTypeAccess.insert(deviceTypeTwo);
+		} catch (MetadataAccessException e) {
+			logger.error("MetadataAccessException caught inserting deviceTypes in find by test: "
+					+ e.getMessage());
+			assertTrue(
+					"MetadataAccessException caught inserting deviceTypes in find by test: "
+							+ e.getMessage(), false);
+		}
+		logger.debug("DeviceType one's ID is " + deviceTypeOneId);
+		logger.debug("DeviceType two's ID is " + deviceTypeTwoId);
 
-        // Check the find equivalent persistent object
-        DeviceType equivalentDeviceTypeOne = null;
-        try {
-            Long equivalentId = deviceTypeAccess.findId(deviceTypeOne);
-            equivalentDeviceTypeOne = (DeviceType) deviceTypeAccess.findById(
-                equivalentId, false);
-        } catch (RemoteException e1) {
-            assertTrue(
-                "RemoteException caught trying to findEquivalentPersistentObject(DeviceType):"
-                    + e1.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue(
-                "MetadataAccessException caught trying to findEquivalentPersistentObject(DeviceType):"
-                    + e.getMessage(), false);
-        }
-        assertEquals("Id of the equivalent persistent object"
-            + " should match that of insert", deviceTypeOneId,
-            equivalentDeviceTypeOne.getId());
+		// OK, now let's do the find by id's
+		DeviceType persistedDeviceTypeOne = null;
+		try {
+			persistedDeviceTypeOne = (DeviceType) deviceTypeAccess.findById(
+					deviceTypeOneId, false);
+		} catch (MetadataAccessException e) {
+			assertTrue(
+					"MetadataAccessException caught trying to findById(Long):"
+							+ e.getMessage(), false);
+		}
 
-        // Now make sure all the deviceTypes are returned in the findAll method
-        Collection allDeviceTypes = null;
-        try {
-            allDeviceTypes = deviceTypeAccess.findAll(null, null, false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException caught trying to findAll():"
-                + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue("MetadataAccessException caught trying to findAll():"
-                + e.getMessage(), false);
-        }
-        assertTrue("findAll should have deviceTypeOne", allDeviceTypes
-            .contains(deviceTypeOne));
-        assertTrue("findAll should have deviceTypeTwo", allDeviceTypes
-            .contains(deviceTypeTwo));
+		// Make sure they are equal
+		assertEquals("The two deviceType one's should be equal", deviceTypeOne,
+				persistedDeviceTypeOne);
 
-        // Now test the find by exact name
-        DeviceType findByNameDeviceType = null;
-        try {
-            findByNameDeviceType = (DeviceType) deviceTypeAccess.findByName(
-                "DeviceType", false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException caught trying to findByName():"
-                + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue("MetadataAccessException caught trying to findByName():"
-                + e.getMessage(), false);
-        }
-        assertNull("findByName(DeviceType) should be an empty return",
-            findByNameDeviceType);
-        findByNameDeviceType = null;
-        try {
-            findByNameDeviceType = (DeviceType) deviceTypeAccess.findByName(
-                "DeviceTypeOne", false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException caught trying to findByName():"
-                + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue("MetadataAccessException caught trying to findByName():"
-                + e.getMessage(), false);
-        }
-        assertNotNull("findByName(DeviceTypeOne) should found something",
-            findByNameDeviceType);
-        assertEquals("findByNameDeviceTypes should be DeviceTypeOne",
-            findByNameDeviceType, deviceTypeOne);
+		// Now by little long
+		persistedDeviceTypeOne = null;
+		try {
+			persistedDeviceTypeOne = (DeviceType) deviceTypeAccess.findById(
+					deviceTypeOneId.longValue(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue(
+					"MetadataAccessException caught trying to findById(long):"
+							+ e.getMessage(), false);
+		}
+		// Make sure they are equal
+		assertEquals("The two deviceType one's should be equal", deviceTypeOne,
+				persistedDeviceTypeOne);
 
-        // Now try to find by like name. If I search for "DeviceTypeO", I should
-        // get DeviceTypeOne, but if I search for "DeviceType", I should get
-        // both
-        Collection likeNameDeviceTypes = null;
-        try {
-            likeNameDeviceTypes = deviceTypeAccess.findByLikeName(
-                "DeviceTypeO", null, null, false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException caught trying to findByLikeName():"
-                + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue(
-                "MetadataAccessException caught trying to findByLikeName():"
-                    + e.getMessage(), false);
-        }
-        assertTrue("findAll should have deviceTypeOne", likeNameDeviceTypes
-            .contains(deviceTypeOne));
-        assertTrue("findAll should NOT have deviceTypeTwo",
-            !likeNameDeviceTypes.contains(deviceTypeTwo));
+		// Now find by string
+		persistedDeviceTypeOne = null;
+		try {
+			persistedDeviceTypeOne = (DeviceType) deviceTypeAccess.findById(
+					deviceTypeOneId.toString(), false);
+		} catch (MetadataAccessException e) {
+			assertTrue(
+					"MetadataAccessException caught trying to findById(String):"
+							+ e.getMessage(), false);
+		}
+		// Make sure they are equal
+		assertEquals("The two deviceType one's should be equal", deviceTypeOne,
+				persistedDeviceTypeOne);
 
-        likeNameDeviceTypes = null;
-        try {
-            likeNameDeviceTypes = deviceTypeAccess.findByLikeName("DeviceType",
-                null, null, false);
-        } catch (RemoteException e) {
-            assertTrue("RemoteException caught trying to findByLikeName():"
-                + e.getMessage(), false);
-        } catch (MetadataAccessException e) {
-            assertTrue(
-                "MetadataAccessException caught trying to findByLikeName():"
-                    + e.getMessage(), false);
-        }
-        assertTrue("findAll should have deviceTypeOne", likeNameDeviceTypes
-            .contains(deviceTypeOne));
-        assertTrue("findAll should have deviceTypeTwo", likeNameDeviceTypes
-            .contains(deviceTypeTwo));
+		// Now try the find ID method
+		Long idByDeviceTypeFind = null;
+		try {
+			idByDeviceTypeFind = deviceTypeAccess.findId(deviceTypeOne);
+		} catch (MetadataAccessException e) {
+			assertTrue(
+					"MetadataAccessException caught trying to findId(DeviceType):"
+							+ e.getMessage(), false);
+		}
+		assertEquals("DeviceType ids should be equal after findId(DeviceType)",
+				deviceTypeOneId, idByDeviceTypeFind);
 
-        // Now check the find all names and find all ID's
-        Collection allIds = null;
-        Collection allNames = null;
-        try {
-            allIds = deviceTypeAccess.findAllIDs();
-            allNames = deviceTypeAccess.findAllNames();
-        } catch (RemoteException e2) {
-            assertTrue("RemoteException caught trying to "
-                + "findAllDeviceTypeIDs/findAllDeviceTypeNames():"
-                + e2.getMessage(), false);
-        } catch (MetadataAccessException e2) {
-            assertTrue("MetadataAccessException caught trying to "
-                + "findAllDeviceTypeIDs/findAllDeviceTypeNames():"
-                + e2.getMessage(), false);
-        }
+		// Check the find equivalent persistent object
+		DeviceType equivalentDeviceTypeOne = null;
+		try {
+			Long equivalentId = deviceTypeAccess.findId(deviceTypeOne);
+			equivalentDeviceTypeOne = (DeviceType) deviceTypeAccess.findById(
+					equivalentId, false);
+		} catch (MetadataAccessException e) {
+			assertTrue(
+					"MetadataAccessException caught trying to findEquivalentPersistentObject(DeviceType):"
+							+ e.getMessage(), false);
+		}
+		assertEquals("Id of the equivalent persistent object"
+				+ " should match that of insert", deviceTypeOneId,
+				equivalentDeviceTypeOne.getId());
 
-        // OK allIDs and names should have 2 members
-        assertNotNull("allIds should not be null", allIds);
-        assertNotNull("allNames should not be null", allNames);
-        assertTrue("allIds should have two (or more) entries.",
-            allIds.size() >= 2);
-        assertTrue("allNames should have two (or more) entries", allNames
-            .size() >= 2);
-        // Now make sure the ids and names are all in the returned collection
-        assertTrue("DeviceType ID one should be there: ", allIds
-            .contains(deviceTypeOneId));
-        assertTrue("DeviceType ID two should be there: ", allIds
-            .contains(deviceTypeTwoId));
+		// Now make sure all the deviceTypes are returned in the findAll method
+		Collection allDeviceTypes = null;
+		try {
+			allDeviceTypes = deviceTypeAccess.findAll(null, null, false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataAccessException caught trying to findAll():"
+					+ e.getMessage(), false);
+		}
+		assertTrue("findAll should have deviceTypeOne",
+				allDeviceTypes.contains(deviceTypeOne));
+		assertTrue("findAll should have deviceTypeTwo",
+				allDeviceTypes.contains(deviceTypeTwo));
 
-        assertTrue("DeviceType name one should be there: ", allNames
-            .contains("DeviceTypeOne"));
-        assertTrue("DeviceType name two should be there: ", allNames
-            .contains("DeviceTypeTwo"));
+		// Now test the find by exact name
+		DeviceType findByNameDeviceType = null;
+		try {
+			findByNameDeviceType = (DeviceType) deviceTypeAccess.findByName(
+					"DeviceType", false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataAccessException caught trying to findByName():"
+					+ e.getMessage(), false);
+		}
+		assertNull("findByName(DeviceType) should be an empty return",
+				findByNameDeviceType);
+		findByNameDeviceType = null;
+		try {
+			findByNameDeviceType = (DeviceType) deviceTypeAccess.findByName(
+					"DeviceTypeOne", false);
+		} catch (MetadataAccessException e) {
+			assertTrue("MetadataAccessException caught trying to findByName():"
+					+ e.getMessage(), false);
+		}
+		assertNotNull("findByName(DeviceTypeOne) should found something",
+				findByNameDeviceType);
+		assertEquals("findByNameDeviceTypes should be DeviceTypeOne",
+				findByNameDeviceType, deviceTypeOne);
 
-        // Now clean up
-        try {
-            deviceTypeAccess.delete(deviceTypeOne);
-        } catch (RemoteException e) {} catch (MetadataAccessException e) {}
-        try {
-            deviceTypeAccess.delete(deviceTypeTwo);
-        } catch (RemoteException e) {} catch (MetadataAccessException e) {}
-    }
+		// Now try to find by like name. If I search for "DeviceTypeO", I should
+		// get DeviceTypeOne, but if I search for "DeviceType", I should get
+		// both
+		Collection likeNameDeviceTypes = null;
+		try {
+			likeNameDeviceTypes = deviceTypeAccess.findByLikeName(
+					"DeviceTypeO", null, null, false);
+		} catch (MetadataAccessException e) {
+			assertTrue(
+					"MetadataAccessException caught trying to findByLikeName():"
+							+ e.getMessage(), false);
+		}
+		assertTrue("findAll should have deviceTypeOne",
+				likeNameDeviceTypes.contains(deviceTypeOne));
+		assertTrue("findAll should NOT have deviceTypeTwo",
+				!likeNameDeviceTypes.contains(deviceTypeTwo));
 
-    /**
-     * Tears down the fixture, for example, close a network connection. This
-     * method is called after a test is executed.
-     */
-    protected void tearDown() {
-        // Delete any deviceType objects as we don't want any leftover's if a
-        // test
-        // fails
-        try {
-            deviceTypeAccess.delete(deviceTypeOne);
-        } catch (RemoteException e) {} catch (MetadataAccessException e) {}
-        try {
-            deviceTypeAccess.delete(deviceTypeTwo);
-        } catch (RemoteException e) {} catch (MetadataAccessException e) {}
-    }
+		likeNameDeviceTypes = null;
+		try {
+			likeNameDeviceTypes = deviceTypeAccess.findByLikeName("DeviceType",
+					null, null, false);
+		} catch (MetadataAccessException e) {
+			assertTrue(
+					"MetadataAccessException caught trying to findByLikeName():"
+							+ e.getMessage(), false);
+		}
+		assertTrue("findAll should have deviceTypeOne",
+				likeNameDeviceTypes.contains(deviceTypeOne));
+		assertTrue("findAll should have deviceTypeTwo",
+				likeNameDeviceTypes.contains(deviceTypeTwo));
 
-    // The connection to the service classes
-    DeviceTypeAccessHome deviceTypeAccessHome = null;
-    DeviceTypeAccess deviceTypeAccess = null;
+		// Now check the find all names and find all ID's
+		Collection allIds = null;
+		Collection allNames = null;
+		try {
+			allIds = deviceTypeAccess.findAllIDs();
+			allNames = deviceTypeAccess.findAllNames();
+		} catch (MetadataAccessException e2) {
+			assertTrue(
+					"MetadataAccessException caught trying to "
+							+ "findAllDeviceTypeIDs/findAllDeviceTypeNames():"
+							+ e2.getMessage(), false);
+		}
 
-    // The test DeviceTypes
-    String deviceTypeOneStringRep = "DeviceType|" + "name=DeviceTypeOne|"
-        + "description=DeviceType One Description";
-    String deviceTypeTwoStringRep = "DeviceType|" + "name=DeviceTypeTwo|"
-        + "description=DeviceType Two Description";
+		// OK allIDs and names should have 2 members
+		assertNotNull("allIds should not be null", allIds);
+		assertNotNull("allNames should not be null", allNames);
+		assertTrue("allIds should have two (or more) entries.",
+				allIds.size() >= 2);
+		assertTrue("allNames should have two (or more) entries",
+				allNames.size() >= 2);
+		// Now make sure the ids and names are all in the returned collection
+		assertTrue("DeviceType ID one should be there: ",
+				allIds.contains(deviceTypeOneId));
+		assertTrue("DeviceType ID two should be there: ",
+				allIds.contains(deviceTypeTwoId));
 
-    // The delimiter
-    String delimiter = "|";
+		assertTrue("DeviceType name one should be there: ",
+				allNames.contains("DeviceTypeOne"));
+		assertTrue("DeviceType name two should be there: ",
+				allNames.contains("DeviceTypeTwo"));
 
-    // The objects
-    DeviceType deviceTypeOne = null;
-    DeviceType deviceTypeTwo = null;
+		// Now clean up
+		try {
+			deviceTypeAccess.delete(deviceTypeOne);
+		} catch (MetadataAccessException e) {
+		}
+		try {
+			deviceTypeAccess.delete(deviceTypeTwo);
+		} catch (MetadataAccessException e) {
+		}
+	}
 
-    /**
-     * A log4J logger
-     */
-    static Logger logger = Logger.getLogger(TestDeviceTypeAccess.class);
+	/**
+	 * Tears down the fixture, for example, close a network connection. This
+	 * method is called after a test is executed.
+	 */
+	protected void tearDown() {
+		// Delete any deviceType objects as we don't want any leftover's if a
+		// test
+		// fails
+		try {
+			deviceTypeAccess.delete(deviceTypeOne);
+		} catch (MetadataAccessException e) {
+		}
+		try {
+			deviceTypeAccess.delete(deviceTypeTwo);
+		} catch (MetadataAccessException e) {
+		}
+	}
 }

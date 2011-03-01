@@ -17,11 +17,11 @@ package test.moos.ssds.services.metadata;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import moos.ssds.dao.util.MetadataAccessException;
@@ -39,33 +39,15 @@ import moos.ssds.metadata.StandardUnit;
 import moos.ssds.metadata.StandardVariable;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataFactory;
-import moos.ssds.services.metadata.IDataContainerAccess;
-import moos.ssds.services.metadata.IDataContainerAccess;
-import moos.ssds.services.metadata.IDataContainerAccess;
+import moos.ssds.services.metadata.DataContainerAccess;
 import moos.ssds.services.metadata.DataContainerGroupAccess;
-import moos.ssds.services.metadata.DataContainerGroupAccessHome;
-import moos.ssds.services.metadata.DataContainerGroupAccessUtil;
 import moos.ssds.services.metadata.DataProducerAccess;
-import moos.ssds.services.metadata.DataProducerAccessHome;
-import moos.ssds.services.metadata.DataProducerAccessUtil;
 import moos.ssds.services.metadata.KeywordAccess;
-import moos.ssds.services.metadata.KeywordAccessHome;
-import moos.ssds.services.metadata.KeywordAccessUtil;
 import moos.ssds.services.metadata.PersonAccess;
-import moos.ssds.services.metadata.PersonAccessHome;
-import moos.ssds.services.metadata.PersonAccessUtil;
 import moos.ssds.services.metadata.ResourceAccess;
-import moos.ssds.services.metadata.ResourceAccessHome;
-import moos.ssds.services.metadata.ResourceAccessUtil;
 import moos.ssds.services.metadata.ResourceTypeAccess;
-import moos.ssds.services.metadata.ResourceTypeAccessHome;
-import moos.ssds.services.metadata.ResourceTypeAccessUtil;
 import moos.ssds.services.metadata.StandardUnitAccess;
-import moos.ssds.services.metadata.StandardUnitAccessHome;
-import moos.ssds.services.metadata.StandardUnitAccessUtil;
 import moos.ssds.services.metadata.StandardVariableAccess;
-import moos.ssds.services.metadata.StandardVariableAccessHome;
-import moos.ssds.services.metadata.StandardVariableAccessUtil;
 import moos.ssds.util.XmlDateFormat;
 
 import org.apache.log4j.Logger;
@@ -80,6 +62,271 @@ import org.apache.log4j.Logger;
  * @version : $Revision: 1.1.2.31 $
  */
 public class TestDataContainerAccess extends TestAccessCase {
+
+	Context context = null;
+
+	// The connection to the service classes
+	DataContainerAccess dataContainerAccess = null;
+	DataContainerGroupAccess dataContainerGroupAccess = null;
+	DataProducerAccess dataProducerAccess = null;
+	StandardVariableAccess standardVariableAccess = null;
+	StandardUnitAccess standardUnitAccess = null;
+	PersonAccess personAccess = null;
+	KeywordAccess keywordAccess = null;
+	ResourceAccess resourceAccess = null;
+	ResourceTypeAccess resourceTypeAccess = null;
+
+	// The test DataContainers
+	DataContainer dataContainerOne = null;
+	DataContainer dataContainerTwo = null;
+
+	// THe test DataProducers
+	DataProducer dataProducerOne = null;
+	DataProducer dataProducerTwo = null;
+
+	String dataProducerOneStringRep = "DataProducer|" + "name=DataProducerOne|"
+			+ "description=DataProducerOne Description|"
+			+ "startDate=2003-05-05T16:11:44Z|"
+			+ "endDate=2004-02-01T08:38:19Z|";
+
+	String dataProducerTwoStringRep = "DataProducer|" + "name=DataProducerTwo|"
+			+ "description=DataProducerTwo Description|"
+			+ "startDate=2003-05-05T16:11:44Z|"
+			+ "endDate=2004-02-01T08:38:19Z|";
+
+	String dataContainerOneDodsUrlString = "http://dods.mbari.org/DataContainerOne.txt";
+	String dataContainerTwoDodsUrlString = "http://dods.mbari.org/DataContainerTwo.txt";
+
+	String dataContainerOneStringRep = "DataContainer|"
+			+ "name=DataContainerOne|"
+			+ "description=DataContainerOne Description|"
+			+ "dataContainerType=File|" + "startDate=2003-05-05T16:11:44Z|"
+			+ "endDate=2004-02-01T08:38:19Z|" + "original=true|"
+			+ "uriString=http://kasatka.shore.mbari.org/DataContainerOne.txt|"
+			+ "contentLength=50000|" + "mimeType=CSV|" + "numberOfRecords=800|"
+			+ "dodsAccessible=false|" + "dodsUrlString="
+			+ dataContainerOneDodsUrlString + "|" + "minLatitude=36.6|"
+			+ "maxLatitude=36.805|" + "minLongitude=-121.56|"
+			+ "maxLongitude=-121.034|" + "minDepth=0.0|" + "maxDepth=10.546";
+
+	String dataContainerTwoStringRep = "DataContainer|"
+			+ "name=DataContainerTwo|"
+			+ "description=DataContainerTwo Description|"
+			+ "dataContainerType=Stream|" + "startDate=2005-01-01T00:00:00Z|"
+			+ "endDate=2005-02-01T08:38:19Z|" + "original=true|"
+			+ "uri=http://kasatka.shore.mbari.org/DataContainerTwo.xls|"
+			+ "contentLength=1295|" + "mimeType=app/excel|"
+			+ "numberOfRecords=10|" + "dodsAccessible=false|"
+			+ "dodsUrlString=" + dataContainerTwoDodsUrlString + "|"
+			+ "minLatitude=6.0|" + "maxLatitude=45.0|"
+			+ "minLongitude=-255.34|" + "maxLongitude=-245.567|"
+			+ "minDepth=10.5|" + "maxDepth=10000.5";
+
+	// A Couple of RecordDescriptions
+	RecordDescription recordDescriptionOne = null;
+
+	RecordDescription recordDescriptionTwo = null;
+
+	String recordDescriptionOneStringRep = "RecordDescription|"
+			+ "recordType=1|" + "bufferStyle="
+			+ RecordDescription.BUFFER_STYLE_ASCII + "|" + "bufferParseType="
+			+ RecordDescription.PARSE_TYPE_FIXED_POSITION + "|"
+			+ "bufferItemSeparator=,|" + "bufferLengthType="
+			+ RecordDescription.BUFFER_LENGTH_TYPE_FIXED + "|"
+			+ "recordTerminator=\\n|" + "parseable=true|" + "endian="
+			+ RecordDescription.ENDIAN_BIG;
+
+	String recordDescriptionTwoStringRep = "RecordDescription|"
+			+ "recordType=1|" + "bufferStyle="
+			+ RecordDescription.BUFFER_STYLE_BINARY + "|" + "bufferParseType="
+			+ RecordDescription.PARSE_TYPE_ORDERED_POSITION + "|"
+			+ "bufferItemSeparator=\\t|" + "bufferLengthType="
+			+ RecordDescription.BUFFER_LENGTH_TYPE_VARIABLE + "|"
+			+ "recordTerminator=\\r\\n|" + "parseable=false|" + "endian="
+			+ RecordDescription.ENDIAN_LITTLE;
+
+	// Some recordVariables
+	RecordVariable recordVariableOne = null;
+	RecordVariable recordVariableTwo = null;
+	RecordVariable recordVariableThree = null;
+	RecordVariable recordVariableFour = null;
+	RecordVariable recordVariableFive = null;
+	RecordVariable recordVariableSix = null;
+
+	String recordVariableStringRepOne = "RecordVariable|"
+			+ "name=RecordVarableOne|"
+			+ "description=RecordVariableOne Description|"
+			+ "longName=RecordVariableOne Long Name|"
+			+ "format=RecordVariableOne Format|"
+			+ "units=RecordVariableOne Units|" + "columnIndex=1|"
+			+ "validMin=-99.99|" + "validMax=99.99|"
+			+ "missingValue=999999999.99999|" + "accuracy=-.00001|"
+			+ "displayMin=-100|" + "displayMax=100|"
+			+ "referenceScale=RecordVariableOne ReferenceScale|"
+			+ "conversionScale=10.00|" + "conversionOffset=-1|"
+			+ "convertedUnits=RecordVariableOne Converted Units|"
+			+ "sourceSensorID=1000|" + "parseRegExp=\\D+(\\d+)\\w+";
+
+	String recordVariableStringRepTwo = "RecordVariable|"
+			+ "name=RecordVarableTwo|"
+			+ "description=RecordVariableTwo Description|"
+			+ "longName=RecordVariableTwo Long Name|"
+			+ "format=RecordVariableTwo Format|"
+			+ "units=RecordVariableTwo Units|" + "columnIndex=2|"
+			+ "validMin=-9.9|" + "validMax=9.9|"
+			+ "missingValue=999999999.99999|" + "accuracy=-.1|"
+			+ "displayMin=-10|" + "displayMax=10|"
+			+ "referenceScale=RecordVariableTwo ReferenceScale|"
+			+ "conversionScale=1.00|" + "conversionOffset=-5|"
+			+ "convertedUnits=RecordVariableTwo Converted Units|"
+			+ "sourceSensorID=1002|" + "parseRegExp=2-\\D+(\\d+)\\w+";
+
+	String recordVariableStringRepThree = "RecordVariable|"
+			+ "name=RecordVarableThree|"
+			+ "description=RecordVariableThree Description|"
+			+ "longName=RecordVariableThree Long Name|"
+			+ "format=RecordVariableThree Format|"
+			+ "units=RecordVariableThree Units|" + "columnIndex=3|"
+			+ "validMin=-3.99|" + "validMax=3.99|" + "missingValue=3.99999|"
+			+ "accuracy=-3.3|" + "displayMin=-30|" + "displayMax=30|"
+			+ "referenceScale=RecordVariableThree ReferenceScale|"
+			+ "conversionScale=3.00|" + "conversionOffset=-3|"
+			+ "convertedUnits=RecordVariableThree Converted Units|"
+			+ "sourceSensorID=1003|" + "parseRegExp=3-\\D+(\\d+)\\w+";
+
+	String recordVariableStringRepFour = "RecordVariable|"
+			+ "name=RecordVarableFour|"
+			+ "description=RecordVariableFour Description|"
+			+ "longName=RecordVariableFour Long Name|"
+			+ "format=RecordVariableFour Format|"
+			+ "units=RecordVariableFour Units|" + "columnIndex=4|"
+			+ "validMin=-4.99|" + "validMax=4.99|" + "missingValue=49.99999|"
+			+ "accuracy=-4.1|" + "displayMin=-40|" + "displayMax=40|"
+			+ "referenceScale=RecordVariableFour ReferenceScale|"
+			+ "conversionScale=40.00|" + "conversionOffset=-4|"
+			+ "convertedUnits=RecordVariableFour Converted Units|"
+			+ "sourceSensorID=1004|" + "parseRegExp=4-\\D+(\\d+)\\w+";
+
+	String recordVariableStringRepFive = "RecordVariable|"
+			+ "name=RecordVarableFive|"
+			+ "description=RecordVariableFive Description|"
+			+ "longName=RecordVariableFive Long Name|"
+			+ "format=RecordVariableFive Format|"
+			+ "units=RecordVariableFive Units|" + "columnIndex=5|"
+			+ "validMin=-59.99|" + "validMax=59.99|"
+			+ "missingValue=599.99999|" + "accuracy=-5.1|" + "displayMin=-50|"
+			+ "displayMax=50|"
+			+ "referenceScale=RecordVariableFive ReferenceScale|"
+			+ "conversionScale=50.00|" + "conversionOffset=-5|"
+			+ "convertedUnits=RecordVariableFive Converted Units|"
+			+ "sourceSensorID=1005|" + "parseRegExp=5-\\D+(\\d+)\\w+";
+
+	String recordVariableStringRepSix = "RecordVariable|"
+			+ "name=RecordVarableSix|"
+			+ "description=RecordVariableSix Description|"
+			+ "longName=RecordVariableSix Long Name|"
+			+ "format=RecordVariableSix Format|"
+			+ "units=RecordVariableSix Units|" + "columnIndex=6|"
+			+ "validMin=-6.99|" + "validMax=6.99|" + "missingValue=69.99999|"
+			+ "accuracy=-6.6|" + "displayMin=-600|" + "displayMax=600|"
+			+ "referenceScale=RecordVariableSix ReferenceScale|"
+			+ "conversionScale=60.00|" + "conversionOffset=-6|"
+			+ "convertedUnits=RecordVariableSix Converted Units|"
+			+ "sourceSensorID=1006|" + "parseRegExp=6-\\D+(\\d+)\\w+";
+
+	// The StandardVariable objects
+	StandardVariable standardVariableOne = null;
+	StandardVariable standardVariableTwo = null;
+	String standardVariableOneStringRep = "StandardVariable|"
+			+ "name=StandardVariableOne|"
+			+ "description=StandardVariable one description|"
+			+ "referenceScale=StandardVariableOne RefScale";
+	String standardVariableTwoStringRep = "StandardVariable|"
+			+ "name=StandardVariableTwo|"
+			+ "description=StandardVariable two description|"
+			+ "referenceScale=StandardVariableOne RefScale";
+
+	// Some StandardUnits
+	StandardUnit standardUnitOne = null;
+	StandardUnit standardUnitTwo = null;
+	String standardUnitOneStringRep = "StandardUnit|" + "name=StandardUnitOne|"
+			+ "description=StandardUnit one description|"
+			+ "longName=Standard Unit one long name|" + "symbol=SUONE";
+	String standardUnitTwoStringRep = "StandardUnit|" + "name=StandardUnitTwo|"
+			+ "description=StandardUnit two description|"
+			+ "longName=Standard Unit two long name|" + "symbol=SUTWO";
+
+	// Some person objects
+	Person personOne = null;
+	Person personTwo = null;
+	String personOneStringRep = "Person|" + "firstname=John|" + "surname=Doe|"
+			+ "organization=MBARI|" + "email=jdoe@mbari.org|"
+			+ "username=jdoe|" + "password=dumbPassword|" + "status=active";
+
+	String personTwoStringRep = "Person|" + "firstname=Jane|" + "surname=Doe|"
+			+ "organization=MBARI|" + "email=janedoe@mbari.org|"
+			+ "username=janedoe|" + "password=dumbPassword|" + "status=active";
+
+	// Some Keywords
+	Keyword keywordOne = null;
+	Keyword keywordTwo = null;
+	String keywordOneStringRep = "Keyword|" + "name=KeywordOne|"
+			+ "description=KeywordOne Description";
+	String keywordTwoStringRep = "Keyword|" + "name=KeywordTwo|"
+			+ "description=KeywordTwo Description";
+
+	// Some DataContainerGroups
+	DataContainerGroup dataContainerGroupOne = null;
+	DataContainerGroup dataContainerGroupTwo = null;
+	String dataContainerGroupOneStringRep = "DataContainerGroup|"
+			+ "name=DataContainerGroupOne|"
+			+ "description=DataContainerGroupOne Description";
+	String dataContainerGroupTwoStringRep = "DataContainerGroup|"
+			+ "name=DataContainerGroupTwo|"
+			+ "description=DataContainerGroupTwo Description";
+
+	// Some Resources
+	Resource resourceOne = null;
+	Resource resourceTwo = null;
+	String resourceOneStringRep = "Resource|" + "name=ResourceOne|"
+			+ "description=ResourceOne Description|"
+			+ "startDate=2004-01-01T00:00:00Z|"
+			+ "endDate=2004-01-02T00:00:00Z|"
+			+ "uriString=http://kasatka.shore.mbari.org/ResourceOne.txt|"
+			+ "contentLength=50000|" + "mimeType=CSV";
+	String resourceTwoStringRep = "Resource|" + "name=ResourceTwo|"
+			+ "description=ResourceTwo Description|"
+			+ "startDate=2004-02-01T00:00:00Z|"
+			+ "endDate=2004-02-02T00:00:00Z|"
+			+ "uriString=http://kasatka.shore.mbari.org/ResourceTwo.txt|"
+			+ "contentLength=2|" + "mimeType=application/excel";
+
+	// Some ResourceBLOBs
+	ResourceBLOB resourceBLOBOne = null;
+	ResourceBLOB resourceBLOBTwo = null;
+	String resourceBLOBOneStringRep = "ResourceBLOB|" + "name=ResourceBLOBOne|"
+			+ "description=ResourceBLOBOne Description";
+	String resourceBLOBTwoStringRep = "ResourceBLOB|" + "name=ResourceBLOBTwo|"
+			+ "description=ResourceBLOBTwo Description";
+
+	// Some ResourceTypes
+	ResourceType resourceTypeOne = null;
+	ResourceType resourceTypeTwo = null;
+	String resourceTypeOneStringRep = "ResourceType|" + "name=ResourceTypeOne|"
+			+ "description=ResourceTypeOne Description";
+	String resourceTypeTwoStringRep = "ResourceType|" + "name=ResourceTypeTwo|"
+			+ "description=ResourceTypeTwo Description";
+
+	// The delimiter for them all
+	String delimiter = "|";
+
+	// A date formatter
+	XmlDateFormat xmlDateFormat = new XmlDateFormat();
+
+	/**
+	 * A log4J logger
+	 */
+	static Logger logger = Logger.getLogger(TestDataContainerAccess.class);
 
 	/**
 	 * A constructor
@@ -99,41 +346,29 @@ public class TestDataContainerAccess extends TestAccessCase {
 		// Setup the super class
 		super.setUp();
 
-		// Grab a dataContainer facade
 		try {
-			dataContainerAccessHome = DataContainerAccessUtil.getHome();
-			dataProducerAccessHome = DataProducerAccessUtil.getHome();
-			standardUnitAccessHome = StandardUnitAccessUtil.getHome();
-			personAccessHome = PersonAccessUtil.getHome();
-			standardVariableAccessHome = StandardVariableAccessUtil.getHome();
-			dataContainerGroupAccessHome = DataContainerGroupAccessUtil
-					.getHome();
-			keywordAccessHome = KeywordAccessUtil.getHome();
-			resourceAccessHome = ResourceAccessUtil.getHome();
-			resourceTypeAccessHome = ResourceTypeAccessUtil.getHome();
-		} catch (NamingException ex) {
-			logger
-					.error("NamingException caught while getting access homes from app server: "
-							+ ex.getMessage());
-		}
-		try {
-			dataContainerAccess = dataContainerAccessHome.create();
-			dataProducerAccess = dataProducerAccessHome.create();
-			standardUnitAccess = standardUnitAccessHome.create();
-			personAccess = personAccessHome.create();
-			standardVariableAccess = standardVariableAccessHome.create();
-			dataContainerGroupAccess = dataContainerGroupAccessHome.create();
-			keywordAccess = keywordAccessHome.create();
-			resourceAccess = resourceAccessHome.create();
-			resourceTypeAccess = resourceTypeAccessHome.create();
-		} catch (RemoteException e) {
-			logger
-					.error("RemoteException caught while creating access interface: "
-							+ e.getMessage());
-		} catch (CreateException e) {
-			logger
-					.error("CreateException caught while creating access interface: "
-							+ e.getMessage());
+			context = new InitialContext();
+			dataContainerAccess = (DataContainerAccess) context
+					.lookup("moos/ssds/services/metadata/DataContainerAccess");
+			dataProducerAccess = (DataProducerAccess) context
+					.lookup("moos/ssds/services/metadata/DataProducerAccess");
+			standardUnitAccess = (StandardUnitAccess) context
+					.lookup("moos/ssds/services/metadata/StandardUnitAccess");
+			personAccess = (PersonAccess) context
+					.lookup("moos/ssds/services/metadata/PersonAccess");
+			standardVariableAccess = (StandardVariableAccess) context
+					.lookup("moos/ssds/services/metadata/StandardVariableAccess");
+			dataContainerGroupAccess = (DataContainerGroupAccess) context
+					.lookup("moos/ssds/services/metadata/DataContainerGroupAccess");
+			keywordAccess = (KeywordAccess) context
+					.lookup("moos/ssds/services/metadata/KeywordAccess");
+			resourceAccess = (ResourceAccess) context
+					.lookup("moos/ssds/services/metadata/ResourceAccess");
+			resourceTypeAccess = (ResourceTypeAccess) context
+					.lookup("moos/ssds/services/metadata/ResourceTypeAccess");
+		} catch (NamingException e) {
+			logger.error("RemoteException caught while creating access interface: "
+					+ e.getMessage());
 		}
 
 	}
@@ -147,13 +382,11 @@ public class TestDataContainerAccess extends TestAccessCase {
 					.createMetadataObjectFromStringRepresentation(
 							dataContainerOneStringRep, delimiter);
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two DataContainer objects: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to create two DataContainer objects: "
+					+ e.getMessage());
 		} catch (ClassCastException cce) {
-			logger
-					.error("ClassCastException caught trying to create two DataContainer objects: "
-							+ cce.getMessage());
+			logger.error("ClassCastException caught trying to create two DataContainer objects: "
+					+ cce.getMessage());
 		}
 		logger.debug("DataContainer one is "
 				+ dataContainerOne.toStringRepresentation("|"));
@@ -170,13 +403,11 @@ public class TestDataContainerAccess extends TestAccessCase {
 					.createMetadataObjectFromStringRepresentation(
 							dataContainerOneStringRep, delimiter);
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two DataContainer objects: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to create two DataContainer objects: "
+					+ e.getMessage());
 		} catch (ClassCastException cce) {
-			logger
-					.error("ClassCastException caught trying to create two DataContainer objects: "
-							+ cce.getMessage());
+			logger.error("ClassCastException caught trying to create two DataContainer objects: "
+					+ cce.getMessage());
 		}
 		logger.debug("DataContainer two is "
 				+ dataContainerTwo.toStringRepresentation("|"));
@@ -206,8 +437,6 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainerOneId = dataContainerAccess.insert(dataContainerOne);
 			dataContainerTwoId = dataContainerAccess.insert(dataContainerTwo);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -226,8 +455,6 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainers = dataContainerAccess.findByName("DataContainer",
 					true, "name", null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -240,8 +467,6 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainers = dataContainerAccess.findByName("DataContainer",
 					false, "name", null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -255,8 +480,6 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainers = dataContainerAccess.findByName("DataContainerOne",
 					true, "name", null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -270,8 +493,6 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainers = dataContainerAccess.findByName("DataContainerOn",
 					false, "name", null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -306,8 +527,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainerOneId = dataContainerAccess.insert(dataContainerOne);
 			dataContainerTwoId = dataContainerAccess.insert(dataContainerTwo);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -323,8 +543,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			foundOne = (DataContainer) dataContainerAccess.findById(
 					dataContainerOneId, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -339,8 +558,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			foundOne = (DataContainer) dataContainerAccess.findById(
 					dataContainerOneId.longValue(), false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -355,8 +573,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			foundOne = (DataContainer) dataContainerAccess.findById(
 					dataContainerOneId.toString(), false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -370,8 +587,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Long foundOneId = null;
 		try {
 			foundOneId = dataContainerAccess.findId(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -403,8 +619,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 			Long equivalentId = dataContainerAccess.findId(dataContainerOne);
 			persistentOne = (DataContainer) dataContainerAccess.findById(
 					equivalentId, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -433,8 +648,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		int count = 0;
 		try {
 			count = dataContainerAccess.countFindAllIDs();
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -444,8 +658,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Long dcId = null;
 		try {
 			dcId = dataContainerAccess.insert(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -460,8 +673,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		int newcount = 0;
 		try {
 			newcount = dataContainerAccess.countFindAllIDs();
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -476,8 +688,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Long dcTwoId = null;
 		try {
 			dcTwoId = dataContainerAccess.insert(dataContainerTwo);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -492,8 +703,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		newcount = 0;
 		try {
 			newcount = dataContainerAccess.countFindAllIDs();
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -526,8 +736,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Long dcId = null;
 		try {
 			dcId = dataContainerAccess.insert(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -542,16 +751,15 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDC = dataContainerAccess.findByDODSURLString(
 					dataContainerOneDodsUrlString, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 
 		// Check that the IDs match
 		assertNotNull("persistenDC should not be null", persistentDC);
-		assertEquals("ID from DODS Url search should be equal", persistentDC
-				.getId(), dcId);
+		assertEquals("ID from DODS Url search should be equal",
+				persistentDC.getId(), dcId);
 
 		// Now clear all fields except the DODSUrl and see if the findEquivalent
 		// method works with only the DODS UrlString
@@ -566,8 +774,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDC = (DataContainer) dataContainerAccess
 					.findEquivalentPersistentObject(dataContainerOne, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -602,8 +809,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dcOneId = dataContainerAccess.insert(dataContainerOne);
 			dcTwoId = dataContainerAccess.insert(dataContainerTwo);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -621,8 +827,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			results = dataContainerAccess.findByKeywordName("Keyword", true,
 					null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -635,51 +840,48 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			results = dataContainerAccess.findByKeywordName("Keyword", false,
 					null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		assertNotNull("The search should not return null", results);
 		assertTrue("The search should two", results.size() == 2);
-		assertTrue("DataContainer one should be in there", results
-				.contains(dataContainerOne));
-		assertTrue("DataContainer two should be in there", results
-				.contains(dataContainerTwo));
+		assertTrue("DataContainer one should be in there",
+				results.contains(dataContainerOne));
+		assertTrue("DataContainer two should be in there",
+				results.contains(dataContainerTwo));
 
 		results = null;
 		try {
 			results = dataContainerAccess.findByKeywordName("KeywordTwo", true,
 					null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		// Should find the first one
 		assertNotNull("The search should not return null", results);
 		assertTrue("The search should return one", results.size() == 1);
-		assertTrue("Should be data container one", results
-				.contains(dataContainerOne));
-		assertTrue("Should not be dataCotainer two", !results
-				.contains(dataContainerTwo));
+		assertTrue("Should be data container one",
+				results.contains(dataContainerOne));
+		assertTrue("Should not be dataCotainer two",
+				!results.contains(dataContainerTwo));
 
 		results = null;
 		try {
 			results = dataContainerAccess.findByKeywordName("KeywordT", false,
 					null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		// Should find the first one
 		assertNotNull("The search should not return null", results);
 		assertTrue("The search should return one", results.size() == 1);
-		assertTrue("Should be data container one", results
-				.contains(dataContainerOne));
-		assertTrue("Should not be dataCotainer two", !results
-				.contains(dataContainerTwo));
+		assertTrue("Should be data container one",
+				results.contains(dataContainerOne));
+		assertTrue("Should not be dataCotainer two",
+				!results.contains(dataContainerTwo));
 
 		this.cleanObjectsFromDB();
 	}
@@ -697,8 +899,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Long dcId = null;
 		try {
 			dcId = dataContainerAccess.insert(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -712,8 +913,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.findById(dcId, true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -745,8 +945,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Long dcId = null;
 		try {
 			dcId = dataContainerAccess.insert(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -761,8 +960,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.findById(dcId, true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -798,8 +996,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Long dcAfterUpdateId = null;
 		try {
 			dcAfterUpdateId = dataContainerAccess.update(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -811,8 +1008,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.findById(dcId, true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -838,8 +1034,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		dcAfterUpdateId = null;
 		try {
 			dcAfterUpdateId = dataContainerAccess.update(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -851,8 +1046,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.findById(dcId, true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -878,8 +1072,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		dcAfterUpdateId = null;
 		try {
 			dcAfterUpdateId = dataContainerAccess.update(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -906,8 +1099,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.findById(dcId, true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -924,8 +1116,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dcAfterUpdateId = dataContainerAccess
 					.update(persistentDataContainer);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -937,8 +1128,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.findById(dcId, true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -986,8 +1176,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dcOneId = dataContainerAccess.insert(dataContainerOne);
 			dcTwoId = dataContainerAccess.insert(dataContainerTwo);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1008,8 +1197,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 					.findById(dcOneId, true);
 			persistentDataContainerTwo = (DataContainer) dataContainerAccess
 					.findById(dcTwoId, true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1019,15 +1207,15 @@ public class TestDataContainerAccess extends TestAccessCase {
 				.getRecordVariables().iterator();
 		while (rvOneIter.hasNext()) {
 			assertEquals("RecordVariable should have standardVariableOne",
-					standardVariableOne, ((RecordVariable) rvOneIter.next())
-							.getStandardVariable());
+					standardVariableOne,
+					((RecordVariable) rvOneIter.next()).getStandardVariable());
 		}
 		Iterator rvTwoIter = persistentDataContainerTwo.getRecordDescription()
 				.getRecordVariables().iterator();
 		while (rvTwoIter.hasNext()) {
 			assertEquals("RecordVariable should have standardVariableTwo",
-					standardVariableTwo, ((RecordVariable) rvTwoIter.next())
-							.getStandardVariable());
+					standardVariableTwo,
+					((RecordVariable) rvTwoIter.next()).getStandardVariable());
 		}
 
 		// Now delete the data containers and both standard variables should
@@ -1035,8 +1223,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainerAccess.delete(dataContainerOne);
 			dataContainerAccess.delete(dataContainerTwo);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1047,8 +1234,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 					.findById(dcOneId, true);
 			persistentDataContainerTwo = (DataContainer) dataContainerAccess
 					.findById(dcTwoId, true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1067,8 +1253,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 					.findEquivalentPersistentObject(standardVariableOne, false);
 			persistentStandardVariableTwo = (StandardVariable) standardVariableAccess
 					.findEquivalentPersistentObject(standardVariableTwo, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataAccessException was thrown: " + e.getMessage(),
 					false);
@@ -1103,8 +1288,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Long dcOneId = null;
 		try {
 			dcOneId = dataContainerAccess.insert(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1119,8 +1303,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.getMetadataObjectGraph(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1131,10 +1314,12 @@ public class TestDataContainerAccess extends TestAccessCase {
 				persistentDataContainer.getDataContainerGroups());
 		assertEquals("DataContainer should have two DataContainerGroups", 2,
 				persistentDataContainer.getDataContainerGroups().size());
-		assertTrue("DataContainerGroupOne should be one of them",
+		assertTrue(
+				"DataContainerGroupOne should be one of them",
 				persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupOne));
-		assertTrue("DataContainerGroupTwo should be the other",
+		assertTrue(
+				"DataContainerGroupTwo should be the other",
 				persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupTwo));
 
@@ -1143,8 +1328,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainerGroupsByDC = dataContainerGroupAccess
 					.findByDataContainer(dataContainerOne, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1162,8 +1346,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		// groups
 		try {
 			dataContainerAccess.delete(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1173,8 +1356,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.getMetadataObjectGraph(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1185,8 +1367,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainerGroups = dataContainerGroupAccess.findAll(null, null,
 					false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1214,8 +1395,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		dcOneId = null;
 		try {
 			dcOneId = dataContainerAccess.insert(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1231,8 +1411,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.getMetadataObjectGraph(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1257,8 +1436,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Long updatedDCId = null;
 		try {
 			updatedDCId = dataContainerAccess.update(persistentDataContainer);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1269,8 +1447,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.getMetadataObjectGraph(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1279,10 +1456,12 @@ public class TestDataContainerAccess extends TestAccessCase {
 				persistentDataContainer);
 		assertEquals("There should be two data container groups", 2,
 				persistentDataContainer.getDataContainerGroups().size());
-		assertTrue("DataContainerGroupOne should be one of them",
+		assertTrue(
+				"DataContainerGroupOne should be one of them",
 				persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupOne));
-		assertTrue("DataContainerGroupTwo should be the other",
+		assertTrue(
+				"DataContainerGroupTwo should be the other",
 				persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupTwo));
 
@@ -1306,8 +1485,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		dcOneId = null;
 		try {
 			dcOneId = dataContainerAccess.insert(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1322,8 +1500,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.getMetadataObjectGraph(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1334,10 +1511,12 @@ public class TestDataContainerAccess extends TestAccessCase {
 				persistentDataContainer.getDataContainerGroups());
 		assertEquals("DataContainer should have one DataContainerGroups", 1,
 				persistentDataContainer.getDataContainerGroups().size());
-		assertTrue("DataContainerGroupOne should be one of them",
+		assertTrue(
+				"DataContainerGroupOne should be one of them",
 				persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupOne));
-		assertTrue("DataContainerGroupTwo should not be there",
+		assertTrue(
+				"DataContainerGroupTwo should not be there",
 				!persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupTwo));
 
@@ -1348,8 +1527,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		updatedDCId = null;
 		try {
 			updatedDCId = dataContainerAccess.update(persistentDataContainer);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1360,8 +1538,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.getMetadataObjectGraph(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1370,10 +1547,12 @@ public class TestDataContainerAccess extends TestAccessCase {
 				persistentDataContainer);
 		assertEquals("There should be two data container groups", 2,
 				persistentDataContainer.getDataContainerGroups().size());
-		assertTrue("DataContainerGroupOne should be one of them",
+		assertTrue(
+				"DataContainerGroupOne should be one of them",
 				persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupOne));
-		assertTrue("DataContainerGroupTwo should be the other",
+		assertTrue(
+				"DataContainerGroupTwo should be the other",
 				persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupTwo));
 
@@ -1399,8 +1578,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		dcOneId = null;
 		try {
 			dcOneId = dataContainerAccess.insert(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1415,8 +1593,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.getMetadataObjectGraph(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1427,10 +1604,12 @@ public class TestDataContainerAccess extends TestAccessCase {
 				persistentDataContainer.getDataContainerGroups());
 		assertEquals("DataContainer should have one DataContainerGroups", 1,
 				persistentDataContainer.getDataContainerGroups().size());
-		assertTrue("DataContainerGroupOne should be one of them",
+		assertTrue(
+				"DataContainerGroupOne should be one of them",
 				persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupOne));
-		assertTrue("DataContainerGroupTwo should not be there",
+		assertTrue(
+				"DataContainerGroupTwo should not be there",
 				!persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupTwo));
 
@@ -1442,8 +1621,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		updatedDCId = null;
 		try {
 			updatedDCId = dataContainerAccess.update(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1454,8 +1632,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistentDataContainer = (DataContainer) dataContainerAccess
 					.getMetadataObjectGraph(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1464,10 +1641,12 @@ public class TestDataContainerAccess extends TestAccessCase {
 				persistentDataContainer);
 		assertEquals("There should be two data container groups", 2,
 				persistentDataContainer.getDataContainerGroups().size());
-		assertTrue("DataContainerGroupOne should be one of them",
+		assertTrue(
+				"DataContainerGroupOne should be one of them",
 				persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupOne));
-		assertTrue("DataContainerGroupTwo should be the other",
+		assertTrue(
+				"DataContainerGroupTwo should be the other",
 				persistentDataContainer.getDataContainerGroups().contains(
 						dataContainerGroupTwo));
 
@@ -1493,8 +1672,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Long dcOneId = null;
 		try {
 			dcOneId = dataContainerAccess.insert(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1508,8 +1686,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		Collection keywords = null;
 		try {
 			keywords = keywordAccess.findByMetadataObject(dataContainerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1955,8 +2132,7 @@ public class TestDataContainerAccess extends TestAccessCase {
 		// Insert the two DataContainer by inserting the DataProducer
 		try {
 			dataProducerOneID = dataProducerAccess.insert(dataProducerOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -1968,17 +2144,16 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainers = dataContainerAccess.findOutputsByDataProducer(
 					dpToFind, "startDate", null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		assertNotNull("Ids should not be null", dataContainers);
 		assertTrue("There should be two ids", dataContainers.size() == 2);
-		assertTrue("One should be in there", dataContainers
-				.contains(dataContainerOne));
-		assertTrue("Two should be in there", dataContainers
-				.contains(dataContainerTwo));
+		assertTrue("One should be in there",
+				dataContainers.contains(dataContainerOne));
+		assertTrue("Two should be in there",
+				dataContainers.contains(dataContainerTwo));
 
 		// Now try the same test but just create a DP from scratch and use the
 		// ID
@@ -1989,17 +2164,16 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			dataContainers = dataContainerAccess.findOutputsByDataProducer(
 					secondTryDP, "startDate", null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		assertNotNull("Ids should not be null", dataContainers);
 		assertTrue("There should be two ids", dataContainers.size() == 2);
-		assertTrue("One should be in there", dataContainers
-				.contains(dataContainerOne));
-		assertTrue("Two should be in there", dataContainers
-				.contains(dataContainerTwo));
+		assertTrue("One should be in there",
+				dataContainers.contains(dataContainerOne));
+		assertTrue("Two should be in there",
+				dataContainers.contains(dataContainerTwo));
 
 		this.cleanObjectsFromDB();
 	}
@@ -2021,9 +2195,6 @@ public class TestDataContainerAccess extends TestAccessCase {
 		try {
 			persistedDataContainer = (DataContainer) dataContainerAccess
 					.findById(dataContainerId, false);
-		} catch (RemoteException e1) {
-			logger.error("RemoteException caught during findById: "
-					+ e1.getMessage());
 		} catch (MetadataAccessException e1) {
 			logger.error("MetadataAccessException caught during findById: "
 					+ e1.getMessage());
@@ -2141,13 +2312,11 @@ public class TestDataContainerAccess extends TestAccessCase {
 					.createMetadataObjectFromStringRepresentation(
 							resourceBLOBTwoStringRep, delimiter);
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two DataContainer objects: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to create two DataContainer objects: "
+					+ e.getMessage());
 		} catch (ClassCastException cce) {
-			logger
-					.error("ClassCastException caught trying to create two DataContainer objects: "
-							+ cce.getMessage());
+			logger.error("ClassCastException caught trying to create two DataContainer objects: "
+					+ cce.getMessage());
 		}
 		// Now create the object trees
 		dataProducerOne.addOutput(dataContainerOne);
@@ -2169,189 +2338,127 @@ public class TestDataContainerAccess extends TestAccessCase {
 		// test fails
 		try {
 			dataProducerAccess.delete(dataProducerOne);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of dataProducerOne:"
-					+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of dataProducerOne:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of dataProducerOne:"
+					+ e.getMessage());
 		}
 		try {
 			dataProducerAccess.delete(dataProducerTwo);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of dataProducerTwo:"
-					+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of dataProducerTwo:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of dataProducerTwo:"
+					+ e.getMessage());
 		}
 		try {
 			dataContainerAccess.delete(dataContainerOne);
-		} catch (RemoteException e) {
-			logger
-					.error("RemoteException caught in delete of dataContainerOne:"
-							+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of dataContainerOne:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of dataContainerOne:"
+					+ e.getMessage());
 		}
 		try {
 			dataContainerAccess.delete(dataContainerTwo);
-		} catch (RemoteException e) {
-			logger
-					.error("RemoteException caught in delete of dataContainerTwo:"
-							+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of dataContainerTwo:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of dataContainerTwo:"
+					+ e.getMessage());
 		}
 		try {
 			standardUnitAccess.delete(standardUnitOne);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of standardUnitOne:"
-					+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of standardUnitOne:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of standardUnitOne:"
+					+ e.getMessage());
 		}
 		try {
 			standardUnitAccess.delete(standardUnitTwo);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of standardUnitTwo:"
-					+ e.getMessage());
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of standardUnitTwo:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of standardUnitTwo:"
+					+ e.getMessage());
 		}
 		try {
 			standardVariableAccess.delete(standardVariableOne);
-		} catch (RemoteException e) {
-			logger
-					.error("RemoteException caught in delete of standardVariableOne:"
-							+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of standardVariableOne:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of standardVariableOne:"
+					+ e.getMessage());
 		}
 		try {
 			standardVariableAccess.delete(standardVariableTwo);
-		} catch (RemoteException e) {
-			logger
-					.error("RemoteException caught in delete of standardVariableTwo:"
-							+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of standardVariableTwo:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of standardVariableTwo:"
+					+ e.getMessage());
 		}
 		try {
 			personAccess.delete(personOne);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of personOne:"
-					+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of personOne:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of personOne:"
+					+ e.getMessage());
 		}
 		try {
 			personAccess.delete(personTwo);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of personTwo:"
-					+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of personTwo:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of personTwo:"
+					+ e.getMessage());
 		}
 		try {
 			keywordAccess.delete(keywordOne);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of keywordOne:"
-					+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of keywordOne:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of keywordOne:"
+					+ e.getMessage());
 		}
 		try {
 			keywordAccess.delete(keywordTwo);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of keywordTwo:"
-					+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of keywordTwo:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of keywordTwo:"
+					+ e.getMessage());
 		}
 		try {
 			dataContainerGroupAccess.delete(dataContainerGroupOne);
-		} catch (RemoteException e) {
-			logger
-					.error("RemoteException caught in delete of dataContainerGroupOne:"
-							+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of dataContainerGroupOne:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of dataContainerGroupOne:"
+					+ e.getMessage());
 		}
 		try {
 			dataContainerGroupAccess.delete(dataContainerGroupTwo);
-		} catch (RemoteException e) {
-			logger
-					.error("RemoteException caught in delete of dataContainerGroupTwo:"
-							+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of dataContainerGroupTwo:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of dataContainerGroupTwo:"
+					+ e.getMessage());
 		}
 		try {
 			resourceAccess.delete(resourceOne);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of resourceOne:"
-					+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of resourceOne:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of resourceOne:"
+					+ e.getMessage());
 		}
 		try {
 			resourceAccess.delete(resourceTwo);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of resourceTwo:"
-					+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of resourceTwo:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of resourceTwo:"
+					+ e.getMessage());
 		}
 		try {
 			resourceTypeAccess.delete(resourceTypeOne);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of resourceTypeOne:"
-					+ e.getMessage());
+
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of resourceTypeOne:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of resourceTypeOne:"
+					+ e.getMessage());
 		}
 		try {
 			resourceTypeAccess.delete(resourceTypeTwo);
-		} catch (RemoteException e) {
-			logger.error("RemoteException caught in delete of resourceTypeTwo:"
-					+ e.getMessage());
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught in delete of resourceTypeTwo:"
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught in delete of resourceTypeTwo:"
+					+ e.getMessage());
 		}
 	}
 
@@ -2363,275 +2470,4 @@ public class TestDataContainerAccess extends TestAccessCase {
 		this.cleanObjectsFromDB();
 	}
 
-	// The connection to the service classes
-	DataContainerAccessHome dataContainerAccessHome = null;
-	IDataContainerAccess dataContainerAccess = null;
-	DataContainerGroupAccessHome dataContainerGroupAccessHome = null;
-	DataContainerGroupAccess dataContainerGroupAccess = null;
-	DataProducerAccessHome dataProducerAccessHome = null;
-	DataProducerAccess dataProducerAccess = null;
-	StandardVariableAccessHome standardVariableAccessHome = null;
-	StandardVariableAccess standardVariableAccess = null;
-	StandardUnitAccessHome standardUnitAccessHome = null;
-	StandardUnitAccess standardUnitAccess = null;
-	PersonAccessHome personAccessHome = null;
-	PersonAccess personAccess = null;
-	KeywordAccessHome keywordAccessHome = null;
-	KeywordAccess keywordAccess = null;
-	ResourceAccessHome resourceAccessHome = null;
-	ResourceAccess resourceAccess = null;
-	ResourceTypeAccessHome resourceTypeAccessHome = null;
-	ResourceTypeAccess resourceTypeAccess = null;
-
-	// The test DataContainers
-	DataContainer dataContainerOne = null;
-	DataContainer dataContainerTwo = null;
-
-	// THe test DataProducers
-	DataProducer dataProducerOne = null;
-	DataProducer dataProducerTwo = null;
-
-	String dataProducerOneStringRep = "DataProducer|" + "name=DataProducerOne|"
-			+ "description=DataProducerOne Description|"
-			+ "startDate=2003-05-05T16:11:44Z|"
-			+ "endDate=2004-02-01T08:38:19Z|";
-
-	String dataProducerTwoStringRep = "DataProducer|" + "name=DataProducerTwo|"
-			+ "description=DataProducerTwo Description|"
-			+ "startDate=2003-05-05T16:11:44Z|"
-			+ "endDate=2004-02-01T08:38:19Z|";
-
-	String dataContainerOneDodsUrlString = "http://dods.mbari.org/DataContainerOne.txt";
-	String dataContainerTwoDodsUrlString = "http://dods.mbari.org/DataContainerTwo.txt";
-
-	String dataContainerOneStringRep = "DataContainer|"
-			+ "name=DataContainerOne|"
-			+ "description=DataContainerOne Description|"
-			+ "dataContainerType=File|" + "startDate=2003-05-05T16:11:44Z|"
-			+ "endDate=2004-02-01T08:38:19Z|" + "original=true|"
-			+ "uriString=http://kasatka.shore.mbari.org/DataContainerOne.txt|"
-			+ "contentLength=50000|" + "mimeType=CSV|" + "numberOfRecords=800|"
-			+ "dodsAccessible=false|" + "dodsUrlString="
-			+ dataContainerOneDodsUrlString + "|" + "minLatitude=36.6|"
-			+ "maxLatitude=36.805|" + "minLongitude=-121.56|"
-			+ "maxLongitude=-121.034|" + "minDepth=0.0|" + "maxDepth=10.546";
-
-	String dataContainerTwoStringRep = "DataContainer|"
-			+ "name=DataContainerTwo|"
-			+ "description=DataContainerTwo Description|"
-			+ "dataContainerType=Stream|" + "startDate=2005-01-01T00:00:00Z|"
-			+ "endDate=2005-02-01T08:38:19Z|" + "original=true|"
-			+ "uri=http://kasatka.shore.mbari.org/DataContainerTwo.xls|"
-			+ "contentLength=1295|" + "mimeType=app/excel|"
-			+ "numberOfRecords=10|" + "dodsAccessible=false|"
-			+ "dodsUrlString=" + dataContainerTwoDodsUrlString + "|"
-			+ "minLatitude=6.0|" + "maxLatitude=45.0|"
-			+ "minLongitude=-255.34|" + "maxLongitude=-245.567|"
-			+ "minDepth=10.5|" + "maxDepth=10000.5";
-
-	// A Couple of RecordDescriptions
-	RecordDescription recordDescriptionOne = null;
-
-	RecordDescription recordDescriptionTwo = null;
-
-	String recordDescriptionOneStringRep = "RecordDescription|"
-			+ "recordType=1|" + "bufferStyle="
-			+ RecordDescription.BUFFER_STYLE_ASCII + "|" + "bufferParseType="
-			+ RecordDescription.PARSE_TYPE_FIXED_POSITION + "|"
-			+ "bufferItemSeparator=,|" + "bufferLengthType="
-			+ RecordDescription.BUFFER_LENGTH_TYPE_FIXED + "|"
-			+ "recordTerminator=\\n|" + "parseable=true|" + "endian="
-			+ RecordDescription.ENDIAN_BIG;
-
-	String recordDescriptionTwoStringRep = "RecordDescription|"
-			+ "recordType=1|" + "bufferStyle="
-			+ RecordDescription.BUFFER_STYLE_BINARY + "|" + "bufferParseType="
-			+ RecordDescription.PARSE_TYPE_ORDERED_POSITION + "|"
-			+ "bufferItemSeparator=\\t|" + "bufferLengthType="
-			+ RecordDescription.BUFFER_LENGTH_TYPE_VARIABLE + "|"
-			+ "recordTerminator=\\r\\n|" + "parseable=false|" + "endian="
-			+ RecordDescription.ENDIAN_LITTLE;
-
-	// Some recordVariables
-	RecordVariable recordVariableOne = null;
-	RecordVariable recordVariableTwo = null;
-	RecordVariable recordVariableThree = null;
-	RecordVariable recordVariableFour = null;
-	RecordVariable recordVariableFive = null;
-	RecordVariable recordVariableSix = null;
-
-	String recordVariableStringRepOne = "RecordVariable|"
-			+ "name=RecordVarableOne|"
-			+ "description=RecordVariableOne Description|"
-			+ "longName=RecordVariableOne Long Name|"
-			+ "format=RecordVariableOne Format|"
-			+ "units=RecordVariableOne Units|" + "columnIndex=1|"
-			+ "validMin=-99.99|" + "validMax=99.99|"
-			+ "missingValue=999999999.99999|" + "accuracy=-.00001|"
-			+ "displayMin=-100|" + "displayMax=100|"
-			+ "referenceScale=RecordVariableOne ReferenceScale|"
-			+ "conversionScale=10.00|" + "conversionOffset=-1|"
-			+ "convertedUnits=RecordVariableOne Converted Units|"
-			+ "sourceSensorID=1000|" + "parseRegExp=\\D+(\\d+)\\w+";
-
-	String recordVariableStringRepTwo = "RecordVariable|"
-			+ "name=RecordVarableTwo|"
-			+ "description=RecordVariableTwo Description|"
-			+ "longName=RecordVariableTwo Long Name|"
-			+ "format=RecordVariableTwo Format|"
-			+ "units=RecordVariableTwo Units|" + "columnIndex=2|"
-			+ "validMin=-9.9|" + "validMax=9.9|"
-			+ "missingValue=999999999.99999|" + "accuracy=-.1|"
-			+ "displayMin=-10|" + "displayMax=10|"
-			+ "referenceScale=RecordVariableTwo ReferenceScale|"
-			+ "conversionScale=1.00|" + "conversionOffset=-5|"
-			+ "convertedUnits=RecordVariableTwo Converted Units|"
-			+ "sourceSensorID=1002|" + "parseRegExp=2-\\D+(\\d+)\\w+";
-
-	String recordVariableStringRepThree = "RecordVariable|"
-			+ "name=RecordVarableThree|"
-			+ "description=RecordVariableThree Description|"
-			+ "longName=RecordVariableThree Long Name|"
-			+ "format=RecordVariableThree Format|"
-			+ "units=RecordVariableThree Units|" + "columnIndex=3|"
-			+ "validMin=-3.99|" + "validMax=3.99|" + "missingValue=3.99999|"
-			+ "accuracy=-3.3|" + "displayMin=-30|" + "displayMax=30|"
-			+ "referenceScale=RecordVariableThree ReferenceScale|"
-			+ "conversionScale=3.00|" + "conversionOffset=-3|"
-			+ "convertedUnits=RecordVariableThree Converted Units|"
-			+ "sourceSensorID=1003|" + "parseRegExp=3-\\D+(\\d+)\\w+";
-
-	String recordVariableStringRepFour = "RecordVariable|"
-			+ "name=RecordVarableFour|"
-			+ "description=RecordVariableFour Description|"
-			+ "longName=RecordVariableFour Long Name|"
-			+ "format=RecordVariableFour Format|"
-			+ "units=RecordVariableFour Units|" + "columnIndex=4|"
-			+ "validMin=-4.99|" + "validMax=4.99|" + "missingValue=49.99999|"
-			+ "accuracy=-4.1|" + "displayMin=-40|" + "displayMax=40|"
-			+ "referenceScale=RecordVariableFour ReferenceScale|"
-			+ "conversionScale=40.00|" + "conversionOffset=-4|"
-			+ "convertedUnits=RecordVariableFour Converted Units|"
-			+ "sourceSensorID=1004|" + "parseRegExp=4-\\D+(\\d+)\\w+";
-
-	String recordVariableStringRepFive = "RecordVariable|"
-			+ "name=RecordVarableFive|"
-			+ "description=RecordVariableFive Description|"
-			+ "longName=RecordVariableFive Long Name|"
-			+ "format=RecordVariableFive Format|"
-			+ "units=RecordVariableFive Units|" + "columnIndex=5|"
-			+ "validMin=-59.99|" + "validMax=59.99|"
-			+ "missingValue=599.99999|" + "accuracy=-5.1|" + "displayMin=-50|"
-			+ "displayMax=50|"
-			+ "referenceScale=RecordVariableFive ReferenceScale|"
-			+ "conversionScale=50.00|" + "conversionOffset=-5|"
-			+ "convertedUnits=RecordVariableFive Converted Units|"
-			+ "sourceSensorID=1005|" + "parseRegExp=5-\\D+(\\d+)\\w+";
-
-	String recordVariableStringRepSix = "RecordVariable|"
-			+ "name=RecordVarableSix|"
-			+ "description=RecordVariableSix Description|"
-			+ "longName=RecordVariableSix Long Name|"
-			+ "format=RecordVariableSix Format|"
-			+ "units=RecordVariableSix Units|" + "columnIndex=6|"
-			+ "validMin=-6.99|" + "validMax=6.99|" + "missingValue=69.99999|"
-			+ "accuracy=-6.6|" + "displayMin=-600|" + "displayMax=600|"
-			+ "referenceScale=RecordVariableSix ReferenceScale|"
-			+ "conversionScale=60.00|" + "conversionOffset=-6|"
-			+ "convertedUnits=RecordVariableSix Converted Units|"
-			+ "sourceSensorID=1006|" + "parseRegExp=6-\\D+(\\d+)\\w+";
-
-	// The StandardVariable objects
-	StandardVariable standardVariableOne = null;
-	StandardVariable standardVariableTwo = null;
-	String standardVariableOneStringRep = "StandardVariable|"
-			+ "name=StandardVariableOne|"
-			+ "description=StandardVariable one description|"
-			+ "referenceScale=StandardVariableOne RefScale";
-	String standardVariableTwoStringRep = "StandardVariable|"
-			+ "name=StandardVariableTwo|"
-			+ "description=StandardVariable two description|"
-			+ "referenceScale=StandardVariableOne RefScale";
-
-	// Some StandardUnits
-	StandardUnit standardUnitOne = null;
-	StandardUnit standardUnitTwo = null;
-	String standardUnitOneStringRep = "StandardUnit|" + "name=StandardUnitOne|"
-			+ "description=StandardUnit one description|"
-			+ "longName=Standard Unit one long name|" + "symbol=SUONE";
-	String standardUnitTwoStringRep = "StandardUnit|" + "name=StandardUnitTwo|"
-			+ "description=StandardUnit two description|"
-			+ "longName=Standard Unit two long name|" + "symbol=SUTWO";
-
-	// Some person objects
-	Person personOne = null;
-	Person personTwo = null;
-	String personOneStringRep = "Person|" + "firstname=John|" + "surname=Doe|"
-			+ "organization=MBARI|" + "email=jdoe@mbari.org|"
-			+ "username=jdoe|" + "password=dumbPassword|" + "status=active";
-
-	String personTwoStringRep = "Person|" + "firstname=Jane|" + "surname=Doe|"
-			+ "organization=MBARI|" + "email=janedoe@mbari.org|"
-			+ "username=janedoe|" + "password=dumbPassword|" + "status=active";
-
-	// Some Keywords
-	Keyword keywordOne = null;
-	Keyword keywordTwo = null;
-	String keywordOneStringRep = "Keyword|" + "name=KeywordOne|"
-			+ "description=KeywordOne Description";
-	String keywordTwoStringRep = "Keyword|" + "name=KeywordTwo|"
-			+ "description=KeywordTwo Description";
-
-	// Some DataContainerGroups
-	DataContainerGroup dataContainerGroupOne = null;
-	DataContainerGroup dataContainerGroupTwo = null;
-	String dataContainerGroupOneStringRep = "DataContainerGroup|"
-			+ "name=DataContainerGroupOne|"
-			+ "description=DataContainerGroupOne Description";
-	String dataContainerGroupTwoStringRep = "DataContainerGroup|"
-			+ "name=DataContainerGroupTwo|"
-			+ "description=DataContainerGroupTwo Description";
-
-	// Some Resources
-	Resource resourceOne = null;
-	Resource resourceTwo = null;
-	String resourceOneStringRep = "Resource|" + "name=ResourceOne|"
-			+ "description=ResourceOne Description|"
-			+ "startDate=2004-01-01T00:00:00Z|"
-			+ "endDate=2004-01-02T00:00:00Z|"
-			+ "uriString=http://kasatka.shore.mbari.org/ResourceOne.txt|"
-			+ "contentLength=50000|" + "mimeType=CSV";
-	String resourceTwoStringRep = "Resource|" + "name=ResourceTwo|"
-			+ "description=ResourceTwo Description|"
-			+ "startDate=2004-02-01T00:00:00Z|"
-			+ "endDate=2004-02-02T00:00:00Z|"
-			+ "uriString=http://kasatka.shore.mbari.org/ResourceTwo.txt|"
-			+ "contentLength=2|" + "mimeType=application/excel";
-
-	// Some ResourceBLOBs
-	ResourceBLOB resourceBLOBOne = null;
-	ResourceBLOB resourceBLOBTwo = null;
-	String resourceBLOBOneStringRep = "ResourceBLOB|" + "name=ResourceBLOBOne|"
-			+ "description=ResourceBLOBOne Description";
-	String resourceBLOBTwoStringRep = "ResourceBLOB|" + "name=ResourceBLOBTwo|"
-			+ "description=ResourceBLOBTwo Description";
-
-	// Some ResourceTypes
-	ResourceType resourceTypeOne = null;
-	ResourceType resourceTypeTwo = null;
-	String resourceTypeOneStringRep = "ResourceType|" + "name=ResourceTypeOne|"
-			+ "description=ResourceTypeOne Description";
-	String resourceTypeTwoStringRep = "ResourceType|" + "name=ResourceTypeTwo|"
-			+ "description=ResourceTypeTwo Description";
-
-	// The delimiter for them all
-	String delimiter = "|";
-
-	// A date formatter
-	XmlDateFormat xmlDateFormat = new XmlDateFormat();
-
-	/**
-	 * A log4J logger
-	 */
-	static Logger logger = Logger.getLogger(TestDataContainerAccess.class);
 }

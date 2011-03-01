@@ -63,7 +63,8 @@ public class TestKeywordAccess extends TestAccessCase {
 	 * Run suite of tests on keyword one
 	 */
 	public void testOne() {
-		logger.debug("Keyword one is " + KEYWORD_ONE.toStringRepresentation("|"));
+		logger.debug("Keyword one is "
+				+ KEYWORD_ONE.toStringRepresentation("|"));
 		this.keywordTest(KEYWORD_ONE);
 		logger.debug("Done with test one");
 	}
@@ -72,7 +73,8 @@ public class TestKeywordAccess extends TestAccessCase {
 	 * Run suite of tests on keyword two
 	 */
 	public void testTwo() {
-		logger.debug("Keyword two is " + KEYWORD_TWO.toStringRepresentation("|"));
+		logger.debug("Keyword two is "
+				+ KEYWORD_TWO.toStringRepresentation("|"));
 		keywordTest(KEYWORD_TWO);
 		logger.debug("Done with test two");
 	}
@@ -90,8 +92,7 @@ public class TestKeywordAccess extends TestAccessCase {
 		try {
 			keywordOneId = KEYWORD_ACCESS.insert(KEYWORD_ONE);
 			keywordTwoId = KEYWORD_ACCESS.insert(KEYWORD_TWO);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -106,8 +107,7 @@ public class TestKeywordAccess extends TestAccessCase {
 		Keyword foundOne = null;
 		try {
 			foundOne = (Keyword) KEYWORD_ACCESS.findById(keywordOneId, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -120,10 +120,9 @@ public class TestKeywordAccess extends TestAccessCase {
 		// Clear and try with different find by
 		foundOne = null;
 		try {
-			foundOne = (Keyword) KEYWORD_ACCESS.findById(keywordOneId.longValue(),
-					false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			foundOne = (Keyword) KEYWORD_ACCESS.findById(
+					keywordOneId.longValue(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -136,10 +135,9 @@ public class TestKeywordAccess extends TestAccessCase {
 		// Clear and try again
 		foundOne = null;
 		try {
-			foundOne = (Keyword) KEYWORD_ACCESS.findById(keywordOneId.toString(),
-					false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			foundOne = (Keyword) KEYWORD_ACCESS.findById(
+					keywordOneId.toString(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -153,8 +151,7 @@ public class TestKeywordAccess extends TestAccessCase {
 		Long foundOneId = null;
 		try {
 			foundOneId = KEYWORD_ACCESS.findId(KEYWORD_ONE);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -165,27 +162,27 @@ public class TestKeywordAccess extends TestAccessCase {
 		// Now check find all
 		Collection<Keyword> allKeywords = null;
 		try {
-			allKeywords = KEYWORD_ACCESS.findAll(null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			allKeywords = (Collection<Keyword>) KEYWORD_ACCESS.findAll(null,
+					null, false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		assertNotNull("Collection returned by findAll should not be null",
 				allKeywords);
-		assertTrue("Collection should contain local keyword one", allKeywords
-				.contains(KEYWORD_ONE));
-		assertTrue("Collection should contain local keyword two", allKeywords
-				.contains(KEYWORD_TWO));
+		assertTrue("Collection should contain local keyword one",
+				allKeywords.contains(KEYWORD_ONE));
+		assertTrue("Collection should contain local keyword two",
+				allKeywords.contains(KEYWORD_TWO));
 		logger.debug("allKeywords = " + allKeywords);
 
 		// Now test the findEquivalent persistent object
 		Keyword persistentOne = null;
 		try {
 			Long equivalentId = KEYWORD_ACCESS.findId(KEYWORD_ONE);
-			persistentOne = (Keyword) KEYWORD_ACCESS.findById(equivalentId, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			persistentOne = (Keyword) KEYWORD_ACCESS.findById(equivalentId,
+					false);
+
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -215,10 +212,8 @@ public class TestKeywordAccess extends TestAccessCase {
 		Keyword persistedKeyword = null;
 
 		try {
-			persistedKeyword = (Keyword) KEYWORD_ACCESS.findById(keywordId, false);
-		} catch (RemoteException e1) {
-			logger.error("RemoteException caught during findById: "
-					+ e1.getMessage());
+			persistedKeyword = (Keyword) KEYWORD_ACCESS.findById(keywordId,
+					false);
 		} catch (MetadataAccessException e1) {
 			logger.error("MetadataAccessException caught during findById: "
 					+ e1.getMessage());

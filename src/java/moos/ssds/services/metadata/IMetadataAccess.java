@@ -115,6 +115,15 @@ public interface IMetadataAccess {
 	public Collection<Long> findAllIDs() throws MetadataAccessException;
 
 	/**
+	 * This method returns the number of IDs found for the class that is
+	 * associated with the AccessBean
+	 * 
+	 * @return
+	 * @throws MetadataAccessException
+	 */
+	public int countFindAllIDs() throws MetadataAccessException;
+
+	/**
 	 * This method takes in a <code>IMetadataObject</code> and finds the
 	 * corresponding persistent object if there is one. It uses the identifier
 	 * and/or the business key to locate the persistent equivalent

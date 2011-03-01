@@ -278,7 +278,9 @@
 
 	<!-- Define classpath for compiling the source code -->
 	<path id="compile-classpath">
+		<fileset refid="jboss-client-jar-fileset" />
 		<fileset refid="jboss-common-lib-jar-fileset" />
+		<fileset refid="jboss-lib-jar-fileset" />
 		<fileset refid="project-lib-jar-fileset" />
 	</path>
 

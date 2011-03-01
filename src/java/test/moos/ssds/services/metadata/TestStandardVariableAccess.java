@@ -18,22 +18,16 @@ package test.moos.ssds.services.metadata;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 
-import javax.ejb.CreateException;
 import javax.naming.NamingException;
 
+import moos.ssds.dao.util.MetadataAccessException;
 import moos.ssds.metadata.StandardUnit;
 import moos.ssds.metadata.StandardVariable;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataFactory;
 import moos.ssds.services.metadata.StandardUnitAccess;
-import moos.ssds.services.metadata.StandardUnitAccessHome;
-import moos.ssds.services.metadata.StandardUnitAccessUtil;
 import moos.ssds.services.metadata.StandardVariableAccess;
-import moos.ssds.services.metadata.StandardVariableAccessHome;
-import moos.ssds.services.metadata.StandardVariableAccessUtil;
-import moos.ssds.dao.util.MetadataAccessException;
 
 import org.apache.log4j.Logger;
 
@@ -68,24 +62,13 @@ public class TestStandardVariableAccess extends TestAccessCase {
 
 		// Grab a standardVariable facade
 		try {
-			standardVariableAccessHome = StandardVariableAccessUtil.getHome();
-			standardUnitAccessHome = StandardUnitAccessUtil.getHome();
-		} catch (NamingException ex) {
-			logger
-					.error("NamingException caught while getting standardVariableAccessHome "
-							+ "from app server: " + ex.getMessage());
-		}
-		try {
-			standardVariableAccess = standardVariableAccessHome.create();
-			standardUnitAccess = standardUnitAccessHome.create();
-		} catch (RemoteException e) {
-			logger
-					.error("RemoteException caught while creating standardVariableAccess interface: "
-							+ e.getMessage());
-		} catch (CreateException e) {
-			logger
-					.error("CreateException caught while creating standardVariableAccess interface: "
-							+ e.getMessage());
+			standardVariableAccess = (StandardVariableAccess) context
+					.lookup("moos/ssds/services/metadata/StandardVariableAccess");
+			standardUnitAccess = (StandardUnitAccess) context
+					.lookup("moos/ssds/services/metadata/StandardUnitAccess");
+		} catch (NamingException e) {
+			logger.error("RemoteException caught while creating standardVariableAccess interface: "
+					+ e.getMessage());
 		}
 
 		try {
@@ -102,13 +85,11 @@ public class TestStandardVariableAccess extends TestAccessCase {
 					.createMetadataObjectFromStringRepresentation(
 							standardUnitTwoStringRep, delimiter);
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two StandardVariable objects: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to create two StandardVariable objects: "
+					+ e.getMessage());
 		} catch (ClassCastException cce) {
-			logger
-					.error("ClassCastException caught trying to create two StandardVariable objects: "
-							+ cce.getMessage());
+			logger.error("ClassCastException caught trying to create two StandardVariable objects: "
+					+ cce.getMessage());
 		}
 	}
 
@@ -150,9 +131,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			persistedStandardVariable = (StandardVariable) standardVariableAccess
 					.findById(standardVariableId, false);
-		} catch (RemoteException e1) {
-			logger.error("RemoteException caught during findById: "
-					+ e1.getMessage());
 		} catch (MetadataAccessException e1) {
 			logger.error("MetadataAccessException caught during findById: "
 					+ e1.getMessage());
@@ -194,8 +172,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 					.findAllReferenceScales().size();
 			countNamesBeforeInsert = standardVariableAccess.findAllNames()
 					.size();
-		} catch (RemoteException e3) {
-			assertTrue("RemoteException caught: " + e3.getMessage(), false);
 		} catch (MetadataAccessException e3) {
 			assertTrue("MetadataAccessException caught: " + e3.getMessage(),
 					false);
@@ -211,17 +187,9 @@ public class TestStandardVariableAccess extends TestAccessCase {
 					.insert(standardVariableOne);
 			standardVariableTwoId = standardVariableAccess
 					.insert(standardVariableTwo);
-		} catch (RemoteException e) {
-			logger
-					.error("RemoteException caught inserting standardVariables in find by test: "
-							+ e.getMessage());
-			assertTrue(
-					"RemoteException caught inserting standardVariables in find by test: "
-							+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
-			logger
-					.error("MetadataAccessException caught inserting standardVariables in find by test: "
-							+ e.getMessage());
+			logger.error("MetadataAccessException caught inserting standardVariables in find by test: "
+					+ e.getMessage());
 			assertTrue(
 					"MetadataAccessException caught inserting standardVariables in find by test: "
 							+ e.getMessage(), false);
@@ -234,9 +202,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			persistedStandardVariableOne = (StandardVariable) standardVariableAccess
 					.findById(standardVariableOneId, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to findById(Long):"
-					+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findById(Long):"
@@ -250,9 +215,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			persistedStandardVariableOne = (StandardVariable) standardVariableAccess
 					.findById(standardVariableOneId.longValue(), false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to findById(long):"
-					+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findById(long):"
@@ -268,9 +230,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			persistedStandardVariableOne = (StandardVariable) standardVariableAccess
 					.findById(standardVariableOneId.toString(), false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to findById(String):"
-					+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findById(String):"
@@ -286,10 +245,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			idByStandardVariableFind = standardVariableAccess
 					.findId(standardVariableOne);
-		} catch (RemoteException e) {
-			assertTrue(
-					"RemoteException caught trying to findId(StandardVariable):"
-							+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findId(StandardVariable):"
@@ -306,10 +261,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 					.findId(standardVariableOne);
 			equivalentStandardVariableOne = (StandardVariable) standardVariableAccess
 					.findById(equivalentId, false);
-		} catch (RemoteException e1) {
-			assertTrue(
-					"RemoteException caught trying to findEquivalentPersistentObject(StandardVariable):"
-							+ e1.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findEquivalentPersistentObject(StandardVariable):"
@@ -325,9 +276,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			allStandardVariables = standardVariableAccess.findAll(null, null,
 					false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to findAll():"
-					+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataAccessException caught trying to findAll():"
 					+ e.getMessage(), false);
@@ -342,10 +290,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 			findByNameAndReferenceScaleStandardVariable = (StandardVariable) standardVariableAccess
 					.findByNameAndReferenceScale("StandardVariable",
 							"StandardVariable one reference scale");
-		} catch (RemoteException e) {
-			assertTrue(
-					"RemoteException caught trying to findByNameAndReferenceScale():"
-							+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findByNameAndReferenceScale():"
@@ -361,10 +305,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 			findByNameAndReferenceScaleStandardVariable = (StandardVariable) standardVariableAccess
 					.findByNameAndReferenceScale("StandardVariableOne",
 							"StandardVariable one reference scale");
-		} catch (RemoteException e) {
-			assertTrue(
-					"RemoteException caught trying to findByNameAndReferenceScale():"
-							+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findByNameAndReferenceScale():"
@@ -383,9 +323,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			nameStandardVariables = standardVariableAccess
 					.findByName("StandardVariableO");
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to findByName():"
-					+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataAccessException caught trying to findByName():"
 					+ e.getMessage(), false);
@@ -399,9 +336,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			nameStandardVariables = standardVariableAccess
 					.findByName("StandardVariableOne");
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to findByName():"
-					+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataAccessException caught trying to findByName():"
 					+ e.getMessage(), false);
@@ -420,9 +354,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			likeNameStandardVariables = standardVariableAccess
 					.findByLikeName("StandardVariableO");
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to findByLikeName():"
-					+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findByLikeName():"
@@ -436,9 +367,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			likeNameStandardVariables = standardVariableAccess
 					.findByLikeName("StandardVariable");
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to findByLikeName():"
-					+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findByLikeName():"
@@ -454,9 +382,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			likeNameStandardVariables = standardVariableAccess
 					.findByLikeName("Hiccup");
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to findByLikeName():"
-					+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findByLikeName():"
@@ -472,10 +397,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			findByReferenceScaleStandardVariables = standardVariableAccess
 					.findByReferenceScale("reference scale");
-		} catch (RemoteException e) {
-			assertTrue(
-					"RemoteException caught trying to findByReferenceScale():"
-							+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findByReferenceScale():"
@@ -487,10 +408,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			findByReferenceScaleStandardVariables = standardVariableAccess
 					.findByReferenceScale("StandardVariable one reference scale");
-		} catch (RemoteException e) {
-			assertTrue(
-					"RemoteException caught trying to findByReferenceScale():"
-							+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findByReferenceScale():"
@@ -511,10 +428,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			likeReferenceScaleStandardVariables = standardVariableAccess
 					.findByLikeReferenceScale("one reference scale");
-		} catch (RemoteException e) {
-			assertTrue(
-					"RemoteException caught trying to findByLikeReferenceScale():"
-							+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findByLikeReferenceScale():"
@@ -531,10 +444,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			likeReferenceScaleStandardVariables = standardVariableAccess
 					.findByLikeReferenceScale("reference scale");
-		} catch (RemoteException e) {
-			assertTrue(
-					"RemoteException caught trying to findByLikeReferenceScale():"
-							+ e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue(
 					"MetadataAccessException caught trying to findByLikeReferenceScale():"
@@ -556,11 +465,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 			allNames = standardVariableAccess.findAllNames();
 			allReferenceScales = standardVariableAccess
 					.findAllReferenceScales();
-		} catch (RemoteException e2) {
-			assertTrue(
-					"RemoteException caught trying to "
-							+ "findAllStandardVariableIDs/findAllStandardVariableNames():"
-							+ e2.getMessage(), false);
 		} catch (MetadataAccessException e2) {
 			assertTrue(
 					"MetadataAccessException caught trying to "
@@ -581,14 +485,14 @@ public class TestStandardVariableAccess extends TestAccessCase {
 				"allReferenceScales should have two more entries",
 				allReferenceScales.size() == (countReferenceScalesBeforeInsert + 2));
 		// Now make sure the ids and/ names are all in the returned collection
-		assertTrue("StandardVariable ID one should be there: ", allIds
-				.contains(standardVariableOneId));
-		assertTrue("StandardVariable ID two should be there: ", allIds
-				.contains(standardVariableTwoId));
-		assertTrue("StandardVariable name one should be there: ", allNames
-				.contains("StandardVariableOne"));
-		assertTrue("StandardVariable name two should be there: ", allNames
-				.contains("StandardVariableTwo"));
+		assertTrue("StandardVariable ID one should be there: ",
+				allIds.contains(standardVariableOneId));
+		assertTrue("StandardVariable ID two should be there: ",
+				allIds.contains(standardVariableTwoId));
+		assertTrue("StandardVariable name one should be there: ",
+				allNames.contains("StandardVariableOne"));
+		assertTrue("StandardVariable name two should be there: ",
+				allNames.contains("StandardVariableTwo"));
 		assertTrue("StandardVariable reference scale one should be there: ",
 				allReferenceScales
 						.contains("StandardVariable one reference scale"));
@@ -599,12 +503,10 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		// Now clean up
 		try {
 			standardVariableAccess.delete(standardVariableOne);
-		} catch (RemoteException e) {
 		} catch (MetadataAccessException e) {
 		}
 		try {
 			standardVariableAccess.delete(standardVariableTwo);
-		} catch (RemoteException e) {
 		} catch (MetadataAccessException e) {
 		}
 	}
@@ -626,9 +528,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			standardVariableOneId = standardVariableAccess
 					.insert(standardVariableOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to "
-					+ "insert standardVariables:" + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataAccessException caught trying to "
 					+ "insert standardVariables" + e.getMessage(), false);
@@ -638,10 +537,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			persistentSVOne = (StandardVariable) standardVariableAccess
 					.findById(standardVariableOneId, true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to "
-					+ "read back the standardvariables:" + e.getMessage(),
-					false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataAccessException caught trying to "
 					+ "read back the standardvariables" + e.getMessage(), false);
@@ -680,23 +575,17 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			persistentSVOne = (StandardVariable) standardVariableAccess
 					.getMetadataObjectGraph(persistentSVOne);
-		} catch (RemoteException e1) {
-			assertTrue("RemoteException caught trying to "
-					+ "get the object graph for persistentSVOne:"
-					+ e1.getMessage(), false);
 		} catch (MetadataAccessException e1) {
-			assertTrue("MetadataAccessException caught trying to "
-					+ "get the		  object graph for persistentSVOne:"
-					+ e1.getMessage(), false);
+			assertTrue(
+					"MetadataAccessException caught trying to "
+							+ "get the		  object graph for persistentSVOne:"
+							+ e1.getMessage(), false);
 		}
 		// OK, now add both standardUnits to the first standardVariable
 		persistentSVOne.addStandardUnit(standardUnitOne);
 		persistentSVOne.addStandardUnit(standardUnitTwo);
 		try {
 			standardVariableAccess.update(persistentSVOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException caught trying to "
-					+ "update persistentSVOne:" + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataAccessException caught trying to "
 					+ "update persistentSVOne:" + e.getMessage(), false);
@@ -742,19 +631,16 @@ public class TestStandardVariableAccess extends TestAccessCase {
 		try {
 			standardVariableAccess.delete(standardVariableOne);
 			standardUnitAccess.delete(standardUnitOne);
-		} catch (RemoteException e) {
 		} catch (MetadataAccessException e) {
 		}
 		try {
 			standardVariableAccess.delete(standardVariableTwo);
 			standardUnitAccess.delete(standardUnitTwo);
-		} catch (RemoteException e) {
 		} catch (MetadataAccessException e) {
 		}
 	}
 
 	// The connection to the service classes
-	StandardVariableAccessHome standardVariableAccessHome = null;
 	StandardVariableAccess standardVariableAccess = null;
 
 	// The test StandardVariables
@@ -775,7 +661,6 @@ public class TestStandardVariableAccess extends TestAccessCase {
 	StandardVariable standardVariableTwo = null;
 
 	// Stuff for the StandardUnits
-	StandardUnitAccessHome standardUnitAccessHome = null;
 	StandardUnitAccess standardUnitAccess = null;
 
 	StandardUnit standardUnitOne = null;

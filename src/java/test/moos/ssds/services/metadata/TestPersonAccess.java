@@ -15,15 +15,11 @@
  */
 package test.moos.ssds.services.metadata;
 
-import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import moos.ssds.dao.util.MetadataAccessException;
 import moos.ssds.metadata.Person;
-import moos.ssds.metadata.UserGroup;
 import moos.ssds.metadata.util.MetadataException;
 
 import org.apache.log4j.Logger;
@@ -88,8 +84,6 @@ public class TestPersonAccess extends TestAccessCase {
 		try {
 			personOneId = PERSON_ACCESS.insert(PERSON_ONE);
 			personTwoId = PERSON_ACCESS.insert(PERSON_TWO);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -104,8 +98,6 @@ public class TestPersonAccess extends TestAccessCase {
 		Person foundOne = null;
 		try {
 			foundOne = (Person) PERSON_ACCESS.findById(personOneId, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -120,8 +112,6 @@ public class TestPersonAccess extends TestAccessCase {
 		try {
 			foundOne = (Person) PERSON_ACCESS.findById(personOneId.longValue(),
 					false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -136,8 +126,6 @@ public class TestPersonAccess extends TestAccessCase {
 		try {
 			foundOne = (Person) PERSON_ACCESS.findById(personOneId.toString(),
 					false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -151,8 +139,6 @@ public class TestPersonAccess extends TestAccessCase {
 		Long foundOneId = null;
 		try {
 			foundOneId = PERSON_ACCESS.findId(PERSON_ONE);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -164,17 +150,15 @@ public class TestPersonAccess extends TestAccessCase {
 		Collection allPersons = null;
 		try {
 			allPersons = PERSON_ACCESS.findAll(null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		assertNotNull("Collection returned by findAll should not be null",
 				allPersons);
-		assertTrue("Collection should contain local person one", allPersons
-				.contains(PERSON_ONE));
-		assertTrue("Collection should contain local person two", allPersons
-				.contains(PERSON_TWO));
+		assertTrue("Collection should contain local person one",
+				allPersons.contains(PERSON_ONE));
+		assertTrue("Collection should contain local person two",
+				allPersons.contains(PERSON_TWO));
 		logger.debug("allPersons = " + allPersons);
 
 		// Now test the findEquivalent persistent object
@@ -183,8 +167,6 @@ public class TestPersonAccess extends TestAccessCase {
 			Long equivalentId = PERSON_ACCESS.findId(PERSON_ONE);
 			persistentOne = (Person) PERSON_ACCESS
 					.findById(equivalentId, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -202,23 +184,19 @@ public class TestPersonAccess extends TestAccessCase {
 		try {
 			byEmail = PERSON_ACCESS.findByEmail(PERSON_ONE.getEmail(), true,
 					null, null, false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		assertNotNull("Collection returned by email should not be null",
 				byEmail);
-		assertTrue("Collection by email should contain person one", byEmail
-				.contains(PERSON_ONE));
+		assertTrue("Collection by email should contain person one",
+				byEmail.contains(PERSON_ONE));
 
 		// Check out the find by username
 		foundOne = null;
 		try {
-			foundOne = (Person) PERSON_ACCESS.findByUsername(PERSON_ONE
-					.getUsername(), false);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
+			foundOne = (Person) PERSON_ACCESS.findByUsername(
+					PERSON_ONE.getUsername(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -233,20 +211,18 @@ public class TestPersonAccess extends TestAccessCase {
 		Collection usernames = null;
 		try {
 			usernames = PERSON_ACCESS.findAllUsernames();
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		assertNotNull("Collection of usernames should not be null", usernames);
 		assertTrue(
 				"Collection of usernames should contain personOne username of "
-						+ PERSON_ONE.getUsername(), usernames
-						.contains(PERSON_ONE.getUsername()));
+						+ PERSON_ONE.getUsername(),
+				usernames.contains(PERSON_ONE.getUsername()));
 		assertTrue(
 				"Collection of usernames should contain PERSON_TWO username of "
-						+ PERSON_TWO.getUsername(), usernames
-						.contains(PERSON_TWO.getUsername()));
+						+ PERSON_TWO.getUsername(),
+				usernames.contains(PERSON_TWO.getUsername()));
 		logger.debug("Usernames = " + usernames);
 		logger.debug("testFindBys done");
 
@@ -263,8 +239,6 @@ public class TestPersonAccess extends TestAccessCase {
 		try {
 			personOneId = PERSON_ACCESS.insert(PERSON_ONE);
 			personTwoId = PERSON_ACCESS.insert(PERSON_TWO);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -280,8 +254,6 @@ public class TestPersonAccess extends TestAccessCase {
 		try {
 			persistentPersonOne = (Person) PERSON_ACCESS.findById(personOneId,
 					true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -298,8 +270,6 @@ public class TestPersonAccess extends TestAccessCase {
 		// Now persist it
 		try {
 			PERSON_ACCESS.update(persistentPersonOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -309,8 +279,6 @@ public class TestPersonAccess extends TestAccessCase {
 		try {
 			persistentPersonOne = (Person) PERSON_ACCESS.findById(personOneId,
 					true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -326,8 +294,6 @@ public class TestPersonAccess extends TestAccessCase {
 		persistentPersonOne.addUserGroup(USER_GROUP_TWO);
 		try {
 			PERSON_ACCESS.update(persistentPersonOne);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -337,8 +303,6 @@ public class TestPersonAccess extends TestAccessCase {
 		try {
 			persistentPersonOne = (Person) PERSON_ACCESS.findById(personOneId,
 					true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -367,15 +331,13 @@ public class TestPersonAccess extends TestAccessCase {
 		Long updatedPersonOneID = null;
 		try {
 			updatedPersonOneID = PERSON_ACCESS.update(PERSON_ONE);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
 		// The IDs should be the same
 		assertNotNull("The updated ID should not be null", updatedPersonOneID);
-		assertEquals("The two IDs should be the same", updatedPersonOneID
-				.longValue(), personOneId.longValue());
+		assertEquals("The two IDs should be the same",
+				updatedPersonOneID.longValue(), personOneId.longValue());
 
 		// Now query back for the person
 		// Now search again by id
@@ -383,8 +345,6 @@ public class TestPersonAccess extends TestAccessCase {
 		try {
 			persistentPersonOne = (Person) PERSON_ACCESS.findById(personOneId,
 					true);
-		} catch (RemoteException e) {
-			assertTrue("RemoteException was thrown: " + e.getMessage(), false);
 		} catch (MetadataAccessException e) {
 			assertTrue("MetadataException was thrown: " + e.getMessage(), false);
 		}
@@ -420,9 +380,6 @@ public class TestPersonAccess extends TestAccessCase {
 
 		try {
 			persistedPerson = (Person) PERSON_ACCESS.findById(personId, false);
-		} catch (RemoteException e1) {
-			logger.error("RemoteException caught during findById: "
-					+ e1.getMessage());
 		} catch (MetadataAccessException e1) {
 			logger.error("MetadataAccessException caught during findById: "
 					+ e1.getMessage());
