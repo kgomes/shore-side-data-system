@@ -47,8 +47,7 @@ import org.hibernate.SessionFactory;
 
 /**
  * This class is a super class for all the service session beans. It provides
- * common functionality and keeps the subclasses clean from some of the EJB
- * callbacks that are necessary
+ * common functionality
  * 
  * @author : $Author: kgomes $
  * @version : $Revision: 1.1.2.20 $
@@ -248,7 +247,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * 
 	 * @see moos.ssds.services.metadata.Access#findAllIDs()
 	 */
-	@Override
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		// Grab the DAO
@@ -299,7 +297,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * java.lang.String, java.lang.Class, boolean)
 	 */
 	@SuppressWarnings("rawtypes")
-	@Override
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<? extends IMetadataObject> findBySQL(String sqlString,
 			String aliasName, Class classOfReturn, boolean returnFullObjectGraph)
@@ -319,7 +316,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * moos.ssds.services.metadata.Access#findId(moos.ssds.metadata.IMetadataObject
 	 * )
 	 */
-	@Override
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Long findId(IMetadataObject metadataObject)
 			throws MetadataAccessException {
@@ -338,7 +334,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * moos.ssds.services.metadata.Access#findEquivalentPersistentObject(moos
 	 * .ssds.metadata.IMetadataObject, boolean)
 	 */
-	@Override
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public IMetadataObject findEquivalentPersistentObject(
 			IMetadataObject metadataObject, boolean returnFullObjectGraph)
@@ -358,7 +353,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * moos.ssds.services.metadata.Access#getMetadataObjectGraph(moos.ssds.metadata
 	 * .IMetadataObject)
 	 */
-	@Override
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public IMetadataObject getMetadataObjectGraph(IMetadataObject metadataObject)
 			throws MetadataAccessException {
@@ -375,7 +369,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * @see moos.ssds.services.metadata.Access#getDeepCopy(moos.ssds.metadata.
 	 * IMetadataObject)
 	 */
-	@Override
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public IMetadataObject getDeepCopy(IMetadataObject metadataObject)
 			throws MetadataAccessException {
@@ -393,7 +386,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * moos.ssds.services.metadata.Access#insert(moos.ssds.metadata.IMetadataObject
 	 * )
 	 */
-	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public Long insert(IMetadataObject insertRecord)
 			throws MetadataAccessException {
@@ -428,7 +420,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * moos.ssds.services.metadata.Access#update(moos.ssds.metadata.IMetadataObject
 	 * )
 	 */
-	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public Long update(IMetadataObject updateRecord)
 			throws MetadataAccessException {
@@ -462,7 +453,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * moos.ssds.services.metadata.Access#delete(moos.ssds.metadata.IMetadataObject
 	 * )
 	 */
-	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void delete(IMetadataObject deleteRecord)
 			throws MetadataAccessException {
@@ -484,7 +474,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * moos.ssds.services.metadata.Access#makePersistent(moos.ssds.metadata.
 	 * IMetadataObject)
 	 */
-	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public Long makePersistent(IMetadataObject metadataObject)
 			throws MetadataAccessException {
@@ -512,7 +501,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * @see moos.ssds.services.metadata.Access#makeTransient(moos.ssds.metadata.
 	 * IMetadataObject)
 	 */
-	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void makeTransient(IMetadataObject deleteRecord)
 			throws MetadataAccessException {

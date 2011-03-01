@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -39,9 +41,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.5 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/ResourceTypeAccess")
+@Local(ResourceTypeAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/ResourceTypeAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(ResourceTypeAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/ResourceTypeAccess")
 public class ResourceTypeAccessEJB extends AccessBean implements
 		ResourceTypeAccess, ResourceTypeAccessLocal {
 
@@ -81,7 +84,7 @@ public class ResourceTypeAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.ResourceTypeAccess#findByName(java.lang.String
 	 * , boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<ResourceType> findByName(String name, boolean exactMatch)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -97,7 +100,7 @@ public class ResourceTypeAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.ResourceTypeAccess#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		ResourceTypeDAO resourceTypeDAO = (ResourceTypeDAO) this

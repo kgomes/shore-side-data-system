@@ -35,9 +35,9 @@ import moos.ssds.metadata.Resource;
 import moos.ssds.metadata.Software;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataFactory;
-import moos.ssds.services.metadata.DataContainerAccess;
-import moos.ssds.services.metadata.DataContainerAccessHome;
-import moos.ssds.services.metadata.DataContainerAccessUtil;
+import moos.ssds.services.metadata.IDataContainerAccess;
+import moos.ssds.services.metadata.IDataContainerAccess;
+import moos.ssds.services.metadata.IDataContainerAccess;
 import moos.ssds.services.metadata.DataProducerAccess;
 import moos.ssds.services.metadata.DataProducerAccessHome;
 import moos.ssds.services.metadata.DataProducerAccessUtil;
@@ -1550,7 +1550,7 @@ public class TestDataProducerAccess extends TestAccessCase {
 
 	// Other services
 	DataContainerAccessHome dataContainerAccessHome = null;
-	DataContainerAccess dataContainerAccess = null;
+	IDataContainerAccess dataContainerAccess = null;
 	PersonAccessHome personAccessHome = null;
 	PersonAccess personAccess = null;
 	DeviceAccessHome deviceAccessHome = null;

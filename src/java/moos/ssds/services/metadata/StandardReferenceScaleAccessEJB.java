@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -40,9 +42,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.4 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/StandardReferenceScaleAccess")
+@Local(StandardReferenceScaleAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/StandardReferenceScaleAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(StandardReferenceScaleAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/StandardReferenceScaleAccess")
 public class StandardReferenceScaleAccessEJB extends AccessBean implements
 		StandardReferenceScaleAccess, StandardReferenceScaleAccessLocal {
 
@@ -83,7 +86,7 @@ public class StandardReferenceScaleAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardReferenceScaleAccessLocal#findByName
 	 * (java.lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<StandardReferenceScale> findByName(String name)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -100,7 +103,7 @@ public class StandardReferenceScaleAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardReferenceScaleAccessLocal#findByLikeName
 	 * (java.lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<StandardReferenceScale> findByLikeName(String likeName)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -118,7 +121,7 @@ public class StandardReferenceScaleAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardReferenceScaleAccessLocal#findAllNames
 	 * ()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		StandardReferenceScaleDAO standardReferenceScaleDAO = (StandardReferenceScaleDAO) this

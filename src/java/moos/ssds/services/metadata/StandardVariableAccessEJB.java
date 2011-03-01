@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -41,9 +43,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.10 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/StandardVariableAccess")
+@Local(StandardVariableAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/StandardVariableAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(StandardVariableAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/StandardVariableAccess")
 public class StandardVariableAccessEJB extends AccessBean implements
 		StandardVariableAccess, StandardVariableAccessLocal {
 
@@ -82,7 +85,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * @see moos.ssds.services.metadata.StandardVariableAccess#
 	 * findByNameAndReferenceScale(java.lang.String, java.lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public IMetadataObject findByNameAndReferenceScale(String name,
 			String referenceScale) throws MetadataAccessException {
 
@@ -102,7 +105,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findByName(java.lang
 	 * .String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<StandardVariable> findByName(String name)
 			throws MetadataAccessException {
 
@@ -121,7 +124,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findByLikeName(java
 	 * .lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<StandardVariable> findByLikeName(String likeName)
 			throws MetadataAccessException {
 
@@ -140,7 +143,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findByReferenceScale
 	 * (java.lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<StandardVariable> findByReferenceScale(
 			String referenceScale) throws MetadataAccessException {
 
@@ -159,7 +162,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findByLikeReferenceScale
 	 * (java.lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<StandardVariable> findByLikeReferenceScale(
 			String likeReferenceScale) throws MetadataAccessException {
 
@@ -176,7 +179,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.StandardVariableAccess#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 
 		// Grab the DAO
@@ -194,7 +197,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findAllReferenceScales
 	 * ()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllReferenceScales()
 			throws MetadataAccessException {
 
@@ -213,7 +216,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findByRecordVariable
 	 * (moos.ssds.metadata.RecordVariable)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public StandardVariable findByRecordVariable(RecordVariable recordVariable)
 			throws MetadataAccessException {
 

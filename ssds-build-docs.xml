@@ -50,7 +50,6 @@
 	<target name="doc-java2html" description="Takes the source code and creates nicely formatted HTML pages of the source">
 		<java classname="j2h" fork='yes'>
 			<arg line="-js '${src.java}'" />
-			<arg line="-js '${src.gen}'" />
 			<arg line="-d '${gen.java2html}'" />
 			<arg line="-m 4" />
 			<arg line="-n 'Project Source - Shore-Side Data System'" />
@@ -78,7 +77,6 @@
 				<include name="moos/ssds/util/**" />
 				<include name="moos/ssds/wrappergenerator/**" />
 			</packageset>
-			<packageset dir="${src.gen}" />
 			<classpath>
 				<path refid="compile-classpath" />
 				<pathelement location="${antlr.jar}" />

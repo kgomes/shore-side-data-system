@@ -21,6 +21,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -43,9 +45,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.6 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/SoftwareAccess")
+@Local(SoftwareAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/SoftwareAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(SoftwareAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/SoftwareAccess")
 public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 		SoftwareAccessLocal {
 
@@ -78,10 +81,13 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 		logger.debug("OK, set DAO Class to PersonDAO");
 	}
 
-	/* (non-Javadoc)
-	 * @see moos.ssds.services.metadata.SoftwareAccess#findByName(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.SoftwareAccess#findByName(java.lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Software> findByName(String name)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -91,10 +97,14 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 		return softwareDAO.findByName(name);
 	}
 
-	/* (non-Javadoc)
-	 * @see moos.ssds.services.metadata.SoftwareAccess#findByLikeName(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.SoftwareAccess#findByLikeName(java.lang.String
+	 * )
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Software> findByLikeName(String likeName)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -104,10 +114,12 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 		return softwareDAO.findByLikeName(likeName);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see moos.ssds.services.metadata.SoftwareAccess#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		SoftwareDAO softwareDAO = (SoftwareDAO) this.getMetadataDAO();
@@ -116,10 +128,14 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 		return softwareDAO.findAllNames();
 	}
 
-	/* (non-Javadoc)
-	 * @see moos.ssds.services.metadata.SoftwareAccess#findByNameAndSoftwareVersion(java.lang.String, java.lang.String, boolean)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.SoftwareAccess#findByNameAndSoftwareVersion
+	 * (java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Software findByNameAndSoftwareVersion(String name, String version,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -130,10 +146,14 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 				returnFullObjectGraph);
 	}
 
-	/* (non-Javadoc)
-	 * @see moos.ssds.services.metadata.SoftwareAccess#findByURIString(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.SoftwareAccess#findByURIString(java.lang.
+	 * String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Software> findByURIString(String uriString)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -143,10 +163,12 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 		return softwareDAO.findByURIString(uriString);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see moos.ssds.services.metadata.SoftwareAccess#findByURI(java.net.URI)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Software> findByURI(URI uri)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -156,10 +178,12 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 		return softwareDAO.findByURI(uri);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see moos.ssds.services.metadata.SoftwareAccess#findByURL(java.net.URL)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Software> findByURL(URL url)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -169,10 +193,14 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 		return softwareDAO.findByURL(url);
 	}
 
-	/* (non-Javadoc)
-	 * @see moos.ssds.services.metadata.SoftwareAccess#findByPerson(moos.ssds.metadata.Person)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * moos.ssds.services.metadata.SoftwareAccess#findByPerson(moos.ssds.metadata
+	 * .Person)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Software> findByPerson(Person person)
 			throws MetadataAccessException {
 		// Grab the DAO

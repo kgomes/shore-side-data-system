@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -39,9 +41,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.13 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/DeviceTypeAccess")
+@Local(DeviceTypeAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/DeviceTypeAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(DeviceTypeAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/DeviceTypeAccess")
 public class DeviceTypeAccessEJB extends AccessBean implements
 		DeviceTypeAccess, DeviceTypeAccessLocal {
 
@@ -81,7 +84,7 @@ public class DeviceTypeAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DeviceTypeAccess#findByName(java.lang.String,
 	 * boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public DeviceType findByName(String name, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 
@@ -99,7 +102,7 @@ public class DeviceTypeAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DeviceTypeAccess#findByLikeName(java.lang
 	 * .String, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DeviceType> findByLikeName(String likeName,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -116,7 +119,7 @@ public class DeviceTypeAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.DeviceTypeAccess#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		DeviceTypeDAO deviceTypeDAO = (DeviceTypeDAO) this.getMetadataDAO();

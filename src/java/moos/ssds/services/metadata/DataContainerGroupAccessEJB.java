@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -41,9 +43,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.5 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/DataContainerGroupAccess")
+@Local(DataContainerGroupAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/DataContainerGroupAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(DataContainerGroupAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/DataContainerGroupAccess")
 public class DataContainerGroupAccessEJB extends AccessBean implements
 		DataContainerGroupAccess, DataContainerGroupAccessLocal {
 
@@ -83,7 +86,7 @@ public class DataContainerGroupAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerGroupAccess#findByName(java.
 	 * lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainerGroup> findByName(String name,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -103,7 +106,7 @@ public class DataContainerGroupAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.DataContainerGroupAccess#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		DataContainerGroupDAO dataContainerGroupDAO = new DataContainerGroupDAO(
@@ -120,7 +123,7 @@ public class DataContainerGroupAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerGroupAccess#findByDataContainer
 	 * (moos.ssds.metadata.DataContainer, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainerGroup> findByDataContainer(
 			DataContainer dataContainer, boolean returnFullObjectGraph)
 			throws MetadataAccessException {

@@ -21,6 +21,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -44,9 +46,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.6 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/ResourceAccess")
+@Local(ResourceAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/ResourceAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(ResourceAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/ResourceAccess")
 public class ResourceAccessEJB extends AccessBean implements ResourceAccess,
 		ResourceAccessLocal {
 
@@ -85,7 +88,7 @@ public class ResourceAccessEJB extends AccessBean implements ResourceAccess,
 	 * @see
 	 * moos.ssds.services.metadata.ResourceAccess#findByName(java.lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Resource> findByName(String name)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -102,7 +105,7 @@ public class ResourceAccessEJB extends AccessBean implements ResourceAccess,
 	 * moos.ssds.services.metadata.ResourceAccess#findByLikeName(java.lang.String
 	 * )
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Resource> findByLikeName(String likeName)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -117,7 +120,7 @@ public class ResourceAccessEJB extends AccessBean implements ResourceAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.ResourceAccess#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		ResourceDAO resourceDAO = (ResourceDAO) this.getMetadataDAO();
@@ -133,7 +136,7 @@ public class ResourceAccessEJB extends AccessBean implements ResourceAccess,
 	 * moos.ssds.services.metadata.ResourceAccess#findByURIString(java.lang.
 	 * String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Resource findByURIString(String uriString)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -148,7 +151,7 @@ public class ResourceAccessEJB extends AccessBean implements ResourceAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.ResourceAccess#findByURI(java.net.URI)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Resource> findByURI(URI uri)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -163,7 +166,7 @@ public class ResourceAccessEJB extends AccessBean implements ResourceAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.ResourceAccess#findByURL(java.net.URL)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Resource> findByURL(URL url)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -180,7 +183,7 @@ public class ResourceAccessEJB extends AccessBean implements ResourceAccess,
 	 * moos.ssds.services.metadata.ResourceAccess#findByMimeType(java.lang.String
 	 * )
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Resource> findByMimeType(String mimeType)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -197,7 +200,7 @@ public class ResourceAccessEJB extends AccessBean implements ResourceAccess,
 	 * moos.ssds.services.metadata.ResourceAccess#findByPerson(moos.ssds.metadata
 	 * .Person)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Resource> findByPerson(Person person)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -214,7 +217,7 @@ public class ResourceAccessEJB extends AccessBean implements ResourceAccess,
 	 * moos.ssds.services.metadata.ResourceAccess#findByResourceType(moos.ssds
 	 * .metadata.ResourceType, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Resource> findByResourceType(ResourceType resourceType,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {

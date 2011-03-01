@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -39,9 +41,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.1 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/RecordVariableAccess")
+@Local(RecordVariableAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/RecordVariableAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(RecordVariableAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/RecordVariableAccess")
 public class RecordVariableAccessEJB extends AccessBean implements
 		RecordVariableAccess, RecordVariableAccessLocal {
 
@@ -81,7 +84,7 @@ public class RecordVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.RecordVariableAccess#findByName(java.lang
 	 * .String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<RecordVariable> findByName(String name,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -102,7 +105,7 @@ public class RecordVariableAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.RecordVariableAccess#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 
 		// Grab the DAO

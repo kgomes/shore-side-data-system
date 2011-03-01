@@ -55,7 +55,7 @@ import moos.ssds.metadata.RecordDescription;
 import moos.ssds.metadata.RecordVariable;
 import moos.ssds.services.data.DeviceDataAccess;
 import moos.ssds.services.data.graphing.GeospatialGraphingAccess;
-import moos.ssds.services.metadata.DataContainerAccess;
+import moos.ssds.services.metadata.IDataContainerAccess;
 import moos.ssds.services.metadata.DataProducerAccess;
 import moos.ssds.services.metadata.DeviceAccess;
 import moos.ssds.util.XmlDateFormat;
@@ -85,7 +85,7 @@ public class DeviceQCPlotCreator {
 
 	private DeviceAccess deva;
 	private DataProducerAccess dprodAccess;
-	private DataContainerAccess dca;
+	private IDataContainerAccess dca;
 	private DeviceDataAccess dda;
 	private GeospatialGraphingAccess gga;
 
@@ -134,7 +134,7 @@ public class DeviceQCPlotCreator {
 					.lookup("moos/ssds/services/metadata/DeviceAccess");
 			dprodAccess = (DataProducerAccess) context
 					.lookup("moos/ssds/services/metadata/DataProducerAccess");
-			dca = (DataContainerAccess) context
+			dca = (IDataContainerAccess) context
 					.lookup("moos/ssds/services/metadata/DataContainerAccess");
 			dda = (DeviceDataAccess) context
 					.lookup("moos/ssds/services/data/DeviceDataAccess");

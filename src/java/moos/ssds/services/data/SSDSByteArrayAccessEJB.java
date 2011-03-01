@@ -21,6 +21,7 @@ import java.util.Enumeration;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.ejb.Local;
 import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
 import javax.ejb.Remove;

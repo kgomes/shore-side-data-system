@@ -2,5 +2,6 @@
 <module>
   <!-- Inherit our applications main module.                      -->
   <inherits name='moos.ssds.SSDSApplication'/>
+  <inherits name="com.google.gwt.junit.JUnit"/>
 
 </module>

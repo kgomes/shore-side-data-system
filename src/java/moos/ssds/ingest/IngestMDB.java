@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
  * @author : $Author: kgomes $
  * @version : $Revision: 1.11.2.1 $ <br>
  */
-@MessageDriven(activationConfig = {
+@MessageDriven(name="IngestMDB", activationConfig = {
 		@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
 		@ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/SSDSIngestTopic"),
 		@ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable") })

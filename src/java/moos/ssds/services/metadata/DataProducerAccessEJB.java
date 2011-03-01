@@ -20,6 +20,8 @@ import java.util.Date;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -48,9 +50,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.25 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/DataProducerAccess")
+@Local(DataProducerAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/DataProducerAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(DataContainerAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/DataProducerAccess")
 public class DataProducerAccessEJB extends AccessBean implements
 		DataProducerAccess, DataProducerAccessLocal {
 
@@ -94,7 +97,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Float, java.lang.Float, java.lang.String, boolean,
 	 * java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByProperties(String name,
 			boolean exactMatch, String dataProducerType, Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
@@ -130,7 +133,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Float, java.lang.Float,
 	 * java.lang.Float, java.lang.Float, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByProperties(String name, boolean exactMatch,
 			String dataProducerType, Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
@@ -160,7 +163,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByName(java.lang.String
 	 * , boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByName(String name, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -181,7 +184,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#countFindByName(java.lang
 	 * .String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByName(String name, boolean exactMatch)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -200,7 +203,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * (java.lang.String, java.lang.String, java.lang.String, java.lang.String,
 	 * boolean, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByDataProducerTypeAndName(
 			String dataProducerType, String name, String orderByPropertyName,
 			String ascendingOrDescending, boolean exactMatch,
@@ -222,7 +225,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * countFindByDataProducerTypeAndName(java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByDataProducerTypeAndName(String dataProducerType,
 			String name, boolean exactMatch) throws MetadataAccessException {
 		// Grab the DAO
@@ -241,7 +244,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findParentlessDeployments
 	 * (java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findParentlessDeployments(
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -261,7 +264,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#countFindParentlessDeployments
 	 * ()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindParentlessDeployments() throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
@@ -278,7 +281,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findParentlessDataProducers
 	 * (java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findParentlessDataProducers(
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -297,7 +300,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * @see moos.ssds.services.metadata.DataProducerAccess#
 	 * countFindParentlessDataProducers()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindParentlessDataProducers()
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -316,7 +319,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * (java.util.Date, boolean, java.util.Date, boolean, java.lang.String,
 	 * boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByDateRangeAndName(Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			String name, boolean exactMatch, String orderByPropertyName,
@@ -341,7 +344,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * (java.util.Date, boolean, java.util.Date, boolean, java.lang.String,
 	 * boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByDateRangeAndName(Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			String name, boolean exactMatch) throws MetadataAccessException {
@@ -364,7 +367,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Float, java.lang.Float, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByGeospatialCube(
 			Double geospatialLatMin, Double geospatialLatMax,
 			Double geospatialLonMin, Double geospatialLonMax,
@@ -391,7 +394,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * (java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Double,
 	 * java.lang.Float, java.lang.Float)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByGeospatialCube(Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
 			Double geospatialLonMax, Float geospatialVerticalMin,
@@ -415,7 +418,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
 	 * java.lang.Float, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByTimeAndGeospatialCube(Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			Double geospatialLatMin, Double geospatialLatMax,
@@ -444,7 +447,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * boolean, java.lang.Double, java.lang.Double, java.lang.Double,
 	 * java.lang.Double, java.lang.Float, java.lang.Float)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByTimeAndGeospatialCube(Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
 			Double geospatialLatMin, Double geospatialLatMax,
@@ -470,7 +473,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Float, java.lang.Float,
 	 * java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByNameAndGeospatialCube(String name,
 			boolean exactMatch, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
@@ -498,7 +501,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Double,
 	 * java.lang.Float, java.lang.Float)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByNameAndGeospatialCube(String name,
 			boolean exactMatch, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
@@ -524,7 +527,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
 	 * java.lang.Float, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByNameAndTimeAndGeospatialCube(
 			String name, boolean exactMatch, Date startDate,
 			boolean boundedByStartDate, Date endDate, boolean boundedByEndDate,
@@ -555,7 +558,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
 	 * java.lang.Float)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByNameAndTimeAndGeospatialCube(String name,
 			boolean exactMatch, Date startDate, boolean boundedByStartDate,
 			Date endDate, boolean boundedByEndDate, Double geospatialLatMin,
@@ -581,7 +584,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByHostName(java.lang
 	 * .String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByHostName(String hostName,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -603,7 +606,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#countFindByHostName(java
 	 * .lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByHostName(String hostName, boolean exactMatch)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -621,7 +624,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByPerson(moos.ssds
 	 * .metadata.Person, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByPerson(Person person,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -641,7 +644,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#countFindByPerson(moos
 	 * .ssds.metadata.Person)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByPerson(Person person) throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerDAO dataProducerDAO = (DataProducerDAO) this
@@ -658,7 +661,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByDevice(moos.ssds
 	 * .metadata.Device, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByDevice(Device device,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -678,7 +681,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByDeviceId(java.lang
 	 * .Long, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByDeviceId(Long deviceId,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -699,7 +702,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * (moos.ssds.metadata.Device, java.util.Date, java.util.Date,
 	 * java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByDeviceAndTimeWindow(Device device,
 			Date startDate, Date endDate, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -721,7 +724,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByDeviceTypeName(java
 	 * .lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByDeviceTypeName(String deviceTypeName,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -743,7 +746,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * findCurrentParentlessDeployments(java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findCurrentParentlessDeployments(
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -764,7 +767,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * findParentlessDeploymentsByName(java.lang.String, boolean,
 	 * java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findParentlessDeploymentsByName(
 			String name, boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -786,7 +789,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findCurrentDeployments
 	 * (java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findCurrentDeployments(
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -806,7 +809,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findCurrentDeploymentsOfDevice
 	 * (moos.ssds.metadata.Device, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findCurrentDeploymentsOfDevice(
 			Device device, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -828,7 +831,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * findCurrentDeploymentsOfDeviceId(java.lang.Long, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findCurrentDeploymentsOfDeviceId(
 			Long deviceId, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -850,7 +853,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findCurrentDeploymentsByRole
 	 * (java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findCurrentDeploymentsByRole(String role,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException,
@@ -872,7 +875,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * findCurrentDeploymentsByRoleAndName(java.lang.String, java.lang.String,
 	 * boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findCurrentDeploymentsByRoleAndName(
 			String role, String name, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -896,7 +899,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findBySoftware(moos.ssds
 	 * .metadata.Software, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findBySoftware(Software software,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -916,7 +919,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findParentDataProducer
 	 * (moos.ssds.metadata.DataProducer, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public DataProducer findParentDataProducer(DataProducer dataProducer,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -934,7 +937,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * @see moos.ssds.services.metadata.DataProducerAccess#
 	 * findClosestParentDataProducerLatitude(moos.ssds.metadata.DataProducer)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Double findClosestParentDataProducerLatitude(
 			DataProducer dataProducer) throws MetadataAccessException {
 		// Grab the DAO
@@ -953,7 +956,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findChildDataProducers
 	 * (moos.ssds.metadata.DataProducer, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findChildDataProducers(
 			DataProducer dataProducer, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -973,7 +976,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#countFindChildDataProducers
 	 * (moos.ssds.metadata.DataProducer)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindChildDataProducers(DataProducer dataProducer)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -992,7 +995,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * (moos.ssds.metadata.DataProducerGroup, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByDataProducerGroup(
 			DataProducerGroup dataProducerGroup, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -1014,7 +1017,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByDataProducerGroupName
 	 * (java.lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByDataProducerGroupName(
 			String dataProducerGroupName, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -1035,7 +1038,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * @see moos.ssds.services.metadata.DataProducerAccess#
 	 * countFindByDataProducerGroupName(java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByDataProducerGroupName(String dataProducerGroupName,
 			boolean exactMatch) throws MetadataAccessException {
 		// Grab the DAO
@@ -1054,7 +1057,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByInput(moos.ssds.
 	 * metadata.DataContainer, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByInput(DataContainer dataContainer,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -1074,7 +1077,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByOutput(moos.ssds
 	 * .metadata.DataContainer, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public DataProducer findByOutput(DataContainer dataContainer,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -1094,7 +1097,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByResource(moos.ssds
 	 * .metadata.Resource, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByResource(Resource resource,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -1114,7 +1117,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByKeywordName(java
 	 * .lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByKeywordName(String keywordName,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -1136,7 +1139,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#findByEvent(moos.ssds.
 	 * metadata.Event, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findByEvent(Event event,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -1156,7 +1159,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * findAllDeploymentsOfDeviceTypeFromParent(moos.ssds.metadata.DataProducer,
 	 * java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findAllDeploymentsOfDeviceTypeFromParent(
 			DataProducer parentDeployment, String deviceTypeName,
 			String orderByProperty, String ascendingOrDescending,
@@ -1181,7 +1184,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Float, java.lang.Double, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducer> findAllDeploymentsOfDeviceTypeFromParent(
 			Long parentID, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
@@ -1211,7 +1214,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Float, java.lang.Double, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findDevicesByParentByTypeAndByLocation(
 			Long parentID, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
@@ -1240,7 +1243,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Float, java.lang.Double, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findDevicesByParentByTypeAndByLocation(
 			String parentName, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
@@ -1269,7 +1272,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
 	 * java.lang.Double, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findAllDevicesByParentDeploymentByTypeAndByLocation(
 			DataProducer parentDeployment, String deviceTypeName,
 			Double nominalLongitude, Double longitudeTolerance,
@@ -1300,7 +1303,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Float, java.lang.Double, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findAllDevicesByParentByTypeAndByLocation(
 			Long parentID, String deviceTypeName, Double nominalLongitude,
 			Double longitudeTolerance, Double nominalLatitude,
@@ -1328,7 +1331,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#addChildDataProducer(moos
 	 * .ssds.metadata.DataProducer, moos.ssds.metadata.DataProducer)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public void addChildDataProducer(DataProducer parentDataProducer,
 			DataProducer childDataProducer) throws MetadataAccessException {
 		// Grab the DAO
@@ -1347,7 +1350,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#addResource(moos.ssds.
 	 * metadata.DataProducer, moos.ssds.metadata.Resource)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void addResource(DataProducer dataProducer, Resource resourceToAdd)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -1365,7 +1368,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#removeResource(moos.ssds
 	 * .metadata.DataProducer, moos.ssds.metadata.Resource)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void removeResource(DataProducer dataProducer, Resource resource)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -1384,7 +1387,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * (moos.ssds.metadata.DataProducer, java.util.Date, boolean,
 	 * java.util.Date, java.lang.String, java.lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public Long createDuplicateDeepDeployment(DataProducer deploymentToCopy,
 			Date newStartDate, boolean closeOld, Date oldEndDate,
 			String newHeadDeploymentName, String baseDataStreamUri)
@@ -1407,7 +1410,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#deepDelete(moos.ssds.metadata
 	 * .DataProducer)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void deepDelete(DataProducer dataProducer)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -1425,7 +1428,7 @@ public class DataProducerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerAccess#makeDeepTransient(moos
 	 * .ssds.metadata.DataProducer)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public void makeDeepTransient(DataProducer dataProducer)
 			throws MetadataAccessException {
 		// Grab the DAO

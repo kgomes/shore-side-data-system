@@ -52,7 +52,7 @@ import org.mbari.siam.distributed.DevicePacket;
  * @author : $Author: kgomes $
  * @version : $Revision: 1.13.2.1 $
  */
-@MessageDriven(activationConfig = {
+@MessageDriven(name = "TransmogrifyMDB", activationConfig = {
 		@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
 		@ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/SSDSTransmogTopic"),
 		@ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable") })
@@ -235,9 +235,8 @@ public class TransmogrifyMDB implements MessageListener {
 				}
 
 				// Now convert it to a BytesMessage and publish it
-				this
-						.publishSSDSFormattedBytes(PacketUtility
-								.convertSSDSDevicePacketToVersion3SSDSByteArray(ssdsDevicePacket));
+				this.publishSSDSFormattedBytes(PacketUtility
+						.convertSSDSDevicePacketToVersion3SSDSByteArray(ssdsDevicePacket));
 			} else {
 				logger.error("The incoming ObjectMessage did not "
 						+ "contain a DevicePacket.");
