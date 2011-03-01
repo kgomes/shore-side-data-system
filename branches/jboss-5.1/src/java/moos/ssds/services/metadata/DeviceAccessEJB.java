@@ -19,6 +19,11 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.DeviceDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -30,6 +35,8 @@ import moos.ssds.metadata.RecordVariable;
 
 import org.apache.log4j.Logger;
 import org.doomdark.uuid.UUID;
+import org.jboss.ejb3.annotation.LocalBinding;
+import org.jboss.ejb3.annotation.RemoteBinding;
 
 /**
  * Provides a facade that provides client services for Device objects.
@@ -38,6 +45,11 @@ import org.doomdark.uuid.UUID;
  * @author : $Author: kgomes $
  * @version : $Revision: 1.1.2.21 $
  */
+@Stateless
+@Local(DeviceAccessLocal.class)
+@LocalBinding(jndiBinding = "moos/ssds/services/metadata/DeviceAccessLocal")
+@Remote(DeviceAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/DeviceAccess")
 public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 		DeviceAccessLocal {
 
@@ -77,7 +89,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * moos.ssds.services.metadata.DeviceAccess#findByUuid(java.lang.String,
 	 * boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Device findByUuid(String uuid, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 
@@ -92,7 +104,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.DeviceAccess#findByUuid(byte[], boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Device findByUuid(byte[] uuidAsBytes, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 
@@ -114,7 +126,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * moos.ssds.services.metadata.DeviceAccess#findByName(java.lang.String,
 	 * boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findByName(String name, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -133,7 +145,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * .String, boolean, java.lang.String, boolean, java.lang.String, boolean,
 	 * java.lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findByNameAndMfgInfo(String name,
 			boolean nameExactMatch, String mfgName, boolean mfgNameExactMatch,
 			String mfgModel, boolean mfgModelExactMatch,
@@ -159,7 +171,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * moos.ssds.services.metadata.DeviceAccess#findByPerson(moos.ssds.metadata
 	 * .Person, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findByPerson(Person person,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -179,7 +191,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * moos.ssds.services.metadata.DeviceAccess#findByDeviceType(moos.ssds.metadata
 	 * .DeviceType, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findByDeviceType(DeviceType deviceType,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -197,7 +209,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.DeviceAccess#findAllIDs()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Long> findAllIDs() throws MetadataAccessException {
 
 		// Grab the DAO
@@ -212,7 +224,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.DeviceAccess#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		DeviceDAO deviceDAO = (DeviceDAO) this.getMetadataDAO();
@@ -228,7 +240,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * moos.ssds.services.metadata.DeviceAccess#findAllDeviceDeployedUnderParent
 	 * (moos.ssds.metadata.DataProducer, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findAllDeviceDeployedUnderParent(
 			DataProducer parentDataProducer, boolean currentOnly)
 			throws MetadataAccessException {
@@ -245,7 +257,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.DeviceAccess#findAllManufacturerNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllManufacturerNames()
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -261,7 +273,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * @see
 	 * moos.ssds.services.metadata.DeviceAccess#findMfgModels(java.lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findMfgModels(String mfgName)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -278,7 +290,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * moos.ssds.services.metadata.DeviceAccess#findMfgSerialNumbers(java.lang
 	 * .String, java.lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findMfgSerialNumbers(String mfgName,
 			String mfgModel) throws MetadataAccessException {
 		// Grab the DAO
@@ -295,7 +307,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * moos.ssds.services.metadata.DeviceAccess#findByRecordVariable(moos.ssds
 	 * .metadata.RecordVariable, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Device findByRecordVariable(RecordVariable recordVariable,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 
@@ -316,7 +328,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findBySearchingFields(String id, String uuid,
 			String name, String description, String mfgModel, String mfgName,
 			String mfgSerialNumber, String orderByPropertyName,
@@ -338,7 +350,7 @@ public class DeviceAccessEJB extends AccessBean implements DeviceAccess,
 	 * moos.ssds.services.metadata.DeviceAccess#findBySearchingAllFieldsAndType
 	 * (java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Device> findBySearchingAllFieldsAndType(
 			String searchTerm, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)

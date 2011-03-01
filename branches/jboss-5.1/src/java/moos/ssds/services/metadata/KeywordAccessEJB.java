@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -40,9 +42,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.5 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/KeywordAccess")
+@Local(KeywordAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/KeywordAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(KeywordAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/KeywordAccess")
 public class KeywordAccessEJB extends AccessBean implements KeywordAccess,
 		KeywordAccessLocal {
 
@@ -82,7 +85,7 @@ public class KeywordAccessEJB extends AccessBean implements KeywordAccess,
 	 * moos.ssds.services.metadata.KeywordAccess#findByName(java.lang.String,
 	 * boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Keyword> findByName(String name, boolean exactMatch)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -97,7 +100,7 @@ public class KeywordAccessEJB extends AccessBean implements KeywordAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.KeywordAccess#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		KeywordDAO keywordDAO = (KeywordDAO) this.getMetadataDAO();
@@ -113,7 +116,7 @@ public class KeywordAccessEJB extends AccessBean implements KeywordAccess,
 	 * moos.ssds.services.metadata.KeywordAccess#findByMetadataObject(moos.ssds
 	 * .metadata.IMetadataObject)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Keyword> findByMetadataObject(
 			IMetadataObject metadataObject) throws MetadataAccessException {
 		// Grab the DAO

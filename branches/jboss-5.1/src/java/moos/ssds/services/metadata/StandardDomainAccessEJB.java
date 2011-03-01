@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -39,9 +41,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.4 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/StandardDomainAccess")
+@Local(StandardDomainAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/StandardDomainAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(StandardDomainAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/StandardDomainAccess")
 public class StandardDomainAccessEJB extends AccessBean implements
 		StandardDomainAccess, StandardDomainAccessLocal {
 
@@ -81,7 +84,7 @@ public class StandardDomainAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardDomainAccess#findByName(java.lang
 	 * .String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<StandardDomain> findByName(String name)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -99,7 +102,7 @@ public class StandardDomainAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardDomainAccess#findByLikeName(java.
 	 * lang.String)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<StandardDomain> findByLikeName(String likeName)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -115,7 +118,7 @@ public class StandardDomainAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.StandardDomainAccess#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		StandardDomainDAO standardDomainDAO = (StandardDomainDAO) this

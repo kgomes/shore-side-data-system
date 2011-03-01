@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -41,9 +43,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @version : $Revision: 1.1.2.6 $
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/DataProducerGroupAccess")
+@Local(DataProducerGroupAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/metadata/DataProducerGroupAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(DataProducerGroupAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/metadata/DataProducerGroupAccess")
 public class DataProducerGroupAccessEJB extends AccessBean implements
 		DataProducerGroupAccess, DataProducerGroupAccessLocal {
 
@@ -83,7 +86,7 @@ public class DataProducerGroupAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerGroupAccessLocal#findByName(java
 	 * .lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducerGroup> findByName(String name,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -104,7 +107,7 @@ public class DataProducerGroupAccessEJB extends AccessBean implements
 	 * @see
 	 * moos.ssds.services.metadata.DataProducerGroupAccessLocal#findAllNames()
 	 */
-	@Override
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerGroupDAO dataProducerGroupDAO = (DataProducerGroupDAO) this

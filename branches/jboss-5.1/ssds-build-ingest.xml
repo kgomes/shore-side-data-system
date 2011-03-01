@@ -127,7 +127,7 @@
 		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
 			<src path="${src.java}" />
 			<include name="moos/ssds/ingest/**/*.java" />
-			<include name="moos/ssds/servlet/data/IngestServlet.java" />
+			<include name="moos/ssds/services/servlet/data/IngestServlet.java" />
 			<include name="moos/ssds/io/**/*.java" />
 			<include name="moos/ssds/jms/**/*.java" />
 			<include name="moos/ssds/util/**/*.java" />

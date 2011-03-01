@@ -2,12 +2,9 @@ package moos.ssds.services.metadata;
 
 import java.util.Collection;
 
-import javax.ejb.Remote;
-
 import moos.ssds.dao.util.MetadataAccessException;
 import moos.ssds.metadata.Person;
 
-@Remote
 public interface IPersonAccess extends IMetadataAccess {
 
 	/**

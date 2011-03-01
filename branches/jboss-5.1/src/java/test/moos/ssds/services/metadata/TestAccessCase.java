@@ -42,9 +42,9 @@ import moos.ssds.metadata.StandardVariable;
 import moos.ssds.metadata.UserGroup;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.MetadataFactory;
-import moos.ssds.services.metadata.DataContainerAccess;
-import moos.ssds.services.metadata.DataContainerAccessHome;
-import moos.ssds.services.metadata.DataContainerAccessUtil;
+import moos.ssds.services.metadata.IDataContainerAccess;
+import moos.ssds.services.metadata.IDataContainerAccess;
+import moos.ssds.services.metadata.IDataContainerAccess;
 import moos.ssds.services.metadata.DataProducerAccess;
 import moos.ssds.services.metadata.DataProducerAccessHome;
 import moos.ssds.services.metadata.DataProducerAccessUtil;
@@ -1128,7 +1128,7 @@ public abstract class TestAccessCase extends TestCase {
 	static DataProducerAccess DATA_PRODUCER_ACCESS = null;
 
 	static DataContainerAccessHome DATA_CONTAINER_ACCESS_HOME = null;
-	static DataContainerAccess DATA_CONTAINER_ACCESS = null;
+	static IDataContainerAccess DATA_CONTAINER_ACCESS = null;
 
 	static RecordVariableAccessHome RECORD_VARIABLE_ACCESS_HOME = null;
 	static RecordVariableAccess RECORD_VARIABLE_ACCESS = null;

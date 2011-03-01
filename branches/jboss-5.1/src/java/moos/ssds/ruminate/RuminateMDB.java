@@ -30,21 +30,22 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.TimeZone;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.CreateException;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
 import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicPublisher;
-import javax.jms.TopicSession;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import moos.ssds.dao.util.MetadataAccessException;
@@ -262,198 +263,134 @@ public class RuminateMDB implements MessageListener {
 	private String republishTopicName = null;
 
 	/**
-	 * This is the JNDI Context that will be used (Naming Service) to locate the
-	 * appropriate remote classes to use for publishing messages.
-	 */
-	private Context jndiContext = null;
-
-	/**
-	 * The TopicConnectionFactory that will be used to republish messages
-	 */
-	private TopicConnectionFactory topicConnectionFactory = null;
-
-	/**
-	 * This is the connection to the topic that the messages will be published
-	 * to
-	 */
-	private TopicConnection topicConnection = null;
-
-	/**
-	 * This is the JMS topic that will be used for publishing
-	 */
-	private Topic topic = null;
-
-	/**
-	 * This is a session that the publishing of messages will be run in.
-	 */
-	private TopicSession topicSession = null;
-
-	/**
-	 * This is the topic publisher that is actually used to send messages to the
-	 * topic
-	 */
-	private TopicPublisher topicPublisher = null;
-
-	/**
 	 * This is a boolean to indicated if the publishing is setup and working
 	 * correctly
 	 */
 	private boolean publishingSetup = false;
 
 	/**
-	 * This is the default constructor
+	 * The ConnectionFactory that will be injected by the container
 	 */
-	public RuminateMDB() {
-
-	} // End Constructor
-
-	/**
-	 * This is the callback that the container uses to set the
-	 * MessageDrivenContext
-	 */
-	public void setMessageDrivenContext(javax.ejb.MessageDrivenContext context) {
-		// Set the context
-		ctx = context;
-	} // End setMessageDrivenContext
+	@javax.annotation.Resource(mappedName = "ConnectionFactory")
+	private ConnectionFactory connectionFactory;
 
 	/**
-	 * This is the callback that the container uses to create this bean
+	 * This is the JMS destination that will be published to and will be
+	 * injected by the container
 	 */
-	public void ejbCreate() {
-		logger.debug("RuminateMDB ejbCreate called.");
+	@javax.annotation.Resource(mappedName = "topic/SSDSRuminateRepublishTopic")
+	private Destination destination;
+
+	/**
+	 * This is the connection to the topic that the messages will be published
+	 * to
+	 */
+	private Connection connection = null;
+
+	/**
+	 * This is a session that the publishing of messages will be run in.
+	 */
+	private Session session = null;
+
+	/**
+	 * This is the message producer that is actually used to send messages to
+	 * the
+	 */
+	private MessageProducer messageProducer = null;
+
+	/**
+	 * This method sets up the internal properties and message producer
+	 * utilizing resources from the container
+	 */
+	@PostConstruct
+	public void setup() {
+		logger.debug("setup called.");
 		// Read in the ruminate properties file
 		try {
 			properties.load(this.getClass().getResourceAsStream(
 					"/moos/ssds/ruminate/ruminate.properties"));
 			logger.debug("ruminate.properties should have read in.");
 		} catch (IOException e) {
+			logger.error("IOException caught trying to read "
+					+ "ruminate.properties in setup of RuminateMDB: "
+					+ e.getMessage());
 			e.printStackTrace();
 		}
 
 		// Set the base URL for data stream
 		this.dataStreamBaseURL = properties
 				.getProperty("ruminate.ssds.datastream.servlet.base.url");
+		logger.debug("Base data stream URL will be " + this.dataStreamBaseURL);
 
-		// Grab the new to republish to
-		this.republishTopicName = properties
-				.getProperty("ssds.ruminate.republish.topic.name");
-
-		// Now try to connect up to SSDS
-		try {
-			connected = this.connectToSSDS();
-		} catch (Exception e) {
-			e.printStackTrace();
+		// Make sure the connection factory is there
+		if (connectionFactory != null) {
+			// Create a connection
+			try {
+				connection = connectionFactory.createConnection();
+			} catch (JMSException e) {
+				logger.error("JMSException caught trying to create "
+						+ "the connection from the "
+						+ "injected connection factory: " + e.getMessage());
+			}
+			if (connection != null) {
+				// Create a session
+				try {
+					session = connection.createSession(false,
+							Session.AUTO_ACKNOWLEDGE);
+				} catch (JMSException e) {
+					logger.error("JMSException caught trying to create "
+							+ "the session from the connection:"
+							+ e.getMessage());
+				}
+				if (session != null) {
+					if (destination != null) {
+						// Create a message producer
+						try {
+							messageProducer = session
+									.createProducer(destination);
+						} catch (JMSException e) {
+							logger.error("JMSException caught trying "
+									+ "to create the producer from the "
+									+ "session: " + e.getMessage());
+						}
+						if (messageProducer == null)
+							logger.error("Was not able to "
+									+ "create a MessageProducer");
+					} else {
+						logger.error("The destination that was to be "
+								+ "injected by the container "
+								+ "appears to be null");
+					}
+				} else {
+					logger.error("Could not seem to create a "
+							+ "session from the connection");
+				}
+			} else {
+				logger.error("Could not seem to create a connection "
+						+ "using the injected connection factory");
+			}
+		} else {
+			logger.error("ConnectionFactory is NULL and should "
+					+ "have been injected by the container!");
 		}
 
-		// Setup publishing
-		this.setupPublishing();
-	}
-
-	private boolean connectToSSDS() {
-		boolean connectedToSSDS = true;
-		// Now return the result
-		return connectedToSSDS;
-	}
-
-	/**
-	 * This method sets up the publishing so the the message driven bean can
-	 * republish the message after doing its thing.
-	 * 
-	 * @return a <code>boolean</code> that indicates if the setup went OK or not
-	 */
-	private boolean setupPublishing() {
-		// First tear down any existing connections
-		this.tearDownPublishing();
-		this.publishingSetup = false;
-
-		// Set a flag to track success of setup
-		boolean setupOK = true;
-		// First get the naming context from the container
-		try {
-			this.jndiContext = new InitialContext();
-			topicConnectionFactory = (TopicConnectionFactory) jndiContext
-					.lookup("java:/ConnectionFactory");
-			this.topicConnection = topicConnectionFactory
-					.createTopicConnection();
-			this.topic = (Topic) jndiContext.lookup(this.republishTopicName);
-			this.topicSession = this.topicConnection.createTopicSession(false,
-					Session.AUTO_ACKNOWLEDGE);
-			this.topicConnection.start();
-			this.topicPublisher = topicSession.createPublisher(this.topic);
-		} catch (NamingException e) {
-			logger.error("NamingException caught in setupPublishing: "
-					+ e.getMessage());
-			this.publishingSetup = false;
-			setupOK = false;
-		} catch (JMSException e) {
-			logger.error("JMSException caught in setupPublishing: "
-					+ e.getMessage());
-			this.publishingSetup = false;
-			setupOK = false;
-		} catch (Exception e) {
-			logger.error("Exception caught in setupPublishing: "
-					+ e.getMessage());
-			this.publishingSetup = false;
-			setupOK = false;
-		}
-		this.publishingSetup = true;
-		return setupOK;
 	}
 
 	/**
 	 * This method stops all the JMS components
-	 * 
-	 * @return
 	 */
-	private boolean tearDownPublishing() {
-		this.publishingSetup = false;
-		boolean tearDownOK = true;
+	@PreDestroy
+	public void tearDownPublishing() {
 		try {
-			// Close up everything
-			if (this.topicPublisher != null) {
-				this.topicPublisher.close();
-				this.topicPublisher = null;
-			}
-			// Now stop the connection
-			if (this.topicConnection != null) {
-				this.topicConnection.stop();
-			}
-			// Now close the session
-			if (this.topicSession != null) {
-				this.topicSession.close();
-				this.topicSession = null;
-			}
 			// Now close the connection
-			if (this.topicConnection != null) {
-				this.topicConnection.close();
-				this.topicConnection = null;
+			if (connection != null) {
+				connection.close();
 			}
-			// Now close the jndi context
-			if (this.jndiContext != null) {
-				this.jndiContext.close();
-				this.jndiContext = null;
-			}
-			// Null out the topic connection factory
-			this.topicConnectionFactory = null;
 		} catch (JMSException e) {
-			logger.error("Tear down caught a JMSException " + e.getMessage());
-			tearDownOK = false;
-		} catch (NamingException e) {
-			logger.error("Tear down caught a NameException " + e.getMessage());
-			tearDownOK = false;
-		} catch (Exception e) {
-			logger.error("Tear down caught a Exception " + e.getMessage());
-			tearDownOK = false;
+			logger.error("JMSException caught trying to close the connection: "
+					+ e.getMessage());
 		}
-		return tearDownOK;
 	}
-
-	/**
-	 * This is the callback that the container uses when removing this bean
-	 */
-	public void ejbRemove() {
-		this.tearDownPublishing();
-	} // End ejbRemove
 
 	/**
 	 * This is the callback method that the container calls when a message is
@@ -506,11 +443,6 @@ public class RuminateMDB implements MessageListener {
 			packetDate = new Date();
 			packetDate.setTime(packetTimestamp);
 
-			// Connect if not connected to SSDS
-			if (!connected) {
-				logger.debug("MetadataHandler was not connected to SSDS, will try to do so now");
-				connected = this.connectToSSDS();
-			}
 			if (connected) {
 				// Processing steps
 				logger.debug("Saving the XML to a file: ");
@@ -1433,10 +1365,6 @@ public class RuminateMDB implements MessageListener {
 	 */
 	private void republishModel() {
 
-		// Make sure publishing is setup first
-		if (!this.publishingSetup)
-			this.setupPublishing();
-
 		// Grab the XML Builder
 		XmlBuilder xmlBuilder = new XmlBuilder();
 
@@ -1479,7 +1407,7 @@ public class RuminateMDB implements MessageListener {
 			// Create a TextMessage
 			TextMessage textMessage = null;
 			try {
-				textMessage = topicSession.createTextMessage(xmlBuilder
+				textMessage = session.createTextMessage(xmlBuilder
 						.toFormattedXML());
 			} catch (UnsupportedEncodingException e) {
 				logger.error("UnsupportedEncodingException caught trying to build text message: "
@@ -1494,7 +1422,7 @@ public class RuminateMDB implements MessageListener {
 
 			if (textMessage != null) {
 				try {
-					topicPublisher.publish(textMessage);
+					messageProducer.send(textMessage);
 				} catch (JMSException e) {
 					logger.error("JMSException caught trying to publish text message");
 				}

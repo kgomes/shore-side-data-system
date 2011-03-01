@@ -73,9 +73,9 @@ import moos.ssds.metadata.ResourceType;
 import moos.ssds.metadata.Software;
 import moos.ssds.metadata.StandardVariable;
 import moos.ssds.metadata.util.MetadataException;
-import moos.ssds.services.metadata.DataContainerAccess;
-import moos.ssds.services.metadata.DataContainerAccessHome;
-import moos.ssds.services.metadata.DataContainerAccessUtil;
+import moos.ssds.services.metadata.IDataContainerAccess;
+import moos.ssds.services.metadata.IDataContainerAccess;
+import moos.ssds.services.metadata.IDataContainerAccess;
 import moos.ssds.services.metadata.DataProducerAccess;
 import moos.ssds.services.metadata.DataProducerAccessHome;
 import moos.ssds.services.metadata.DataProducerAccessUtil;
@@ -2641,7 +2641,7 @@ public class UpdateBot {
      * These are the necessary data access interfaces
      */
     private DataProducerAccess dpa = null;
-    private DataContainerAccess dca = null;
+    private IDataContainerAccess dca = null;
     private DeviceAccess da = null;
     private PersonAccess pa = null;
 

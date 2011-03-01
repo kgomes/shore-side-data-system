@@ -105,7 +105,6 @@
 		<!-- Run the appropriate javac -->
 		<javac destdir="${project.build}/classes" debug="${debug}" fork="yes">
 			<src path="${src.java}" />
-			<src path="${src.gen}" />
 			<include name="moos/ssds/metadata/**/*.java" />
 			<include name="moos/ssds/services/data/**/*.java" />
 			<include name="moos/ssds/services/metadata/**/*.java" />
@@ -307,9 +306,6 @@
 			<fileset dir="${project.build}/clients/logging" includes="log4j.properties" />
 			<!-- The source code (if needed) -->
 			<fileset dir="${project.src}/java">
-				<patternset refid="java.source.patternset" />
-			</fileset>
-			<fileset dir="${project.src}/gen">
 				<patternset refid="java.source.patternset" />
 			</fileset>
 		</jar>

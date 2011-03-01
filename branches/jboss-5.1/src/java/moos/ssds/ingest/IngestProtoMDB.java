@@ -58,7 +58,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
  * @author : $Author: kgomes $
  * @version : $Revision: 1.11.2.1 $ <br>
  */
-@MessageDriven(activationConfig = {
+@MessageDriven(name = "IngestProtoMDB", activationConfig = {
 		@ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
 		@ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/SSDSIngestProtoTopic"),
 		@ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable") })

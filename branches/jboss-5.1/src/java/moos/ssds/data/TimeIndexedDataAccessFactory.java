@@ -29,7 +29,7 @@ import javax.naming.NamingException;
 import moos.ssds.dao.util.MetadataAccessException;
 import moos.ssds.data.util.DataException;
 import moos.ssds.metadata.DataContainer;
-import moos.ssds.services.metadata.DataContainerAccess;
+import moos.ssds.services.metadata.IDataContainerAccess;
 import moos.ssds.services.metadata.DataContainerAccessLocal;
 
 import org.apache.log4j.Logger;
@@ -157,9 +157,9 @@ public class TimeIndexedDataAccessFactory {
 			logger.debug("No local interfaces were found, will try remote");
 			// Something went wrong with looking up local services, must try
 			// remote
-			DataContainerAccess dataContainerAccess = null;
+			IDataContainerAccess dataContainerAccess = null;
 			try {
-				dataContainerAccess = (DataContainerAccess) context
+				dataContainerAccess = (IDataContainerAccess) context
 						.lookup("moos/ssds/services/metadata/DataContainerAccess");
 			} catch (NamingException e) {
 				logger.error("NamingException caught trying to get remote "
