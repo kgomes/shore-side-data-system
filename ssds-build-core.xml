@@ -191,7 +191,7 @@
 				<!-- <filter token="METADATA_HIBERNATE_JNDI_NAME" value="${metadata.hibernate.jndi.name}" /> -->
 				<!-- <filter token="METADATA_HIBERNATE_CACHE_PROVIDER_CLASS" value="${metadata.hibernate.cache.provider.class}" /> -->
 				<filter token="METADATA_HIBERNATE_HBM2DDLAUTO" value="${metadata.hibernate.hbm2ddlauto}" />
-				<!-- <filter token="METADATA_HIBERNATE_DEFAULT_SCHEMA" value="${hibernate.schema}" /> -->
+				<filter token="METADATA_HIBERNATE_DEFAULT_SCHEMA" value="${hibernate.schema}" />
 			</filterset>
 		</copy>
 		<!-- Now put in into a HAR file -->
