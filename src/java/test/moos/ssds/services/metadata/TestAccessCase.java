@@ -1112,28 +1112,20 @@ public abstract class TestAccessCase extends TestCase {
 			+ "referenceScale=StandardVariable two reference scale";
 
 	// The access services
-	static EventAccessHome EVENT_ACCESS_HOME = null;
 	static EventAccess EVENT_ACCESS = null;
 
-	static KeywordAccessHome KEYWORD_ACCESS_HOME = null;
 	static KeywordAccess KEYWORD_ACCESS = null;
 
-	static PersonAccessHome PERSON_ACCESS_HOME = null;
 	static PersonAccess PERSON_ACCESS = null;
 
-	static UserGroupAccessHome USER_GROUP_ACCESS_HOME = null;
 	static UserGroupAccess USER_GROUP_ACCESS = null;
 
-	static DataProducerAccessHome DATA_PRODUCER_ACCESS_HOME = null;
 	static DataProducerAccess DATA_PRODUCER_ACCESS = null;
 
-	static DataContainerAccessHome DATA_CONTAINER_ACCESS_HOME = null;
 	static IDataContainerAccess DATA_CONTAINER_ACCESS = null;
 
-	static RecordVariableAccessHome RECORD_VARIABLE_ACCESS_HOME = null;
 	static RecordVariableAccess RECORD_VARIABLE_ACCESS = null;
 
-	static StandardVariableAccessHome STANDARD_VARIABLE_ACCESS_HOME = null;
 	static StandardVariableAccess STANDARD_VARIABLE_ACCESS = null;
 
 }
