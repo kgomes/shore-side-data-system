@@ -12,6 +12,7 @@
 		<property name="datasourceName">java:/@METADATA_HIBERNATE_DATASOURCE_JNDI_NAME@</property>
 		<property name="dialect">@METADATA_HIBERNATE_DIALECT@</property>
 		<property name="hbm2ddlAuto">@METADATA_HIBERNATE_HBM2DDLAUTO@</property>
+		<property name="defaultSchema">@METADATA_HIBERNATE_DEFAULT_SCHEMA@</property>
 		<depends>jboss:service=Naming</depends>
 		<depends>jboss:service=TransactionManager</depends>
 	</session-factory>
