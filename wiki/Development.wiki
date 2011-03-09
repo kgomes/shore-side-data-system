@@ -20,7 +20,7 @@ I use an ant script to build the components of the SSDS project.  Here are the s
  # The path-defs.xml file gets imported.
   # The first thing that happens in the path-defs.xml file is that custom.properties file is read in.  These are the properties that somebody would edit when they are building their own SSDS installation.  There is a custom.properties.template file that can be used as a starting point for a custom.properties file.
   # The next thing that happens in the path-defs.xml file is that based on the database that was specified in the custom.properties file, a mysql.properties or a mssql.properties file is read in to establish all the appropriate properties for the backing database that the SSDS build will be utilizing.
-  # Then build.properties and project.properties are loaded to get the rest of the properties for the SSDS build and configuration.
   # Based on the database properties that were defined, some common database properties are read from the database specific properties so they could be used generically during the build.
+  # Then build.properties are then loaded to get the rest of the properties for the SSDS build and configuration.
   # Then various filesets, paths and patternsets are created that will be used throughout the build.
   # And the last thing is that any necessary ant tasks are defined that will be needed during the build.
