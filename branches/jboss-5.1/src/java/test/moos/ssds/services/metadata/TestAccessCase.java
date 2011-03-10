@@ -276,7 +276,7 @@ public abstract class TestAccessCase extends TestCase {
 
 	static DataProducerAccess DATA_PRODUCER_ACCESS = null;
 
-	static IDataContainerAccess DATA_CONTAINER_ACCESS = null;
+	static DataContainerAccess DATA_CONTAINER_ACCESS = null;
 
 	static RecordVariableAccess RECORD_VARIABLE_ACCESS = null;
 
@@ -292,26 +292,38 @@ public abstract class TestAccessCase extends TestCase {
 	protected void setUp() {
 
 		try {
+			superLogger.debug("Grabbing all remote interfaces:");
 			context = new InitialContext();
+			superLogger.debug("InitialContext is " + context.getEnvironment());
 			EVENT_ACCESS = (EventAccess) context
 					.lookup("moos/ssds/services/metadata/EventAccess");
+			superLogger.debug("EventAccess = " + EVENT_ACCESS);
 			KEYWORD_ACCESS = (KeywordAccess) context
 					.lookup("moos/ssds/services/metadata/KeywordAccess");
+			superLogger.debug("KeywordAccess = " + KEYWORD_ACCESS);
 			PERSON_ACCESS = (PersonAccess) context
 					.lookup("moos/ssds/services/metadata/PersonAccess");
+			superLogger.debug("PersonAccess = " + PERSON_ACCESS);
 			USER_GROUP_ACCESS = (UserGroupAccess) context
 					.lookup("moos/ssds/services/metadata/UserGroupAccess");
+			superLogger.debug("UserGroupAccess = " + USER_GROUP_ACCESS);
 			DATA_CONTAINER_ACCESS = (DataContainerAccess) context
 					.lookup("moos/ssds/services/metadata/DataContainerAccess");
+			superLogger.debug("DataContainerAccess = " + DATA_CONTAINER_ACCESS);
 			DATA_PRODUCER_ACCESS = (DataProducerAccess) context
 					.lookup("moos/ssds/services/metadata/DataProducerAccess");
+			superLogger.debug("DataProducerAccess = " + DATA_PRODUCER_ACCESS);
 			RECORD_VARIABLE_ACCESS = (RecordVariableAccess) context
 					.lookup("moos/ssds/services/metadata/RecordVariableAccess");
+			superLogger.debug("RecordVariableAccess = "
+					+ RECORD_VARIABLE_ACCESS);
 			STANDARD_VARIABLE_ACCESS = (StandardVariableAccess) context
 					.lookup("moos/ssds/services/metadata/StandardVariableAccess");
+			superLogger.debug("StandardVariableAccess = "
+					+ STANDARD_VARIABLE_ACCESS);
 		} catch (NamingException e) {
 			superLogger
-					.error("RemoteException caught while creating access interfaces: "
+					.error("NamingException caught while creating access interfaces: "
 							+ e.getMessage());
 		}
 
