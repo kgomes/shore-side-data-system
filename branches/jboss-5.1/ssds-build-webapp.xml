@@ -152,6 +152,8 @@
 			<!-- Simply call the target to build the GWT war file -->
 			<else>
 				<ant dir="${src.gwt.webapp}" antfile="build.xml" inheritAll="false" target="war" />
+				<!-- Now copy it over to the dist directory -->
+				<copy file="${src.gwt.webapp}/SSDSApplication.war" tofile="${project.dist}/ssds.war" />
 			</else>
 		</if>
 	</target>
@@ -211,8 +213,8 @@
 			</then>
 			<!-- Build and deploy the GWT application -->
 			<else>
-				<!-- Now copy the WAR file to the deployment location -->
-				<copy file="${src.gwt.webapp}/SSDSApplication.war" tofile="${webapp.deployment.location}" overwrite="true" />
+				<!-- Now copy the WAR file to the deployment location
+				<copy file="${src.gwt.webapp}/SSDSApplication.war" tofile="${webapp.deployment.location}" overwrite="true" /> -->
 			</else>
 		</if>
 
