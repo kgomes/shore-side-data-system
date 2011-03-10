@@ -109,8 +109,6 @@
 			</filterset>
 		</copy>
 
-		<!-- Deployment file for ingest servlet -->
-		<copy file="${src.resources}/build/servlet/ingest-servlet-web.xml" tofile="${project.build}/ingest-servlet/WEB-INF/web.xml" />
 	</target>
 
 	<!-- Compile the necessary code source code -->
@@ -179,24 +177,6 @@
 			<fileset dir="${project.build}/ingest-pub" includes="moos/ssds/jms/jms.properties" />
 		</jar>
 
-		<!-- Delete the old war file -->
-		<delete file="${project.dist}/ingest.war" />
-
-		<!-- Build the ingest servlet war -->
-		<war destfile="${project.dist}/ingest.war" webxml="${project.build}/ingest-servlet/WEB-INF/web.xml">
-			<classes dir="${project.build}/classes">
-				<include name="moos/ssds/services/servlet/data/IngestServlet.class" />
-				<include name="moos/ssds/io/SSDSDevicePacket.class" />
-				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
-				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacketProto.class" />
-				<include name="moos/ssds/io/util/Base64.class" />
-				<include name="moos/ssds/io/util/PacketUtility.class" />
-				<include name="moos/ssds/util/DateUtils.class" />
-				<include name="moos/ssds/util/XmlDateFormat.class" />
-			</classes>
-			<lib dir="${project.lib}" includes="${siam.jar}" />
-			<lib dir="${project.lib}" includes="${protocol-buffers.jar}" />
-		</war>
 	</target>
 
 	<!-- Deploy the ingest component and configuration files -->

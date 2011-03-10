@@ -16,6 +16,10 @@
 -->
 <project name="path-defs" basedir=".">
 
+	<!-- ********************************************************************** -->
+	<!-- Read in all properties -->
+	<!-- ********************************************************************** -->
+
 	<!-- Some properties that are custom to the developer/installers environment -->
 	<property file="./custom.properties" />
 
@@ -25,10 +29,7 @@
 	<!-- Some common build properties -->
 	<property file="./build.properties" />
 
-	<!-- Some properties that are related to the project -->
-	<property file="./project.properties" />
-
-	<!-- Define the ant contrib tasks -->
+	<!-- Ant contrib tasks (needed for property copy below) -->
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 		<classpath>
 			<pathelement location="${ant.contrib.jar}" />
@@ -302,4 +303,25 @@
 		<exclude name="moos/ssds/wrappergenerator/**/*.java" />
 		<exclude name="test/**/*.java" />
 	</patternset>
+
+	<!-- ********************************************************************** -->
+	<!-- Define ant tasks that will be used later -->
+	<!-- ********************************************************************** -->
+
+	<!-- XDoclet -->
+	<taskdef name="hibernatedoclet" classname="xdoclet.modules.hibernate.HibernateDocletTask">
+		<classpath>
+			<fileset refid="jboss-common-lib-jar-fileset" />
+			<fileset dir="${xdoclet.path}">
+				<include name="*.jar" />
+			</fileset>
+		</classpath>
+	</taskdef>
+
+	<!-- JiBX-->
+	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask">
+		<classpath refid="jibx-classpath" />
+	</taskdef>
+
+
 </project>
