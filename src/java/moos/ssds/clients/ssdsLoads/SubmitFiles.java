@@ -22,14 +22,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -45,10 +43,7 @@ import moos.ssds.metadata.Software;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.ObjectBuilder;
 import moos.ssds.metadata.util.XmlBuilder;
-
 import moos.ssds.services.metadata.DataProducerAccess;
-import moos.ssds.services.metadata.DataProducerAccessHome;
-
 import nu.xom.ValidityException;
 
 import org.apache.log4j.Level;
@@ -454,22 +449,13 @@ public class SubmitFiles {
 			 * Call Insert DataProducer on a remote interface to the EJB service
 			 */
 			if (submitToSSDS) {
-				DataProducerAccessHome deploymentAccessHome = null;
-
-				deploymentAccessHome = (DataProducerAccessHome) getHome(
-						"moos/ssds/services/metadata/DataProducerAccess",
-						namingUrl);
-
 				DataProducerAccess deploymentAccess = null;
-				if (deploymentAccessHome != null) {
-					// Get the service (DAO)object
-					try {
-						deploymentAccess = deploymentAccessHome.create();
-					} catch (CreateException ex) {
-						ex.printStackTrace();
-					} catch (RemoteException ex) {
-						ex.printStackTrace();
-					}
+				try {
+					Context context = new InitialContext();
+					deploymentAccess = (DataProducerAccess) context
+							.lookup("moos/ssds/services/metadata/DataProducerAccess");
+				} catch (NamingException ex) {
+					ex.printStackTrace();
 				}
 
 				try {
@@ -477,9 +463,6 @@ public class SubmitFiles {
 					System.out.println("\nSubmitting metadata to SSDS...");
 					Long id = deploymentAccess.insert(depl);
 					System.out.println("Inserted DataProducer id = " + id);
-				} catch (RemoteException e3) {
-					// TODO Auto-generated catch block
-					e3.printStackTrace();
 				} catch (MetadataAccessException e) {
 					// TODO mpm Auto-generated catch block
 					e.printStackTrace();
@@ -799,22 +782,15 @@ public class SubmitFiles {
 		 */
 
 		if (submitToSSDS) {
-			DataProducerAccessHome processRunAccessHome = null;
 
 			DataProducerAccess processRunAccess = null;
 
-			processRunAccessHome = (DataProducerAccessHome) getHome(
-					"moos/ssds/services/metadata/DataProducerAccess", namingUrl);
-
-			if (processRunAccessHome != null) {
-				// Get the service (DAO)object
-				try {
-					processRunAccess = processRunAccessHome.create();
-				} catch (CreateException ex) {
-					ex.printStackTrace();
-				} catch (RemoteException ex) {
-					ex.printStackTrace();
-				}
+			try {
+				Context context = new InitialContext();
+				processRunAccess = (DataProducerAccess) context
+						.lookup("moos/ssds/services/metadata/DataProducerAccess");
+			} catch (NamingException ex) {
+				ex.printStackTrace();
 			}
 
 			if (updatePR) {
@@ -830,9 +806,6 @@ public class SubmitFiles {
 					}
 					System.out.println("done. ProcessRun id = " + id
 							+ " updated.");
-				} catch (RemoteException e) {
-					logger.error("e.getCause() = " + e.getCause());
-					e.printStackTrace();
 				} catch (MetadataAccessException e) {
 					// Go ahead and insert a new ProcessRun
 					logger.debug("disposePRMetadata(): Exception while attempting update(pr), message = "
@@ -842,9 +815,6 @@ public class SubmitFiles {
 						id = processRunAccess.insert(pr);
 						System.out.println("done. New ProcessRun id = " + id
 								+ " inserted.");
-					} catch (RemoteException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
 					} catch (MetadataAccessException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -856,21 +826,6 @@ public class SubmitFiles {
 					System.out.println("\nSubmitting metadata to SSDS...");
 					Long id = processRunAccess.insert(pr);
 					System.out.println("done. ProcessRun id = " + id);
-				} catch (RemoteException e) {
-					System.err.println("e.getCause() = " + e.getCause());
-					// if (e.getCause()
-					// instanceof InputDataContainerNotInDatabaseException) {
-					// InputDataContainerNotInDatabaseException nidbe =
-					// (InputDataContainerNotInDatabaseException) e
-					// .getCause();
-					// logger.error(
-					// "\n*** RemoteException: ProcessRun not inserted. ***\n");
-					// logger.error(
-					// "\n*** Input file is not in the database. Has the
-					// Deployment or previous ProcessRun been loaded into
-					// SSDS?");
-					// logger.error(nidbe.getMessage() + "\n");
-					// }
 				} catch (MetadataAccessException e) {
 					// TODO mpm Auto-generated catch block
 					e.printStackTrace();
