@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.PersonDAO;
 import moos.ssds.dao.StandardUnitDAO;
@@ -86,7 +84,7 @@ public class StandardUnitAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardUnitAccess#findByName(java.lang.String
 	 * )
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public StandardUnit findByName(String name) throws MetadataAccessException {
 
 		// Grab the DAO
@@ -104,7 +102,7 @@ public class StandardUnitAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardUnitAccess#findByLikeName(java.lang
 	 * .String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardUnit> findByLikeName(String likeName)
 			throws MetadataAccessException {
 
@@ -123,7 +121,7 @@ public class StandardUnitAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardUnitAccess#findBySymbol(java.lang
 	 * .String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardUnit> findBySymbol(String symbol)
 			throws MetadataAccessException {
 
@@ -142,7 +140,7 @@ public class StandardUnitAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardUnitAccess#findByLikeSymbol(java.
 	 * lang.String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardUnit> findByLikeSymbol(String likeSymbol)
 			throws MetadataAccessException {
 
@@ -159,7 +157,7 @@ public class StandardUnitAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.StandardUnitAccess#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllNames() throws MetadataAccessException {
 
 		// Grab the DAO

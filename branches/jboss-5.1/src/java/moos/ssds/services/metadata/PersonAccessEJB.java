@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.PersonDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -83,7 +81,6 @@ public class PersonAccessEJB extends AccessBean implements PersonAccess,
 	 * moos.ssds.services.metadata.PersonAccess#findByEmail(java.lang.String,
 	 * boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Person> findByEmail(String email, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -105,7 +102,6 @@ public class PersonAccessEJB extends AccessBean implements PersonAccess,
 	 * moos.ssds.services.metadata.PersonAccess#findByUsername(java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Person findByUsername(String username, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 
@@ -123,7 +119,6 @@ public class PersonAccessEJB extends AccessBean implements PersonAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.PersonAccess#findAllUsernames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllUsernames() throws MetadataAccessException {
 
 		logger.debug("findAllUsernames called");

@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.DataContainerGroupDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -86,7 +84,7 @@ public class DataContainerGroupAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerGroupAccess#findByName(java.
 	 * lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainerGroup> findByName(String name,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -106,7 +104,7 @@ public class DataContainerGroupAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.DataContainerGroupAccess#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		DataContainerGroupDAO dataContainerGroupDAO = new DataContainerGroupDAO(
@@ -123,7 +121,7 @@ public class DataContainerGroupAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerGroupAccess#findByDataContainer
 	 * (moos.ssds.metadata.DataContainer, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainerGroup> findByDataContainer(
 			DataContainer dataContainer, boolean returnFullObjectGraph)
 			throws MetadataAccessException {

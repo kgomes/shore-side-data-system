@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.UserGroupDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -84,7 +82,7 @@ public class UserGroupAccessEJB extends AccessBean implements UserGroupAccess,
 	 * moos.ssds.services.metadata.UserGroupAccess#findByGroupName(java.lang
 	 * .String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<UserGroup> findByGroupName(String groupName,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -106,7 +104,7 @@ public class UserGroupAccessEJB extends AccessBean implements UserGroupAccess,
 	 * moos.ssds.services.metadata.UserGroupAccess#countFindByGroupName(java
 	 * .lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public int countFindByGroupName(String groupName, boolean exactMatch)
 			throws MetadataAccessException {
 
@@ -122,7 +120,7 @@ public class UserGroupAccessEJB extends AccessBean implements UserGroupAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.UserGroupAccess#findAllGroupNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllGroupNames()
 			throws MetadataAccessException {
 
@@ -138,7 +136,7 @@ public class UserGroupAccessEJB extends AccessBean implements UserGroupAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.UserGroupAccess#countFindAllGroupNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public int countFindAllGroupNames() throws MetadataAccessException {
 
 		// Grab the DAO

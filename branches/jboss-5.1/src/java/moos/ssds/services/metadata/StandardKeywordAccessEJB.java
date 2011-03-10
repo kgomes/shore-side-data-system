@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.StandardKeywordDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -84,7 +82,7 @@ public class StandardKeywordAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardKeywordAccess#findByName(java.lang
 	 * .String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardKeyword> findByName(String name)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -102,7 +100,7 @@ public class StandardKeywordAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardKeywordAccess#findByLikeName(java
 	 * .lang.String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardKeyword> findByLikeName(String likeName)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -118,7 +116,7 @@ public class StandardKeywordAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.StandardKeywordAccess#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		StandardKeywordDAO standardKeywordDAO = (StandardKeywordDAO) this

@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.ResourceTypeDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -84,7 +82,7 @@ public class ResourceTypeAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.ResourceTypeAccess#findByName(java.lang.String
 	 * , boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<ResourceType> findByName(String name, boolean exactMatch)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -100,7 +98,7 @@ public class ResourceTypeAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.ResourceTypeAccess#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		ResourceTypeDAO resourceTypeDAO = (ResourceTypeDAO) this

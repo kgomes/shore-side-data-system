@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.DeviceTypeDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -84,7 +82,7 @@ public class DeviceTypeAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DeviceTypeAccess#findByName(java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public DeviceType findByName(String name, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 
@@ -102,7 +100,7 @@ public class DeviceTypeAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DeviceTypeAccess#findByLikeName(java.lang
 	 * .String, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DeviceType> findByLikeName(String likeName,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -119,7 +117,7 @@ public class DeviceTypeAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.DeviceTypeAccess#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		DeviceTypeDAO deviceTypeDAO = (DeviceTypeDAO) this.getMetadataDAO();

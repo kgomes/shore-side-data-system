@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.StandardVariableDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -85,7 +83,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * @see moos.ssds.services.metadata.StandardVariableAccess#
 	 * findByNameAndReferenceScale(java.lang.String, java.lang.String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public IMetadataObject findByNameAndReferenceScale(String name,
 			String referenceScale) throws MetadataAccessException {
 
@@ -105,7 +103,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findByName(java.lang
 	 * .String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardVariable> findByName(String name)
 			throws MetadataAccessException {
 
@@ -124,7 +122,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findByLikeName(java
 	 * .lang.String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardVariable> findByLikeName(String likeName)
 			throws MetadataAccessException {
 
@@ -143,7 +141,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findByReferenceScale
 	 * (java.lang.String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardVariable> findByReferenceScale(
 			String referenceScale) throws MetadataAccessException {
 
@@ -162,7 +160,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findByLikeReferenceScale
 	 * (java.lang.String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardVariable> findByLikeReferenceScale(
 			String likeReferenceScale) throws MetadataAccessException {
 
@@ -179,7 +177,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.StandardVariableAccess#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllNames() throws MetadataAccessException {
 
 		// Grab the DAO
@@ -197,7 +195,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findAllReferenceScales
 	 * ()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllReferenceScales()
 			throws MetadataAccessException {
 
@@ -216,7 +214,7 @@ public class StandardVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardVariableAccess#findByRecordVariable
 	 * (moos.ssds.metadata.RecordVariable)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public StandardVariable findByRecordVariable(RecordVariable recordVariable)
 			throws MetadataAccessException {
 
