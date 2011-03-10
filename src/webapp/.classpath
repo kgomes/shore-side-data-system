@@ -7,23 +7,6 @@
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/SmartGWT2.4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JBoss 5.1 Client"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/commons-lang-2.6.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jcommon-1.0.16.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jfreechart-1.0.13.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/ssds-services-metadata-client.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/siam.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/bcel.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jibx-bind.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jibx-extras.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jibx-run.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jibx-schema.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jibx-tools.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/joda-time.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/qdox.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/stax-api.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/wstx-asl.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/xbis-jibx.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/xmlpull_1_1_4.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/xpp3.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/saanish.shore.mbari.org-jboss5.1"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
