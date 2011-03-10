@@ -32,7 +32,9 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Resource;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -55,7 +57,7 @@ public class GetOriginalDataServlet extends HttpServlet {
 	/**
 	 * A utility for helping with converting dates back and forth
 	 */
-	XmlDateFormat xmlDateFormat = new XmlDateFormat();
+	private XmlDateFormat xmlDateFormat = new XmlDateFormat();
 
 	/** Some private constants */
 	private static String OUTPUT_AS_BINARY = "binary";
@@ -64,9 +66,6 @@ public class GetOriginalDataServlet extends HttpServlet {
 
 	/** A log4j logger */
 	static Logger logger = Logger.getLogger(GetOriginalDataServlet.class);
-
-	@Resource(mappedName = "moos/ssds/services/metadata/SQLDataStreamRawDataAccessLocal")
-	private SQLDataStreamRawDataAccessLocal sqlDSLocal;
 
 	/**
 	 * This is the implementation of the method to return some information about
@@ -91,6 +90,16 @@ public class GetOriginalDataServlet extends HttpServlet {
 	 */
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		// Grab the SQLDataStream interface
+		SQLDataStreamRawDataAccessLocal sqlDSLocal = null;
+		try {
+			Context context = new InitialContext();
+			sqlDSLocal = (SQLDataStreamRawDataAccessLocal) context
+					.lookup("moos/ssds/services/data/SQLDataStreamRawDataAccessLocal");
+		} catch (NamingException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
 
 		// Setup some local variables to hold the parsed parameters
 		String deviceIDParameter = request.getParameter("deviceID");
@@ -547,6 +556,7 @@ public class GetOriginalDataServlet extends HttpServlet {
 		// Now call the method
 		TreeMap dataMap = null;
 		try {
+			logger.debug("sqlDSLocal is " + sqlDSLocal);
 			dataMap = sqlDSLocal.getSortedRawData(deviceID, startParentID,
 					endParentID, startPacketType, endPacketType,
 					startPacketSubType, endPacketSubType,
@@ -566,6 +576,14 @@ public class GetOriginalDataServlet extends HttpServlet {
 					+ "</H1><br>");
 			out.flush();
 			return;
+		} catch (Throwable e) {
+			logger.error("Exception caught: " + e.getMessage());
+			response.setContentType("text/html");
+			PrintWriter out = new PrintWriter(response.getOutputStream());
+			out.println("<H1>Exception caught: " + e.getMessage() + "</H1><br>");
+			out.flush();
+			return;
+
 		}
 
 		// Set time in past to prevent browser from caching doc
