@@ -88,8 +88,6 @@
 			</filterset>
 		</copy>
 
-		<!-- Deployment file for transmogrify servlet -->
-		<copy file="${src.resources}/build/servlet/transmogrify-servlet-web.xml" tofile="${project.build}/transmogrify-servlet/WEB-INF/web.xml" />
 	</target>
 
 	<!-- Compile the necessary code source code -->
@@ -116,21 +114,6 @@
 
 	<!-- The distribution target -->
 	<target name="dist" depends="build" description="This target runs the clean, compile and then builds this distribution">
-		<!-- Delete old server jar files -->
-		<delete file="${project.dist}/ssds-transmogrify.jar" />
-
-		<!-- Create the transmogrify jar file -->
-		<jar jarfile="${project.dist}/ssds-transmogrify.jar">
-			<!-- Include the class -->
-			<fileset dir="${build.classes}">
-				<include name="moos/ssds/transmogrify/**/*.class" />
-				<include name="moos/ssds/io/SSDSDevicePacket.class" />
-				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
-				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacketProto.class" />
-				<include name="moos/ssds/io/util/PacketUtility.class" />
-				<include name="moos/ssds/util/*.class" />
-			</fileset>
-		</jar>
 
 		<!-- Now jar it up -->
 		<jar jarfile="${project.dist}/ssds-transmogrify-pub.jar">
@@ -148,24 +131,6 @@
 			<fileset dir="${project.build}/transmogrify-pub" includes="moos/ssds/jms/jms.properties" />
 		</jar>
 
-		<!-- Delete the old war file -->
-		<delete file="${project.dist}/transmogrify.war" />
-
-		<!-- Build the transmogrify servlet war -->
-		<war destfile="${project.dist}/transmogrify.war" webxml="${project.build}/transmogrify-servlet/WEB-INF/web.xml">
-			<classes dir="${project.build}/classes">
-				<include name="moos/ssds/services/servlet/data/TransmogrifyServlet.class" />
-				<include name="moos/ssds/io/SSDSDevicePacket.class" />
-				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
-				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacketProto.class" />
-				<include name="moos/ssds/io/util/Base64.class" />
-				<include name="moos/ssds/io/util/PacketUtility.class" />
-				<include name="moos/ssds/util/DateUtils.class" />
-				<include name="moos/ssds/util/XmlDateFormat.class" />
-			</classes>
-			<lib dir="${project.lib}" includes="${siam.jar}" />
-			<lib dir="${project.lib}" includes="${protocol-buffers.jar}" />
-		</war>
 	</target>
 
 	<!-- Deploy the transmogrify component -->
