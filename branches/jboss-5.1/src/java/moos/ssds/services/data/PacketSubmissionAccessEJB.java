@@ -19,6 +19,8 @@ import java.sql.SQLException;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
 import moos.ssds.io.PacketOutputManager;
@@ -37,8 +39,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @author kgomes
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/data/PacketSubmissionAccess")
+@Local(PacketSubmissionAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/data/PacketSubmissionAccessLocal")
+@Remote(PacketSubmissionAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/data/PacketSubmissionAccess")
 public class PacketSubmissionAccessEJB implements PacketSubmissionAccess,
 		PacketSubmissionAccessLocal {
 

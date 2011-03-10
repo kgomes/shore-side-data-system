@@ -26,6 +26,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.annotation.Resource;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
 import moos.ssds.dao.util.MetadataAccessException;
@@ -54,8 +56,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @author kgomes
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/data/DeviceDataAccess")
+@Local(DeviceDataAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/data/DeviceDataAccessLocal")
+@Remote(DeviceDataAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/data/DeviceDataAccess")
 public class DeviceDataAccessEJB implements DeviceDataAccess,
 		DeviceDataAccessLocal {
 

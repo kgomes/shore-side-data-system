@@ -24,6 +24,7 @@ import javax.annotation.Resource;
 import javax.ejb.Local;
 import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
+import javax.ejb.Remote;
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
 import javax.sql.DataSource;
@@ -44,8 +45,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * 
  */
 @Stateful
-@RemoteBinding(jndiBinding = "moos/ssds/services/data/SSDSByteArrayAccess")
+@Local(SSDSByteArrayAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/data/SSDSByteArrayAccessLocal")
+@Remote(SSDSByteArrayAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/data/SSDSByteArrayAccess")
 public class SSDSByteArrayAccessEJB implements SSDSByteArrayAccess,
 		SSDSByteArrayAccessLocal, Enumeration<byte[]> {
 

@@ -32,7 +32,12 @@ import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import moos.ssds.io.SSDSDevicePacket;
@@ -47,8 +52,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @author kgomes
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/data/SQLDataStreamRawDataAccess")
+@Local(SQLDataStreamRawDataAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/data/SQLDataStreamRawDataAccessLocal")
+@Remote(SQLDataStreamRawDataAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/data/SQLDataStreamRawDataAccess")
 public class SQLDataStreamRawDataAccessEJB implements
 		SQLDataStreamRawDataAccess, SQLDataStreamRawDataAccessLocal {
 
@@ -60,9 +67,6 @@ public class SQLDataStreamRawDataAccessEJB implements
 	 */
 	@Resource(mappedName = "java:/SSDS_Data")
 	private static DataSource dataSource;
-
-	@Resource(mappedName = "moos/ssds/services/data/SSDSByteArrayAccessLocal")
-	private SSDSByteArrayAccessLocal ssdsByteArrayAccessLocal;
 
 	/**
 	 * The IO Properties for the PacketInput/Output
@@ -938,6 +942,16 @@ public class SQLDataStreamRawDataAccessEJB implements
 		// First check to see if the deviceID is specified (it must be)
 		if (deviceID == null) {
 			throw new SQLException("The deviceID must be specified");
+		}
+
+		SSDSByteArrayAccessLocal ssdsByteArrayAccessLocal = null;
+		try {
+			Context context = new InitialContext();
+			ssdsByteArrayAccessLocal = (SSDSByteArrayAccessLocal) context
+					.lookup("moos/ssds/services/data/SSDSByteArrayAccessLocal");
+		} catch (NamingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 
 		// Set all the query values on the byte array access
