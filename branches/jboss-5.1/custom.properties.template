@@ -46,6 +46,12 @@ jboss.host.name=
 # the URL that shows the JBoss default page.
 jboss.base.url=http://${jboss.host.name}:8080
 
+# This is the type of server that will be running in the JBoss
+# installation.  It is necessary so the build knows where to 
+# place deployment files.  Options are 'all', 'default', and 
+# 'minimal', but this is almost always set to 'default'.
+jboss.server.type=default
+
 ################################################################
 #                SSDS Location Properties                      #
 ################################################################
