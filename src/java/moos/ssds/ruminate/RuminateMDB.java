@@ -33,8 +33,6 @@ import java.util.TimeZone;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.ActivationConfigProperty;
-import javax.ejb.CreateException;
-import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -46,7 +44,6 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.NamingException;
 
 import moos.ssds.dao.util.MetadataAccessException;
 import moos.ssds.metadata.DataContainer;
