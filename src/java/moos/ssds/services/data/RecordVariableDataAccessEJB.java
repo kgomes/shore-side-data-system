@@ -22,6 +22,8 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import javax.annotation.Resource;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -46,9 +48,10 @@ import org.jboss.ejb3.annotation.RemoteBinding;
  * @author kgomes
  */
 @Stateless
-@RemoteBinding(jndiBinding = "moos/ssds/services/data/RecordVariableDataAccess")
+@Local(RecordVariableDataAccessLocal.class)
 @LocalBinding(jndiBinding = "moos/ssds/services/data/RecordVariableDataAccessLocal")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+@Remote(RecordVariableDataAccess.class)
+@RemoteBinding(jndiBinding = "moos/ssds/services/data/RecordVariableDataAccess")
 public class RecordVariableDataAccessEJB implements RecordVariableDataAccess,
 		RecordVariableDataAccessLocal {
 
