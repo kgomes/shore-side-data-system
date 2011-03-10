@@ -24,8 +24,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.PersonDAO;
 import moos.ssds.dao.SoftwareDAO;
@@ -87,7 +85,7 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 	 * @see
 	 * moos.ssds.services.metadata.SoftwareAccess#findByName(java.lang.String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<Software> findByName(String name)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -104,7 +102,7 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 	 * moos.ssds.services.metadata.SoftwareAccess#findByLikeName(java.lang.String
 	 * )
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<Software> findByLikeName(String likeName)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -119,7 +117,7 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.SoftwareAccess#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		SoftwareDAO softwareDAO = (SoftwareDAO) this.getMetadataDAO();
@@ -135,7 +133,7 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 	 * moos.ssds.services.metadata.SoftwareAccess#findByNameAndSoftwareVersion
 	 * (java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Software findByNameAndSoftwareVersion(String name, String version,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -153,7 +151,7 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 	 * moos.ssds.services.metadata.SoftwareAccess#findByURIString(java.lang.
 	 * String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<Software> findByURIString(String uriString)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -168,7 +166,7 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.SoftwareAccess#findByURI(java.net.URI)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<Software> findByURI(URI uri)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -183,7 +181,7 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.SoftwareAccess#findByURL(java.net.URL)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<Software> findByURL(URL url)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -200,7 +198,7 @@ public class SoftwareAccessEJB extends AccessBean implements SoftwareAccess,
 	 * moos.ssds.services.metadata.SoftwareAccess#findByPerson(moos.ssds.metadata
 	 * .Person)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<Software> findByPerson(Person person)
 			throws MetadataAccessException {
 		// Grab the DAO

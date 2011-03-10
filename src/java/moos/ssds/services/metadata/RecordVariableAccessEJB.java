@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.RecordVariableDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -84,7 +82,7 @@ public class RecordVariableAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.RecordVariableAccess#findByName(java.lang
 	 * .String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<RecordVariable> findByName(String name,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -105,7 +103,7 @@ public class RecordVariableAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.RecordVariableAccess#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllNames() throws MetadataAccessException {
 
 		// Grab the DAO

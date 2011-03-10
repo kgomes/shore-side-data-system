@@ -25,8 +25,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttributeType;
-import javax.ejb.TransactionAttribute;
 
 import moos.ssds.dao.DataContainerDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -92,7 +90,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByName(java.lang.
 	 * String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findByName(String name,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -114,7 +111,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#countFindByName(java.
 	 * lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByName(String name, boolean exactMatch)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -130,7 +126,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.DataContainerAccess#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		DataContainerDAO dataContainerDAO = (DataContainerDAO) this
@@ -148,7 +143,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * findByDataContainerTypeAndName(java.lang.String, java.lang.String,
 	 * boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findByDataContainerTypeAndName(
 			String dataContainerType, String name, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -170,7 +164,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * countFindByDataContainerTypeAndName(java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByDataContainerTypeAndName(String dataContainerType,
 			String name, boolean exactMatch) throws MetadataAccessException {
 		// Grab the DAO
@@ -190,7 +183,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * (java.util.Date, boolean, java.util.Date, boolean, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findWithDataWithinTimeWindow(
 			Date startDate, boolean allDataAfterStartDate, Date endDate,
 			boolean allDataBeforeEndDate, String orderByPropertyName,
@@ -214,7 +206,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByURIString(java.
 	 * lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public DataContainer findByURIString(String uriString,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 
@@ -234,7 +225,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByURI(java.net.URI,
 	 * java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findByURI(URI uri,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -254,7 +244,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByURL(java.net.URL,
 	 * java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findByURL(URL url,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -272,7 +261,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * 
 	 * @see moos.ssds.services.metadata.DataContainerAccess#findAllURIStrings()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllURIStrings()
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -291,7 +279,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByDODSURLString(java
 	 * .lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public DataContainer findByDODSURLString(String dodsUrlString,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -310,7 +297,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByDODSURLString(java
 	 * .lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findByDODSURLString(String dodsUrlString,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -331,7 +317,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#countFindByDODSURLString
 	 * (java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindByDODSURLString(String dodsUrlString, boolean exactMatch)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -350,7 +335,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByMimeType(java.lang
 	 * .String, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findByMimeType(String mimeType,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -372,7 +356,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.lang.Float, java.lang.Float, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findWithinGeospatialCube(
 			Double geospatialLatMin, Double geospatialLatMax,
 			Double geospatialLonMin, Double geospatialLonMax,
@@ -400,7 +383,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.lang.Float, java.lang.Float, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findWithinTimeAndGeospatialCube(
 			Date startDate, Date endDate, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
@@ -427,7 +409,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByPerson(moos.ssds
 	 * .metadata.Person, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByPerson(Person person,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -447,7 +429,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByRecordVariable(
 	 * moos.ssds.metadata.RecordVariable, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public DataContainer findByRecordVariable(RecordVariable recordVariable,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -466,7 +448,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByRecordVariableName
 	 * (java.lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByRecordVariableName(
 			String recordVariableName, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -488,7 +470,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByLikeRecordVariableName
 	 * (java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByLikeRecordVariableName(
 			String likeRecordVariableName, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -510,7 +492,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByStandardVariableName
 	 * (java.lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByStandardVariableName(
 			String standardVariableName, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -532,7 +514,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * findByLikeStandardVariableName(java.lang.String, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByLikeStandardVariableName(
 			String likeStandardVariableName, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -555,7 +537,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * (moos.ssds.metadata.DataContainerGroup, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByDataContainerGroup(
 			DataContainerGroup dataContainerGroup, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -577,7 +559,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByDataContainerGroupName
 	 * (java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByDataContainerGroupName(
 			String dataContainerGroupName, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -599,7 +581,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * findByLikeDataContainerGroupName(java.lang.String, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByLikeDataContainerGroupName(
 			String likeDataContainerGroupName, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -621,7 +603,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByKeywordName(java
 	 * .lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByKeywordName(String keywordName,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -643,7 +625,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#countFindByKeywordName
 	 * (java.lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public int countFindByKeywordName(String keywordName, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -662,7 +644,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataContainerAccess#findByResource(moos.ssds
 	 * .metadata.Resource, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByResource(Resource resource,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -683,7 +665,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * (moos.ssds.metadata.DataContainer, int, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataProducer> findAllIndirectCreators(
 			DataContainer dataContainer, int fetchDepth,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -706,7 +688,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * .ssds.metadata.DataContainer, int, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataProducer> findCreatorChain(
 			DataContainer dataContainer, int fetchDepth,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -729,7 +711,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * (moos.ssds.metadata.DataContainer, int, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataProducer> findAllIndirectConsumers(
 			DataContainer dataContainer, int fetchDepth,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -752,7 +734,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * .ssds.metadata.DataContainer, int, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataProducer> findAllConsumers(
 			DataContainer dataContainer, int fetchDepth,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -775,7 +757,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * .ssds.metadata.DataContainer, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findDirectInputs(
 			DataContainer dataContainer, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -798,7 +780,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * .metadata.DataContainer, int, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findAllInputs(DataContainer dataContainer,
 			int fetchDepth, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -821,7 +803,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * (moos.ssds.metadata.DataContainer, int, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findAllDerivedOutputs(
 			DataContainer dataContainer, int fetchDepth,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -844,7 +826,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * (moos.ssds.metadata.DataProducer, int, java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findAllDerivedOutputs(
 			DataProducer dataProducer, int fetchDepth,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -867,7 +849,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * (moos.ssds.metadata.DataProducer, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findInputsByDataProducer(
 			DataProducer dataProducer, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -890,7 +872,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * (moos.ssds.metadata.DataProducer, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findOutputsByDataProducer(
 			DataProducer dataProducer, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -913,7 +895,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * moos.ssds.metadata.DataProducer, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public DataContainer findBestDirectOutput(DataProducer dataProducer,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -935,7 +917,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.util.Date, java.util.Date, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByRecordVariableNameAndDataWithinTimeWindow(
 			String recordVariableName, Date startDate, Date endDate,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -960,7 +942,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.util.Date, java.util.Date, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByLikeRecordVariableNameAndDataWithinTimeWindow(
 			String likeRecordVariableName, Date startDate, Date endDate,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -985,7 +967,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.util.Date, java.util.Date, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByStandardVariableNameAndDataWithinTimeWindow(
 			String standardVariableName, Date startDate, Date endDate,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -1010,7 +992,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.util.Date, java.util.Date, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByLikeStandardVariableNameAndDataWithinTimeWindow(
 			String likeStandardVariableName, Date startDate, Date endDate,
 			String orderByPropertyName, String ascendingOrDescending,
@@ -1036,7 +1018,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.lang.Float, java.lang.Float, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByRecordVariableNameAndWithinGeospatialCube(
 			String recordVariableName, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
@@ -1067,7 +1049,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.lang.Float, java.lang.Float, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByLikeRecordVariableNameAndWithinGeospatialCube(
 			String likeRecordVariableName, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
@@ -1098,7 +1080,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.lang.Float, java.lang.Float, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByStandardVariableNameAndWithinGeospatialCube(
 			String standardVariableName, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
@@ -1129,7 +1111,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.lang.Float, java.lang.Float, java.lang.String, java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByLikeStandardVariableNameAndWithinGeospatialCube(
 			String likeStandardVariableName, Double geospatialLatMin,
 			Double geospatialLatMax, Double geospatialLonMin,
@@ -1160,7 +1142,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
 	 * java.lang.Float, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByRecordVariableNameWithinTimeAndWithinGeospatialCube(
 			String recordVariableName, Date startDate, Date endDate,
 			Double geospatialLatMin, Double geospatialLatMax,
@@ -1191,7 +1173,7 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
 	 * java.lang.Float, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<DataContainer> findByLikeRecordVariableNameWithinTimeAndWithinGeospatialCube(
 			String likeRecordVariableName, Date startDate, Date endDate,
 			Double geospatialLatMin, Double geospatialLatMax,
@@ -1222,7 +1204,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
 	 * java.lang.Float, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findByStandardVariableNameWithinTimeAndWithinGeospatialCube(
 			String standardVariableName, Date startDate, Date endDate,
 			Double geospatialLatMin, Double geospatialLatMax,
@@ -1253,7 +1234,6 @@ public class DataContainerAccessEJB extends AccessBean implements
 	 * java.lang.Double, java.lang.Double, java.lang.Double, java.lang.Float,
 	 * java.lang.Float, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataContainer> findByLikeStandardVariableNameWithinTimeAndWithinGeospatialCube(
 			String likeStandardVariableName, Date startDate, Date endDate,
 			Double geospatialLatMin, Double geospatialLatMax,

@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.DataProducerGroupDAO;
 import moos.ssds.dao.PersonDAO;
@@ -86,7 +84,6 @@ public class DataProducerGroupAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.DataProducerGroupAccessLocal#findByName(java
 	 * .lang.String, boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<DataProducerGroup> findByName(String name,
 			boolean exactMatch, String orderByPropertyName,
 			String ascendingOrDescending, boolean returnFullObjectGraph)
@@ -107,7 +104,6 @@ public class DataProducerGroupAccessEJB extends AccessBean implements
 	 * @see
 	 * moos.ssds.services.metadata.DataProducerGroupAccessLocal#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		DataProducerGroupDAO dataProducerGroupDAO = (DataProducerGroupDAO) this

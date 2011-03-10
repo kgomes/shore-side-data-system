@@ -23,8 +23,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.EventDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -84,7 +82,7 @@ public class EventAccessEJB extends AccessBean implements EventAccess,
 	 * @see moos.ssds.services.metadata.EventAccess#findByName(java.lang.String,
 	 * boolean, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<Event> findByName(String name, boolean exactMatch,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -103,7 +101,7 @@ public class EventAccessEJB extends AccessBean implements EventAccess,
 	 * moos.ssds.services.metadata.EventAccess#findByLikeName(java.lang.String,
 	 * java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<Event> findByLikeName(String likeName,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -122,7 +120,7 @@ public class EventAccessEJB extends AccessBean implements EventAccess,
 	 * moos.ssds.services.metadata.EventAccess#findByNameAndDates(java.lang.
 	 * String, java.util.Date, java.util.Date, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Event findByNameAndDates(String name, Date startDate, Date endDate,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
 		// Grab the DAO
@@ -138,7 +136,7 @@ public class EventAccessEJB extends AccessBean implements EventAccess,
 	 * 
 	 * @see moos.ssds.services.metadata.EventAccess#findAllNames()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		EventDAO eventDAO = (EventDAO) this.getMetadataDAO();
@@ -154,7 +152,7 @@ public class EventAccessEJB extends AccessBean implements EventAccess,
 	 * moos.ssds.services.metadata.EventAccess#findWithinDateRange(java.util
 	 * .Date, java.util.Date, java.lang.String, java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<Event> findWithinDateRange(Date startDate, Date endDate,
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {

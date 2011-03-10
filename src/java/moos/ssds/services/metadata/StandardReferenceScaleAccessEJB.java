@@ -22,8 +22,6 @@ import javax.ejb.CreateException;
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import moos.ssds.dao.StandardReferenceScaleDAO;
 import moos.ssds.dao.util.MetadataAccessException;
@@ -86,7 +84,7 @@ public class StandardReferenceScaleAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardReferenceScaleAccessLocal#findByName
 	 * (java.lang.String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardReferenceScale> findByName(String name)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -103,7 +101,7 @@ public class StandardReferenceScaleAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardReferenceScaleAccessLocal#findByLikeName
 	 * (java.lang.String)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<StandardReferenceScale> findByLikeName(String likeName)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -121,7 +119,7 @@ public class StandardReferenceScaleAccessEJB extends AccessBean implements
 	 * moos.ssds.services.metadata.StandardReferenceScaleAccessLocal#findAllNames
 	 * ()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+
 	public Collection<String> findAllNames() throws MetadataAccessException {
 		// Grab the DAO
 		StandardReferenceScaleDAO standardReferenceScaleDAO = (StandardReferenceScaleDAO) this
