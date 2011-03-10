@@ -11,13 +11,29 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd"
 	version="5">
 	<display-name>SSDS Application</display-name>
+	<!-- The services (EJB/DAO) -->
 	<module>
 		<ejb>ssds-services-metadata.jar</ejb>
 	</module>
+	<!-- Various core servlets -->
 	<module>
 		<web>
 			<web-uri>servlet.war</web-uri>
 			<context-root>servlet</context-root>
+		</web>
+	</module>
+	<!-- The transmogrify servlet -->
+	<module>
+		<web>
+			<web-uri>transmogrify.war</web-uri>
+			<context-root>transmogrify</context-root>
+		</web>
+	</module>
+	<!-- The ingest servlet -->
+	<module>
+		<web>
+			<web-uri>ingest.war</web-uri>
+			<context-root>ingest</context-root>
 		</web>
 	</module>
 </application>
