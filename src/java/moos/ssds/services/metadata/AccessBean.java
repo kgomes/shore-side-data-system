@@ -179,7 +179,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * 
 	 * @see moos.ssds.services.metadata.Access#findById(java.lang.Long, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public IMetadataObject findById(Long id, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -194,7 +193,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * 
 	 * @see moos.ssds.services.metadata.Access#findById(long, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public IMetadataObject findById(long id, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 
@@ -218,7 +216,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * @see moos.ssds.services.metadata.Access#findById(java.lang.String,
 	 * boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public IMetadataObject findById(String id, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
 
@@ -247,7 +244,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * 
 	 * @see moos.ssds.services.metadata.Access#findAllIDs()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<Long> findAllIDs() throws MetadataAccessException {
 		// Grab the DAO
 		MetadataDAO mdao = this.getMetadataDAO();
@@ -261,7 +257,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * 
 	 * @see moos.ssds.services.metadata.Access#countFindAllIDs()
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public int countFindAllIDs() throws MetadataAccessException {
 		// Grab the DAO
 		MetadataDAO mdao = this.getMetadataDAO();
@@ -276,7 +271,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * @see moos.ssds.services.metadata.Access#findAll(java.lang.String,
 	 * java.lang.String, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<? extends IMetadataObject> findAll(
 			String orderByPropertyName, String ascendingOrDescending,
 			boolean returnFullObjectGraph) throws MetadataAccessException {
@@ -297,7 +291,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * java.lang.String, java.lang.Class, boolean)
 	 */
 	@SuppressWarnings("rawtypes")
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Collection<? extends IMetadataObject> findBySQL(String sqlString,
 			String aliasName, Class classOfReturn, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -316,7 +309,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * moos.ssds.services.metadata.Access#findId(moos.ssds.metadata.IMetadataObject
 	 * )
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public Long findId(IMetadataObject metadataObject)
 			throws MetadataAccessException {
 
@@ -334,7 +326,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * moos.ssds.services.metadata.Access#findEquivalentPersistentObject(moos
 	 * .ssds.metadata.IMetadataObject, boolean)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public IMetadataObject findEquivalentPersistentObject(
 			IMetadataObject metadataObject, boolean returnFullObjectGraph)
 			throws MetadataAccessException {
@@ -353,7 +344,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * moos.ssds.services.metadata.Access#getMetadataObjectGraph(moos.ssds.metadata
 	 * .IMetadataObject)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public IMetadataObject getMetadataObjectGraph(IMetadataObject metadataObject)
 			throws MetadataAccessException {
 		// Grab the DAO
@@ -369,7 +359,6 @@ public abstract class AccessBean implements IMetadataAccess {
 	 * @see moos.ssds.services.metadata.Access#getDeepCopy(moos.ssds.metadata.
 	 * IMetadataObject)
 	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public IMetadataObject getDeepCopy(IMetadataObject metadataObject)
 			throws MetadataAccessException {
 		// Grab the DAO
