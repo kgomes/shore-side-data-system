@@ -1,3 +1,4 @@
+<%@page import="org.apache.log4j.Logger"%>
 <%@ page
 	import="java.io.*,java.util.*,moos.ssds.metadata.*,moos.ssds.services.metadata.*,javax.naming.*"%>
 <!-- Include JSP Setup code common to all pages -->
@@ -44,6 +45,8 @@
 						information</div>
 
 					<%
+						// A log4j logger
+						Logger logger = Logger.getLogger("moos.ssds.web.addPerson.jsp");
 						// Grab all the parameters from the query string
 						String firstName = request.getParameter("firstName");
 						String lastName = request.getParameter("lastName");
@@ -81,6 +84,7 @@
 							try {
 								personAccessLocal = (PersonAccessLocal) context
 										.lookup("moos/ssds/services/metadata/PersonAccessLocal");
+								logger.debug("PersonAccessLocal is " + personAccessLocal);
 							} catch (Exception e) {
 								out.println("<h3>Person access could not be created: <font color=\"red\">"
 										+ e.getClass() + ": Message-> " + e.getMessage());
@@ -89,12 +93,19 @@
 							Person p = null;
 							if (personAccessLocal != null) {
 								// Now try to find the person by the email
+								logger.debug("Going to try and look up person by username "
+										+ username);
 								try {
 									p = (Person) personAccessLocal.findByUsername(username,
 											false);
 								} catch (Exception dae) {
+									logger.error("Exception (" + dae.getClass()
+											+ ") trying to lookup by username: "
+											+ dae.getMessage());
 								}
 								if (p == null) {
+									logger.debug("Nobody with that username, will try by email "
+											+ email);
 									try {
 										Collection persons = personAccessLocal.findByEmail(
 												email, true, null, null, false);
@@ -102,11 +113,15 @@
 											p = (Person) persons.iterator().next();
 										}
 									} catch (Exception dae) {
+										logger.debug("Exception ()" + dae.getClass()
+												+ ") caught trying to lookup by email: "
+												+ dae.getMessage());
 									}
 								}
 							}
 							// If the person is null, then no person with that email exists and you can create a new one
 							if (p == null) {
+								logger.debug("Person not found will create a new one");
 								// Create a new person
 								Person newPerson = new Person();
 								// Set all the properties
@@ -122,12 +137,18 @@
 								newPerson.setState(state);
 								newPerson.setZipcode(zipcode);
 								newPerson.setStatus(status);
+								logger.debug("Person (" + newPerson.getClass()
+										+ ") created: "
+										+ newPerson.toStringRepresentation("|"));
 								boolean persistedOK = false;
 								// Now write the new person to the database
 								try {
 									personAccessLocal.makePersistent(newPerson);
 									persistedOK = true;
 								} catch (Exception ex) {
+									logger.error("Exception (" + ex.getClass()
+											+ ") caught trying to persist newPerson: "
+											+ ex.getMessage());
 									out.println("<br><h3>An exception was thrown while trying to persist the new person: <font color=\"red\">"
 											+ ex.getClass()
 											+ ": Message-> "
