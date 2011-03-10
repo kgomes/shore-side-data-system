@@ -20,19 +20,32 @@
 <title>SSDS Client Library README</title>
 </head>
 <body>
-<h1>Usage of SSDS Client Libraries</h1>
-Welcome to the client libraries for the Shore-Side Data System. For your 
-convenience all the jar files that you need to interact remotely with the
-SSDS are included in this zip file.  You need to make sure that you include
-all these jars in your Java project and MORE IMPORTANTLY, make sure they
-are in the correct classpath order.  The correct class path order is:
-<pre>@CLIENT_CLASSPATH@</pre>
-If you have any questions, please contact ssds@mbari.org.<br/>
-<p>
-Enjoy,
-</p>
-<p>
-The SSDS Development Team
-</p>
+	<h1>Usage of SSDS Client Libraries</h1>
+	Welcome to the client libraries for the Shore-Side Data System. For
+	your convenience all the jar files that you need to interact remotely
+	with the SSDS are included in this zip file. You need to make sure that
+	you include all these jars in your Java project and MORE IMPORTANTLY,
+	make sure they are in the correct classpath order. The correct class
+	path order is:
+	<pre>@CLIENT_CLASSPATH@</pre>
+
+	<h3>UpdateBot Client</h3>
+	This java application will connect up to the SSDS database and crawl
+	the metadata looking for things it can do to enforce rules and business
+	logic inside SSDS (aligning parent/child start times, etc.) It is run
+	from the command line using:
+	<pre>java -cp @UPDATEBOT_CLASSPATH@ @UPDATEBOT_MAIN_CLASS_STATEMENT@</pre>
+
+	<h3>Graphing Client</h3>
+	This java application will connect up to the SSDS database, read the
+	graphing configurations (which instruments, time intervals, variables,
+	etc.) and builds plots using JFreeChart. It is run from the command
+	line using:
+	<pre>java -cp @GRAPHING_CLASSPATH@ @GRAPHING_MAIN_CLASS_STATEMENT@</pre>
+
+	<br /> If you have any questions, please contact ssds@mbari.org.
+	<br />
+	<p>Enjoy,</p>
+	<p>The SSDS Development Team</p>
 </body>
 </html>
