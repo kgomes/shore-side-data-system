@@ -127,7 +127,7 @@
 	<target name="build" depends="gwtc" description="Build this project" />
 
 	<target name="war" depends="build" description="Create a war file">
-		<zip destfile="SSDSApplication.war" basedir="war" />
+		<zip destfile="ssds.war" basedir="war" />
 	</target>
 
 	<target name="clean" description="Cleans this project">
