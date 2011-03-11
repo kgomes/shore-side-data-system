@@ -36,4 +36,6 @@
 			<context-root>ingest</context-root>
 		</web>
 	</module>
+	<!-- The web application <module> <web> <web-uri>ssds.war</web-uri> <context-root>ssds</context-root> 
+		</web> </module> -->
 </application>
