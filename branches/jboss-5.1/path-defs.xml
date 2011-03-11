@@ -323,5 +323,16 @@
 		<classpath refid="jibx-classpath" />
 	</taskdef>
 
+	<!-- Define the Flex tasks -->
+	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
 
+	<!-- Define the GAS3 ant tasks -->
+	<taskdef name="gas3" classname="org.granite.generator.ant.AntJavaAs3Task">
+		<classpath>
+			<fileset dir="${gas3.path}">
+				<include name="*.jar" />
+			</fileset>
+			<fileset refid="jboss-client-jar-fileset" />
+		</classpath>
+	</taskdef>
 </project>
