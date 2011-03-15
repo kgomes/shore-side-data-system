@@ -32,7 +32,7 @@ Just as a note, the idea with the SSDSGeoLocatedDevicePacket was that if there w
 When the Transmogrify component receives a SIAM !DevicePacket, it converts it to a SSDSDevicePacket using the !PacketUtility class. Here are the various attributes on the classes and how they map to each other.
 
 <table>
-<tr><th>DevicePacket</th><th>!MetadataPacket</th></tr>
+<th>!DevicePacket</th><th>!MetadataPacket</th>
 </table>
 
 || *!DevicePacket* || *!MetadataPacket* || *!SensorDataPacket* || *!DeviceMessagePacket* || *!SensorStatusPacket* || *SSDSDevicePacket* || *SSDSGeoLocatedDevicePacket* || *SSDSDevicePacketProto::!MessagePacket* || *Description* ||
