@@ -31,10 +31,6 @@ Just as a note, the idea with the SSDSGeoLocatedDevicePacket was that if there w
 
 When the Transmogrify component receives a SIAM !DevicePacket, it converts it to a SSDSDevicePacket using the !PacketUtility class. Here are the various attributes on the classes and how they map to each other.
 
-<table>
-<th>!DevicePacket</th><th>!MetadataPacket</th>
-</table>
-
 || *!DevicePacket* || *!MetadataPacket* || *!SensorDataPacket* || *!DeviceMessagePacket* || *!SensorStatusPacket* || *SSDSDevicePacket* || *SSDSGeoLocatedDevicePacket* || *SSDSDevicePacketProto::!MessagePacket* || *Description* ||
 || *sourceID* || _inherited_ || _inherited_ || _inherited_ || _inherited_ || _inherited_ || _inherited_ || *sourceID* || This is the ID of the device that generated the packet ||
 || *systemTime* || _inherited_ || _inherited_ || _inherited_ || _inherited_ || _inherited_ || _inherited_ || Split into two fields *timestampSeconds* and *timestampNanoseconds* || This is the timestamp (in epoch milliseconds) when the packet was created by the system.  This may or may not match instrument time if the clocks are not synchronized ||
