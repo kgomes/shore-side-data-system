@@ -1,4 +1,5 @@
 #summary This page describes the transmogrify and ingest components of SSDS
+#sidebar TableOfContents
 
 = Transmogrify and Ingest Components =
 
