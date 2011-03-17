@@ -381,8 +381,6 @@
 			<else>
 				<!-- Now call GWT's war target -->
 				<ant dir="${src.gwt.webapp}" antfile="build.xml" inheritAll="false" target="war" />
-				<!-- Now copy the resultant war back to the dist directory -->
-				<copy file="${src.gwt.webapp}/ssds.war" todir="${project.dist}" />
 			</else>
 		</if>
 	</target>
