@@ -9,4 +9,4 @@ Under construction
 
 http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg
 
-<img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg" width="100"/>
+<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg" target="_blank"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg" width="400"/></a>
