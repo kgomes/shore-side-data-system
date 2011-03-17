@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
@@ -26,6 +28,7 @@ import moos.ssds.metadata.Metadata;
 import moos.ssds.metadata.Person;
 import moos.ssds.metadata.UserGroup;
 import moos.ssds.metadata.util.MetadataException;
+import moos.ssds.metadata.util.ObjectBuilder;
 
 import org.apache.log4j.Logger;
 import org.jibx.runtime.BindingDirectory;
@@ -75,8 +78,9 @@ public class TestPerson extends TestCase {
 			person.setStatus(Person.STATUS_ACTIVE);
 			person.setUsername("kgomes");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Now read all of them back
@@ -144,8 +148,9 @@ public class TestPerson extends TestCase {
 			person.setStatus(Person.STATUS_ACTIVE);
 			person.setUsername("kgomes");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Check that the string representations are equal
@@ -214,19 +219,18 @@ public class TestPerson extends TestCase {
 			personOne.setValuesFromStringRepresentation(stringRep, ",");
 			personTwo.setValuesFromStringRepresentation(stringRepTwo, ",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two person objects");
+			logger.error("MetadataException caught trying to create two person objects");
 		}
 
-		assertTrue("The two persons should be equal (part one).", personOne
-				.equals(personTwo));
+		assertTrue("The two persons should be equal (part one).",
+				personOne.equals(personTwo));
 		assertEquals("The two persons should be equal (part two).", personOne,
 				personTwo);
 
 		// Now change the ID of the second one and they should still be equal
 		personTwo.setId(new Long(2));
-		assertTrue("The two persons should be equal", personOne
-				.equals(personTwo));
+		assertTrue("The two persons should be equal",
+				personOne.equals(personTwo));
 
 		// Now set the ID back, check equals again
 		personTwo.setId(new Long(1));
@@ -237,21 +241,19 @@ public class TestPerson extends TestCase {
 		try {
 			personTwo.setUsername("jdoe");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to set the username: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to set the username: "
+					+ e.getMessage());
 		}
-		assertTrue("The two persons should not be equal", !personOne
-				.equals(personTwo));
+		assertTrue("The two persons should not be equal",
+				!personOne.equals(personTwo));
 
 		// Now set it back and change all the non-business key values. The
 		// results should be equals
 		try {
 			personTwo.setUsername("kgomes");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to set the username: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to set the username: "
+					+ e.getMessage());
 		}
 		try {
 			personTwo.setFirstname("John");
@@ -259,8 +261,9 @@ public class TestPerson extends TestCase {
 			personTwo.setOrganization("SELF");
 			personTwo.setPassword("pass2");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals("The two persons should be equal after ID set back.",
 				personOne, personTwo);
@@ -287,15 +290,14 @@ public class TestPerson extends TestCase {
 			personOne.setValuesFromStringRepresentation(stringRep, ",");
 			personTwo.setValuesFromStringRepresentation(stringRepTwo, ",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two person objects: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to create two person objects: "
+					+ e.getMessage());
 		}
 
-		assertTrue("The two hashCodes should be equal (part one).", personOne
-				.hashCode() == personTwo.hashCode());
-		assertEquals("The two hashCodes should be equal (part two).", personOne
-				.hashCode(), personTwo.hashCode());
+		assertTrue("The two hashCodes should be equal (part one).",
+				personOne.hashCode() == personTwo.hashCode());
+		assertEquals("The two hashCodes should be equal (part two).",
+				personOne.hashCode(), personTwo.hashCode());
 
 		// Now change the ID of the second one and they should still be equal
 		personTwo.setId(new Long(2));
@@ -311,9 +313,8 @@ public class TestPerson extends TestCase {
 		try {
 			personTwo.setUsername("jdoe");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to set the username: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to set the username: "
+					+ e.getMessage());
 		}
 		assertTrue(
 				"The two hashCodes should not be equal after username change",
@@ -324,9 +325,8 @@ public class TestPerson extends TestCase {
 		try {
 			personTwo.setUsername("kgomes");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to set the username: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to set the username: "
+					+ e.getMessage());
 		}
 		try {
 			personTwo.setFirstname("John");
@@ -334,13 +334,14 @@ public class TestPerson extends TestCase {
 			personTwo.setOrganization("SELF");
 			personTwo.setPassword("pass2");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals(
 				"The two hashCodes should be equal after ID and username same"
-						+ ", but different business keys.", personOne
-						.hashCode(), personTwo.hashCode());
+						+ ", but different business keys.",
+				personOne.hashCode(), personTwo.hashCode());
 	}
 
 	public void testPersonXMLBinding() {
@@ -367,8 +368,9 @@ public class TestPerson extends TestCase {
 		try {
 			bfact = BindingDirectory.getFactory(Metadata.class);
 		} catch (JiBXException e1) {
-			assertTrue("Error in getting Binding Factory for Metadata: "
-					+ e1.getMessage(), false);
+			assertTrue(
+					"Error in getting Binding Factory for Metadata: "
+							+ e1.getMessage(), false);
 		}
 
 		// Grab a JiBX unmarshalling context
@@ -409,39 +411,40 @@ public class TestPerson extends TestCase {
 			if (testPerson != null) {
 				assertEquals("Person id should match", testPerson.getId()
 						.longValue(), Long.parseLong("10"));
-				assertEquals("Person first name should match", testPerson
-						.getFirstname(), "Test Firstname");
-				assertEquals("Person surname should match", testPerson
-						.getSurname(), "Test Surname");
-				assertEquals("Person organization should match", testPerson
-						.getOrganization(), "Test Organization");
-				assertEquals("Person username should match", testPerson
-						.getUsername(), "testUsername@org.com");
-				assertEquals("Person password should match", testPerson
-						.getPassword(), "Test password");
+				assertEquals("Person first name should match",
+						testPerson.getFirstname(), "Test Firstname");
+				assertEquals("Person surname should match",
+						testPerson.getSurname(), "Test Surname");
+				assertEquals("Person organization should match",
+						testPerson.getOrganization(), "Test Organization");
+				assertEquals("Person username should match",
+						testPerson.getUsername(), "testUsername@org.com");
+				assertEquals("Person password should match",
+						testPerson.getPassword(), "Test password");
 				assertEquals("Person email should match",
 						testPerson.getEmail(), "test.email@org.com");
 				assertEquals("Person phone match", testPerson.getPhone(),
 						"123-456-7890");
-				assertEquals("Person address1 should match", testPerson
-						.getAddress1(), "Test Address 1");
-				assertEquals("Person address2 should match", testPerson
-						.getAddress2(), "Test Address 2");
+				assertEquals("Person address1 should match",
+						testPerson.getAddress1(), "Test Address 1");
+				assertEquals("Person address2 should match",
+						testPerson.getAddress2(), "Test Address 2");
 				assertEquals("Person city should match", testPerson.getCity(),
 						"Test City");
 				assertEquals("Person state should match",
 						testPerson.getState(), "TS");
-				assertEquals("Person zipcode should match", testPerson
-						.getZipcode(), "12345");
-				assertEquals("Person status should match", testPerson
-						.getStatus(), "active");
+				assertEquals("Person zipcode should match",
+						testPerson.getZipcode(), "12345");
+				assertEquals("Person status should match",
+						testPerson.getStatus(), "active");
 
 				// Now iterate over the UserGroups
 				for (Iterator<UserGroup> iterator = testPerson.getUserGroups()
 						.iterator(); iterator.hasNext();) {
 					UserGroup userGroup = iterator.next();
 					// Make sure it has an expected name
-					assertTrue("UserGroup name is on of the expected ones",
+					assertTrue(
+							"UserGroup name is on of the expected ones",
 							(userGroup.getGroupName()
 									.equals("Test UserGroup 1")
 									|| userGroup.getGroupName().equals(
@@ -450,7 +453,8 @@ public class TestPerson extends TestCase {
 											"Test UserGroup 3") || userGroup
 									.getGroupName().equals("Test UserGroup 4")));
 					// And ID
-					assertTrue("UserGroup ID is on of the expected ones",
+					assertTrue(
+							"UserGroup ID is on of the expected ones",
 							(userGroup.getId().equals(Long.parseLong("1"))
 									|| userGroup.getId().equals(
 											Long.parseLong("2"))
@@ -491,8 +495,9 @@ public class TestPerson extends TestCase {
 					assertTrue("NumberFormatException in updating Person: "
 							+ e1.getMessage(), false);
 				} catch (MetadataException e1) {
-					assertTrue("MetadataException in updating Person: "
-							+ e1.getMessage(), false);
+					assertTrue(
+							"MetadataException in updating Person: "
+									+ e1.getMessage(), false);
 				}
 				logger.debug("Changed person attributes "
 						+ "and will marshall to XML");
@@ -505,8 +510,9 @@ public class TestPerson extends TestCase {
 				try {
 					mctx = bfact.createMarshallingContext();
 				} catch (JiBXException e) {
-					assertTrue("Error while creating marshalling context: "
-							+ e.getMessage(), false);
+					assertTrue(
+							"Error while creating marshalling context: "
+									+ e.getMessage(), false);
 				}
 
 				if (mctx != null) {
@@ -569,4 +575,136 @@ public class TestPerson extends TestCase {
 
 	}
 
+	public void testPersonObjectBuilder() {
+		// Grab the file that has the XML in it
+		File personXMLFile = new File("src" + File.separator + "resources"
+				+ File.separator + "test" + File.separator + "xml"
+				+ File.separator + "Person.xml");
+		if (!personXMLFile.exists())
+			assertTrue("Could not find Person.xml file for testing.", false);
+		logger.debug("Will read person XML from "
+				+ personXMLFile.getAbsolutePath());
+
+		// Create an ObjectBuilder
+		ObjectBuilder objectBuilder = null;
+		try {
+			objectBuilder = new ObjectBuilder(personXMLFile.toURI().toURL());
+		} catch (MalformedURLException e3) {
+			logger.error("MalformedURLException caught trying to get to file "
+					+ personXMLFile.getAbsolutePath() + ": " + e3.getMessage());
+			assertTrue("Failed to open person.xml file: " + e3.getMessage(),
+					false);
+		}
+
+		// Now unmarshall it
+		if (objectBuilder != null) {
+			// Fire the unmarshal
+			objectBuilder.unmarshal();
+
+			Person testPerson = null;
+
+			// Grab the person from object builder
+			Collection<Object> allObjects = objectBuilder.listAll();
+
+			testPerson = (Person) allObjects.iterator().next();
+			if (testPerson != null) {
+				assertEquals("Person id should match", testPerson.getId()
+						.longValue(), Long.parseLong("10"));
+				assertEquals("Person first name should match",
+						testPerson.getFirstname(), "Test Firstname");
+				assertEquals("Person surname should match",
+						testPerson.getSurname(), "Test Surname");
+				assertEquals("Person organization should match",
+						testPerson.getOrganization(), "Test Organization");
+				assertEquals("Person username should match",
+						testPerson.getUsername(), "testUsername@org.com");
+				assertEquals("Person password should match",
+						testPerson.getPassword(), "Test password");
+				assertEquals("Person email should match",
+						testPerson.getEmail(), "test.email@org.com");
+				assertEquals("Person phone match", testPerson.getPhone(),
+						"123-456-7890");
+				assertEquals("Person address1 should match",
+						testPerson.getAddress1(), "Test Address 1");
+				assertEquals("Person address2 should match",
+						testPerson.getAddress2(), "Test Address 2");
+				assertEquals("Person city should match", testPerson.getCity(),
+						"Test City");
+				assertEquals("Person state should match",
+						testPerson.getState(), "TS");
+				assertEquals("Person zipcode should match",
+						testPerson.getZipcode(), "12345");
+				assertEquals("Person status should match",
+						testPerson.getStatus(), "active");
+
+				// Now iterate over the UserGroups
+				for (Iterator<UserGroup> iterator = testPerson.getUserGroups()
+						.iterator(); iterator.hasNext();) {
+					UserGroup userGroup = iterator.next();
+					// Make sure it has an expected name
+					assertTrue(
+							"UserGroup name is on of the expected ones",
+							(userGroup.getGroupName()
+									.equals("Test UserGroup 1")
+									|| userGroup.getGroupName().equals(
+											"Test UserGroup 2")
+									|| userGroup.getGroupName().equals(
+											"Test UserGroup 3") || userGroup
+									.getGroupName().equals("Test UserGroup 4")));
+					// And ID
+					assertTrue(
+							"UserGroup ID is on of the expected ones",
+							(userGroup.getId().equals(Long.parseLong("1"))
+									|| userGroup.getId().equals(
+											Long.parseLong("2"))
+									|| userGroup.getId().equals(
+											Long.parseLong("3")) || userGroup
+									.getId().equals(Long.parseLong("4"))));
+				}
+
+				// // Now let's change the attributes
+				// try {
+				// testPerson.setId(new Long("199"));
+				// testPerson.setFirstname("NewFirstname");
+				// testPerson.setSurname("NewSurname");
+				// testPerson.setOrganization("NewOrganization");
+				// testPerson.setUsername("NewUsername");
+				// testPerson.setPassword("NewPassword");
+				// testPerson.setEmail("NewEmail");
+				// testPerson.setPhone("NewPhone");
+				// testPerson.setAddress1("NewAddress1");
+				// testPerson.setAddress2("NewAddress2");
+				// testPerson.setCity("NewCity");
+				// testPerson.setState("NewState");
+				// testPerson.setZipcode("NewZipcode");
+				// testPerson.setStatus("inactive");
+				// for (Iterator<UserGroup> iterator = testPerson
+				// .getUserGroups().iterator(); iterator.hasNext();) {
+				// UserGroup userGroup = iterator.next();
+				// if (userGroup.getGroupName().contains("1"))
+				// userGroup.setGroupName("NewUserGroupName1");
+				// if (userGroup.getGroupName().contains("2"))
+				// userGroup.setGroupName("NewUserGroupName2");
+				// if (userGroup.getGroupName().contains("3"))
+				// userGroup.setGroupName("NewUserGroupName3");
+				// if (userGroup.getGroupName().contains("4"))
+				// userGroup.setGroupName("NewUserGroupName4");
+				// }
+				// } catch (NumberFormatException e1) {
+				// assertTrue("NumberFormatException in updating Person: "
+				// + e1.getMessage(), false);
+				// } catch (MetadataException e1) {
+				// assertTrue(
+				// "MetadataException in updating Person: "
+				// + e1.getMessage(), false);
+				// }
+				// logger.debug("Changed person attributes "
+				// + "and will marshall to XML");
+				//
+				// // Create a string writer
+				// StringWriter personStringWriter = new StringWriter();
+			}
+		}
+
+	}
 }
