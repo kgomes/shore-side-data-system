@@ -36,11 +36,11 @@ import java.util.regex.Pattern;
 
 import moos.ssds.data.parsers.Parser;
 import moos.ssds.data.parsers.IParser;
+import moos.ssds.data.util.MathUtil;
 import moos.ssds.metadata.DataContainer;
 import moos.ssds.metadata.RecordVariable;
 
 import org.apache.log4j.Logger;
-import org.mbari.util.MathUtil;
 
 /**
  * This class provides data from a <code>DataContainer</code> that has an
