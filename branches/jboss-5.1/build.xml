@@ -95,11 +95,11 @@
 			<classpath refid="compile-classpath" />
 		</javac>
 
-		<!-- Run the JiBX compiler -->
+		<!-- Run the JiBX compiler
 		<echo message="Running JiBX binding compiler" />
 		<bind binding="${project.src}/xml/binding.xml">
 			<classpath refid="jibx-classpath" />
-		</bind>
+		</bind> -->
 
 		<!-- Check the build property to see if the Flex or GWT app is to be deployed -->
 		<if>
@@ -915,7 +915,7 @@
 			<jvmarg value="-Xms512m" />
 			<jvmarg value="-Xmx1024m" />
 			<classpath>
-				<pathelement location="${project.dist}/ssds-services-metadata-client.jar" />
+				<pathelement location="${project.dist}/ssds-client.jar" />
 				<pathelement location="${project.build}/classes" />
 				<pathelement location="${project.lib}/${xmlunit.jar}" />
 				<pathelement location="${project.lib}/${junit.jar}" />

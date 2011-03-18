@@ -102,7 +102,7 @@
 		<include name="*.jar" />
 	</fileset>
 
-	<!-- JiBX fileset -->
+	<!-- JiBX fileset
 	<fileset id="jibx-jars" dir="${project.lib}">
 		<include name="${bcel.jar}" />
 		<include name="${jibx-bind.jar}" />
@@ -117,9 +117,9 @@
 		<include name="${xbis-jbix.jar}" />
 		<include name="${xmlpull.jar}" />
 		<include name="${xpp3.jar}" />
-	</fileset>
+	</fileset> -->
 
-	<!-- Deployed JiBX fileset -->
+	<!-- Deployed JiBX fileset 
 	<fileset id="deployed-jibx-jars" dir="${jboss.common.lib.location}">
 		<include name="${bcel.jar}" />
 		<include name="${jibx-bind.jar}" />
@@ -134,7 +134,7 @@
 		<include name="${xbis-jbix.jar}" />
 		<include name="${xmlpull.jar}" />
 		<include name="${xpp3.jar}" />
-	</fileset>
+	</fileset> -->
 
 	<!-- Define the fileset that includes the JBoss server lib jars that we need -->
 	<fileset id="jboss-lib-jar-fileset" dir="${jboss.home}/server/${jboss.server.type}/lib">
@@ -270,11 +270,11 @@
 		<include name="${xpp3.jar}" />
 	</fileset>
 
-	<!-- Define a fileset for JiBX jars -->
+	<!-- Define a fileset for JiBX jars
 	<path id="jibx-classpath">
 		<fileset refid="jibx-jars" />
 		<pathelement location="${build.classes}" />
-	</path>
+	</path> -->
 
 
 	<!-- Define classpath for compiling the source code -->
@@ -318,10 +318,10 @@
 		</classpath>
 	</taskdef>
 
-	<!-- JiBX-->
+	<!-- JiBX
 	<taskdef name="bind" classname="org.jibx.binding.ant.CompileTask">
 		<classpath refid="jibx-classpath" />
-	</taskdef>
+	</taskdef> -->
 
 	<!-- Define the Flex tasks -->
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
