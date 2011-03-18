@@ -15,7 +15,7 @@ Here is a sequence diagram of the basic steps that occur when a packet is submit
 
 <a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/TransmogrifyIngest.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/TransmogrifyIngest.jpg" width="800"/></a>
 
-After the ingest step, if the packet is a metadata packet, it is forwarded on to the RuminateMDB (covered on another wiki page).  The protocol buffers ingest MDB operates the same way expect that in the IngestProtoMDB, the packet gets converted from the incoming protocol buffer to an SSDSDevicePacket which is then persisted in the same was as the IngestMDB does it.
+After the ingest step, if the packet is a metadata packet, it is forwarded on to the RuminateMDB (covered on another wiki page).  The protocol buffers ingest MDB operates the same way except that in the IngestProtoMDB, the packet gets converted from the incoming protocol buffer to an SSDSDevicePacket which is then persisted in the same was as the IngestMDB does it.
 
 == Transmogrify Packet Structure ==
 
