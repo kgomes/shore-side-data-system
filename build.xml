@@ -916,6 +916,7 @@
 			<jvmarg value="-Xmx1024m" />
 			<classpath>
 				<pathelement location="${project.dist}/ssds-client.jar" />
+				<pathelement location="${src.resources}/test" />
 				<pathelement location="${project.build}/classes" />
 				<pathelement location="${project.lib}/${xmlunit.jar}" />
 				<pathelement location="${project.lib}/${junit.jar}" />
