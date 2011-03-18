@@ -7,13 +7,13 @@ This page documents the components that are known as "Transmogrify" (nod to Bill
 
 Here is a logical diagram of the message flow for ingesting data into the SSDS.
 
-<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/TransIngestLogical.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/TransIngestLogical.jpg" width="900"/></a>
+<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/TransIngestLogical.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/TransIngestLogical.jpg" width="800"/></a>
 
 As I mentioned, the JMS flow consumers are all implemented as Message Driven Beans (EJB) and are wired in series with Transmogrify feeding into Ingest. The original reason for having both was that Transmogrify was to handle data and metadata from the SIAM system that had some special characteristics and needed to be converted to the generic message format that the SSDS is expecting. If someone wanted to send the generic format, they could bypass the Transmogrify and send straight to Ingest. As with all things, patchwork becomes production and Transmogrify lives on to this day.
 
 Here is a sequence diagram of the basic steps that occur when a packet is submitted via JMS to the SSDS (at least through transmogrify and ingest).
 
-[http://shore-side-data-system.googlecode.com/svn/wiki/images/TransmogrifyIngest.jpg]
+<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/TransmogrifyIngest.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/TransmogrifyIngest.jpg" width="800"/></a>
 
 After the ingest step, if the packet is a metadata packet, it is forwarded on to the RuminateMDB (covered on another wiki page).  The protocol buffers ingest MDB operates the same way expect that in the IngestProtoMDB, the packet gets converted from the incoming protocol buffer to an SSDSDevicePacket which is then persisted in the same was as the IngestMDB does it.
 
