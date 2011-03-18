@@ -24,6 +24,21 @@ public class SSDSGeoLocatedDevicePacket extends SSDSDevicePacket implements
 	private static final long serialVersionUID = 3L;
 
 	/**
+	 * This latitude where the packet was sampled
+	 */
+	private double latitude = 0;
+
+	/**
+	 * The longitude where the packet was sampled
+	 */
+	private double longitude = 0;
+
+	/**
+	 * The depth where the packet was sampled
+	 */
+	private float depth = 0;
+
+	/**
 	 * @see moos.ssds.io.SSDSDevicePacket#SSDSDevicePacket(long)
 	 * @param sourceID
 	 */
@@ -108,19 +123,4 @@ public class SSDSGeoLocatedDevicePacket extends SSDSDevicePacket implements
 						+ this.depth);
 		return stringToReturn;
 	}
-
-	/**
-	 * This latitude where the packet was sampled
-	 */
-	private double latitude = 0;
-
-	/**
-	 * The longitude where the packet was sampled
-	 */
-	private double longitude = 0;
-
-	/**
-	 * The depth where the packet was sampled
-	 */
-	private float depth = 0;
 }
