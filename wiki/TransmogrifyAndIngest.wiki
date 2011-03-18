@@ -123,7 +123,7 @@ So, through all this, there are basically five representations of data packets i
 
 Here is a diagram of these various forms of data
 
-{gliffy:name=Packet Translations|space=SSDS|page=Ingest Architecture|pageid=8355863|align=center|size=L}
+<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/VariousPackets.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/VariousPackets.jpg" width="800"/></a>
 
 And the translation rules (some of these may seem very strange for legacy reasons).
 
