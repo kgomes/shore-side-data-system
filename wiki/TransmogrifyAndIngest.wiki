@@ -7,7 +7,7 @@ This page documents the components that are known as "Transmogrify" (nod to Bill
 
 Here is a logical diagram of the message flow for ingesting data into the SSDS.
 
-[http://shore-side-data-system.googlecode.com/svn/wiki/images/TransIngestLogical.jpg]
+<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/TransIngestLogical.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/TransIngestLogical.jpg" width="400"/></a>
 
 As I mentioned, the JMS flow consumers are all implemented as Message Driven Beans (EJB) and are wired in series with Transmogrify feeding into Ingest. The original reason for having both was that Transmogrify was to handle data and metadata from the SIAM system that had some special characteristics and needed to be converted to the generic message format that the SSDS is expecting. If someone wanted to send the generic format, they could bypass the Transmogrify and send straight to Ingest. As with all things, patchwork becomes production and Transmogrify lives on to this day.
 
