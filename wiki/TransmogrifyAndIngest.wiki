@@ -23,7 +23,7 @@ Our initial and primary publisher of data for the SSDS was the SIAM infrastructu
 
 <a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg" width="800"/></a>
 
-The classes on the left are the SIAM classes.  The SSDSDevicePacket classes were subclassed from the SIAM classes to add some functionality to assist in converting between the two.  The !PacketUtility class is a helper class that is used to convert between the different formats of serialization and objects.  The SSDSDeviceProto and inner !MessagePacket class were the Java classes that were generated from the !Google protocol buffers definition that you can view here:
+The classes on the left are the SIAM classes.  The SSDSDevicePacket classes were subclassed from the SIAM classes to add some functionality to assist in converting between the two.  The !PacketUtility class is a helper class that is used to convert between the different formats of serialization and objects.  The SSDSDeviceProto and inner !MessagePacket class were the Java classes that were generated from the Google protocol buffers definition that you can view here:
 
 http://code.google.com/p/shore-side-data-system/source/browse/branches/jboss-5.1/src/proto/ssds-device-packet.proto
 
@@ -113,11 +113,12 @@ The Ingest Message Driven Bean (MDB) then takes that byte array and using a !Pac
  
 == Packet Translations ==
 
-So, through all this, there are basically five representations of data packets in the SSDS ecosystem:
+So, through all this, there are basically six representations of data packets in the SSDS ecosystem:
 
  # SIAM Device Packet (and its sub classes !MetadataPacket, !SensorDataPacket, !DeviceMessagePacket)
- # SSDSDevicePacket (and its sub class SSDSGeoLocatedDevicePacket)
  # SIAM Byte array (from Exportable class)
+ # SSDSDevicePacket
+ # SSDSGeoLocatedDevicePacket
  # SSDS Byte array
  # SSDS Protocol Buffers Format
 
