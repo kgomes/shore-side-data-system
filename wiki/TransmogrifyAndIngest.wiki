@@ -74,7 +74,7 @@ where:
 
 Now, in order to handle both types of inputs in Transmogrify (!DevicePackets and !BytesMessage structure), Transmogrify would take both and convert to a common format that would contain the information to cover both types of messages.  Since the !BytesMessage structure encompasses all the information in the !DevicePacket, we simply used that byte structure and in Transmogrify, a !DevicePacket is converted to a SSDSDevicePacket which is then converted to the same !BytesMessage structure using the methods in the !PacketUtility class.  Once the !DevicePacket object has been converted to a SIAMFormatByteArray, Transmogrify then converts that message, using the !PacketUtility class, to an SSDSFormatByteArray that is then used to send on to the Ingest component.  Here is the mapping that is used to convert from SIAMFormatByteArray to the SSDSFormatByteArray.
 
-[http://shore-side-data-system.googlecode.com/svn/wiki/images/SIAMToSSDSConvert.jpg]
+<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/SIAMToSSDSConvert.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/SIAMToSSDSConvert.jpg" width="800"/></a>
 
 Notes on the conversion:
 
