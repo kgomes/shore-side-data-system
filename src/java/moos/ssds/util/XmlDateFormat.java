@@ -162,7 +162,7 @@ public final class XmlDateFormat implements Serializable {
 
 		// Setup the pattern to grab the values
 		Pattern datePattern = Pattern
-				.compile("^\\s*(\\d{4})[/|-]+(\\d+)[/|-]+(\\d+)\\D*(\\d+):(\\d+):(\\d+)\\s*(\\D+)\\s*$");
+				.compile("^\\s*(\\d{4})[/|-]+(\\d+)[/|-]+(\\d+)\\D*(\\d+):(\\d+):(\\d+)\\s*(\\S*)\\s*$");
 		Matcher matcher = datePattern.matcher(source);
 		if (matcher.matches()) {
 			year = new Integer(matcher.group(1)).intValue();
