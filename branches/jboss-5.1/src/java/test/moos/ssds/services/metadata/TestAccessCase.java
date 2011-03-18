@@ -64,6 +64,8 @@ import org.apache.log4j.Logger;
  */
 public abstract class TestAccessCase extends TestCase {
 
+	static Logger superLogger = Logger.getLogger(TestAccessCase.class);
+
 	/**
 	 * Here are some static variables that define different objects to use in
 	 * testing
@@ -431,8 +433,6 @@ public abstract class TestAccessCase extends TestCase {
 							+ cce.getMessage());
 		}
 	}
-
-	static Logger superLogger = Logger.getLogger(TestAccessCase.class);
 
 	/**
 	 * @param unmarshalledCollection
