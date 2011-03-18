@@ -52,7 +52,7 @@ public class MetadataFactory {
 	 * @param stringRepresentation
 	 *            the string representation of the object to be instantiated
 	 * @param delimiter
-	 *            is the delimiter that is used in the string represetation to
+	 *            is the delimiter that is used in the string representation to
 	 *            separate out the fields
 	 * @return a <code>MetadataObject</code> that has its field populated from
 	 *         the string representation
@@ -115,9 +115,8 @@ public class MetadataFactory {
 							xmlDoc.append(new String(readByte));
 						}
 					} catch (Exception e3) {
-						logger
-								.error("Exception trying to read bytes from stream: "
-										+ e3.getMessage());
+						logger.error("Exception trying to read bytes from stream: "
+								+ e3.getMessage());
 					}
 				}
 				if (xmlDoc.length() > 0) {
@@ -130,11 +129,10 @@ public class MetadataFactory {
 					}
 					logger.debug("xmlDocString = " + xmlDocString);
 					logger.debug("Will try to construct objects from that.");
-					Collection metadataFromBuild = MetadataFactory
+					Collection<Object> metadataFromBuild = MetadataFactory
 							.createMetadataObjectsFromXML(xmlDocString);
 					if (metadataFromBuild == null) {
-						logger
-								.debug("Uh oh, not objects from built from XML!!!!");
+						logger.debug("Uh oh, not objects from built from XML!!!!");
 					} else {
 						logger.debug("OK, objects should be built, there are "
 								+ metadataFromBuild.size() + " objects");
@@ -142,7 +140,7 @@ public class MetadataFactory {
 					// Now grab the top object
 					if ((metadataFromBuild != null)
 							&& (metadataFromBuild.size() > 0)) {
-						Iterator metadataObjectIter = metadataFromBuild
+						Iterator<Object> metadataObjectIter = metadataFromBuild
 								.iterator();
 						if (metadataObjectIter.hasNext())
 							objectToReturn = (IMetadataObject) metadataObjectIter
@@ -160,8 +158,7 @@ public class MetadataFactory {
 		// Now if the object was not built from the XML, try to do it from the
 		// string
 		if (objectToReturn == null) {
-			logger
-					.debug("Object was not constructed from XML, will try from string Rep");
+			logger.debug("Object was not constructed from XML, will try from string Rep");
 			// Create a string tokenizer that uses the delimiter specified (or
 			// the
 			// default)
@@ -185,6 +182,7 @@ public class MetadataFactory {
 				firstToken = "moos.ssds.metadata." + firstToken;
 
 			// Now try to grab the class
+			@SuppressWarnings("rawtypes")
 			Class classDefinition = null;
 			try {
 				classDefinition = Class.forName(firstToken);
@@ -220,15 +218,14 @@ public class MetadataFactory {
 	 * name
 	 * 
 	 * @param className
-	 * @return a new instantiated <code>Object</code> of the class specified
-	 *         in the className parameter
+	 * @return a new instantiated <code>Object</code> of the class specified in
+	 *         the className parameter
 	 */
 	public static Object getObject(String className) {
-		logger
-				.debug("Going to try to instantiate object of class "
-						+ className);
+		logger.debug("Going to try to instantiate object of class " + className);
 		Object object = null;
 		try {
+			@SuppressWarnings("rawtypes")
 			Class classDefinition = findClassByName(className);
 			object = classDefinition.newInstance();
 		} catch (Throwable e) {
@@ -262,30 +259,30 @@ public class MetadataFactory {
 	 * <li><code>String</code></li>
 	 * <li><code>java.util.Date</code> (this uses an XMLDateFormatter so the
 	 * incoming string must be in that form</li>
-	 * <li><code>java.util.Calendar</code> (this uses an XMLDateFormatter so
-	 * the incoming string must be in that form</li>
+	 * <li><code>java.util.Calendar</code> (this uses an XMLDateFormatter so the
+	 * incoming string must be in that form</li>
 	 * <li>java.net.URI</li>
 	 * <li>java.net.URL</li>
-	 * <li><code>IMetadataObject</code> (the string passed in must be the
-	 * string representation of that object)</li>
+	 * <li><code>IMetadataObject</code> (the string passed in must be the string
+	 * representation of that object)</li>
 	 * </ol>
 	 * 
 	 * @param classToInstantiate
-	 *            the <code>Class</code> that will be used to instantiate a
-	 *            new object
+	 *            the <code>Class</code> that will be used to instantiate a new
+	 *            object
 	 * @param constructorValue
 	 *            the string value to initialize the object to
 	 * @param delimiter
 	 *            this is only used if the constructor you pass in is a string
-	 *            representation of a <code>IMetadataObject</code>. This
-	 *            tells what delimiter is used to parse the string
-	 *            representation
+	 *            representation of a <code>IMetadataObject</code>. This tells
+	 *            what delimiter is used to parse the string representation
 	 * @return an <code>Object</code> of the class that is passed in with its
 	 *         value set using the incoming string. If the class is not one of
 	 *         those listed above, null will be returned
 	 * @throws IllegalArgumentException
 	 *             if the incoming string could not be converted.
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static Object getObject(Class classToInstantiate,
 			String constructorValue, String delimiter)
 			throws IllegalArgumentException {
@@ -322,7 +319,7 @@ public class MetadataFactory {
 				if ((constructorValue == null) || (constructorValue.equals(""))) {
 					objectToReturn = null;
 				} else {
-					// Since this is a byte array, the HTTP will have recieved
+					// Since this is a byte array, the HTTP will have received
 					// an ASCII string that should be a Base64 encoding of the
 					// data, so we need to decode to a byte array
 					Base64 b64 = new Base64();
@@ -393,15 +390,15 @@ public class MetadataFactory {
 				if ((constructorValue == null) || (constructorValue.equals(""))) {
 					objectToReturn = null;
 				} else {
-					objectToReturn = new Character(constructorValue
-							.toCharArray()[0]);
+					objectToReturn = new Character(
+							constructorValue.toCharArray()[0]);
 				}
 			} else if (classToInstantiate.equals(Character.class)) {
 				if ((constructorValue == null) || (constructorValue.equals(""))) {
 					objectToReturn = null;
 				} else {
-					objectToReturn = new Character(constructorValue
-							.toCharArray()[0]);
+					objectToReturn = new Character(
+							constructorValue.toCharArray()[0]);
 				}
 			} else if (classToInstantiate.equals(boolean.class)) {
 				if ((constructorValue == null) || (constructorValue.equals(""))) {
@@ -445,7 +442,7 @@ public class MetadataFactory {
 					objectToReturn = new URL(constructorValue);
 				}
 			} else if (classToInstantiate.equals(Collection.class)) {
-				objectToReturn = new ArrayList();
+				objectToReturn = new ArrayList<Object>();
 				// Since this is a collection, tokenize the incoming constructor
 				// based on the delimiter
 				if ((constructorValue != null)
@@ -458,7 +455,8 @@ public class MetadataFactory {
 						// TODO kgomes right now this only supports arrays of
 						// strings, but I should open that up
 						if (entryType.equalsIgnoreCase("String"))
-							((ArrayList) objectToReturn).add(entryValue);
+							((ArrayList<Object>) objectToReturn)
+									.add(entryValue);
 					}
 				}
 			} else {
@@ -492,9 +490,10 @@ public class MetadataFactory {
 	 * 
 	 * @param className
 	 *            the name of the class to get a <code>Class</code> object for
-	 * @return the <code>Class</code> that has a name that matches the
-	 *         incoming string
+	 * @return the <code>Class</code> that has a name that matches the incoming
+	 *         string
 	 */
+	@SuppressWarnings("rawtypes")
 	public static Class findClassByName(String className)
 			throws ClassNotFoundException {
 
@@ -601,8 +600,8 @@ public class MetadataFactory {
 	 * 
 	 * @param metadataObject
 	 *            the object who (with it's graph) will be converted to XML
-	 * @return the <code>String</code> format of the XML that matches the
-	 *         object graph
+	 * @return the <code>String</code> format of the XML that matches the object
+	 *         graph
 	 * @throws MetadataException
 	 *             if something goes wrong in the construction
 	 */
@@ -650,8 +649,8 @@ public class MetadataFactory {
 	 * @throws MetadataException
 	 *             is something goes wrong with parsing or your XML is funky
 	 */
-	public static Collection createMetadataObjectsFromXML(String xmlDocument)
-			throws MetadataException {
+	public static Collection<Object> createMetadataObjectsFromXML(
+			String xmlDocument) throws MetadataException {
 
 		// Check for null xml
 		if (xmlDocument == null) {
@@ -659,7 +658,7 @@ public class MetadataFactory {
 		}
 
 		// The metadataObject to return
-		Collection metadataObjectsToReturn = new ArrayList();
+		Collection<Object> metadataObjectsToReturn = new ArrayList<Object>();
 
 		// Create the object builder
 		ObjectBuilder objectBuilder = new ObjectBuilder(xmlDocument);
@@ -676,9 +675,9 @@ public class MetadataFactory {
 		// Grab the collection to return
 		metadataObjectsToReturn = objectBuilder.listAll();
 
+		// Return them
 		return metadataObjectsToReturn;
 	}
-
 
 	/**
 	 * The Log 4J Logger
