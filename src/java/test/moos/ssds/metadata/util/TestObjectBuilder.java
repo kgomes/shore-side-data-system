@@ -1,131 +1,136 @@
 package test.moos.ssds.metadata.util;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Iterator;
 
+import moos.ssds.metadata.DataProducer;
 import moos.ssds.metadata.util.ObjectBuilder;
-import moos.ssds.metadata.util.XmlBuilder;
-import nu.xom.Builder;
-import nu.xom.Document;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.DifferenceListener;
 import org.custommonkey.xmlunit.XMLTestCase;
-import org.custommonkey.xmlunit.XMLUnit;
 
 public class TestObjectBuilder extends XMLTestCase {
 
-    /**
-     * Constructs a test case with the given name.
-     */
-    public TestObjectBuilder(String name) {
-        super(name);
-    }
+	/**
+	 * A log4j logger
+	 */
+	static Logger logger = Logger.getLogger(TestObjectBuilder.class);
 
-    /**
-     * Sets up the fixture, for example, open a network connection. This method
-     * is called before a test is executed.
-     */
-    protected void setUp() {
-        // Configure the logger
-        BasicConfigurator.configure();
-        logger.setLevel(Level.ALL);
-        logger.addAppender(new ConsoleAppender(new PatternLayout(
-            "%d %-5p [%c %M %L] %m%n")));
+	// The local objectBuilder object
+	private ObjectBuilder objectBuilder = null;
 
-        logger.debug("Setting up the test");
-        XMLUnit.setIgnoreWhitespace(true);
+	// The URL of the file to use to test
+	private URL url = null;
 
-        // Get the XML file
-        try {
-            url = this.getClass().getResource("TestObjectBuilder.xml");
-        } catch (RuntimeException e1) {
-            logger.error("Could not get the xml file to read: "
-                + e1.getMessage());
-            e1.printStackTrace();
-        }
-        logger.debug("The url to the XML file is : " + url);
-        // Write your code here
-        try {
-            objectBuilder = new ObjectBuilder(url);
-            objectBuilder.unmarshal(false);
-            allObjects = objectBuilder.listAll();
+	// A Collection of all objects in the object builder
+	private Collection<Object> allObjects = null;
 
-        } catch (Throwable e) {
-            logger.error("Failure in object builder somewhere: "
-                + e.getMessage());
-        }
-        logger.debug("Setup complete...");
-    }
+	/**
+	 * Constructs a test case with the given name.
+	 */
+	public TestObjectBuilder(String name) {
+		super(name);
+	}
 
-    /**
-     * Tears down the fixture, for example, close a network connection. This
-     * method is called after a test is executed.
-     * 
-     * @throws Exception
-     */
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        // Write your code here
-    }
+	/**
+	 * Sets up the fixture, for example, open a network connection. This method
+	 * is called before a test is executed.
+	 */
+	protected void setUp() {
+		// Configure the logger
+		logger.debug("Setting up the test");
 
-    /**
-     * Test the size of the collection
-     */
-    public void testCollectionSize() {
-        logger.debug("testCollectionSize running");
-        assertEquals(1, allObjects.size());
-        logger.debug("testCollectionSize complete");
-    }
+		// Get the XML file
+		try {
+			url = ObjectBuilder.class.getResource("TestObjectBuilder.xml");
+		} catch (RuntimeException e1) {
+			logger.error("Could not get the xml file to read: "
+					+ e1.getMessage());
+			e1.printStackTrace();
+			assertTrue("Could not get XML file to read:", false);
+		}
+		logger.debug("The url to the XML file is : " + url);
 
-    public void testXmlOutputAgainstInput() throws Exception {
-        XmlBuilder xmlBuilder = new XmlBuilder();
-        for (Iterator iter = allObjects.iterator(); iter.hasNext();) {
-            xmlBuilder.add(iter.next());
-        }
-        xmlBuilder.marshal();
+		// Go ahead and unmarshall it to objects
+		try {
+			objectBuilder = new ObjectBuilder(url);
+			objectBuilder.unmarshal(false);
+			allObjects = objectBuilder.listAll();
 
-        Document documentFromObject = xmlBuilder.getDocument();
-        logger.debug(xmlBuilder.toFormattedXML());
-        URL testUrl = this.getClass().getResource("TestObjectBuilder.xml");
-        // make a new copy of the original document to use for comparison
-        Document originalDocument = new Builder(false).build(testUrl
-            .toExternalForm());
-        // TODO achase 20040922: I'm overriding the difference listener here
-        // because
-        // the xml output by XmlBuilder does not maintain sequence. If it is not
-        // overridden, the Diff will quit as soon as it hits the first
-        // mis-sequenced
-        // element.
-        Diff diff = new Diff(originalDocument.toXML(), documentFromObject
-            .toXML()) {
+		} catch (Throwable e) {
+			logger.error("Failure in object builder somewhere: "
+					+ e.getMessage());
+			assertTrue(
+					"Failure in object builder somewhere: " + e.getMessage(),
+					false);
+		}
+		logger.debug("Setup complete...");
+	}
 
-            DifferenceListener diffListener = new SansSuperficialDifferenceListener();
-            {
-                overrideDifferenceListener(diffListener);
-            }
-        };
-        assertTrue(diff.similar());
-    }
+	/**
+	 * Test all the XML that should have been bound
+	 */
+	public void testXMLBinding() {
 
-    // The local objectBuilder object
-    private ObjectBuilder objectBuilder = null;
+		// Make sure ObjectBuilder exists
+		assertNotNull("ObjectBuilder should not be null", objectBuilder);
 
-    // The URL of the file to use to test
-    private URL url = null;
+		// Check for errors
+		assertTrue("Unmarshalling should not have caused a failure",
+				!objectBuilder.didUnmarshalFail());
 
-    // A Collection of all objects in the object builder
-    private Collection allObjects = null;
+		// Should not be null
+		assertNotNull(
+				"The head objects after unmarshalling should not be null",
+				allObjects);
 
-    /**
-     * A log4j logger
-     */
-    static Logger logger = Logger.getLogger(TestObjectBuilder.class);
+		// There should be only one thing in the collection
+		assertEquals("There should be one object at the head",
+				allObjects.size(), 1);
+
+		// Grab the object
+		Object headObject = allObjects.iterator().next();
+
+		// The head object should not be null
+		assertNotNull("Head object should not be null", headObject);
+
+		// See if it is a DataProducer
+		assertTrue("Heads object should be a DataProducer",
+				headObject instanceof DataProducer);
+
+		// Cast it for more testing
+		DataProducer auvDeployment = (DataProducer) headObject;
+
+		// Make sure it is not null
+		assertNotNull("auvDeployment should not be null", auvDeployment);
+
+		// Check it's attributes
+		assertEquals("Role should be platform", DataProducer.ROLE_PLATFORM,
+				auvDeployment.getRole());
+		assertEquals("Name should be DoradoMission", "DoradoMission",
+				auvDeployment.getName());
+		assertEquals("DataProducer type should be Deployment",
+				DataProducer.TYPE_DEPLOYMENT,
+				auvDeployment.getDataProducerType());
+		// TODO kgomes check rest of the attributes
+
+		// Check the device
+		assertNotNull("Deployment should have a device",
+				auvDeployment.getDevice());
+
+	}
+
+	/**
+	 * Tears down the fixture, for example, close a network connection. This
+	 * method is called after a test is executed.
+	 * 
+	 * @throws Exception
+	 */
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		// Write your code here
+	}
 
 }
