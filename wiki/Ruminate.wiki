@@ -1,0 +1,9 @@
+#summary Description of the Ruminate Message Driven Bean component of the SSDS.
+
+= Introduction =
+
+The Ruminate Message Driven Bean is responsible for handling the metadata that comes in through incoming packet streams.  After transmogrify and ingest convert and store all incoming data and metadata messages, ruminate then examines the metadata and decides if it is information that needs to be stored in the data model for SSDS.  If it does, ruminate will also implement and enforce various rules on the metadata to either enhance it using information it already has stored or corrects it if there are any rule violations in the metadata.
+
+= Details =
+
+Ruminate is implemented as a message driven bean 
