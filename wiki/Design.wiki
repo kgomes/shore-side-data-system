@@ -1,4 +1,10 @@
 #summary Information about the design of the SSDS Software
 #sidebar TableOfContents
 
-Under Construction
+These are pages the describe the design of the various components of the SSDS that was built to meet the requirements defined for oceanographic data management.  The major component of the SSDS are:
+
+ # TransmogrifyAndIngest
+ # Ruminate
+ # MetadataServices
+ # DataServices
+ # WebApplication
