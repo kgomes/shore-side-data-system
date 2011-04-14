@@ -3385,46 +3385,55 @@ public class ObjectBuilder {
 					// Grab the first child
 					if (dpgChildren.size() > 0) {
 
-						// Remove the DataProducerGroup from the root element
-						// (Metadata)
-						root.removeChild(topElement);
+						// This means there are some children tags, but if there
+						// is only one tag and it is a description, just skip
+						// this whole deal and leave it alone
+						if (dpgChildren.size() > 1
+								|| !dpgChildren.get(0).getLocalName()
+										.equalsIgnoreCase("description")) {
 
-						// Clear elements under the DataProducerGroup
-						topElement.removeChildren();
+							// Remove the DataProducerGroup from the root
+							// element (Metadata)
+							root.removeChild(topElement);
 
-						// Loop over the children and re-parent them
-						for (int i = 0; i < dpgChildren.size(); i++) {
-							// Grab the child element
-							Element tempDPGChild = dpgChildren.get(i);
+							// Clear elements under the DataProducerGroup
+							topElement.removeChildren();
 
-							// If it is a DataProducer (or Deployment), flip the
-							// relationship
-							if (tempDPGChild.getLocalName().equalsIgnoreCase(
-									"DataProducer")
-									|| tempDPGChild.getLocalName()
-											.equalsIgnoreCase("Deployment")
-									|| tempDPGChild.getLocalName()
-											.equalsIgnoreCase("ProcessRun")) {
-								// Append the DataProducerGroup
-								tempDPGChild.appendChild(topElement);
+							// Loop over the children and re-parent them
+							for (int i = 0; i < dpgChildren.size(); i++) {
+								// Grab the child element
+								Element tempDPGChild = dpgChildren.get(i);
 
-								// Then add the DataProducer to the Metadata
-								// element
-								root.appendChild(tempDPGChild);
-							} else if (tempDPGChild.getLocalName()
-									.equalsIgnoreCase("description")) {
-								topElement
-										.addAttribute(new Attribute(
-												"description", tempDPGChild
-														.getValue()));
+								// If it is a DataProducer (or Deployment), flip
+								// the
+								// relationship
+								if (tempDPGChild.getLocalName()
+										.equalsIgnoreCase("DataProducer")
+										|| tempDPGChild.getLocalName()
+												.equalsIgnoreCase("Deployment")
+										|| tempDPGChild.getLocalName()
+												.equalsIgnoreCase("ProcessRun")) {
+									// Append the DataProducerGroup
+									tempDPGChild.appendChild(topElement);
+
+									// Then add the DataProducer to the Metadata
+									// element
+									root.appendChild(tempDPGChild);
+								} else if (tempDPGChild.getLocalName()
+										.equalsIgnoreCase("description")) {
+									topElement.addAttribute(new Attribute(
+											"description", tempDPGChild
+													.getValue()));
+								}
 							}
-						}
-						// Get the child elements under the metadata since they
-						// have changed
-						children = root.getChildElements();
+							// Get the child elements under the metadata since
+							// they
+							// have changed
+							children = root.getChildElements();
 
-						// And the size for those elements
-						numChildElements = children.size();
+							// And the size for those elements
+							numChildElements = children.size();
+						}
 					}
 				}
 			}
