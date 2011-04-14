@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost:8080/ssds-docs/xml/schema/SSDS_Metadata.xsd">
+	<DataProducerGroup id="1" name="Test DataProducerGroup">
+		<description>Test DataProducerGroup Description as element
+		</description>
+		<Deployment id="2" name="Test Deployment under DataProducerGroup" role="platform" >
+			<Device id="100" />
+		</Deployment>
+	</DataProducerGroup>
+</Metadata>
