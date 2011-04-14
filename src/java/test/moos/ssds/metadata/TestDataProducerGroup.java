@@ -1,24 +1,14 @@
 package test.moos.ssds.metadata;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.StringWriter;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.Collection;
 
 import junit.framework.TestCase;
-import moos.ssds.metadata.Event;
-import moos.ssds.metadata.Metadata;
-import moos.ssds.metadata.util.MetadataException;
+import moos.ssds.metadata.DataProducer;
+import moos.ssds.metadata.DataProducerGroup;
+import moos.ssds.metadata.util.ObjectBuilder;
 
 import org.apache.log4j.Logger;
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
 
 public class TestDataProducerGroup extends TestCase {
 
@@ -30,6 +20,7 @@ public class TestDataProducerGroup extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
+
 	}
 
 	protected void tearDown() throws Exception {
@@ -38,11 +29,10 @@ public class TestDataProducerGroup extends TestCase {
 
 	/**
 	 * This test takes a MetadataObject defined in XML, converts it to an
-	 * object, checks the attributes, converts changes some attributes and
-	 * converts back to XML.
+	 * object, checks the attributes.
 	 */
 	public void testXMLBinding() {
-
+		// The name of the XML file to test
 		String xmlFileName = "DataProducerGroup";
 
 		// Grab the file that has the XML in it
@@ -53,52 +43,178 @@ public class TestDataProducerGroup extends TestCase {
 			assertTrue("Could not find xml file file for testing.", false);
 		logger.debug("Will read XML from " + xmlFile.getAbsolutePath());
 
-		// Create a file reader
-		FileReader xmlFileReader = null;
+		// Create the ObjectBuilder and unmarshall to objects
+		ObjectBuilder objectBuilder = null;
 		try {
-			xmlFileReader = new FileReader(xmlFile);
-		} catch (FileNotFoundException e2) {
-			assertTrue(
-					"Error in creating file reader for XML file: "
-							+ e2.getMessage(), false);
+			objectBuilder = new ObjectBuilder(xmlFile.toURI().toURL());
+			objectBuilder.unmarshal();
+		} catch (Exception e) {
+			logger.error("Exception caught: " + e.getMessage());
+			assertTrue("Could not unmarshal XML file: " + e.getMessage(), false);
 		}
 
-		// Grab the binding factory
-		IBindingFactory bfact = null;
+		// Make sure object builder is there
+		assertNotNull("ObjectBuilder should not be null", objectBuilder);
+
+		// Grab all the top level objects
+		Collection<Object> allObjects = objectBuilder.listAll();
+
+		// Makes sure it is not null
+		assertNotNull("allObject should not be null", allObjects);
+
+		// Make sure there is one object at the top
+		assertEquals("There should be only one object", 1, allObjects.size());
+
+		// Should be of class DataProducerGroup
+		Object dataProducerGroupObject = allObjects.iterator().next();
+
+		// Make sure it is not null
+		assertNotNull("Object should not be null", dataProducerGroupObject);
+
+		// Make sure it is a data producer group
+		assertTrue("Should be DataProducerGroup",
+				dataProducerGroupObject instanceof DataProducerGroup);
+
+		// Cast it
+		DataProducerGroup testDataProducerGroup = (DataProducerGroup) dataProducerGroupObject;
+
+		// Check the attributes
+		assertEquals("ID should be 1", 1L, testDataProducerGroup.getId()
+				.longValue());
+		assertEquals("Name should be Test DataProducerGroup",
+				"Test DataProducerGroup", testDataProducerGroup.getName());
+		assertEquals("Descriptions should be equal",
+				"Test DataProducerGroup Description as element",
+				testDataProducerGroup.getDescription());
+	}
+
+	/**
+	 * This test takes a MetadataObject defined in XML, converts it to an
+	 * object, checks the attributes
+	 */
+	public void testXMLBindingDescriptionAsAttribute() {
+		// The name of the XML file to test
+		String xmlFileName = "DataProducerGroupDescriptionAsAttribute";
+
+		// Grab the file that has the XML in it
+		File xmlFile = new File("src" + File.separator + "resources"
+				+ File.separator + "test" + File.separator + "xml"
+				+ File.separator + xmlFileName + ".xml");
+		if (!xmlFile.exists())
+			assertTrue("Could not find xml file file for testing.", false);
+		logger.debug("Will read XML from " + xmlFile.getAbsolutePath());
+
+		// Create the ObjectBuilder and unmarshall to objects
+		ObjectBuilder objectBuilder = null;
 		try {
-			bfact = BindingDirectory.getFactory(Metadata.class);
-		} catch (JiBXException e1) {
-			assertTrue("Error in getting Binding Factory: " + e1.getMessage(),
-					false);
+			objectBuilder = new ObjectBuilder(xmlFile.toURI().toURL());
+			objectBuilder.unmarshal();
+		} catch (Exception e) {
+			logger.error("Exception caught: " + e.getMessage());
+			assertTrue("Could not unmarshal XML file: " + e.getMessage(), false);
 		}
 
-		// Grab a JiBX unmarshalling context
-		IUnmarshallingContext uctx = null;
-		if (bfact != null) {
-			try {
-				uctx = bfact.createUnmarshallingContext();
-			} catch (JiBXException e) {
-				assertTrue("Error in getting UnmarshallingContext for Event: "
-						+ e.getMessage(), false);
-			}
+		// Make sure object builder is there
+		assertNotNull("ObjectBuilder should not be null", objectBuilder);
+
+		// Grab all the top level objects
+		Collection<Object> allObjects = objectBuilder.listAll();
+
+		// Makes sure it is not null
+		assertNotNull("allObject should not be null", allObjects);
+
+		// Make sure there is one object at the top
+		assertEquals("There should be only one object", 1, allObjects.size());
+
+		// Should be of class DataProducerGroup
+		Object dataProducerGroupObject = allObjects.iterator().next();
+
+		// Make sure it is not null
+		assertNotNull("Object should not be null", dataProducerGroupObject);
+
+		// Make sure it is a data producer group
+		assertTrue("Should be DataProducerGroup",
+				dataProducerGroupObject instanceof DataProducerGroup);
+
+		// Cast it
+		DataProducerGroup testDataProducerGroup = (DataProducerGroup) dataProducerGroupObject;
+
+		// Check the attributes
+		assertEquals("ID should be 1", 1L, testDataProducerGroup.getId()
+				.longValue());
+		assertEquals("Name should be Test DataProducerGroup",
+				"Test DataProducerGroup", testDataProducerGroup.getName());
+		assertEquals("Descriptions should be equal",
+				"TestDataProducerGroup Description as attribute",
+				testDataProducerGroup.getDescription());
+	}
+
+	/**
+	 * This test loads XML that has a DataProducerGroup with a child Deployment
+	 * and checks the flip
+	 */
+	public void testDataProducerGroupDataProducerFlip() {
+		// The name of the XML file to test
+		String xmlFileName = "DataProducerGroupWithDataProducer";
+
+		// Grab the file that has the XML in it
+		File xmlFile = new File("src" + File.separator + "resources"
+				+ File.separator + "test" + File.separator + "xml"
+				+ File.separator + xmlFileName + ".xml");
+		if (!xmlFile.exists())
+			assertTrue("Could not find xml file file for testing.", false);
+		logger.debug("Will read XML from " + xmlFile.getAbsolutePath());
+
+		// Create the ObjectBuilder and unmarshall to objects
+		ObjectBuilder objectBuilder = null;
+		try {
+			objectBuilder = new ObjectBuilder(xmlFile.toURI().toURL());
+			objectBuilder.unmarshal();
+		} catch (Exception e) {
+			logger.error("Exception caught: " + e.getMessage());
+			assertTrue("Could not unmarshal XML file: " + e.getMessage(), false);
 		}
 
-		// Now unmarshall it
-		if (uctx != null) {
-			Metadata topMetadata = null;
-			try {
-				topMetadata = (Metadata) uctx.unmarshalDocument(xmlFileReader,
-						null);
-			} catch (JiBXException e1) {
-				assertTrue("Error in unmarshalling Event: " + e1.getMessage(),
-						false);
-			} catch (Throwable t) {
-				t.printStackTrace();
-				logger.error("Throwable caught: " + t.getMessage());
-			}
-			logger.debug("Metadata object: "
-					+ topMetadata.toStringRepresentation("|"));
-		}
+		// Make sure object builder is there
+		assertNotNull("ObjectBuilder should not be null", objectBuilder);
 
+		// Grab all the top level objects
+		Collection<Object> allObjects = objectBuilder.listAll();
+
+		// Makes sure it is not null
+		assertNotNull("allObject should not be null", allObjects);
+
+		// Make sure there is one object at the top
+		assertEquals("There should be only one object", 1, allObjects.size());
+
+		// Should be of class DataProducer
+		Object dataProducerObject = allObjects.iterator().next();
+
+		// Make sure it is not null
+		assertNotNull("Object should not be null", dataProducerObject);
+
+		// Make sure it is a data producer
+		assertTrue("Should be DataProducer",
+				dataProducerObject instanceof DataProducer);
+
+		// Cast it
+		DataProducer testDataProducer = (DataProducer) dataProducerObject;
+
+		// Check the attributes
+		assertEquals("ID should be 2", 2L, testDataProducer.getId().longValue());
+		assertEquals("Name should be Test Deployment under DataProducerGroup",
+				"Test Deployment under DataProducerGroup",
+				testDataProducer.getName());
+		assertEquals("DataProducer should be deployment",
+				DataProducer.TYPE_DEPLOYMENT,
+				testDataProducer.getDataProducerType());
+		assertEquals("role should be platform", "platform",
+				testDataProducer.getRole());
+
+		// Now should have data producer group
+		assertNotNull("DataProducer should have a DataProducerGroup",
+				testDataProducer.getDataProducerGroups());
+		assertEquals("Should have one DataProducerGroup", 1, testDataProducer
+				.getDataProducerGroups().size());
 	}
 }

@@ -14,11 +14,12 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+	attributeFormDefault="unqualified">
 	<xs:element name="Metadata">
 		<xs:annotation>
-			<xs:documentation>This is the root tag to define Metadata for MBARI's Shore-Side Data System
-        (SSDS)</xs:documentation>
+			<xs:documentation>This is the root tag to define Metadata for MBARI's Shore-Side Data
+				System (SSDS)</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
@@ -79,6 +80,16 @@
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="dataContainerType" use="required">
 				<xs:annotation>
 					<xs:documentation>Indicates what type of DataContainer it is</xs:documentation>
@@ -92,7 +103,8 @@
 			</xs:attribute>
 			<xs:attribute name="startDate" type="xs:dateTime" use="optional">
 				<xs:annotation>
-					<xs:documentation>date and time of earliest data record in file</xs:documentation>
+					<xs:documentation>date and time of earliest data record in
+						file</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="endDate" type="xs:dateTime" use="optional">
@@ -102,8 +114,8 @@
 			</xs:attribute>
 			<xs:attribute name="original" type="xs:boolean" use="optional" default="false">
 				<xs:annotation>
-					<xs:documentation>whether this is original data submitted to SSDS, or has been modified
-            from its original format</xs:documentation>
+					<xs:documentation>whether this is original data submitted to SSDS, or has been
+						modified from its original format</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="uri" type="uriString" use="required">
@@ -119,9 +131,9 @@
 			<xs:attribute name="mimeType" type="xs:string" use="optional">
 				<xs:annotation>
 					<xs:documentation>?one of the standard MIME types (defined at
-            http://www.iana.org/assignments/media-types/), or extensions (defined at
-            http://www.mbari.org/ssds/referenceStds/mimetypes.html); typically used by external
-            applications when accessing the data resource</xs:documentation>
+						http://www.iana.org/assignments/media-types/), or extensions (defined at
+						http://www.mbari.org/ssds/referenceStds/mimetypes.html); typically used by
+						external applications when accessing the data resource</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="numberOfRecords" type="xs:long" use="optional">
@@ -131,57 +143,58 @@
 			</xs:attribute>
 			<xs:attribute name="dodsAccessible" type="xs:boolean" use="optional" default="false">
 				<xs:annotation>
-					<xs:documentation>?whether data can be accessible via DODS server</xs:documentation>
+					<xs:documentation>?whether data can be accessible via DODS
+						server</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="dodsUrl" type="uriString" use="optional">
 				<xs:annotation>
 					<xs:documentation>The URL that points to the DODS (OPeNDAP) access to the
-          data</xs:documentation>
+						data</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="noNetCDF" type="xs:boolean" use="optional" default="true">
 				<xs:annotation>
-					<xs:documentation>indicates if data system should not try to parse the data into a netCDF
-            files</xs:documentation>
+					<xs:documentation>indicates if data system should not try to parse the data into
+						a netCDF files</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="minLatitude" type="latitude" use="optional">
 				<xs:annotation>
-					<xs:documentation>This is the minimum latitude of any data that is contained in the data
-            file.</xs:documentation>
+					<xs:documentation>This is the minimum latitude of any data that is contained in
+						the data file.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="maxLatitude" type="latitude" use="optional">
 				<xs:annotation>
-					<xs:documentation>This is the maximum latitude of any data that is contained in the data
-            file.</xs:documentation>
+					<xs:documentation>This is the maximum latitude of any data that is contained in
+						the data file.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="minLongitude" type="longitude" use="optional">
 				<xs:annotation>
-					<xs:documentation>This is the minimum longitude of any data that is contained in the data
-            file.</xs:documentation>
+					<xs:documentation>This is the minimum longitude of any data that is contained in
+						the data file.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="maxLongitude" type="longitude" use="optional">
 				<xs:annotation>
-					<xs:documentation>This is the maximum longitude of any data that is contained in the data
-            file.</xs:documentation>
+					<xs:documentation>This is the maximum longitude of any data that is contained in
+						the data file.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="minDepth" type="depth" use="optional">
 				<xs:annotation>
-					<xs:documentation>This is the minimum depth in meters of any data that is contained in the
-            data file. These numbers are positive as you go deeper (0 = surface, 100 = 100
-          meters)</xs:documentation>
+					<xs:documentation>This is the minimum depth in meters of any data that is
+						contained in the data file. These numbers are positive as you go deeper (0 =
+						surface, 100 = 100 meters)</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="maxDepth" type="depth" use="optional">
 				<xs:annotation>
-					<xs:documentation>This is the maximum depth in meters of any data that is contained in the
-            data file. These numbers are positive as you go deeper (0 = surface, 100 = 100
-          meters)</xs:documentation>
+					<xs:documentation>This is the maximum depth in meters of any data that is
+						contained in the data file. These numbers are positive as you go deeper (0 =
+						surface, 100 = 100 meters)</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 		</xs:complexType>
@@ -206,6 +219,16 @@
 				<xs:annotation>
 					<xs:documentation>name of the logical grouping</xs:documentation>
 				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
@@ -245,6 +268,16 @@
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="dataProducerType" use="required">
 				<xs:annotation>
 					<xs:documentation>Indicates what type of DataContainer it is</xs:documentation>
@@ -258,7 +291,8 @@
 			</xs:attribute>
 			<xs:attribute name="startDate" type="xs:dateTime" use="optional">
 				<xs:annotation>
-					<xs:documentation>date and time of beginning of the deployment</xs:documentation>
+					<xs:documentation>date and time of beginning of the
+						deployment</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="endDate" type="xs:dateTime" use="optional">
@@ -285,78 +319,83 @@
 			</xs:attribute>
 			<xs:attribute name="nominalLatitude" type="latitude" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate
-            (degrees. North is positive); if no other location information is available, this serves
-            as the location of data taken with this instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (degrees. North is positive); if no other location information is
+						available, this serves as the location of data taken with this
+						instrument</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="nominalLatitudeAccuracy" type="xs:double" use="optional">
 				<xs:annotation>
 					<xs:documentation>the possible error expected in the nominalLatitude
-          (degrees)</xs:documentation>
+						(degrees)</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="nominalLongitude" type="longitude" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate
-            (degrees, West is positive); if no other location information is available, this serves
-            as the location of data taken with this instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (degrees, West is positive); if no other location information is
+						available, this serves as the location of data taken with this
+						instrument</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="nominalLongitudeAccuracy" type="xs:double" use="optional">
 				<xs:annotation>
 					<xs:documentation>the possible error expected in the nominalLongitude
-          (degrees)</xs:documentation>
+						(degrees)</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="nominalDepth" type="depth" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate (meters,
-            below sea level is positive); if no other location information is available, this serves
-            as the location of data taken with this instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (meters, below sea level is positive); if no other location
+						information is available, this serves as the location of data taken with
+						this instrument</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="nominalDepthAccuracy" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the possible error expected in the nominalDepth</xs:documentation>
+					<xs:documentation>the possible error expected in the
+						nominalDepth</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="nominalBenthicAltitude" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate (meters,
-            above sea floor is positive); if no other location information is available, this serves
-            as the location of data taken with this instrument; typically metadata specifies either
-            a depth or a benthic altitude, but not both</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (meters, above sea floor is positive); if no other location
+						information is available, this serves as the location of data taken with
+						this instrument; typically metadata specifies either a depth or a benthic
+						altitude, but not both</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="nominalBenthicAltitudeAccuracy" type="xs:float" use="optional">
 				<xs:annotation>
 					<xs:documentation>the possible error expected in the
-          nominalBenthicAltitude</xs:documentation>
+						nominalBenthicAltitude</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="xOffset" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate (meters,
-            distance from parent along X axis of parent); if no other location information is
-            available, this serves as the location of data taken with this
-          instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (meters, distance from parent along X axis of parent); if no other
+						location information is available, this serves as the location of data taken
+						with this instrument</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="yOffset" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate (meters,
-            distance from parent along Y axis of parent); if no other location information is
-            available, this serves as the location of data taken with this
-          instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (meters, distance from parent along Y axis of parent); if no other
+						location information is available, this serves as the location of data taken
+						with this instrument</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="zOffset" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate (meters,
-            distance from parent along Z axis of parent); if no other location information is
-            available, this serves as the location of data taken with this
-          instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (meters, distance from parent along Z axis of parent); if no other
+						location information is available, this serves as the location of data taken
+						with this instrument</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="orientationDescription" type="xs:string" use="optional">
@@ -381,21 +420,23 @@
 	<!-- ******************* -->
 	<xs:element name="DataProducerGroup">
 		<xs:annotation>
-			<xs:documentation>Defines logical groupings of dataproducers (like missions or campaigns).
-        Examples: BIOLUME, AUVCTD, OCCO</xs:documentation>
+			<xs:documentation>Defines logical groupings of dataproducers (like missions or
+				campaigns). Examples: BIOLUME, AUVCTD, OCCO</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element ref="description" minOccurs="0"/>
 				<xs:element ref="Deployment" minOccurs="0">
-					<xs:annotation><xs:documentation>DEPRECATED; should not be here.  Put 
-						DataProducerGroups under DataProducer instead of the other 
-						way around.</xs:documentation></xs:annotation>
+					<xs:annotation>
+						<xs:documentation>DEPRECATED; should not be here. Put DataProducerGroups
+							under DataProducer instead of the other way around.</xs:documentation>
+					</xs:annotation>
 				</xs:element>
 				<xs:element ref="ProcessRun" minOccurs="0">
-					<xs:annotation><xs:documentation>DEPRECATED; should not be here.  Put 
-						DataProducerGroups under DataProducer instead of the other 
-						way around.</xs:documentation></xs:annotation>
+					<xs:annotation>
+						<xs:documentation>DEPRECATED; should not be here. Put DataProducerGroups
+							under DataProducer instead of the other way around.</xs:documentation>
+					</xs:annotation>
 				</xs:element>
 			</xs:sequence>
 			<xs:attribute name="id" type="xs:long" use="optional">
@@ -406,8 +447,18 @@
 			<xs:attribute name="name" type="name" use="required">
 				<xs:annotation>
 					<xs:documentation>name of the logical grouping Examples: BIOLUME, AUVCTD,
-          OCCO</xs:documentation>
+						OCCO</xs:documentation>
 				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
@@ -424,7 +475,7 @@
 				<xs:element name="DeviceType" minOccurs="0">
 					<xs:annotation>
 						<xs:documentation>A class that can be used to group devices by like
-            types</xs:documentation>
+							types</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
 						<xs:sequence>
@@ -462,8 +513,8 @@
 								</xs:restriction>
 							</xs:simpleType>
 						</xs:attribute>
-						<xs:attribute name="displayInDeviceTypesPicklist" type="xs:boolean" use="optional"
-							default="false">
+						<xs:attribute name="displayInDeviceTypesPicklist" type="xs:boolean"
+							use="optional" default="false">
 							<xs:annotation>
 								<xs:documentation>DEPRECATED; do not use this.</xs:documentation>
 							</xs:annotation>
@@ -483,6 +534,16 @@
 					<xs:documentation>name of the device</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="uuid" type="xs:string" use="optional">
 				<xs:annotation>
 					<xs:documentation>This is a UUID for the device</xs:documentation>
@@ -490,13 +551,14 @@
 			</xs:attribute>
 			<xs:attribute name="mfgName" type="xs:string" use="optional">
 				<xs:annotation>
-					<xs:documentation>name of the company which manufactured this device</xs:documentation>
+					<xs:documentation>name of the company which manufactured this
+						device</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="mfgModel" type="xs:string" use="optional">
 				<xs:annotation>
-					<xs:documentation>model number for this device, per the manufacturer (as specific as
-            possible)</xs:documentation>
+					<xs:documentation>model number for this device, per the manufacturer (as
+						specific as possible)</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="mfgSerialNumber" type="xs:string" use="optional">
@@ -506,8 +568,8 @@
 			</xs:attribute>
 			<xs:attribute name="infoUrlList" use="optional">
 				<xs:annotation>
-					<xs:documentation>one or more URLs with information on this instrument; provide in the
-            form url description</xs:documentation>
+					<xs:documentation>one or more URLs with information on this instrument; provide
+						in the form url description</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
@@ -517,8 +579,8 @@
 			</xs:attribute>
 			<xs:attribute name="type" type="xs:string" use="optional">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED; do not use this, use DeviceType 
-						element instead.</xs:documentation>
+					<xs:documentation>DEPRECATED; do not use this, use DeviceType element
+						instead.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="preferredDeploymentRole" use="optional">
@@ -545,8 +607,8 @@
 	<!-- ***** -->
 	<xs:element name="Event">
 		<xs:annotation>
-			<xs:documentation>an occurrence which occupies a defined period of time (usually instantaneous
-        or very short)</xs:documentation>
+			<xs:documentation>an occurrence which occupies a defined period of time (usually
+				instantaneous or very short)</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
@@ -561,6 +623,16 @@
 				<xs:annotation>
 					<xs:documentation>name of the event</xs:documentation>
 				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
 			</xs:attribute>
 			<xs:attribute name="startDate" type="xs:dateTime" use="required">
 				<xs:annotation>
@@ -579,8 +651,8 @@
 	<!-- ****************** -->
 	<xs:element name="HeaderDescription">
 		<xs:annotation>
-			<xs:documentation>Description of headers on simple ASCII files, used to ignore the headers and
-        find the data</xs:documentation>
+			<xs:documentation>Description of headers on simple ASCII files, used to ignore the
+				headers and find the data</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
@@ -596,9 +668,9 @@
 				</xs:element>
 				<xs:element name="CommentTag" minOccurs="0" maxOccurs="unbounded">
 					<xs:annotation>
-						<xs:documentation> Tags (strings) that indicate comments in headers; once non-header
-              line is found, all lines are treated as data. Multiple CommentTag elements may be
-              entered.</xs:documentation>
+						<xs:documentation> Tags (strings) that indicate comments in headers; once
+							non-header line is found, all lines are treated as data. Multiple
+							CommentTag elements may be entered.</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
 						<xs:attribute name="id" type="xs:long" use="optional"/>
@@ -617,6 +689,16 @@
 					<xs:documentation>internal database record ID</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="numHeaderLines" type="xs:integer" use="optional">
 				<xs:annotation>
 					<xs:documentation>number of lines contained in the header</xs:documentation>
@@ -634,8 +716,8 @@
 	<!-- ******* -->
 	<xs:element name="Keyword">
 		<xs:annotation>
-			<xs:documentation>This is an element to represent a keyword that can be linked to various
-        items</xs:documentation>
+			<xs:documentation>This is an element to represent a keyword that can be linked to
+				various items</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
@@ -651,6 +733,16 @@
 					<xs:documentation>name of the keyword</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
 	<!-- ****** -->
@@ -658,15 +750,17 @@
 	<!-- ****** -->
 	<xs:element name="Person">
 		<xs:annotation>
-			<xs:documentation>a person related to an entity (instrument, data stream, ...), including the
-        information needed to contact that person in case of questions (the person should be the
-        authority responsible for creating or maintaining the entity)</xs:documentation>
+			<xs:documentation>a person related to an entity (instrument, data stream, ...),
+				including the information needed to contact that person in case of questions (the
+				person should be the authority responsible for creating or maintaining the
+				entity)</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element name="UserGroup" minOccurs="0" maxOccurs="unbounded">
 					<xs:annotation>
-						<xs:documentation>A UserGroup can be used to define roles of persons</xs:documentation>
+						<xs:documentation>A UserGroup can be used to define roles of
+							persons</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
 						<xs:attribute name="id" type="xs:long" use="optional"/>
@@ -708,7 +802,7 @@
 			<xs:attribute name="organization" use="optional">
 				<xs:annotation>
 					<xs:documentation>organization to which the person belongs (e.g.,
-          MBARI)</xs:documentation>
+						MBARI)</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
@@ -728,7 +822,8 @@
 			</xs:attribute>
 			<xs:attribute name="password" use="optional">
 				<xs:annotation>
-					<xs:documentation>The person's password (typically not provided in XML documentation of data records</xs:documentation>
+					<xs:documentation>The person's password (typically not provided in XML
+						documentation of data records</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
@@ -748,7 +843,8 @@
 			</xs:attribute>
 			<xs:attribute name="phone" use="optional">
 				<xs:annotation>
-					<xs:documentation>primary phone number (10 digits) of the person</xs:documentation>
+					<xs:documentation>primary phone number (10 digits) of the
+						person</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
@@ -759,7 +855,7 @@
 			<xs:attribute name="address1" use="optional">
 				<xs:annotation>
 					<xs:documentation>first line of work address where person can be
-          reached</xs:documentation>
+						reached</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
@@ -770,7 +866,7 @@
 			<xs:attribute name="address2" use="optional">
 				<xs:annotation>
 					<xs:documentation>second line of work address where person can be
-          reached</xs:documentation>
+						reached</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
@@ -810,7 +906,9 @@
 			</xs:attribute>
 			<xs:attribute name="status" use="optional">
 				<xs:annotation>
-					<xs:documentation>whether the named person is a current member of the organization listed as of the date of the metadata record's creation</xs:documentation>
+					<xs:documentation>whether the named person is a current member of the
+						organization listed as of the date of the metadata record's
+						creation</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:token">
@@ -819,7 +917,8 @@
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:attribute>
-			<xs:attribute name="displayInPersonPicklist" type="xs:boolean" use="optional" default="true">
+			<xs:attribute name="displayInPersonPicklist" type="xs:boolean" use="optional"
+				default="true">
 				<xs:annotation>
 					<xs:documentation>DEPRECATED; do not use this.</xs:documentation>
 				</xs:annotation>
@@ -831,7 +930,8 @@
 	<!-- ****************** -->
 	<xs:element name="RecordDescription">
 		<xs:annotation>
-			<xs:documentation>Description of a record in a DataContainer or DataPacket</xs:documentation>
+			<xs:documentation>Description of a record in a DataContainer or
+				DataPacket</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
@@ -852,33 +952,47 @@
 						</xs:attribute>
 						<xs:attribute name="name" use="required">
 							<xs:annotation>
-								<xs:documentation>name of an item in the Record; uniqueness is required within each
-                  RecordDescription; the name must consist of letters, numbers, dashes, and
-                  underscores (no whitespace)</xs:documentation>
+								<xs:documentation>name of an item in the Record; uniqueness is
+									required within each RecordDescription; the name must consist of
+									letters, numbers, dashes, and underscores (no
+									whitespace)</xs:documentation>
 							</xs:annotation>
 							<xs:simpleType>
 								<xs:restriction base="xs:string">
 									<xs:pattern value="[a-zA-Z0-9_\-]+"/>
 									<xs:maxLength value="255"/>
 								</xs:restriction>
-							</xs:simpleType>						</xs:attribute>
+							</xs:simpleType>
+						</xs:attribute>
+						<xs:attribute name="description" use="optional">
+							<xs:annotation>
+								<xs:documentation>Description for more detail</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:maxLength value="2048"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
 						<xs:attribute name="columnIndex" type="xs:long" use="optional">
 							<xs:annotation>
-								<xs:documentation>parsing order of this item in the Record (not used if record is
-                  specified as fixed-position record)</xs:documentation>
+								<xs:documentation>parsing order of this item in the Record (not used
+									if record is specified as fixed-position
+									record)</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="format" type="xs:string" use="optional">
 							<xs:annotation>
-								<xs:documentation>format of the data item (float, int, or string are currently
-                  supported; just used as a parsing guide, so float also applies to doubles, and int
-                  also to longs)</xs:documentation>
+								<xs:documentation>format of the data item (float, int, or string are
+									currently supported; just used as a parsing guide, so float also
+									applies to doubles, and int also to longs)</xs:documentation>
 								<!-- future enumerations may include the "FLOAT8" used in 1004_mtm.xml -->
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="longName" use="optional">
 							<xs:annotation>
-								<xs:documentation>a longer name for the item, useful for display</xs:documentation>
+								<xs:documentation>a longer name for the item, useful for
+									display</xs:documentation>
 							</xs:annotation>
 							<xs:simpleType>
 								<xs:restriction base="xs:string">
@@ -888,49 +1002,51 @@
 						</xs:attribute>
 						<xs:attribute name="units" type="xs:string" use="optional">
 							<xs:annotation>
-								<xs:documentation>units in which item is represented (user format; see also
-                  StandardUnit element)</xs:documentation>
+								<xs:documentation>units in which item is represented (user format;
+									see also StandardUnit element)</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="missingValue" type="xs:string" use="optional">
 							<xs:annotation>
 								<xs:documentation>value used to represent a missing datum for this
-                item</xs:documentation>
+									item</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="accuracy" type="xs:string" use="optional">
 							<xs:annotation>
-								<xs:documentation>nominal accuracy of the data reported for this item (in same units
-                  as measurement)</xs:documentation>
+								<xs:documentation>nominal accuracy of the data reported for this
+									item (in same units as measurement)</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="validMin" type="xs:string" use="optional">
 							<xs:annotation>
 								<xs:documentation>minimum valid value for this item (under any
-                circumstances)</xs:documentation>
+									circumstances)</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="validMax" type="xs:string" use="optional">
 							<xs:annotation>
 								<xs:documentation>maximum valid value for this item (under any
-                circumstances)</xs:documentation>
+									circumstances)</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="displayMin" type="xs:double" use="optional">
 							<xs:annotation>
-								<xs:documentation>minimum of default displayed range for item</xs:documentation>
+								<xs:documentation>minimum of default displayed range for
+									item</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="displayMax" type="xs:double" use="optional">
 							<xs:annotation>
 								<xs:documentation>maximum minimum of default displayed range for
-                item</xs:documentation>
+									item</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="parseRegExp" type="xs:string" use="optional">
 							<xs:annotation>
-								<xs:documentation>the regular expression within which the item is included (standard
-                  Java parseable regular expressions)</xs:documentation>
+								<xs:documentation>the regular expression within which the item is
+									included (standard Java parseable regular
+									expressions)</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="referenceScale" type="xs:string" use="optional">
@@ -940,26 +1056,27 @@
 						</xs:attribute>
 						<xs:attribute name="conversionScale" type="xs:double" use="optional">
 							<xs:annotation>
-								<xs:documentation>scale factor to be applied to generate a converted value (result =
-                  scale * value + offset)</xs:documentation>
+								<xs:documentation>scale factor to be applied to generate a converted
+									value (result = scale * value + offset)</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="conversionOffset" type="xs:double" use="optional">
 							<xs:annotation>
-								<xs:documentation>offset to be applied to generate a converted value (result = scale
-                  * value + offset)</xs:documentation>
+								<xs:documentation>offset to be applied to generate a converted value
+									(result = scale * value + offset)</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="convertedUnits" type="xs:string" use="optional">
 							<xs:annotation>
 								<xs:documentation>resulting units after scale/offset conversion is
-                applied</xs:documentation>
+									applied</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="sourceSensorID" type="xs:long" use="optional">
 							<xs:annotation>
-								<xs:documentation>the ID number (in the SSDS device database)
-								of the sensor originating this particular data buffer</xs:documentation>
+								<xs:documentation>the ID number (in the SSDS device database) of the
+									sensor originating this particular data
+									buffer</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 					</xs:complexType>
@@ -972,16 +1089,17 @@
 			</xs:attribute>
 			<xs:attribute name="recordType" type="xs:long" use="required">
 				<xs:annotation>
-					<xs:documentation>a value greater than 0 to indicates a
-					particular type of data record (in the data stream, packets with a value of 0 
-					for the recordType indicate a metadata record (that is, a record 
-					that describes the other data formats, as for example a device XML description file) </xs:documentation>
+					<xs:documentation>a value greater than 0 to indicates a particular type of data
+						record (in the data stream, packets with a value of 0 for the recordType
+						indicate a metadata record (that is, a record that describes the other data
+						formats, as for example a device XML description file) </xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="bufferStyle" use="optional">
 				<xs:annotation>
-					<xs:documentation>indicates whether buffer contains just ASCII data, or at least some
-					binary data (if any of the data is binary, the whole buffer is considered binary)</xs:documentation>
+					<xs:documentation>indicates whether buffer contains just ASCII data, or at least
+						some binary data (if any of the data is binary, the whole buffer is
+						considered binary)</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:token">
@@ -994,13 +1112,14 @@
 			</xs:attribute>
 			<xs:attribute name="bufferParseType" use="optional">
 				<xs:annotation>
-					<xs:documentation>indicates how data can be parsed from buffer: fixedPosition buffers have
-            items at the same offset from the start of buffer; ordered buffers must be parsed
-            according to the order in which items appear, and may have tokens which precede or
-            follow one or more data items; uniqueToken buffer items do not appear in any consistent 
-            fixed order, but must be recognized by their attached token; mime buffers can be parsed 
-            according to the mime type described in the corresponding Record's mimeType attribute
-            </xs:documentation>
+					<xs:documentation>indicates how data can be parsed from buffer: fixedPosition
+						buffers have items at the same offset from the start of buffer; ordered
+						buffers must be parsed according to the order in which items appear, and may
+						have tokens which precede or follow one or more data items; uniqueToken
+						buffer items do not appear in any consistent fixed order, but must be
+						recognized by their attached token; mime buffers can be parsed according to
+						the mime type described in the corresponding Record's mimeType attribute
+					</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:token">
@@ -1013,18 +1132,20 @@
 			</xs:attribute>
 			<xs:attribute name="bufferItemSeparator" type="xs:string" use="optional">
 				<xs:annotation>
-					<xs:documentation>for ASCII buffers, the entity that separates each buffer item from the
-            next. Strings can take the form of a single character separator (for example, a comma or
-            a space), or a symbolic name. Supported symbols include 'space', 'tab', and 'whitespace'
-            (all transformed to '\s+', as is '' and ' ') and 'comma'.</xs:documentation>
+					<xs:documentation>for ASCII buffers, the entity that separates each buffer item
+						from the next. Strings can take the form of a single character separator
+						(for example, a comma or a space), or a symbolic name. Supported symbols
+						include 'space', 'tab', and 'whitespace' (all transformed to '\s+', as is ''
+						and ' ') and 'comma'.</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="bufferLengthType" use="optional">
 				<xs:annotation>
-					<xs:documentation>if 'fixed', all valid packets will be of same length, and packets of
-            other lengths will be rejected (stored in a separate container); this characteristic can
-            be used to optimize random access to data within the saved set of raw packets (but will
-            only be used according to bufferParseType)</xs:documentation>
+					<xs:documentation>if 'fixed', all valid packets will be of same length, and
+						packets of other lengths will be rejected (stored in a separate container);
+						this characteristic can be used to optimize random access to data within the
+						saved set of raw packets (but will only be used according to
+						bufferParseType)</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:token">
@@ -1038,13 +1159,14 @@
 			<xs:attribute name="recordTerminator" type="xs:string" use="optional">
 				<xs:annotation>
 					<xs:documentation>the series of characters which terminate each ASCII
-          record</xs:documentation>
+						record</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="parseable" use="optional" default="false">
 				<xs:annotation>
 					<xs:documentation>indicates whether this data format is regular enough to be
-          parsed; bufferParseType attribute indicates how it can be parsed</xs:documentation>
+						parsed; bufferParseType attribute indicates how it can be
+						parsed</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:token">
@@ -1055,10 +1177,11 @@
 			</xs:attribute>
 			<xs:attribute name="endian" use="optional">
 				<xs:annotation>
-					<xs:documentation>indicates endian-ness of byte sequences that make up numbers; 'little'
-            means the first byte is least significant, 'big' means first byte is most significant
-            (Intel x86 processors are little-endian, Sun SPARC and PowerPC big-endian); default
-            endianness is according to the SSDS host (big, so far)</xs:documentation>
+					<xs:documentation>indicates endian-ness of byte sequences that make up numbers;
+						'little' means the first byte is least significant, 'big' means first byte
+						is most significant (Intel x86 processors are little-endian, Sun SPARC and
+						PowerPC big-endian); default endianness is according to the SSDS host (big,
+						so far)</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:token">
@@ -1069,8 +1192,8 @@
 			</xs:attribute>
 			<xs:attribute name="recordParseRegExp" use="optional">
 				<xs:annotation>
-					<xs:documentation>This is a regular expression that can be used to parse 
-						a record into variables</xs:documentation>
+					<xs:documentation>This is a regular expression that can be used to parse a
+						record into variables</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
@@ -1085,8 +1208,8 @@
 	<!-- ******** -->
 	<xs:element name="Resource">
 		<xs:annotation>
-			<xs:documentation>URL reference to arbitrary resources, such as calibration files or technical
-        documentation</xs:documentation>
+			<xs:documentation>URL reference to arbitrary resources, such as calibration files or
+				technical documentation</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
@@ -1096,7 +1219,7 @@
 				<xs:element name="ResourceBLOB" minOccurs="0">
 					<xs:annotation>
 						<xs:documentation>A reference to a binary blob that can be associated with a
-            Resource</xs:documentation>
+							Resource</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
 						<xs:sequence>
@@ -1109,7 +1232,8 @@
 						</xs:attribute>
 						<xs:attribute name="name" use="required">
 							<xs:annotation>
-								<xs:documentation>This is the name of the ResourceBLOB</xs:documentation>
+								<xs:documentation>This is the name of the
+									ResourceBLOB</xs:documentation>
 							</xs:annotation>
 							<xs:simpleType>
 								<xs:restriction base="xs:string">
@@ -1123,7 +1247,7 @@
 				<xs:element name="ResourceType" minOccurs="0">
 					<xs:annotation>
 						<xs:documentation>This is used for grouping or processing resources that are
-            similar</xs:documentation>
+							similar</xs:documentation>
 					</xs:annotation>
 					<xs:complexType>
 						<xs:sequence>
@@ -1136,7 +1260,8 @@
 						</xs:attribute>
 						<xs:attribute name="name" use="required">
 							<xs:annotation>
-								<xs:documentation>name of the resource type grouping</xs:documentation>
+								<xs:documentation>name of the resource type
+									grouping</xs:documentation>
 							</xs:annotation>
 							<xs:simpleType>
 								<xs:restriction base="xs:string">
@@ -1157,16 +1282,26 @@
 					<xs:documentation>name of the resource</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="startDate" type="xs:dateTime" use="optional">
 				<xs:annotation>
 					<xs:documentation>date and time of earliest data record in, or creation date of,
-          resource</xs:documentation>
+						resource</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="endDate" type="xs:dateTime" use="optional">
 				<xs:annotation>
-					<xs:documentation>date and time of latest data record in, or last modification of,
-            resource</xs:documentation>
+					<xs:documentation>date and time of latest data record in, or last modification
+						of, resource</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="uri" type="uriString" use="required">
@@ -1187,14 +1322,15 @@
 			<xs:attribute name="mimeType" type="xs:string" use="optional">
 				<xs:annotation>
 					<xs:documentation>one of the standard MIME types (defined at
-            http://www.iana.org/assignments/media-types/), or extensions (defined at
-            http://www.mbari.org/ssds/referenceStds/mimetypes.html); typically used by external
-            applications when accessing the data resource</xs:documentation>
+						http://www.iana.org/assignments/media-types/), or extensions (defined at
+						http://www.mbari.org/ssds/referenceStds/mimetypes.html); typically used by
+						external applications when accessing the data resource</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="resourceType" type="xs:string" use="optional">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED; use ResourceType element instead</xs:documentation>
+					<xs:documentation>DEPRECATED; use ResourceType element
+						instead</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 		</xs:complexType>
@@ -1205,7 +1341,7 @@
 	<xs:element name="Software">
 		<xs:annotation>
 			<xs:documentation>Descriptive information of the software used in a
-      ProcessRun</xs:documentation>
+				ProcessRun</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
@@ -1223,10 +1359,20 @@
 					<xs:documentation>name of the software used in a ProcessRun</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="uri" type="uriString" use="optional">
 				<xs:annotation>
-					<xs:documentation>pointer (e.g., via cvsweb) to the specific release of the software being
-            described</xs:documentation>
+					<xs:documentation>pointer (e.g., via cvsweb) to the specific release of the
+						software being described</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="url" type="xs:anyURI" use="optional">
@@ -1236,7 +1382,8 @@
 			</xs:attribute>
 			<xs:attribute name="softwareVersion" type="xs:string" use="required">
 				<xs:annotation>
-					<xs:documentation>version of the software used in a ProcessRun</xs:documentation>
+					<xs:documentation>version of the software used in a
+						ProcessRun</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="version" type="xs:string">
@@ -1251,9 +1398,9 @@
 	<!-- *************** -->
 	<xs:element name="StandardDomain">
 		<xs:annotation>
-			<xs:documentation>a defined domain (concepts like land, ocean, sea surface, etc.) in which the
-        measurement is being taken; defined domains are documented at
-        http://www.mbari.org/ssds/referenceStds/domains.html)</xs:documentation>
+			<xs:documentation>a defined domain (concepts like land, ocean, sea surface, etc.) in
+				which the measurement is being taken; defined domains are documented at
+				http://www.mbari.org/ssds/referenceStds/domains.html)</xs:documentation>
 		</xs:annotation>
 		<!-- This table in the database contains more fields and foreign keys, but these are not exposed in the XML.-->
 		<xs:complexType>
@@ -1270,6 +1417,16 @@
 					<xs:documentation>name of the standard domain</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
 	<!-- **************** -->
@@ -1278,8 +1435,8 @@
 	<xs:element name="StandardKeyword">
 		<xs:annotation>
 			<xs:documentation>defined keywords which apply to the measurement being taken; defined
-        keywords are documented at
-      http://www.mbari.org/ssds/referenceStds/keywords.html)</xs:documentation>
+				keywords are documented at
+				http://www.mbari.org/ssds/referenceStds/keywords.html)</xs:documentation>
 		</xs:annotation>
 		<!-- This table in the database contains more fields and foreign keys, but these are not exposed in the XML.-->
 		<xs:complexType>
@@ -1296,6 +1453,16 @@
 					<xs:documentation>name of the standard keyword</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
 	<!-- ************************ -->
@@ -1304,8 +1471,8 @@
 	<xs:element name="StandardReferenceScale">
 		<xs:annotation>
 			<xs:documentation>a defined reference scale which describes the measurement being taken;
-        defined reference scales are documented at
-        http://www.mbari.org/ssds/referenceStds/referenceScales.html)</xs:documentation>
+				defined reference scales are documented at
+				http://www.mbari.org/ssds/referenceStds/referenceScales.html)</xs:documentation>
 		</xs:annotation>
 		<!-- This table in the database contains more fields and foreign keys, but these are not exposed in the XML.-->
 		<xs:complexType>
@@ -1319,8 +1486,19 @@
 			</xs:attribute>
 			<xs:attribute name="name" type="name" use="required">
 				<xs:annotation>
-					<xs:documentation>name of the defined standard reference scale</xs:documentation>
+					<xs:documentation>name of the defined standard reference
+						scale</xs:documentation>
 				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
 			</xs:attribute>
 		</xs:complexType>
 	</xs:element>
@@ -1330,7 +1508,7 @@
 	<xs:element name="StandardUnit">
 		<xs:annotation>
 			<xs:documentation>a defined unit of measurement; defined units are documented at
-        http://www.mbari.org/ssds/referenceStds/units.html)</xs:documentation>
+				http://www.mbari.org/ssds/referenceStds/units.html)</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
@@ -1346,10 +1524,20 @@
 					<xs:documentation>name of the standard unit</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="longName" use="optional">
 				<xs:annotation>
 					<xs:documentation>longer name of the standard unit (used for
-          presentation)</xs:documentation>
+						presentation)</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
@@ -1374,8 +1562,9 @@
 	<!-- ***************** -->
 	<xs:element name="StandardVariable">
 		<xs:annotation>
-			<xs:documentation>a defined name which describes the measurement being taken; defined names
-        are documented at http://www.mbari.org/ssds/referenceStds/variables.html)</xs:documentation>
+			<xs:documentation>a defined name which describes the measurement being taken; defined
+				names are documented at
+				http://www.mbari.org/ssds/referenceStds/variables.html)</xs:documentation>
 		</xs:annotation>
 		<!-- This table in the database contains more fields and foreign keys, but these are not exposed in the XML.-->
 		<xs:complexType>
@@ -1392,6 +1581,16 @@
 				<xs:annotation>
 					<xs:documentation>name of the standard variable</xs:documentation>
 				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
 			</xs:attribute>
 			<xs:attribute name="namespaceUriString" type="uriString" use="required">
 				<xs:annotation>
@@ -1433,7 +1632,7 @@
 		</xs:annotation>
 		<xs:simpleType>
 			<xs:restriction base="xs:string">
-				<xs:maxLength value="255"/>
+				<xs:maxLength value="2048"/>
 			</xs:restriction>
 		</xs:simpleType>
 	</xs:element>
@@ -1446,12 +1645,16 @@
 			<xs:sequence>
 				<xs:element ref="DataContainer" minOccurs="0" maxOccurs="unbounded"/>
 				<xs:element ref="DataFile" minOccurs="0" maxOccurs="unbounded">
-					<xs:annotation><xs:documentation>DEPRECATED; use DataContainer 
-						element instead.</xs:documentation></xs:annotation>
+					<xs:annotation>
+						<xs:documentation>DEPRECATED; use DataContainer element
+							instead.</xs:documentation>
+					</xs:annotation>
 				</xs:element>
 				<xs:element ref="DataStream" minOccurs="0" maxOccurs="unbounded">
-					<xs:annotation><xs:documentation>DEPRECATED; use DataContainer 
-						element instead.</xs:documentation></xs:annotation>
+					<xs:annotation>
+						<xs:documentation>DEPRECATED; use DataContainer element
+							instead.</xs:documentation>
+					</xs:annotation>
 				</xs:element>
 			</xs:sequence>
 		</xs:complexType>
@@ -1480,18 +1683,22 @@
 	<xs:element name="output">
 		<xs:annotation>
 			<xs:documentation>the data output from a DataProducer and should be a
-      DataContainer</xs:documentation>
+				DataContainer</xs:documentation>
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element ref="DataContainer" minOccurs="0" maxOccurs="unbounded"/>
 				<xs:element ref="DataFile" minOccurs="0" maxOccurs="unbounded">
-					<xs:annotation><xs:documentation>DEPRECATED; use DataContainer 
-						element instead.</xs:documentation></xs:annotation>
+					<xs:annotation>
+						<xs:documentation>DEPRECATED; use DataContainer element
+							instead.</xs:documentation>
+					</xs:annotation>
 				</xs:element>
 				<xs:element ref="DataStream" minOccurs="0" maxOccurs="unbounded">
-					<xs:annotation><xs:documentation>DEPRECATED; use DataContainer 
-						element instead.</xs:documentation></xs:annotation>
+					<xs:annotation>
+						<xs:documentation>DEPRECATED; use DataContainer element
+							instead.</xs:documentation>
+					</xs:annotation>
 				</xs:element>
 			</xs:sequence>
 		</xs:complexType>
@@ -1530,7 +1737,8 @@
 			</xs:attribute>
 			<xs:attribute name="startDate" type="xs:dateTime" use="optional">
 				<xs:annotation>
-					<xs:documentation>date and time of earliest data record in file</xs:documentation>
+					<xs:documentation>date and time of earliest data record in
+						file</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="endDate" type="xs:dateTime" use="optional">
@@ -1543,15 +1751,26 @@
 					<xs:documentation>?name of data file (can be a logical name)</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="original" type="xs:boolean" use="optional" default="false">
 				<xs:annotation>
-					<xs:documentation>whether this is original data submitted to SSDS, or has been modified
-						from its original format</xs:documentation>
+					<xs:documentation>whether this is original data submitted to SSDS, or has been
+						modified from its original format</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="dodsAccessible" type="xs:boolean" use="optional" default="false">
 				<xs:annotation>
-					<xs:documentation>?whether data can be accessible via DODS server</xs:documentation>
+					<xs:documentation>?whether data can be accessible via DODS
+						server</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="contentType" type="xs:string" use="optional">
@@ -1563,8 +1782,8 @@
 				<xs:annotation>
 					<xs:documentation>?one of the standard MIME types (defined at
 						http://www.iana.org/assignments/media-types/), or extensions (defined at
-						http://www.mbari.org/ssds/referenceStds/mimetypes.html); typically used by external
-						applications when accessing the data resource</xs:documentation>
+						http://www.mbari.org/ssds/referenceStds/mimetypes.html); typically used by
+						external applications when accessing the data resource</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="fileName" type="xs:string" use="optional">
@@ -1604,12 +1823,14 @@
 			</xs:attribute>
 			<xs:attribute name="startDate" type="xs:dateTime" use="optional">
 				<xs:annotation>
-					<xs:documentation>date and time of earliest data record in stream</xs:documentation>
+					<xs:documentation>date and time of earliest data record in
+						stream</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="endDate" type="xs:dateTime" use="optional">
 				<xs:annotation>
-					<xs:documentation>date and time of latest data record in stream</xs:documentation>
+					<xs:documentation>date and time of latest data record in
+						stream</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="name" type="xs:string" use="optional">
@@ -1617,10 +1838,20 @@
 					<xs:documentation>name of data stream when stored as file</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="original" type="xs:boolean" use="optional" default="false">
 				<xs:annotation>
-					<xs:documentation>whether this is original data submitted to SSDS, or has been modified
-						from its original format</xs:documentation>
+					<xs:documentation>whether this is original data submitted to SSDS, or has been
+						modified from its original format</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="contentType" type="xs:string" use="optional">
@@ -1632,8 +1863,8 @@
 				<xs:annotation>
 					<xs:documentation>?one of the standard MIME types (defined at
 						http://www.iana.org/assignments/media-types/), or extensions (defined at
-						http://www.mbari.org/ssds/referenceStds/mimetypes.html); typically used by external
-						applications when accessing the data resource</xs:documentation>
+						http://www.mbari.org/ssds/referenceStds/mimetypes.html); typically used by
+						external applications when accessing the data resource</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="contentLength" type="xs:long" use="optional">
@@ -1685,9 +1916,20 @@
 					<xs:documentation>name of the deployment</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="startDate" type="xs:dateTime" use="optional">
 				<xs:annotation>
-					<xs:documentation>date and time of beginning of the deployment</xs:documentation>
+					<xs:documentation>date and time of beginning of the
+						deployment</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="endDate" type="xs:dateTime" use="optional">
@@ -1697,9 +1939,10 @@
 			</xs:attribute>
 			<xs:attribute name="nominalLongitude" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate
-						(degrees, West is positive); if no other location information is available, this serves
-						as the location of data taken with this instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (degrees, West is positive); if no other location information is
+						available, this serves as the location of data taken with this
+						instrument</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:double">
@@ -1717,9 +1960,10 @@
 			</xs:attribute>
 			<xs:attribute name="nominalLatitude" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate
-						(degrees. North is positive); if no other location information is available, this serves
-						as the location of data taken with this instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (degrees. North is positive); if no other location information is
+						available, this serves as the location of data taken with this
+						instrument</xs:documentation>
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:double">
@@ -1736,22 +1980,25 @@
 			</xs:attribute>
 			<xs:attribute name="nominalDepth" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate (meters,
-						below sea level is positive); if no other location information is available, this serves
-						as the location of data taken with this instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (meters, below sea level is positive); if no other location
+						information is available, this serves as the location of data taken with
+						this instrument</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="nominalDepthAccuracy" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the possible error expected in the nominalDepth</xs:documentation>
+					<xs:documentation>the possible error expected in the
+						nominalDepth</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="nominalBenthicAltitude" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate (meters,
-						above sea floor is positive); if no other location information is available, this serves
-						as the location of data taken with this instrument; typically metadata specifies either
-						a depth or a benthic altitude, but not both</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (meters, above sea floor is positive); if no other location
+						information is available, this serves as the location of data taken with
+						this instrument; typically metadata specifies either a depth or a benthic
+						altitude, but not both</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="nominalBenthicAltitudeAccuracy" type="xs:float" use="optional">
@@ -1762,26 +2009,26 @@
 			</xs:attribute>
 			<xs:attribute name="xOffset" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate (meters,
-						distance from parent along X axis of parent); if no other location information is
-						available, this serves as the location of data taken with this
-						instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (meters, distance from parent along X axis of parent); if no other
+						location information is available, this serves as the location of data taken
+						with this instrument</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="yOffset" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate (meters,
-						distance from parent along Y axis of parent); if no other location information is
-						available, this serves as the location of data taken with this
-						instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (meters, distance from parent along Y axis of parent); if no other
+						location information is available, this serves as the location of data taken
+						with this instrument</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="zOffset" type="xs:float" use="optional">
 				<xs:annotation>
-					<xs:documentation>the physical location where the entity is (expected) to operate (meters,
-						distance from parent along Z axis of parent); if no other location information is
-						available, this serves as the location of data taken with this
-						instrument</xs:documentation>
+					<xs:documentation>the physical location where the entity is (expected) to
+						operate (meters, distance from parent along Z axis of parent); if no other
+						location information is available, this serves as the location of data taken
+						with this instrument</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 			<xs:attribute name="orientationDescription" type="xs:string" use="optional">
@@ -1825,6 +2072,16 @@
 					<xs:documentation>name of the process run</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
+			<xs:attribute name="description" use="optional">
+				<xs:annotation>
+					<xs:documentation>Description for more detail</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="2048"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="id" type="xs:long" use="optional">
 				<xs:annotation>
 					<xs:documentation>internal database record ID</xs:documentation>
@@ -1832,7 +2089,8 @@
 			</xs:attribute>
 			<xs:attribute name="hostName" type="xs:string" use="optional">
 				<xs:annotation>
-					<xs:documentation>name of the host on which the process executed</xs:documentation>
+					<xs:documentation>name of the host on which the process
+						executed</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
 		</xs:complexType>
@@ -1848,5 +2106,5 @@
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
-	
+
 </xs:schema>

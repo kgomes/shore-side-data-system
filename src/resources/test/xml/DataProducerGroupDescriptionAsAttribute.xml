@@ -2,6 +2,6 @@
 <Metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="http://localhost:8080/ssds-docs/xml/schema/SSDS_Metadata.xsd">
 	<DataProducerGroup id="1" name="Test DataProducerGroup"
-		description="TestDataProducerGroup Descrioption as attribute">
+		description="TestDataProducerGroup Description as attribute">
 	</DataProducerGroup>
 </Metadata>

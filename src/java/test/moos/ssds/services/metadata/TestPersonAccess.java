@@ -74,7 +74,6 @@ public class TestPersonAccess extends TestAccessCase {
 	/**
 	 * This method checks all the "findBy*" methods
 	 */
-	@SuppressWarnings("unchecked")
 	public void testFindBys() {
 		logger.debug("testFindBys starting");
 		// We will insert both persons and then see if we can find them using
