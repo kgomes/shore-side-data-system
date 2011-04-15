@@ -636,6 +636,7 @@
 			<fileset dir="${project.dist}" includes="ssds-client.jar" />
 			<fileset refid="jboss-client-jar-fileset" />
 			<fileset refid="jboss-lib-jar-fileset" />
+			<fileset refid="jboss-server-hibernate-jar-fileset" />
 			<fileset refid="all-project-lib-flattened-jar-fileset" />
 			<fileset dir="${project.lib}" includes="${client.graphing.device.qc.plot.jdbc.jar}" />
 		</zip>

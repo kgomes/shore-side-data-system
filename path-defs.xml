@@ -82,6 +82,11 @@
 		<include name="*.jar" />
 	</fileset>
 
+	<!-- Fileset for Hibernate jars on the JBoss server -->
+	<fileset id="jboss-server-hibernate-jar-fileset" dir="${jboss.common.lib.location}">
+		<include name="hibernate*.jar" />
+	</fileset>
+
 	<!-- Define the fileset that contains all the common/lib jars -->
 	<fileset id="jboss-common-lib-jar-fileset" dir="${jboss.common.lib.location}">
 		<include name="*.jar" />
@@ -136,14 +141,14 @@
 		<include name="${xpp3.jar}" />
 	</fileset> -->
 
-	<!-- Define the fileset that includes the JBoss server lib jars that we need -->
+	<!-- Define the fileset that includes the JBoss server lib jars that we need
 	<fileset id="jboss-lib-jar-fileset" dir="${jboss.home}/server/${jboss.server.type}/lib">
 		<include name="${hibernate.jar}" />
 		<include name="${hibernate.client.cglib.jar}" />
 		<include name="${hibernate.client.dom4j.jar}" />
 		<include name="${hibernate.client.commons-collections.jar}" />
 		<include name="${mail.jar}" />
-	</fileset>
+	</fileset> -->
 
 	<!-- These are the jars that need to be deployed with the core EAR -->
 	<fileset id="core-deploy-jar-fileset" dir="${project.dir}">
