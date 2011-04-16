@@ -961,7 +961,7 @@ public class ObjectBuilder {
 						&& !dataProducer.getEvents().contains((Event) object)) {
 					dataProducer.addEvent((Event) object);
 				} else if (object instanceof DataContainer) {
-					if (element.getLocalName().equalsIgnoreCase("output")
+					if (childElement.getLocalName().equalsIgnoreCase("output")
 							&& !dataProducer.getOutputs().contains(
 									(DataContainer) object)) {
 						dataProducer.addOutput((DataContainer) object);
