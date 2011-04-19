@@ -1,24 +1,20 @@
 package test.moos.ssds.metadata;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.StringWriter;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
 import junit.framework.TestCase;
 import moos.ssds.metadata.Event;
-import moos.ssds.metadata.Metadata;
 import moos.ssds.metadata.util.MetadataException;
+import moos.ssds.metadata.util.ObjectBuilder;
+import moos.ssds.metadata.util.XmlBuilder;
 
 import org.apache.log4j.Logger;
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
 
 public class TestEvent extends TestCase {
 
@@ -52,136 +48,109 @@ public class TestEvent extends TestCase {
 		logger.debug("Will read event XML from "
 				+ eventXMLFile.getAbsolutePath());
 
-		// Create a file reader
-		FileReader eventXMLFileReader = null;
+		// Create the object builder
+		ObjectBuilder objectBuilder = null;
 		try {
-			eventXMLFileReader = new FileReader(eventXMLFile);
-		} catch (FileNotFoundException e2) {
-			assertTrue("Error in creating file reader for event XML file: "
-					+ e2.getMessage(), false);
+			objectBuilder = new ObjectBuilder(eventXMLFile.toURI().toURL());
+		} catch (MalformedURLException e) {
+			logger.error("MalformedURLException caught trying to create object builder: "
+					+ e.getMessage());
+			assertTrue(
+					"MalformedURLException caught trying to create object builder: "
+							+ e.getMessage(), false);
 		}
 
-		// Grab the binding factory for Events
-		IBindingFactory bfact = null;
+		// Unmarshal XML to objects
 		try {
-			bfact = BindingDirectory.getFactory(Metadata.class);
-		} catch (JiBXException e1) {
-			assertTrue("Error in getting Binding Factory for Event: "
-					+ e1.getMessage(), false);
+			objectBuilder.unmarshal();
+		} catch (Exception e) {
+			logger.error("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage());
+			assertTrue("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage(), false);
 		}
 
-		// Grab a JiBX unmarshalling context
-		IUnmarshallingContext uctx = null;
-		if (bfact != null) {
-			try {
-				uctx = bfact.createUnmarshallingContext();
-			} catch (JiBXException e) {
-				assertTrue("Error in getting UnmarshallingContext for Event: "
-						+ e.getMessage(), false);
-			}
-		}
+		// The top level object should be a Event
+		Object unmarshalledObject = objectBuilder.listAll().iterator().next();
+		assertNotNull("Unmarshalled object should not be null",
+				unmarshalledObject);
+		assertTrue("Unmarshalled object should be an Event",
+				unmarshalledObject instanceof Event);
 
-		// Now unmarshall it
-		if (uctx != null) {
-			Metadata topMetadata = null;
-			Event testEvent = null;
-			try {
-				topMetadata = (Metadata) uctx.unmarshalDocument(
-						eventXMLFileReader, null);
-				testEvent = topMetadata.getEvents().iterator().next();
+		// Cast it
+		Event testEvent = (Event) unmarshalledObject;
 
-				logger.debug("TestEvent after unmarshalling: "
-						+ testEvent.toStringRepresentation("|"));
-			} catch (JiBXException e1) {
-				assertTrue("Error in unmarshalling Event: " + e1.getMessage(),
-						false);
-			} catch (Throwable t) {
-				t.printStackTrace();
-				logger.error("Throwable caught: " + t.getMessage());
-			}
+		logger.debug("TestEvent after unmarshalling: "
+				+ testEvent.toStringRepresentation("|"));
 
-			if (testEvent != null) {
-				assertEquals("ID should be 1", testEvent.getId().longValue(),
-						Long.parseLong("1"));
-				assertEquals("Event name should match", testEvent.getName(),
-						"Test Event");
-				assertEquals("Descripton should match", testEvent
-						.getDescription(), "Test Event Description");
-				Calendar startDate = Calendar.getInstance();
-				startDate.setTimeZone(TimeZone.getTimeZone("GMT"));
-				startDate.set(Calendar.YEAR, 2000);
-				startDate.set(Calendar.MONTH, Calendar.JANUARY);
-				startDate.set(Calendar.DAY_OF_MONTH, 2);
-				startDate.set(Calendar.HOUR_OF_DAY, 3);
-				startDate.set(Calendar.MINUTE, 4);
-				startDate.set(Calendar.SECOND, 5);
-				Date startDateForComparison = startDate.getTime();
-				assertEquals("StartDate should match to the second", testEvent
-						.getStartDate().getTime() / 1000,
-						startDateForComparison.getTime() / 1000);
-				Calendar endDate = Calendar.getInstance();
-				endDate.setTimeZone(TimeZone.getTimeZone("GMT"));
-				endDate.set(Calendar.YEAR, 2006);
-				endDate.set(Calendar.MONTH, Calendar.JULY);
-				endDate.set(Calendar.DAY_OF_MONTH, 8);
-				endDate.set(Calendar.HOUR_OF_DAY, 9);
-				endDate.set(Calendar.MINUTE, 10);
-				endDate.set(Calendar.SECOND, 11);
-				Date endDateForComparison = endDate.getTime();
-				assertEquals("End should match to the second", testEvent
-						.getEndDate().getTime() / 1000, endDateForComparison
-						.getTime() / 1000);
+		assertEquals("ID should be 1", testEvent.getId().longValue(),
+				Long.parseLong("1"));
+		assertEquals("Event name should match", testEvent.getName(),
+				"Test Event");
+		assertEquals("Descripton should match", testEvent.getDescription(),
+				"Test Event Description");
+		Calendar startDate = Calendar.getInstance();
+		startDate.setTimeZone(TimeZone.getTimeZone("GMT"));
+		startDate.set(Calendar.YEAR, 2000);
+		startDate.set(Calendar.MONTH, Calendar.JANUARY);
+		startDate.set(Calendar.DAY_OF_MONTH, 2);
+		startDate.set(Calendar.HOUR_OF_DAY, 3);
+		startDate.set(Calendar.MINUTE, 4);
+		startDate.set(Calendar.SECOND, 5);
+		Date startDateForComparison = startDate.getTime();
+		assertEquals("StartDate should match to the second", testEvent
+				.getStartDate().getTime() / 1000,
+				startDateForComparison.getTime() / 1000);
+		Calendar endDate = Calendar.getInstance();
+		endDate.setTimeZone(TimeZone.getTimeZone("GMT"));
+		endDate.set(Calendar.YEAR, 2006);
+		endDate.set(Calendar.MONTH, Calendar.JULY);
+		endDate.set(Calendar.DAY_OF_MONTH, 8);
+		endDate.set(Calendar.HOUR_OF_DAY, 9);
+		endDate.set(Calendar.MINUTE, 10);
+		endDate.set(Calendar.SECOND, 11);
+		Date endDateForComparison = endDate.getTime();
+		assertEquals("End should match to the second", testEvent.getEndDate()
+				.getTime() / 1000, endDateForComparison.getTime() / 1000);
 
-				// Now let's change the attributes
-				try {
-					testEvent.setName("Changed Test Event");
-					testEvent.setDescription("Changed Test Event Description");
-					logger.debug("Changed name and description "
-							+ "and will marshall to XML");
-				} catch (MetadataException e) {
-					assertTrue("Error while changing attributes on event: "
+		// Now let's change the attributes
+		try {
+			testEvent.setName("Changed Test Event");
+			testEvent.setDescription("Changed Test Event Description");
+			logger.debug("Changed name and description "
+					+ "and will marshall to XML");
+		} catch (MetadataException e) {
+			logger.error("MetadataException caught changing the Event:"
+					+ e.getMessage());
+			assertTrue(
+					"Error while changing attributes on event: "
 							+ e.getMessage(), false);
-				}
-
-				// Create a string writer
-				StringWriter eventStringWriter = new StringWriter();
-
-				// Marshall out to XML
-				IMarshallingContext mctx = null;
-				try {
-					mctx = bfact.createMarshallingContext();
-				} catch (JiBXException e) {
-					assertTrue("Error while creating marshalling context: "
-							+ e.getMessage(), false);
-				}
-
-				if (mctx != null) {
-					mctx.setIndent(2);
-					try {
-						mctx.marshalDocument(testEvent, "UTF-8", null,
-								eventStringWriter);
-					} catch (JiBXException e) {
-						assertTrue("Error while marshalling testEvent "
-								+ "after attribute changes: " + e.getMessage(),
-								false);
-					}
-
-					logger.debug("Marshalled XML after change: "
-							+ eventStringWriter.toString());
-
-					// Now test the string
-					assertTrue("Marshalled XML contain changed name",
-							eventStringWriter.toString().contains(
-									"Changed Test Event"));
-					assertTrue("Marshalled XML contain changed description",
-							eventStringWriter.toString().contains(
-									"Changed Test Event Description"));
-				}
-
-			} else {
-				assertTrue("testEvent came back null!", false);
-			}
 		}
 
+		// Create an XML builder to marshall back out the XML
+		XmlBuilder xmlBuilder = new XmlBuilder();
+		xmlBuilder.add(testEvent);
+		xmlBuilder.marshal();
+
+		// Now test the xml
+		try {
+			assertTrue("Marshalled XML contain changed name", xmlBuilder
+					.toFormattedXML().contains("Changed Test Event"));
+			assertTrue("Marshalled XML contain changed description", xmlBuilder
+					.toFormattedXML()
+					.contains("Changed Test Event Description"));
+		} catch (UnsupportedEncodingException e) {
+			logger.error("UnsupportedEncodingException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"UnsupportedEncodingException caught while converting to XML: "
+							+ e.getMessage(), false);
+		} catch (IOException e) {
+			logger.error("IOException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"IOException caught while converting to XML: "
+							+ e.getMessage(), false);
+		}
 	}
 }

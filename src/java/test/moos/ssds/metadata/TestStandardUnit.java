@@ -16,21 +16,18 @@
 package test.moos.ssds.metadata;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 
 import junit.framework.TestCase;
-import moos.ssds.metadata.Metadata;
 import moos.ssds.metadata.StandardUnit;
 import moos.ssds.metadata.util.MetadataException;
+import moos.ssds.metadata.util.ObjectBuilder;
+import moos.ssds.metadata.util.XmlBuilder;
 
 import org.apache.log4j.Logger;
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
 
 /**
  * This is the test class to test the StandardUnit class
@@ -70,8 +67,9 @@ public class TestStandardUnit extends TestCase {
 			standardUnit.setLongName("Standard Unit one long name");
 			standardUnit.setSymbol("SUONE");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Now read all of them back
@@ -100,8 +98,9 @@ public class TestStandardUnit extends TestCase {
 			standardUnit.setLongName("Standard Unit one long name");
 			standardUnit.setSymbol("SUONE");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Check that the string representations are equal
@@ -165,8 +164,7 @@ public class TestStandardUnit extends TestCase {
 			standardUnitTwo
 					.setValuesFromStringRepresentation(stringRepTwo, ",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two standardUnit objects");
+			logger.error("MetadataException caught trying to create two standardUnit objects");
 		}
 
 		assertTrue("The two standardUnits should be equal (part one).",
@@ -176,8 +174,8 @@ public class TestStandardUnit extends TestCase {
 
 		// Now change the ID of the second one and they should still be equal
 		standardUnitTwo.setId(new Long(2));
-		assertTrue("The two standardUnit should be equal", standardUnitOne
-				.equals(standardUnitTwo));
+		assertTrue("The two standardUnit should be equal",
+				standardUnitOne.equals(standardUnitTwo));
 
 		// Now set the ID back, check equals again
 		standardUnitTwo.setId(new Long(1));
@@ -189,11 +187,12 @@ public class TestStandardUnit extends TestCase {
 		try {
 			standardUnitTwo.setName("StandardUnitTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
-		assertTrue("The two standardUnit should not be equal", !standardUnitOne
-				.equals(standardUnitTwo));
+		assertTrue("The two standardUnit should not be equal",
+				!standardUnitOne.equals(standardUnitTwo));
 
 		// Now set it back and change all the non-business key values. The
 		// results should be equals
@@ -203,8 +202,9 @@ public class TestStandardUnit extends TestCase {
 			standardUnitTwo.setLongName("blah blah long name");
 			standardUnitTwo.setSymbol("blah blah symbol");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals(
 				"The two standardUnits should be equal after ID set back.",
@@ -232,9 +232,8 @@ public class TestStandardUnit extends TestCase {
 			standardUnitTwo
 					.setValuesFromStringRepresentation(stringRepTwo, ",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two standardUnit objects: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to create two standardUnit objects: "
+					+ e.getMessage());
 		}
 
 		assertTrue("The two hashCodes should be equal (part one).",
@@ -244,8 +243,8 @@ public class TestStandardUnit extends TestCase {
 
 		// Now change the ID of the second one and they should not be equal
 		standardUnitTwo.setId(new Long(2));
-		assertTrue("The two hashCodes should be equal", standardUnitOne
-				.hashCode() == standardUnitTwo.hashCode());
+		assertTrue("The two hashCodes should be equal",
+				standardUnitOne.hashCode() == standardUnitTwo.hashCode());
 
 		// Now set the ID back, check equals again
 		standardUnitTwo.setId(new Long(1));
@@ -256,8 +255,9 @@ public class TestStandardUnit extends TestCase {
 		try {
 			standardUnitTwo.setName("StandardUnitTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue("The two hashCodes should not be equal after name change",
 				standardUnitOne.hashCode() != standardUnitTwo.hashCode());
@@ -270,8 +270,9 @@ public class TestStandardUnit extends TestCase {
 			standardUnitTwo.setLongName("blah blah long name");
 			standardUnitTwo.setSymbol("blah blah symbol");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals("The two hashCodes should be equal after ID and name same"
 				+ ", but different business keys.", standardUnitOne.hashCode(),
@@ -295,129 +296,100 @@ public class TestStandardUnit extends TestCase {
 		logger.debug("Will read standardUnit XML from "
 				+ standardUnitXMLFile.getAbsolutePath());
 
-		// Create a file reader
-		FileReader standardUnitXMLFileReader = null;
+		// Create the object builder
+		ObjectBuilder objectBuilder = null;
 		try {
-			standardUnitXMLFileReader = new FileReader(standardUnitXMLFile);
-		} catch (FileNotFoundException e2) {
+			objectBuilder = new ObjectBuilder(standardUnitXMLFile.toURI()
+					.toURL());
+		} catch (MalformedURLException e) {
+			logger.error("MalformedURLException caught trying to create object builder: "
+					+ e.getMessage());
 			assertTrue(
-					"Error in creating file reader for standardUnit XML file: "
-							+ e2.getMessage(), false);
+					"MalformedURLException caught trying to create object builder: "
+							+ e.getMessage(), false);
 		}
 
-		// Grab the binding factory
-		IBindingFactory bfact = null;
+		// Unmarshal XML to objects
 		try {
-			bfact = BindingDirectory.getFactory(Metadata.class);
-		} catch (JiBXException e1) {
-			assertTrue("Error in getting Binding Factory: " + e1.getMessage(),
+			objectBuilder.unmarshal();
+		} catch (Exception e) {
+			logger.error("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage());
+			assertTrue("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage(), false);
+		}
+
+		// The top level object should be a Event
+		Object unmarshalledObject = objectBuilder.listAll().iterator().next();
+		assertNotNull("Unmarshalled object should not be null",
+				unmarshalledObject);
+		assertTrue("Unmarshalled object should be a StandardUnit",
+				unmarshalledObject instanceof StandardUnit);
+
+		// Cast it
+		StandardUnit testStandardUnit = (StandardUnit) unmarshalledObject;
+		assertEquals("ID should be 1", testStandardUnit.getId().longValue(),
+				Long.parseLong("1"));
+		assertEquals("StandardUnit name should match",
+				testStandardUnit.getName(), "Test StandardUnit");
+		assertEquals("Description should match",
+				testStandardUnit.getDescription(),
+				"Test StandardUnit Description");
+		assertEquals("LongName should match", testStandardUnit.getLongName(),
+				"Test StandardUnit LongName");
+		assertEquals("Symbol should match", testStandardUnit.getSymbol(),
+				"Test StandardUnit Symbol");
+
+		// Now let's change the attributes
+		try {
+			testStandardUnit.setName("Changed Test StandardUnit");
+			testStandardUnit
+					.setDescription("Changed Test StandardUnit Description");
+			testStandardUnit.setLongName("Changed Test StandardUnit LongName");
+			testStandardUnit.setSymbol("Changed Test StandardUnit Symbol");
+			logger.debug("Changed attributes " + "and will marshall to XML");
+		} catch (MetadataException e) {
+			assertTrue("Error while changing attributes: " + e.getMessage(),
 					false);
 		}
 
-		// Grab a JiBX unmarshalling context
-		IUnmarshallingContext uctx = null;
-		if (bfact != null) {
-			try {
-				uctx = bfact.createUnmarshallingContext();
-			} catch (JiBXException e) {
-				assertTrue("Error in getting UnmarshallingContext: "
-						+ e.getMessage(), false);
-			}
-		}
+		// Create an XML builder to marshall back out the XML
+		XmlBuilder xmlBuilder = new XmlBuilder();
+		xmlBuilder.add(testStandardUnit);
+		xmlBuilder.marshal();
 
-		// Now unmarshall it
-		if (uctx != null) {
-			Metadata topMetadata = null;
-			StandardUnit testStandardUnit = null;
-			try {
-				topMetadata = (Metadata) uctx.unmarshalDocument(
-						standardUnitXMLFileReader, null);
-				testStandardUnit = topMetadata.getStandardUnits().iterator()
-						.next();
+		// Now test the xml
+		try {
+			StringWriter stringWriter = new StringWriter();
+			stringWriter.append(xmlBuilder.toFormattedXML());
 
-				logger.debug("TestStandardUnit after unmarshalling: "
-						+ testStandardUnit.toStringRepresentation("|"));
-			} catch (JiBXException e1) {
-				assertTrue("Error in unmarshalling: " + e1.getMessage(), false);
-			} catch (Throwable t) {
-				t.printStackTrace();
-				logger.error("Throwable caught: " + t.getMessage());
-			}
-
-			if (testStandardUnit != null) {
-				assertEquals("ID should be 1", testStandardUnit.getId()
-						.longValue(), Long.parseLong("1"));
-				assertEquals("StandardUnit name should match", testStandardUnit
-						.getName(), "Test StandardUnit");
-				assertEquals("Description should match", testStandardUnit
-						.getDescription(), "Test StandardUnit Description");
-				assertEquals("LongName should match", testStandardUnit
-						.getLongName(), "Test StandardUnit LongName");
-				assertEquals("Symbol should match", testStandardUnit
-						.getSymbol(), "Test StandardUnit Symbol");
-
-				// Now let's change the attributes
-				try {
-					testStandardUnit.setName("Changed Test StandardUnit");
-					testStandardUnit
-							.setDescription("Changed Test StandardUnit Description");
-					testStandardUnit
-							.setLongName("Changed Test StandardUnit LongName");
-					testStandardUnit
-							.setSymbol("Changed Test StandardUnit Symbol");
-					logger.debug("Changed attributes "
-							+ "and will marshall to XML");
-				} catch (MetadataException e) {
-					assertTrue("Error while changing attributes: "
+			// Now make sure the resulting string contains all the
+			// updates I did
+			logger.debug("Marshalled XML after change: "
+					+ stringWriter.toString());
+			// Now test the string
+			assertTrue("Marshalled XML contain changed name", stringWriter
+					.toString().contains("Changed Test StandardUnit"));
+			assertTrue(
+					"Marshalled XML contain changed description",
+					stringWriter.toString().contains(
+							"Changed Test StandardUnit Description"));
+			assertTrue("Marshalled XML contain changed longname", stringWriter
+					.toString().contains("Changed Test StandardUnit LongName"));
+			assertTrue("Marshalled XML contain changed symbol", stringWriter
+					.toString().contains("Changed Test StandardUnit Symbol"));
+		} catch (UnsupportedEncodingException e) {
+			logger.error("UnsupportedEncodingException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"UnsupportedEncodingException caught while converting to XML: "
 							+ e.getMessage(), false);
-				}
-
-				// Create a string writer
-				StringWriter stringWriter = new StringWriter();
-
-				// Marshall out to XML
-				IMarshallingContext mctx = null;
-				try {
-					mctx = bfact.createMarshallingContext();
-				} catch (JiBXException e) {
-					assertTrue("Error while creating marshalling context: "
+		} catch (IOException e) {
+			logger.error("IOException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"IOException caught while converting to XML: "
 							+ e.getMessage(), false);
-				}
-
-				if (mctx != null) {
-					mctx.setIndent(2);
-					try {
-						mctx.marshalDocument(testStandardUnit, "UTF-8", null,
-								stringWriter);
-					} catch (JiBXException e) {
-						assertTrue("Error while marshalling "
-								+ "after attribute changes: " + e.getMessage(),
-								false);
-					}
-
-					logger.debug("Marshalled XML after change: "
-							+ stringWriter.toString());
-
-					// Now test the string
-					assertTrue("Marshalled XML contain changed name",
-							stringWriter.toString().contains(
-									"Changed Test StandardUnit"));
-					assertTrue("Marshalled XML contain changed description",
-							stringWriter.toString().contains(
-									"Changed Test StandardUnit Description"));
-					assertTrue("Marshalled XML contain changed longname",
-							stringWriter.toString().contains(
-									"Changed Test StandardUnit LongName"));
-					assertTrue("Marshalled XML contain changed symbol",
-							stringWriter.toString().contains(
-									"Changed Test StandardUnit Symbol"));
-				}
-
-			} else {
-				assertTrue("metadata object came back null!", false);
-			}
 		}
-
 	}
-
 }

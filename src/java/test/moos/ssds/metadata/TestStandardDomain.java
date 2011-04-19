@@ -16,21 +16,18 @@
 package test.moos.ssds.metadata;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 
 import junit.framework.TestCase;
-import moos.ssds.metadata.Metadata;
 import moos.ssds.metadata.StandardDomain;
 import moos.ssds.metadata.util.MetadataException;
+import moos.ssds.metadata.util.ObjectBuilder;
+import moos.ssds.metadata.util.XmlBuilder;
 
 import org.apache.log4j.Logger;
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
 
 /**
  * This is the test class to test the StandardDomain class
@@ -68,8 +65,9 @@ public class TestStandardDomain extends TestCase {
 			standardDomain.setName("StandardDomainOne");
 			standardDomain.setDescription("StandardDomain one description");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Now read all of them back
@@ -93,8 +91,9 @@ public class TestStandardDomain extends TestCase {
 			standardDomain.setName("StandardDomainOne");
 			standardDomain.setDescription("StandardDomain one description");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Check that the string representations are equal
@@ -156,8 +155,7 @@ public class TestStandardDomain extends TestCase {
 			standardDomainTwo.setValuesFromStringRepresentation(stringRepTwo,
 					",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two StandardDomain objects");
+			logger.error("MetadataException caught trying to create two StandardDomain objects");
 		}
 
 		assertTrue("The two StandardDomains should be equal (part one).",
@@ -167,8 +165,8 @@ public class TestStandardDomain extends TestCase {
 
 		// Now change the ID of the second one and they should still be equal
 		standardDomainTwo.setId(new Long(2));
-		assertTrue("The two StandardDomain should be equal", standardDomainOne
-				.equals(standardDomainTwo));
+		assertTrue("The two StandardDomain should be equal",
+				standardDomainOne.equals(standardDomainTwo));
 
 		// Now set the ID back, check equals again
 		standardDomainTwo.setId(new Long(1));
@@ -180,8 +178,9 @@ public class TestStandardDomain extends TestCase {
 		try {
 			standardDomainTwo.setName("StandardDomainTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue("The two StandardDomain should not be equal",
 				!standardDomainOne.equals(standardDomainTwo));
@@ -192,8 +191,9 @@ public class TestStandardDomain extends TestCase {
 			standardDomainTwo.setName("StandardDomainOne");
 			standardDomainTwo.setDescription("blah blah");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals(
 				"The two StandardDomains should be equal after ID set back.",
@@ -220,9 +220,8 @@ public class TestStandardDomain extends TestCase {
 			standardDomainTwo.setValuesFromStringRepresentation(stringRepTwo,
 					",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two StandardDomain objects: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to create two StandardDomain objects: "
+					+ e.getMessage());
 		}
 
 		assertTrue("The two hashCodes should be equal (part one).",
@@ -232,8 +231,8 @@ public class TestStandardDomain extends TestCase {
 
 		// Now change the ID of the second one and they should not be equal
 		standardDomainTwo.setId(new Long(2));
-		assertTrue("The two hashCodes should be equal", standardDomainOne
-				.hashCode() == standardDomainTwo.hashCode());
+		assertTrue("The two hashCodes should be equal",
+				standardDomainOne.hashCode() == standardDomainTwo.hashCode());
 
 		// Now set the ID back, check equals again
 		standardDomainTwo.setId(new Long(1));
@@ -244,8 +243,9 @@ public class TestStandardDomain extends TestCase {
 		try {
 			standardDomainTwo.setName("StandardDomainTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue("The two hashCodes should not be equal after name change",
 				standardDomainOne.hashCode() != standardDomainTwo.hashCode());
@@ -256,12 +256,13 @@ public class TestStandardDomain extends TestCase {
 			standardDomainTwo.setName("StandardDomainOne");
 			standardDomainTwo.setDescription("blah blah");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals("The two hashCodes should be equal after ID and name same"
-				+ ", but different business keys.", standardDomainOne
-				.hashCode(), standardDomainTwo.hashCode());
+				+ ", but different business keys.",
+				standardDomainOne.hashCode(), standardDomainTwo.hashCode());
 	}
 
 	/**
@@ -281,115 +282,91 @@ public class TestStandardDomain extends TestCase {
 		logger.debug("Will read standardDomain XML from "
 				+ standardDomainXMLFile.getAbsolutePath());
 
-		// Create a file reader
-		FileReader standardDomainXMLFileReader = null;
+		// Create the object builder
+		ObjectBuilder objectBuilder = null;
 		try {
-			standardDomainXMLFileReader = new FileReader(standardDomainXMLFile);
-		} catch (FileNotFoundException e2) {
+			objectBuilder = new ObjectBuilder(standardDomainXMLFile.toURI()
+					.toURL());
+		} catch (MalformedURLException e) {
+			logger.error("MalformedURLException caught trying to create object builder: "
+					+ e.getMessage());
 			assertTrue(
-					"Error in creating file reader for standardDomain XML file: "
-							+ e2.getMessage(), false);
+					"MalformedURLException caught trying to create object builder: "
+							+ e.getMessage(), false);
 		}
 
-		// Grab the binding factory
-		IBindingFactory bfact = null;
+		// Unmarshal XML to objects
 		try {
-			bfact = BindingDirectory.getFactory(Metadata.class);
-		} catch (JiBXException e1) {
-			assertTrue("Error in getting Binding Factory: " + e1.getMessage(),
+			objectBuilder.unmarshal();
+		} catch (Exception e) {
+			logger.error("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage());
+			assertTrue("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage(), false);
+		}
+
+		// The top level object should be a Event
+		Object unmarshalledObject = objectBuilder.listAll().iterator().next();
+		assertNotNull("Unmarshalled object should not be null",
+				unmarshalledObject);
+		assertTrue("Unmarshalled object should be a StandardDomain",
+				unmarshalledObject instanceof StandardDomain);
+
+		// Cast it
+		StandardDomain testStandardDomain = (StandardDomain) unmarshalledObject;
+		assertEquals("ID should be 1", testStandardDomain.getId().longValue(),
+				Long.parseLong("1"));
+		assertEquals("StandardDomain name should match",
+				testStandardDomain.getName(), "Test StandardDomain");
+		assertEquals("Descripton should match",
+				testStandardDomain.getDescription(),
+				"Test StandardDomain Description");
+
+		// Now let's change the attributes
+		try {
+			testStandardDomain.setName("Changed Test StandardDomain");
+			testStandardDomain
+					.setDescription("Changed Test StandardDomain Description");
+			logger.debug("Changed name and description "
+					+ "and will marshall to XML");
+		} catch (MetadataException e) {
+			assertTrue("Error while changing attributes: " + e.getMessage(),
 					false);
 		}
 
-		// Grab a JiBX unmarshalling context
-		IUnmarshallingContext uctx = null;
-		if (bfact != null) {
-			try {
-				uctx = bfact.createUnmarshallingContext();
-			} catch (JiBXException e) {
-				assertTrue("Error in getting UnmarshallingContext: "
-						+ e.getMessage(), false);
-			}
-		}
+		// Create an XML builder to marshall back out the XML
+		XmlBuilder xmlBuilder = new XmlBuilder();
+		xmlBuilder.add(testStandardDomain);
+		xmlBuilder.marshal();
 
-		// Now unmarshall it
-		if (uctx != null) {
-			Metadata topMetadata = null;
-			StandardDomain testStandardDomain = null;
-			try {
-				topMetadata = (Metadata) uctx.unmarshalDocument(
-						standardDomainXMLFileReader, null);
-				testStandardDomain = topMetadata.getStandardDomains()
-						.iterator().next();
+		// Now test the xml
+		try {
+			StringWriter stringWriter = new StringWriter();
+			stringWriter.append(xmlBuilder.toFormattedXML());
 
-				logger.debug("TestStandardDomain after unmarshalling: "
-						+ testStandardDomain.toStringRepresentation("|"));
-			} catch (JiBXException e1) {
-				assertTrue("Error in unmarshalling: " + e1.getMessage(), false);
-			} catch (Throwable t) {
-				t.printStackTrace();
-				logger.error("Throwable caught: " + t.getMessage());
-			}
-
-			if (testStandardDomain != null) {
-				assertEquals("ID should be 1", testStandardDomain.getId()
-						.longValue(), Long.parseLong("1"));
-				assertEquals("StandardDomain name should match",
-						testStandardDomain.getName(), "Test StandardDomain");
-				assertEquals("Descripton should match", testStandardDomain
-						.getDescription(), "Test StandardDomain Description");
-
-				// Now let's change the attributes
-				try {
-					testStandardDomain.setName("Changed Test StandardDomain");
-					testStandardDomain
-							.setDescription("Changed Test StandardDomain Description");
-					logger.debug("Changed name and description "
-							+ "and will marshall to XML");
-				} catch (MetadataException e) {
-					assertTrue("Error while changing attributes: "
+			// Now make sure the resulting string contains all the
+			// updates I did
+			logger.debug("Marshalled XML after change: "
+					+ stringWriter.toString());
+			// Now test the string
+			assertTrue("Marshalled XML contain changed name", stringWriter
+					.toString().contains("Changed Test StandardDomain"));
+			assertTrue(
+					"Marshalled XML contain changed description",
+					stringWriter.toString().contains(
+							"Changed Test StandardDomain Description"));
+		} catch (UnsupportedEncodingException e) {
+			logger.error("UnsupportedEncodingException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"UnsupportedEncodingException caught while converting to XML: "
 							+ e.getMessage(), false);
-				}
-
-				// Create a string writer
-				StringWriter stringWriter = new StringWriter();
-
-				// Marshall out to XML
-				IMarshallingContext mctx = null;
-				try {
-					mctx = bfact.createMarshallingContext();
-				} catch (JiBXException e) {
-					assertTrue("Error while creating marshalling context: "
+		} catch (IOException e) {
+			logger.error("IOException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"IOException caught while converting to XML: "
 							+ e.getMessage(), false);
-				}
-
-				if (mctx != null) {
-					mctx.setIndent(2);
-					try {
-						mctx.marshalDocument(testStandardDomain, "UTF-8", null,
-								stringWriter);
-					} catch (JiBXException e) {
-						assertTrue("Error while marshalling "
-								+ "after attribute changes: " + e.getMessage(),
-								false);
-					}
-
-					logger.debug("Marshalled XML after change: "
-							+ stringWriter.toString());
-
-					// Now test the string
-					assertTrue("Marshalled XML contain changed name",
-							stringWriter.toString().contains(
-									"Changed Test StandardDomain"));
-					assertTrue("Marshalled XML contain changed description",
-							stringWriter.toString().contains(
-									"Changed Test StandardDomain Description"));
-				}
-
-			} else {
-				assertTrue("metadata object came back null!", false);
-			}
 		}
-
 	}
-
 }
