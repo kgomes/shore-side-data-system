@@ -6,26 +6,42 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
+import java.util.TreeMap;
+
+import moos.ssds.io.util.Base64;
+import moos.ssds.metadata.CommentTag;
+import moos.ssds.metadata.DataContainer;
+import moos.ssds.metadata.DataContainerGroup;
 import moos.ssds.metadata.DataProducer;
+import moos.ssds.metadata.DataProducerGroup;
+import moos.ssds.metadata.Device;
+import moos.ssds.metadata.DeviceType;
+import moos.ssds.metadata.Event;
+import moos.ssds.metadata.HeaderDescription;
+import moos.ssds.metadata.Keyword;
+import moos.ssds.metadata.Person;
+import moos.ssds.metadata.RecordDescription;
+import moos.ssds.metadata.RecordVariable;
+import moos.ssds.metadata.Resource;
+import moos.ssds.metadata.ResourceBLOB;
+import moos.ssds.metadata.ResourceType;
+import moos.ssds.metadata.Software;
+import moos.ssds.metadata.StandardDomain;
+import moos.ssds.metadata.StandardKeyword;
+import moos.ssds.metadata.StandardReferenceScale;
+import moos.ssds.metadata.StandardUnit;
+import moos.ssds.metadata.StandardVariable;
+import moos.ssds.metadata.UserGroup;
 import moos.ssds.util.XmlDateFormat;
 import nu.xom.Attribute;
 import nu.xom.Document;
 import nu.xom.Element;
-import nu.xom.Elements;
-import nu.xom.Node;
 import nu.xom.Serializer;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.hibernate.Hibernate;
 
 /**
  * <p>
@@ -39,6 +55,8 @@ import org.hibernate.Hibernate;
  *     // Add the elements that are to appear just below the root of the XML doc. 
  *     // Here we just add an instance of DataProducer 
  *     xb.add(aDataProducer); 
+ *     // Set whether or not you want legaacy XML format or not (ususally not)
+ *     xb.setLegacyFormat(false);  // true means it will print out the old style XML
  *     // Transform the object graph to xml 
  *     xb.marshal(); 
  *     // view it in a console. 
@@ -50,10 +68,7 @@ import org.hibernate.Hibernate;
  * </pre>
  * 
  * <p>
- * <code>XmlBuilder</code> uses reflection for marshalling XML from objects.
- * Changes to the model can be handled without requring changes to this class.
- * However, sometimes the result is undesirable, so some modifications may be
- * required.
+ * <code>XmlBuilder</code> is used for marshalling XML from objects.
  * </p>
  * <hr>
  * 
@@ -63,66 +78,135 @@ import org.hibernate.Hibernate;
  */
 public class XmlBuilder {
 
+	/**
+	 * A Log4JLogger
+	 */
+	private static Logger logger = Logger.getLogger(XmlBuilder.class);
+
+	/**
+	 * This is the XOM Document that will be used during serialization
+	 */
+	private Document document;
+
+	/**
+	 * Collection of Objects that could be elements just below the root of the
+	 * XML document (i.e Device, Deployment, DataProducers (and subclasses).
+	 */
+	private Collection<Object> rootElements = new ArrayList<Object>();
+
+	/**
+	 * An XMLDateFormat to use in writing out the XML
+	 */
+	private XmlDateFormat dateFormat = new XmlDateFormat();
+
+	/**
+	 * This is a flag that indicates if the marshalling should output the XML in
+	 * the legacy format which using Deployment/ProcessRun instead of
+	 * DataProducer and DataFile/DataStream instead of DataContainer
+	 */
+	private boolean legacyFormat = false;
+
+	/**
+	 * The default constructor
+	 */
 	public XmlBuilder() {
-		// Set the logger level
-		logger.setLevel(level);
+
 		// Create the <Metadata> root element
 		Element root = new Element("Metadata");
 
-		// Create a new XOM Document
+		root.addNamespaceDeclaration("xsi",
+				"http://www.w3.org/2001/XMLSchema-instance");
+		root.addAttribute(new Attribute(
+				"xsi:noNamespaceSchemaLocation",
+				"http://www.w3.org/2001/XMLSchema-instance",
+				"http://shore-side-data-system.googlecode.com/svn/trunk/src/xml/SSDS_Metadata.xsd"));
+
+		// Create a new XOM Document using the Metadata tag as the root
 		document = new Document(root);
-
-		// Grab the package from a metadata class so we can run checks later
-		p = DataProducer.class.getPackage();
-
-		// Clear the counter
-		objectToElementCount = 0;
-
-		// Hash list
-		objList = new ArrayList();
 	}
 
+	/**
+	 * This method sets the flag that tells the marshalling to build legacy
+	 * style XML
+	 * 
+	 * @param legacyFormat
+	 */
+	public void setLegacyFormat(boolean legacyFormat) {
+		this.legacyFormat = legacyFormat;
+	}
+
+	/**
+	 * This method returns the flag that indicates if the builder will marshall
+	 * in legacy format
+	 * 
+	 * @return
+	 */
+	public boolean isLegacyFormat() {
+		return this.legacyFormat;
+	}
+
+	/**
+	 * The method to return the XOM document that was built after unmarshalling
+	 * 
+	 * @return The XOM Document
+	 */
+	public Document getDocument() {
+		return document;
+	}
+
+	/**
+	 * This method adds a <code>IMetadataObject</code> to the list of elements
+	 * to be serialized out under the Metadata tag
+	 * 
+	 * @param obj
+	 */
 	public void add(Object obj) {
 		rootElements.add(obj);
 	}
 
+	/**
+	 * Method to remove a <code>IMetadataObject</code> from the list of elements
+	 * to serialize
+	 * 
+	 * @param obj
+	 */
 	public void remove(Object obj) {
 		rootElements.remove(obj);
 	}
 
-	public void addAll(Collection c) {
+	/**
+	 * A method to add a collection of objects to the the list of elements to be
+	 * serialized out under Metadata tag
+	 * 
+	 * @param c
+	 */
+	public void addAll(Collection<Object> c) {
 		rootElements.addAll(c);
 	}
 
-	public void removeAll(Collection c) {
+	/**
+	 * A method to remove a collection of objects from the collection to be
+	 * serialized
+	 * 
+	 * @param c
+	 */
+	public void removeAll(Collection<Object> c) {
 		rootElements.removeAll(c);
 	}
 
-	public Collection getRootElements() {
+	/**
+	 * This is the method to return the collection of objects to be serialized
+	 * out under the Metadata tag
+	 * 
+	 * @return
+	 */
+	public Collection<Object> getRootElements() {
 		return rootElements;
 	}
 
 	/**
-	 * @return The XML document as text
-	 */
-	public String toXML() {
-		return document.toXML();
-	}
-
-	/**
-	 * @return The XML document as a formatted (indents & line breaks) string
-	 */
-	public String toFormattedXML() throws IOException,
-			UnsupportedEncodingException {
-		ByteArrayOutputStream buf = new ByteArrayOutputStream();
-		Serializer serializer = new Serializer(buf, "ISO-8859-1");
-		serializer.setIndent(4);
-		serializer.setMaxLength(65536);
-		serializer.write(document);
-		return buf.toString();
-	}
-
-	/**
+	 * The method to simply return the XOM document as test
+	 * 
 	 * @return The XML document as text
 	 */
 	public String toString() {
@@ -130,10 +214,39 @@ public class XmlBuilder {
 	}
 
 	/**
-	 * @return The XML document as an Object
+	 * This method takes the XOM document converts it to XML and returns the
+	 * String
+	 * 
+	 * @return The XML document as text
 	 */
-	public Document getDocument() {
-		return document;
+	public String toXML() {
+		return document.toXML();
+	}
+
+	/**
+	 * This method returns the XOM document as a formatted (indents and line
+	 * breaks) string of XML
+	 * 
+	 * @return The XOM document as a formatted (indents & line breaks) string
+	 */
+	public String toFormattedXML() throws IOException,
+			UnsupportedEncodingException {
+
+		// Create a output stream to buffer the results of the serialization
+		ByteArrayOutputStream buf = new ByteArrayOutputStream();
+
+		// Create the serializer to serialize the document
+		Serializer serializer = new Serializer(buf, "ISO-8859-1");
+
+		// Set some configuration parameters
+		serializer.setIndent(4);
+		serializer.setMaxLength(65536);
+
+		// Now serialize to the buffered output stream
+		serializer.write(document);
+
+		// Return the results as a String
+		return buf.toString();
 	}
 
 	/**
@@ -144,43 +257,63 @@ public class XmlBuilder {
 	 */
 	public void toFile(java.io.File file) throws IOException,
 			UnsupportedEncodingException {
+		// Call the method to write to the file
 		toFile(file, "ISO-8859-1");
 	}
 
 	/**
-	 * Write formated xml to a file using the specified encoding
+	 * Write formatted XML to a file using the specified encoding
 	 * 
 	 * @param file
 	 *            The file to write into.
 	 * @param encoding
-	 *            the encodinb to use
+	 *            the encoding to use
 	 */
 	public void toFile(java.io.File file, String encoding) throws IOException,
 			UnsupportedEncodingException {
+		// Create the output stream that points to the file
 		OutputStream out = new BufferedOutputStream(new FileOutputStream(file));
+
+		// Print the XML using the endcoding to the file
 		print(out, encoding);
+
+		// Close the output stream
 		out.close();
 	}
 
 	/**
-	 * Write the formated xml out to a stream
+	 * The method to print the XML to the supplied output stream using the
+	 * ISO-8859-1 encoding
 	 * 
 	 * @param out
-	 *            An outstream to write to
-	 * @param encoding
-	 *            the encodinb to use
+	 * @throws IOException
+	 * @throws UnsupportedEncodingException
 	 */
-	public void print(OutputStream out, String encoding) throws IOException,
-			UnsupportedEncodingException {
-		Serializer serializer = new Serializer(out, encoding);
-		serializer.setIndent(4);
-		serializer.setMaxLength(65536);
-		serializer.write(document);
-	}
-
 	public void print(OutputStream out) throws IOException,
 			UnsupportedEncodingException {
 		print(out, "ISO-8859-1");
+	}
+
+	/**
+	 * Write the formated XML out to a stream
+	 * 
+	 * @param out
+	 *            An output stream to write to
+	 * @param encoding
+	 *            the encoding to use
+	 */
+	public void print(OutputStream out, String encoding) throws IOException,
+			UnsupportedEncodingException {
+
+		// Create the XOM Serializer to use
+		Serializer serializer = new Serializer(out, encoding);
+
+		// Set some configuration settings
+		serializer.setIndent(4);
+		serializer.setMaxLength(65536);
+
+		// Write the document to the output stream
+		serializer.write(document);
 	}
 
 	/**
@@ -197,8 +330,9 @@ public class XmlBuilder {
 	 * <pre>
 	 * XmlBuilder xb = new XmlBuilder();
 	 * xb.addDeployment(aDeployment);
+	 * xb.setLegacyFormat(false);
 	 * 
-	 * // Generate the xml tree 
+	 * // Generate the xml tree
 	 * xb.marshal();
 	 * 
 	 * // do something with the xml tree. Here we dump it to stdout
@@ -209,439 +343,31 @@ public class XmlBuilder {
 		// Clear the root element (Metadata)
 		document.getRootElement().removeChildren();
 
-		// Placeholders
-		Element element = null;
-		Object obj = null;
-
 		// Now iterate over the objects that were added
-		Iterator i = rootElements.iterator();
+		Iterator<Object> i = rootElements.iterator();
 		while (i.hasNext()) {
 			// Grab the object
-			obj = i.next();
+			Object obj = i.next();
 			if (obj != null) {
 				try {
 					// Convert the object to an XML element
-					element = objectToElement(obj);
+					Element element = objectToElement(obj);
+
 					// If it looks OK, add it the the <Metadata> element
 					if (element != null && !isEmptyElement(element)) {
 						document.getRootElement().appendChild(element);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error("Exception caught trying to serialize "
+							+ "Metadata objects to XML:" + e.getMessage());
 				}
-			}
-		}
-
-		// Now sort all the attributes alphabetically
-		this.deepSortChildrenElements(document.getRootElement());
-	}
-
-	/**
-	 * Convert an object to its corresponding XML element
-	 * 
-	 * @return An element representing a given object.
-	 */
-	private Element objectToElement(Object parentObject) {
-
-		// Count the number of times we are here to trap recursions
-		objectToElementCount++;
-		if (objectToElementCount > maxObjectToElementCount) {
-			logger.warn("*** Called objectToElement " + objectToElementCount
-					+ " times.  Possible recursion in model with object "
-					+ parentObject.getClass().getName());
-		}
-
-		// Create the element placeholder
-		Element parentElement = null;
-
-		// If the object is not in the Hibernate session, return nothing
-		if (!Hibernate.isInitialized(parentObject))
-			return parentElement;
-
-		logger.debug("Converting " + parentObject.getClass().getName() + "("
-				+ parentObject + ") to XML");
-
-		// Grab the class from the object
-		Class parentClass = this.getRealClassOfObject(parentObject);
-
-		// Ignore Objects that are not in the metadata package
-		if (isClassInMetadataPackage(parentClass)) {
-
-			// Create an empty element that matches the class
-			parentElement = makeEmptyElement(parentObject);
-
-			// Now grab all the methods off the incoming object
-			Method[] methods = parentClass.getMethods();
-			Method method = null;
-			// Loop over the methods to populate the element with attributes and
-			// child elements
-			for (int i = 0; i < methods.length; i++) {
-				// Grab the method
-				method = methods[i];
-
-				// Check to see if the method returns a collection
-				if (!isMethodToSkip(method)) {
-					if (method.getReturnType() == Collection.class) {
-
-						// Save hash of objects and compare for preventing
-						// recursion
-						// as can happen with a PR that is a consumer of its
-						// input.
-						objList.add(parentObject.hashCode());
-
-						appendCollection(parentObject, method, parentElement);
-					} else {
-						appendElement(parentObject, method, parentElement);
-					}
-				}
-				// Check for methods that return Collections
-				// if (isListMethod(parentObject, method)) {
-				// appendCollection(parentObject, method, parentElement);
-				// }
-				// // Check all other get methods.
-				// else if (isGetMethod(parentObject, method)) {
-				// appendElement(parentObject, method, parentElement);
-				// }
-			}
-		}
-		return parentElement;
-	}
-
-	/**
-	 * @param c
-	 *            A class
-	 * @return true if the supplied class is package local to XmlBuilder
-	 */
-	private boolean isClassInMetadataPackage(Class c) {
-		boolean OK = false;
-		try {
-			OK = c.getPackage().equals(p);
-		} catch (Exception e) {
-			logger
-					.error("isPackageLocal(): Exception trying to getPackage() from class "
-							+ c.getClass().getName());
-			OK = false;
-		}
-		return OK;
-	}
-
-	/**
-	 * Generates an Empty XMLelement with same name as the Object supplied as an
-	 * argument.
-	 * 
-	 * @return An element with the same local name as the object's class
-	 */
-	private Element makeEmptyElement(Object object) {
-
-		// Grab the class name
-		String name = this.getRealClassNameOfObject(object);
-
-		// Shorten it to just the object name
-		int idx = name.lastIndexOf(".");
-		name = name.substring(idx + 1);
-
-		// Now create and return an new Element with that name
-		return new Element(name);
-	}
-
-	/**
-	 * Privides special handiling for accessors that return Collections.
-	 * 
-	 * @param parentObject
-	 *            An Object
-	 * @param method
-	 *            An accessor (list or get) method of parentObject
-	 * @param parentElement
-	 *            An XML element coresponding to parentObject
-	 */
-	private void appendCollection(Object parentObject, Method method,
-			Element parentElement) {
-
-		logger.debug("appendCollection called on class "
-				+ parentObject.getClass().getName() + " using method "
-				+ method.getName());
-		// Call the method and get the collection
-		Object childObject = getChildObject(parentObject, method);
-		Collection c = (Collection) childObject;
-
-		// Now we need to make sure the child object is instantiated in
-		// Hibernate. If it is not, do nothing
-		if (!Hibernate.isInitialized(c))
-			return;
-
-		/*
-		 * Handle special caseof input and output. This is done by creating an
-		 * new element <input> or <output> and then appending the contents of
-		 * the colleciton to this element rather than the parentElement provided
-		 * as an argument.
-		 */
-		String methodName = method.getName();
-		if ((methodName.equals("getInputs"))
-				|| (methodName.equals("getOutputs"))) {
-			if (!c.isEmpty()) {
-				StringBuffer sb = new StringBuffer(getParameterName(method));
-				sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
-				String paramName = sb.substring(0, sb.length() - 1);
-				// remove trailing 's'
-				Element ioElement = new Element(paramName);
-				parentElement.appendChild(ioElement);
-				parentElement = ioElement;
-			}
-		} else if (methodName.equals("getConsumers")) {
-			if (!c.isEmpty()) {
-				if (!objList.contains(childObject.hashCode())) {
-					Element ioElement = new Element("consumer");
-					parentElement.appendChild(ioElement);
-					parentElement = ioElement;
-				} else {
-					return; // recursion detected
-				}
-			}
-
-		}
-
-		// Each object in the collection becomes a childElement to parentElement
-		Element childElement = null;
-		if (c != null && !c.isEmpty()) {
-			Iterator it = c.iterator();
-			Object lo = null;
-			while (it.hasNext()) {
-				lo = it.next();
-				if (lo == null) {
-					continue;
-				}
-				childElement = objectToElement(lo);
-				if ((childElement != null) && (!isEmptyElement(childElement))) {
-					parentElement.appendChild(childElement);
-				}
-			}
-		}
-	}
-
-	/**
-	 * * Retrieve an object from an accessor method
-	 * 
-	 * @return An object returned from the given method call
-	 * @param parentObject
-	 *            The object whos method is called
-	 * @param method
-	 *            The method to call on the parentObject
-	 */
-	private Object getChildObject(Object parentObject, Method method) {
-		Object childObject = null;
-		try {
-			childObject = method.invoke(parentObject, new Object[] {});
-		} catch (IllegalAccessException e) {
-		} catch (InvocationTargetException e) {
-		} catch (IllegalArgumentException e) {
-		}
-		return childObject;
-	}
-
-	/**
-	 * This method returns the name of the method without the get or is on it
-	 * 
-	 * @param method
-	 *            The method of an object
-	 * @return The parameter name from 'get' or 'is' methods (i.e Device for
-	 *         getDevice)
-	 */
-	private String getParameterName(Method method) {
-		// Grab the name
-		String methodName = method.getName();
-		String parameterName = "";
-		// If it starts with get/is, grab the last part
-		if (methodName.startsWith("get")) {
-			parameterName = methodName.substring(3);
-		} else if (methodName.startsWith("is")) {
-			parameterName = methodName.substring(2);
-		}
-		return parameterName;
-	}
-
-	/**
-	 * Append any Objects retrieved from a parent object using the method
-	 * specified in the arguments to the corresponding parent element. This
-	 * method actually acts a switchyard that calls the appropriate appending
-	 * method. Differt methods exist for appending Collections, Objects, and
-	 * primitive types.
-	 * 
-	 * @param parentObject
-	 *            An Object
-	 * @param method
-	 *            An accessor (list or get) method of parentObject
-	 * @param parentElement
-	 *            An XML element coresponding to parentObject
-	 */
-	private void appendElement(Object parentObject, Method method,
-			Element parentElement) {
-
-		logger.debug("appendElement called on class "
-				+ parentObject.getClass().getName() + " using method "
-				+ method.getName());
-		// primitives and their wrapped types are added as XML attributes
-		if (isAttributeType(method)) {
-			appendPrimitiveType(parentObject, method, parentElement);
-		}
-		// Non-package local objects require special handling
-		else if (isSpecialMethod(method)) {
-			appendSpecial(parentObject, method, parentElement);
-		}
-		// True SSDS Objects are added as XML Elements
-		else {
-			appendObject(parentObject, method, parentElement);
-		}
-	}
-
-	/**
-	 * Does the method return a type that will need to be treated as XML
-	 * Attribute. Primitive and wrapped types such as Strings,Doubles etc are to
-	 * be treated as XML attributes.
-	 * 
-	 * @param method
-	 *            An accessor method
-	 */
-	private boolean isAttributeType(Method method) {
-		boolean ok = false;
-
-		Class methodReturnType = method.getReturnType();
-		if ((methodReturnType.isPrimitive())
-				|| (methodReturnType.equals(String.class))
-				|| (methodReturnType.equals(Boolean.class))
-				|| (methodReturnType.equals(Character.class))
-				|| (methodReturnType.equals(Byte.class))
-				|| (methodReturnType.equals(Short.class))
-				|| (methodReturnType.equals(Integer.class))
-				|| (methodReturnType.equals(Long.class))
-				|| (methodReturnType.equals(Float.class))
-				|| (methodReturnType.equals(Double.class))) {
-			ok = true;
-		}
-		return ok;
-	}
-
-	/**
-	 * Handles prmitive types
-	 * 
-	 * @param parentObject
-	 *            An Object
-	 * @param method
-	 *            An accessor (list or get) method of parentObject
-	 * @param parentElement
-	 *            An XML element coresponding to parentObject
-	 */
-	private void appendPrimitiveType(Object parentObject, Method method,
-			Element parentElement) {
-		logger.debug("appendPrimitiveType called with method name "
-				+ method.getName() + " on object of class "
-				+ parentObject.getClass().getName());
-		Object childObject = getChildObject(parentObject, method);
-		if (childObject != null) {
-			// Change the first character of the parameter name to lowercase
-			StringBuffer sb = new StringBuffer(getParameterName(method));
-			sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
-			String paramName = sb.toString();
-			String paramValue = String.valueOf(childObject);
-			// Don't add atributes that are empty strings or NaN
-			if ((!paramValue.equals("")) && (!paramValue.equals("NaN"))) {
-				// Description is added as an element because it is easier to
-				// read
-				if (paramName.equals("description")) {
-					Element childElement = new Element("description");
-					childElement.appendChild(paramValue);
-					parentElement.appendChild(childElement);
-				} else {
-					Attribute childAttribute = new Attribute(paramName,
-							paramValue);
-					parentElement.addAttribute(childAttribute);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Does the parameter require special handling (i.e ids, dates and URLs)
-	 * 
-	 * @param method
-	 *            An accessor method
-	 */
-	private boolean isSpecialMethod(Method method) {
-		boolean ok = false;
-		String methodName = method.getName();
-		if (methodName.equals("getStartDate")
-				|| methodName.equals("getEndDate")
-				|| methodName.equals("getUrl") || methodName.equals("getUri")
-				|| methodName.equals("getDODSUrl")) {
-			ok = true;
-		}
-		return ok;
-	}
-
-	/**
-	 * Handles non-package local objects
-	 * 
-	 * @param parentObject
-	 *            An Object
-	 * @param method
-	 *            An accessor (list or get) method of parentObject
-	 * @param parentElement
-	 *            An XML element coresponding to parentObject
-	 */
-	private void appendSpecial(Object parentObject, Method method,
-			Element parentElement) {
-
-		String methodName = method.getName();
-		Object childObject = getChildObject(parentObject, method);
-
-		// Get the paramValue
-		if (childObject != null) {
-
-			// Change the first character of the parameter name to lowercase
-			StringBuffer sb = new StringBuffer(getParameterName(method));
-			sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
-			String paramName = sb.toString();
-
-			String paramValue = null;
-			Attribute attribute = null;
-			if (methodName.equals("getStartDate")
-					|| methodName.equals("getEndDate")) {
-				paramValue = dateFormat.format((Date) childObject);
-			} else if ((methodName.equals("getUrl"))
-					|| (methodName.equals("getDODSUrl"))) {
-				paramValue = ((URL) childObject).toString();
-			} else if (methodName.equals("getUri")) {
-				paramValue = ((URI) childObject).toString();
-			}
-			attribute = new Attribute(paramName, paramValue);
-			parentElement.addAttribute(attribute);
-		}
-
-	}
-
-	/**
-	 * Handles package local objects
-	 * 
-	 * @param parentObject
-	 *            An Object
-	 * @param method
-	 *            An accessor (list or get) method of parentObject
-	 * @param parentElement
-	 *            An XML element coresponding to parentObject
-	 */
-	private void appendObject(Object parentObject, Method method,
-			Element parentElement) {
-		Object childObject = getChildObject(parentObject, method);
-		if (childObject != null) {
-			Element childElement = objectToElement(childObject);
-			if ((childElement != null) && (!isEmptyElement(childElement))) {
-				parentElement.appendChild(childElement);
 			}
 		}
 	}
 
 	/**
 	 * Checks to see if an element has child nodes or attributes. If it doesn't
-	 * the element corresponds to an emtpy object and so is generally not
+	 * the element corresponds to an empty object and so is generally not
 	 * written out to XML.
 	 */
 	private boolean isEmptyElement(Element element) {
@@ -655,131 +381,1890 @@ public class XmlBuilder {
 	}
 
 	/**
-	 * This method checks to see if this is a method that will walk back up a
-	 * object graph and cause infinite recursion. If it will the method will
-	 * return <code>true</code> indicating the method should be skipped
+	 * Convert an object to its corresponding XML element
 	 * 
-	 * @param method
-	 * @return
+	 * @return An element representing a given object.
 	 */
-	private boolean isMethodToSkip(Method method) {
-		boolean skip = false;
+	private Element objectToElement(Object parentObject) {
 
-		Class parentClass = method.getDeclaringClass();
-		String parentClassName = parentClass.getSimpleName();
-		String methodName = method.getName();
-		if ((parentClassName.equals("DataContainer"))
-				&& (methodName.equals("getRecordVariables")))
-			return true;
-		if ((methodName.equals("getCreator"))
-				|| (methodName.equals("getDateRange"))
-				|| (methodName.equals("getUrl"))
-				|| (methodName.equals("getUriString"))
-				|| (methodName.equals("getParentDataProducer"))
-				|| (methodName.equals("getVersion"))
-				|| (!methodName.startsWith("get") && !methodName
-						.startsWith("is")) || (methodName.equals("equals"))
-				|| (methodName.equals("hashCode"))) {
-			skip = true;
+		// Check the class type and call the appropriate method
+		if (parentObject instanceof CommentTag) {
+			return commentTagToElement((CommentTag) parentObject);
+		} else if (parentObject instanceof DataContainer) {
+			return dataContainerToElement((DataContainer) parentObject);
+		} else if (parentObject instanceof DataContainerGroup) {
+			return dataContainerGroupToElement((DataContainerGroup) parentObject);
+		} else if (parentObject instanceof DataProducer) {
+			return dataProducerToElement((DataProducer) parentObject);
+		} else if (parentObject instanceof DataProducerGroup) {
+			return dataProducerGroupToElement((DataProducerGroup) parentObject);
+		} else if (parentObject instanceof Device) {
+			return deviceToElement((Device) parentObject);
+		} else if (parentObject instanceof DeviceType) {
+			return deviceTypeToElement((DeviceType) parentObject);
+		} else if (parentObject instanceof Event) {
+			return eventToElement((Event) parentObject);
+		} else if (parentObject instanceof HeaderDescription) {
+			return headerDescriptionToElement((HeaderDescription) parentObject);
+		} else if (parentObject instanceof Keyword) {
+			return keywordToElement((Keyword) parentObject);
+		} else if (parentObject instanceof Person) {
+			return personToElement((Person) parentObject);
+		} else if (parentObject instanceof RecordDescription) {
+			return recordDescriptionToElement((RecordDescription) parentObject);
+		} else if (parentObject instanceof RecordVariable) {
+			return recordVariableToElement((RecordVariable) parentObject);
+		} else if (parentObject instanceof Resource) {
+			return resourceToElement((Resource) parentObject);
+		} else if (parentObject instanceof ResourceBLOB) {
+			return resourceBLOBToElement((ResourceBLOB) parentObject);
+		} else if (parentObject instanceof ResourceType) {
+			return resourceTypeToElement((ResourceType) parentObject);
+		} else if (parentObject instanceof Software) {
+			return softwareToElement((Software) parentObject);
+		} else if (parentObject instanceof StandardDomain) {
+			return standardDomainToElement((StandardDomain) parentObject);
+		} else if (parentObject instanceof StandardKeyword) {
+			return standardKeywordToElement((StandardKeyword) parentObject);
+		} else if (parentObject instanceof StandardReferenceScale) {
+			return standardReferenceScaleToElement((StandardReferenceScale) parentObject);
+		} else if (parentObject instanceof StandardUnit) {
+			return standardUnitToElement((StandardUnit) parentObject);
+		} else if (parentObject instanceof StandardVariable) {
+			return standardVariableToElement((StandardVariable) parentObject);
+		} else if (parentObject instanceof UserGroup) {
+			return userGroupToElement((UserGroup) parentObject);
+		} else {
+			logger.error("Incoming object was not recognized and was "
+					+ "not converted to an XML Element");
+			logger.error("Object is " + parentObject);
+			return null;
 		}
-		return skip;
 	}
 
-	private void deepSortChildrenElements(Element element) {
-		// Grab the children
-		Elements childElements = element.getChildElements();
+	/**
+	 * This method takes in a <code>CommentTag</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param commentTag
+	 *            the CommentTag that will be converted to XML
+	 * @return
+	 */
+	private Element commentTagToElement(CommentTag commentTag) {
+		// Create the new Element
+		Element element = new Element("CommentTag");
 
-		// Loop over and sort in the current tree then call sort on its children
-		for (int i = 0; i < childElements.size(); i++) {
-			childElements = element.getChildElements();
-			Element currentElement = childElements.get(i);
-			for (int j = 0; j < i; j++) {
-				String currentElementName = currentElement.getLocalName();
-				currentElementName = currentElementName.toLowerCase();
-				String childElementName = childElements.get(j).getLocalName();
-				childElementName = childElementName.toLowerCase();
-				if (currentElementName.compareTo(childElementName) < 0) {
-					Node nodeToMoveUp = element.removeChild(i);
-					nodeToMoveUp.detach();
-					Node nodeToMoveDown = element.removeChild(j);
-					nodeToMoveDown.detach();
-					// Now swap them
-					element.insertChild(nodeToMoveUp, j);
-					element.insertChild(nodeToMoveDown, i);
-					break;
+		// Make sure incoming object is there
+		if (commentTag != null) {
+			// If the objects has attributes, add them to the element
+			if (commentTag.getId() != null)
+				element.addAttribute(new Attribute("id", commentTag.getId()
+						.toString()));
+			if (commentTag.getTagString() != null)
+				element.addAttribute(new Attribute("tagString", commentTag
+						.getTagString()));
+		}
+
+		// Return the element
+		return element;
+	}
+
+	/**
+	 * This method takes in <code>DataContainer</code> and converts it to a XOM
+	 * Element
+	 * 
+	 * @param dataContainer
+	 * @return
+	 */
+	private Element dataContainerToElement(DataContainer dataContainer) {
+		// Create the data container element
+		Element element = null;
+
+		// Make sure incoming object is there
+		if (dataContainer != null) {
+
+			// Check to see if the marshalling is set to legacy
+			if (legacyFormat) {
+				// Check the type
+				if (dataContainer.getDataContainerType().equalsIgnoreCase(
+						DataContainer.TYPE_FILE)) {
+					element = new Element("DataFile");
+				} else if (dataContainer.getDataContainerType()
+						.equalsIgnoreCase(DataContainer.TYPE_STREAM)) {
+					element = new Element("DataStream");
+				} else {
+					// The most common is probably File
+					element = new Element("DataFile");
+				}
+			} else {
+				element = new Element("DataContainer");
+				if (dataContainer.getDataContainerType() != null) {
+					element.addAttribute(new Attribute("dataContainerType",
+							dataContainer.getDataContainerType()));
+				} else {
+					// Choose the most common type
+					element.addAttribute(new Attribute("dataContainerType",
+							"File"));
 				}
 			}
-			deepSortChildrenElements(childElements.get(i));
+
+			// Add all attributes
+			if (dataContainer.getId() != null)
+				element.addAttribute(new Attribute("id", dataContainer.getId()
+						.toString()));
+			if (dataContainer.getName() != null)
+				element.addAttribute(new Attribute("name", dataContainer
+						.getName()));
+			if (dataContainer.getStartDate() != null)
+				element.addAttribute(new Attribute("startDate", dateFormat
+						.format(dataContainer.getStartDate())));
+			if (dataContainer.getEndDate() != null)
+				element.addAttribute(new Attribute("endDate", dateFormat
+						.format(dataContainer.getEndDate())));
+			if (dataContainer.isOriginal() != null)
+				element.addAttribute(new Attribute("original", dataContainer
+						.isOriginal().toString()));
+			if (dataContainer.getUriString() != null) {
+				if (legacyFormat) {
+					element.addAttribute(new Attribute("url", dataContainer
+							.getUriString()));
+				} else {
+					element.addAttribute(new Attribute("uri", dataContainer
+							.getUriString()));
+				}
+			}
+			if (dataContainer.getContentLength() != null)
+				element.addAttribute(new Attribute("contentLength",
+						dataContainer.getContentLength().toString()));
+			if (dataContainer.getMimeType() != null)
+				element.addAttribute(new Attribute("mimeType", dataContainer
+						.getMimeType()));
+			if (dataContainer.getNumberOfRecords() != null)
+				element.addAttribute(new Attribute("numberOfRecords",
+						dataContainer.getNumberOfRecords().toString()));
+			if (dataContainer.isDodsAccessible() != null)
+				element.addAttribute(new Attribute("dodsAccessible",
+						dataContainer.isDodsAccessible().toString()));
+			if (dataContainer.getDodsUrlString() != null)
+				element.addAttribute(new Attribute("dodsUrl", dataContainer
+						.getDodsUrlString()));
+			if (dataContainer.isNoNetCDF() != null && !legacyFormat)
+				element.addAttribute(new Attribute("noNetCDF", dataContainer
+						.isNoNetCDF().toString()));
+			if (dataContainer.getMinLatitude() != null)
+				element.addAttribute(new Attribute("minLatitude", dataContainer
+						.getMinLatitude().toString()));
+			if (dataContainer.getMaxLatitude() != null)
+				element.addAttribute(new Attribute("maxLatitude", dataContainer
+						.getMaxLatitude().toString()));
+			if (dataContainer.getMinLongitude() != null)
+				element.addAttribute(new Attribute("minLongitude",
+						dataContainer.getMinLongitude().toString()));
+			if (dataContainer.getMaxLongitude() != null)
+				element.addAttribute(new Attribute("maxLongitude",
+						dataContainer.getMaxLongitude().toString()));
+			if (dataContainer.getMinDepth() != null)
+				element.addAttribute(new Attribute("minDepth", dataContainer
+						.getMinDepth().toString()));
+			if (dataContainer.getMaxDepth() != null)
+				element.addAttribute(new Attribute("maxDepth", dataContainer
+						.getMaxDepth().toString()));
+
+			// Now for the relationships. Unfortunately, with schemas, the order
+			// does matter here. There are three types of DataContainers:
+			// DataContainer, DataFile (legacy) and DataStream (legacy). The
+			// order of relationships for the three are:
+			//
+			// DataContainer:
+			// -consumer
+			// -description
+			// -DataContainerGroup
+			// -HeaderDescription
+			// -Keyword
+			// -Person
+			// -RecordDescription
+			// -Resource
+			//
+			// DataFile:
+			// -destiny
+			// -Person
+			// -Resource
+			// -HeaderDescription
+			// -description
+			// -RecordDescription
+			//
+			// DataStream:
+			// -destiny
+			// -Person
+			// -Resource
+			// -description
+			// -RecordDescription
+			//
+			// The code below enforces the correct order so all generated XML
+			// will validate
+
+			// Simply create the elements first and we can order them later
+			Element descriptionElement = null;
+			ArrayList<Element> consumersDestiny = new ArrayList<Element>();
+			ArrayList<Element> dataContainerGroups = new ArrayList<Element>();
+			Element headerDescriptionElement = null;
+			ArrayList<Element> keywords = new ArrayList<Element>();
+			Element personElement = null;
+			Element recordDescriptionElement = null;
+			ArrayList<Element> resources = new ArrayList<Element>();
+
+			// Description
+			if (dataContainer.getDescription() != null) {
+				descriptionElement = new Element("description");
+				descriptionElement.appendChild(dataContainer.getDescription());
+			}
+
+			// Consumers. Note that we do this here instead of doing it as
+			// inputs to DataProducers as the direction makes more sense.
+			if (dataContainer.getConsumers() != null
+					&& dataContainer.getConsumers().size() > 0) {
+				// Add the consumer element
+				Iterator<DataProducer> iterator = dataContainer.getConsumers()
+						.iterator();
+				while (iterator.hasNext()) {
+					Element consumerElement = null;
+					if (legacyFormat) {
+						consumerElement = new Element("destiny");
+					} else {
+						consumerElement = new Element("consumer");
+					}
+					Element dataProducerElement = dataProducerToElement(iterator
+							.next());
+					if (dataProducerElement != null
+							&& !isEmptyElement(dataProducerElement)) {
+						consumerElement.appendChild(dataProducerElement);
+						consumersDestiny.add(consumerElement);
+					}
+				}
+			}
+
+			// DataContainerGroups
+			if (dataContainer.getDataContainerGroups() != null
+					&& dataContainer.getDataContainerGroups().size() > 0) {
+				Iterator<DataContainerGroup> iterator = dataContainer
+						.getDataContainerGroups().iterator();
+				while (iterator.hasNext()) {
+					// Add an element that represents the DataContainer group
+					Element dataContainerGroupElement = dataContainerGroupToElement(iterator
+							.next());
+					if (dataContainerGroupElement != null
+							&& !isEmptyElement(dataContainerGroupElement))
+						dataContainerGroups.add(dataContainerGroupElement);
+				}
+			}
+
+			// Header Descriptions
+			if (dataContainer.getHeaderDescription() != null) {
+				Element tempHeaderDescriptionElement = headerDescriptionToElement(dataContainer
+						.getHeaderDescription());
+				if (tempHeaderDescriptionElement != null
+						&& !isEmptyElement(tempHeaderDescriptionElement))
+					headerDescriptionElement = tempHeaderDescriptionElement;
+			}
+
+			// Keywords
+			if (dataContainer.getKeywords() != null
+					&& dataContainer.getKeywords().size() > 0) {
+				Iterator<Keyword> iterator = dataContainer.getKeywords()
+						.iterator();
+				while (iterator.hasNext()) {
+					Element keywordElement = keywordToElement(iterator.next());
+					if (keywordElement != null
+							&& !isEmptyElement(keywordElement))
+						keywords.add(keywordElement);
+				}
+			}
+
+			// Person
+			if (dataContainer.getPerson() != null) {
+				Element tempPersonElement = personToElement(dataContainer
+						.getPerson());
+				if (tempPersonElement != null
+						&& !isEmptyElement(tempPersonElement)) {
+					personElement = tempPersonElement;
+				}
+			}
+
+			// RecordDescription
+			if (dataContainer.getRecordDescription() != null) {
+				Element tempRecordDescriptionElement = recordDescriptionToElement(dataContainer
+						.getRecordDescription());
+				if (tempRecordDescriptionElement != null
+						&& !isEmptyElement(tempRecordDescriptionElement))
+					recordDescriptionElement = tempRecordDescriptionElement;
+			}
+
+			// Resources
+			if (dataContainer.getResources() != null
+					&& dataContainer.getResources().size() > 0) {
+				Iterator<Resource> iterator = dataContainer.getResources()
+						.iterator();
+				while (iterator.hasNext()) {
+					Element resourceElement = resourceToElement(iterator.next());
+					if (resourceElement != null
+							&& !isEmptyElement(resourceElement))
+						resources.add(resourceElement);
+				}
+			}
+
+			// Now let's put them in the right order
+			if (legacyFormat) {
+				// Destiny first
+				if (consumersDestiny.size() > 0) {
+					Iterator<Element> iterator = consumersDestiny.iterator();
+					while (iterator.hasNext())
+						element.appendChild(iterator.next());
+				}
+				// Person
+				if (personElement != null)
+					element.appendChild(personElement);
+				// Resources
+				if (resources.size() > 0) {
+					Iterator<Element> iterator = resources.iterator();
+					while (iterator.hasNext())
+						element.appendChild(iterator.next());
+				}
+				// Which type of DC
+				if (dataContainer.getDataContainerType().equalsIgnoreCase(
+						DataContainer.TYPE_FILE)
+						&& headerDescriptionElement != null) {
+					element.appendChild(headerDescriptionElement);
+				}
+				// Then description
+				if (descriptionElement != null)
+					element.appendChild(descriptionElement);
+				// RecordDescription
+				if (recordDescriptionElement != null)
+					element.appendChild(recordDescriptionElement);
+			} else {
+				// Consumers come first
+				if (consumersDestiny.size() > 0) {
+					Iterator<Element> iterator = consumersDestiny.iterator();
+					while (iterator.hasNext())
+						element.appendChild(iterator.next());
+				}
+				// Then description
+				if (descriptionElement != null)
+					element.appendChild(descriptionElement);
+				// DataContainerGroups
+				if (dataContainerGroups.size() > 0) {
+					Iterator<Element> iterator = dataContainerGroups.iterator();
+					while (iterator.hasNext())
+						element.appendChild(iterator.next());
+				}
+				// HeaderDescription
+				if (headerDescriptionElement != null)
+					element.appendChild(headerDescriptionElement);
+				// Keywords
+				if (keywords.size() > 0) {
+					Iterator<Element> iterator = keywords.iterator();
+					while (iterator.hasNext())
+						element.appendChild(iterator.next());
+				}
+				// Person
+				if (personElement != null)
+					element.appendChild(personElement);
+				// RecordDescription
+				if (recordDescriptionElement != null)
+					element.appendChild(recordDescriptionElement);
+				// Resources
+				if (resources.size() > 0) {
+					Iterator<Element> iterator = resources.iterator();
+					while (iterator.hasNext())
+						element.appendChild(iterator.next());
+				}
+			}
 		}
+
+		// Return the result
+		return element;
 	}
 
 	/**
-	 * I had to create this method to handle Hibernate proxies. If you call
-	 * getClass() on a Hibernate proxy you get some very strange stuff and you
-	 * need to drill down to the real object to get the correct class
+	 * This method takes in a <code>DataContainerGroup</code> object and returns
+	 * an <code>Element</code> that represents that object
 	 * 
-	 * @param object
+	 * @param dataContainerGroup
 	 * @return
 	 */
-	private Class getRealClassOfObject(Object object) {
-		Class realClass = null;
-
-		// Grab the name from the object class
-		realClass = object.getClass();
-
-		// Check for Hibernate, then replace with real class name if proxy
-		if (realClass.getName().contains("EnhancerByCGLIB")) {
-			realClass = Hibernate.getClass(object);
+	private Element dataContainerGroupToElement(
+			DataContainerGroup dataContainerGroup) {
+		Element element = null;
+		// Do a sanity check first
+		if (dataContainerGroup != null && dataContainerGroup.getName() != null) {
+			// Create the element
+			element = new Element("DataContainerGroup");
+			// Set the id if it exists
+			if (dataContainerGroup.getId() != null)
+				element.addAttribute(new Attribute("id", dataContainerGroup
+						.getId().toString()));
+			// Set the name
+			element.addAttribute(new Attribute("name", dataContainerGroup
+					.getName()));
+			// Add description element if there is one
+			if (dataContainerGroup.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(dataContainerGroup
+						.getDescription());
+				element.appendChild(descriptionElement);
+			}
 		}
-		return realClass;
+		return element;
 	}
 
 	/**
-	 * I had to create this method to handle Hibernate proxies. If you call
-	 * getClass().getName() on a Hibernate proxy you get some very strange stuff
-	 * and you need to drill down to the real object to get the correct class
-	 * name
+	 * This method takes in a <code>DataProducer</code> and creates an Element
+	 * to represent it in XML
 	 * 
-	 * @param object
+	 * @param dataProducer
 	 * @return
 	 */
-	private String getRealClassNameOfObject(Object object) {
-		String realClassName = null;
+	private Element dataProducerToElement(DataProducer dataProducer) {
+		// Element to return
+		Element element = null;
 
-		// Grab the name from the object class
-		realClassName = object.getClass().getName();
+		// Do a sanity check
+		if (dataProducer != null) {
+			// Create the new element depending on the legacy flag
+			if (legacyFormat) {
+				// Set to most common
+				element = new Element("Deployment");
+				if (dataProducer.getDataProducerType() != null) {
+					if (dataProducer.getDataProducerType().equalsIgnoreCase(
+							DataProducer.TYPE_PROCESS_RUN)) {
+						// Override since it is process run
+						element = new Element("ProcessRun");
+					}
+				}
+			} else {
+				element = new Element("DataProducer");
+				// Create a default attribute and change if necessary
+				Attribute typeAttribute = new Attribute("dataProducerType",
+						DataProducer.TYPE_DEPLOYMENT);
+				if (dataProducer.getDataProducerType() != null) {
+					if (dataProducer.getDataProducerType().equalsIgnoreCase(
+							DataProducer.TYPE_PROCESS_RUN)) {
+						element.addAttribute(new Attribute("dataProducerType",
+								DataProducer.TYPE_PROCESS_RUN));
+					}
+				}
+				// Add the attribute
+				element.addAttribute(typeAttribute);
+			}
 
-		// Check for Hibernate, then replace with real class name if proxy
-		if (realClassName.contains("EnhancerByCGLIB")) {
-			realClassName = Hibernate.getClass(object).getName();
+			// We should now have the element
+			if (element != null) {
+				// Add the attributes
+				if (dataProducer.getId() != null) {
+					element.addAttribute(new Attribute("id", dataProducer
+							.getId().toString()));
+				}
+				if (dataProducer.getName() != null) {
+					element.addAttribute(new Attribute("name", dataProducer
+							.getName()));
+				}
+				if (dataProducer.getStartDate() != null)
+					element.addAttribute(new Attribute("startDate", dateFormat
+							.format(dataProducer.getStartDate())));
+				if (dataProducer.getEndDate() != null)
+					element.addAttribute(new Attribute("endDate", dateFormat
+							.format(dataProducer.getEndDate())));
+				if (dataProducer.getRole() != null)
+					element.addAttribute(new Attribute("role", dataProducer
+							.getRole()));
+				if (dataProducer.getNominalLatitude() != null)
+					element.addAttribute(new Attribute("nominalLatitude",
+							dataProducer.getNominalLatitude().toString()));
+				if (dataProducer.getNominalLatitudeAccuracy() != null)
+					element.addAttribute(new Attribute(
+							"nominalLatitudeAccuracy", dataProducer
+									.getNominalLatitudeAccuracy().toString()));
+				if (dataProducer.getNominalLongitude() != null)
+					element.addAttribute(new Attribute("nominalLongitude",
+							dataProducer.getNominalLongitude().toString()));
+				if (dataProducer.getNominalLongitudeAccuracy() != null)
+					element.addAttribute(new Attribute(
+							"nominalLongitudeAccuracy", dataProducer
+									.getNominalLongitudeAccuracy().toString()));
+				if (dataProducer.getNominalDepth() != null)
+					element.addAttribute(new Attribute("nominalDepth",
+							dataProducer.getNominalDepth().toString()));
+				if (dataProducer.getNominalDepthAccuracy() != null)
+					element.addAttribute(new Attribute("nominalDepthAccuracy",
+							dataProducer.getNominalDepthAccuracy().toString()));
+				if (dataProducer.getNominalBenthicAltitude() != null)
+					element.addAttribute(new Attribute(
+							"nominalBenthicAltitude", dataProducer
+									.getNominalBenthicAltitude().toString()));
+				if (dataProducer.getNominalBenthicAltitudeAccuracy() != null)
+					element.addAttribute(new Attribute(
+							"nominalBenthicAltitudeAccuracy", dataProducer
+									.getNominalBenthicAltitudeAccuracy()
+									.toString()));
+				if (dataProducer.getXoffset() != null)
+					element.addAttribute(new Attribute("xOffset", dataProducer
+							.getXoffset().toString()));
+				if (dataProducer.getYoffset() != null)
+					element.addAttribute(new Attribute("yOffset", dataProducer
+							.getYoffset().toString()));
+				if (dataProducer.getZoffset() != null)
+					element.addAttribute(new Attribute("zOffset", dataProducer
+							.getZoffset().toString()));
+				if (dataProducer.getOrientationDescription() != null)
+					element.addAttribute(new Attribute(
+							"orientationDescription", dataProducer
+									.getOrientationDescription()));
+				if (dataProducer.getX3DOrientationText() != null)
+					element.addAttribute(new Attribute("x3DOrientationText",
+							dataProducer.getX3DOrientationText()));
+				if (dataProducer.getHostName() != null) {
+					element.addAttribute(new Attribute("hostName", dataProducer
+							.getHostName()));
+				}
+
+				// Add relationships
+				// DP:
+				// -DataProducer
+				// -DataProducerGroup
+				// -description
+				// -Device
+				// -Event
+				// -Keyword
+				// -output
+				// -Person
+				// -Resource
+				// -Software
+				//
+				// D:
+				// -Device
+				// -Deployment
+				// -Person
+				// -description
+				// -Resource
+				// -Event
+				// -output
+				//
+				// PR:
+				// -description
+				// -Person
+				// -Software
+				// -Resource
+				// -Event
+				// -output
+
+				// Just create all the elements first before adding them
+				Element deviceElement = null;
+				ArrayList<Element> childDataProducerElements = new ArrayList<Element>();
+				ArrayList<Element> dataProducerGroups = new ArrayList<Element>();
+				Element descriptionElement = null;
+				ArrayList<Element> events = new ArrayList<Element>();
+				ArrayList<Element> keywords = new ArrayList<Element>();
+				ArrayList<Element> outputs = new ArrayList<Element>();
+				Element personElement = null;
+				ArrayList<Element> resources = new ArrayList<Element>();
+				Element softwareElement = null;
+
+				// Device
+				if (dataProducer.getDevice() != null) {
+					Element tempDeviceElement = deviceToElement(dataProducer
+							.getDevice());
+					if (tempDeviceElement != null
+							&& !isEmptyElement(tempDeviceElement))
+						deviceElement = tempDeviceElement;
+				}
+
+				// Child data producers
+				if (dataProducer.getChildDataProducers() != null
+						&& dataProducer.getChildDataProducers().size() > 0) {
+					Iterator<DataProducer> iterator = dataProducer
+							.getChildDataProducers().iterator();
+					while (iterator.hasNext()) {
+						Element dataProducerElement = dataProducerToElement(iterator
+								.next());
+						if (dataProducerElement != null
+								&& !isEmptyElement(dataProducerElement))
+							childDataProducerElements.add(dataProducerElement);
+					}
+				}
+
+				// DataProducerGroups
+				if (dataProducer.getDataProducerGroups() != null
+						&& dataProducer.getDataProducerGroups().size() > 0) {
+					Iterator<DataProducerGroup> iterator = dataProducer
+							.getDataProducerGroups().iterator();
+					while (iterator.hasNext()) {
+						Element dataProducerGroupElement = dataProducerGroupToElement(iterator
+								.next());
+						if (dataProducerGroupElement != null
+								&& !isEmptyElement(dataProducerGroupElement))
+							dataProducerGroups.add(dataProducerGroupElement);
+					}
+				}
+
+				// Add description element if there is one
+				if (dataProducer.getDescription() != null) {
+					descriptionElement = new Element("description");
+					descriptionElement.appendChild(dataProducer
+							.getDescription());
+				}
+
+				// Event
+				if (dataProducer.getEvents() != null
+						&& dataProducer.getEvents().size() > 0) {
+					Iterator<Event> iterator = dataProducer.getEvents()
+							.iterator();
+					while (iterator.hasNext()) {
+						Element eventElement = eventToElement(iterator.next());
+						if (eventElement != null
+								&& !isEmptyElement(eventElement))
+							events.add(eventElement);
+					}
+				}
+
+				// NOTE: We ignore inputs here as they would cause recursion
+				// from DataContainers.consumers. Since the graph direction
+				// makes more sense to go through the DataContainers consumers,
+				// we do it there.
+
+				// Keywords
+				if (dataProducer.getKeywords() != null
+						&& dataProducer.getKeywords().size() > 0) {
+					Iterator<Keyword> iterator = dataProducer.getKeywords()
+							.iterator();
+					while (iterator.hasNext()) {
+						Element keywordElement = keywordToElement(iterator
+								.next());
+						if (keywordElement != null
+								&& !isEmptyElement(keywordElement))
+							keywords.add(keywordElement);
+					}
+				}
+
+				// Outputs
+				if (dataProducer.getOutputs() != null
+						&& dataProducer.getOutputs().size() > 0) {
+					Element outputElement = new Element("output");
+					Iterator<DataContainer> iterator = dataProducer
+							.getOutputs().iterator();
+					while (iterator.hasNext()) {
+						Element dataContainerElement = dataContainerToElement(iterator
+								.next());
+						if (dataContainerElement != null
+								&& !isEmptyElement(dataContainerElement)) {
+							outputElement.appendChild(dataContainerElement);
+							outputs.add(outputElement);
+						}
+					}
+				}
+
+				// Person
+				if (dataProducer.getPerson() != null) {
+					Element tempPersonElement = personToElement(dataProducer
+							.getPerson());
+					if (tempPersonElement != null
+							&& !isEmptyElement(tempPersonElement)) {
+						personElement = tempPersonElement;
+					}
+				}
+
+				// Resources
+				if (dataProducer.getResources() != null
+						&& dataProducer.getResources().size() > 0) {
+					Iterator<Resource> iterator = dataProducer.getResources()
+							.iterator();
+					while (iterator.hasNext()) {
+						Element resourceElement = resourceToElement(iterator
+								.next());
+						if (resourceElement != null
+								&& !isEmptyElement(resourceElement))
+							resources.add(resourceElement);
+					}
+				}
+
+				// Software
+				if (dataProducer.getSoftware() != null) {
+					Element tempSoftwareElement = softwareToElement(dataProducer
+							.getSoftware());
+					if (tempSoftwareElement != null
+							&& !isEmptyElement(tempSoftwareElement)) {
+						softwareElement = tempSoftwareElement;
+					}
+				}
+
+				// Now let's put them all in the right order:
+				if (legacyFormat) {
+					if (dataProducer.getDataProducerType().equalsIgnoreCase(
+							DataProducer.TYPE_DEPLOYMENT)) {
+						if (deviceElement != null)
+							element.appendChild(deviceElement);
+						if (childDataProducerElements.size() > 0) {
+							Iterator<Element> iterator = childDataProducerElements
+									.iterator();
+							while (iterator.hasNext())
+								element.appendChild(iterator.next());
+						}
+						if (personElement != null)
+							element.appendChild(personElement);
+						if (descriptionElement != null)
+							element.appendChild(descriptionElement);
+					} else {
+						if (descriptionElement != null)
+							element.appendChild(descriptionElement);
+						if (personElement != null)
+							element.appendChild(personElement);
+						if (softwareElement != null)
+							element.appendChild(softwareElement);
+					}
+					if (resources.size() > 0) {
+						Iterator<Element> iterator = resources.iterator();
+						while (iterator.hasNext())
+							element.appendChild(iterator.next());
+					}
+					if (events.size() > 0) {
+						Iterator<Element> iterator = events.iterator();
+						while (iterator.hasNext())
+							element.appendChild(iterator.next());
+					}
+					if (outputs.size() > 0) {
+						Iterator<Element> iterator = outputs.iterator();
+						while (iterator.hasNext())
+							element.appendChild(iterator.next());
+					}
+				} else {
+					// DP:
+					if (childDataProducerElements.size() > 0) {
+						Iterator<Element> iterator = childDataProducerElements
+								.iterator();
+						while (iterator.hasNext())
+							element.appendChild(iterator.next());
+					}
+					if (dataProducerGroups.size() > 0) {
+						Iterator<Element> iterator = dataProducerGroups
+								.iterator();
+						while (iterator.hasNext())
+							element.appendChild(iterator.next());
+					}
+					if (descriptionElement != null)
+						element.appendChild(descriptionElement);
+					if (deviceElement != null)
+						element.appendChild(deviceElement);
+					if (events.size() > 0) {
+						Iterator<Element> iterator = events.iterator();
+						while (iterator.hasNext())
+							element.appendChild(iterator.next());
+					}
+					if (keywords.size() > 0) {
+						Iterator<Element> iterator = keywords.iterator();
+						while (iterator.hasNext())
+							element.appendChild(iterator.next());
+					}
+					if (outputs.size() > 0) {
+						Iterator<Element> iterator = outputs.iterator();
+						while (iterator.hasNext())
+							element.appendChild(iterator.next());
+					}
+					if (personElement != null)
+						element.appendChild(personElement);
+					if (resources.size() > 0) {
+						Iterator<Element> iterator = resources.iterator();
+						while (iterator.hasNext())
+							element.appendChild(iterator.next());
+					}
+					if (softwareElement != null)
+						element.appendChild(softwareElement);
+				}
+			}
 		}
-		return realClassName;
+
+		// Return it
+		return element;
 	}
 
-	private Document document;
+	/**
+	 * This method takes in a <code>DataProducerGroup</code> object and returns
+	 * an <code>Element</code> that represents that object
+	 * 
+	 * @param dataProducerGroup
+	 * @return
+	 */
+	private Element dataProducerGroupToElement(
+			DataProducerGroup dataProducerGroup) {
+		// The Element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (dataProducerGroup != null && dataProducerGroup.getName() != null) {
+			element = new Element("DataProducerGroup");
+			// Add attributes
+			if (dataProducerGroup.getId() != null)
+				element.addAttribute(new Attribute("id", dataProducerGroup
+						.getId().toString()));
+			element.addAttribute(new Attribute("name", dataProducerGroup
+					.getName()));
+
+			// Add description element if there is one
+			if (dataProducerGroup.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(dataProducerGroup
+						.getDescription());
+				element.appendChild(descriptionElement);
+			}
+		}
+
+		// Return it
+		return element;
+	}
 
 	/**
-	 * Collection of Objects that could be elements just below the root of the
-	 * XML document (i.e Device, Deployment, DataProducers (and subclasses)
+	 * This method takes in a <code>Device</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param device
+	 * @return
 	 */
-	private Collection rootElements = new ArrayList();
+	private Element deviceToElement(Device device) {
+		Element element = null;
+
+		// Do a sanity check
+		if (device != null) {
+			// Create the element
+			element = new Element("Device");
+
+			// Add the attributes
+			if (device.getId() != null)
+				element.addAttribute(new Attribute("id", device.getId()
+						.toString()));
+			if (device.getName() != null)
+				element.addAttribute(new Attribute("name", device.getName()));
+			if (device.getUuid() != null)
+				element.addAttribute(new Attribute("uuid", device.getUuid()));
+			if (device.getMfgName() != null)
+				element.addAttribute(new Attribute("mfgName", device
+						.getMfgName()));
+			if (device.getMfgModel() != null)
+				element.addAttribute(new Attribute("mfgModel", device
+						.getMfgModel()));
+			if (device.getMfgSerialNumber() != null)
+				element.addAttribute(new Attribute("mfgSerialNumber", device
+						.getMfgSerialNumber()));
+			if (device.getInfoUrlList() != null)
+				element.addAttribute(new Attribute("infoUrlList", device
+						.getInfoUrlList()));
+
+			// Relationships
+
+			// Add description element if there is one
+			if (device.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(device.getDescription());
+				element.appendChild(descriptionElement);
+			}
+
+			// DeviceType
+			if (device.getDeviceType() != null) {
+				// Check for legacy
+				if (legacyFormat) {
+					element.addAttribute(new Attribute("type", device
+							.getDeviceType().getName()));
+				} else {
+					element.appendChild(deviceTypeToElement(device
+							.getDeviceType()));
+				}
+			}
+
+			// Person
+			if (device.getPerson() != null) {
+				Element personElement = personToElement(device.getPerson());
+				if (personElement != null && !isEmptyElement(personElement)) {
+					element.appendChild(personElement);
+				}
+			}
+
+			// Resources
+			if (device.getResources() != null
+					&& device.getResources().size() > 0) {
+				Iterator<Resource> iterator = device.getResources().iterator();
+				while (iterator.hasNext()) {
+					Element resourceElement = resourceToElement(iterator.next());
+					if (resourceElement != null
+							&& !isEmptyElement(resourceElement))
+						element.appendChild(resourceElement);
+				}
+			}
+		}
+
+		return element;
+	}
 
 	/**
-	 * The local package. XmlBuilder should be put in the same package as the
-	 * model classes. Itonly marshalls objects in its package.
+	 * This method takes in a <code>DeviceType</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param deviceType
+	 * @return
 	 */
-	private Package p;
+	private Element deviceTypeToElement(DeviceType deviceType) {
+		// The element to return
+		Element element = null;
 
-	private static int objectToElementCount = 0;
-	private static final int maxObjectToElementCount = 10000;
+		// Do a sanity check
+		if (deviceType != null && deviceType.getName() != null) {
+			// Create the element
+			element = new Element("DeviceType");
 
-	private XmlDateFormat dateFormat = new XmlDateFormat();
+			// Add the attributes
+			if (deviceType.getId() != null)
+				element.addAttribute(new Attribute("id", deviceType.getId()
+						.toString()));
+			element.addAttribute(new Attribute("name", deviceType.getName()));
 
-	private ArrayList objList;
+			// Add description element if there is one
+			if (deviceType.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(deviceType.getDescription());
+				element.appendChild(descriptionElement);
+			}
+		}
+
+		// Return the result
+		return element;
+	}
 
 	/**
-	 * Log4J Stuff
+	 * This method takes in a <code>Event</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param event
+	 * @return
 	 */
-	static Logger logger = Logger.getLogger(XmlBuilder.class);
-	static Level level = Level.DEBUG;
+	private Element eventToElement(Event event) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (event != null) {
+			// Create the element
+			element = new Element("Event");
+
+			// Add the attributes
+			if (event.getId() != null) {
+				element.addAttribute(new Attribute("id", event.getId()
+						.toString()));
+			}
+			if (event.getName() != null) {
+				element.addAttribute(new Attribute("name", event.getName()));
+			}
+			if (event.getStartDate() != null)
+				element.addAttribute(new Attribute("startDate", dateFormat
+						.format(event.getStartDate())));
+			if (event.getEndDate() != null)
+				element.addAttribute(new Attribute("endDate", dateFormat
+						.format(event.getEndDate())));
+
+			// Add description element if there is one
+			if (event.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(event.getDescription());
+				element.appendChild(descriptionElement);
+			}
+		}
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code>HeaderDescription</code> object and returns
+	 * an <code>Element</code> that represents that object
+	 * 
+	 * @param headerDescription
+	 * @return
+	 */
+	private Element headerDescriptionToElement(
+			HeaderDescription headerDescription) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (headerDescription != null) {
+			// Create the element
+			element = new Element("HeaderDescription");
+
+			// Add the attributes
+			if (headerDescription.getId() != null) {
+				element.addAttribute(new Attribute("id", headerDescription
+						.getId().toString()));
+			}
+			element.addAttribute(new Attribute("numHeaderLines",
+					headerDescription.getNumHeaderLines() + ""));
+			element.addAttribute(new Attribute("byteOffset", headerDescription
+					.getByteOffset() + ""));
+
+			// Add description element if there is one
+			if (headerDescription.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(headerDescription
+						.getDescription());
+				element.appendChild(descriptionElement);
+			}
+
+			// CommentTags
+			if (headerDescription.getCommentTags() != null
+					&& headerDescription.getCommentTags().size() > 0) {
+				Iterator<CommentTag> iterator = headerDescription
+						.getCommentTags().iterator();
+				while (iterator.hasNext()) {
+					Element commentTagElement = commentTagToElement(iterator
+							.next());
+					if (commentTagElement != null
+							&& !isEmptyElement(commentTagElement))
+						element.appendChild(commentTagElement);
+				}
+			}
+		}
+
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code>Keyword</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param keyword
+	 * @return
+	 */
+	private Element keywordToElement(Keyword keyword) {
+		// The Element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (keyword != null && keyword.getName() != null) {
+			// Create the element
+			element = new Element("Keyword");
+
+			// Add attributes
+			if (keyword.getId() != null) {
+				element.addAttribute(new Attribute("id", keyword.getId()
+						.toString()));
+			}
+			element.addAttribute(new Attribute("name", keyword.getName()));
+
+			// Add description element if there is one
+			if (keyword.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(keyword.getDescription());
+				element.appendChild(descriptionElement);
+			}
+		}
+
+		// Now return it
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code>Person</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param person
+	 * @return
+	 */
+	private Element personToElement(Person person) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (person != null) {
+
+			// Create the element
+			element = new Element("Person");
+
+			// Add the attributes
+			if (person.getId() != null)
+				element.addAttribute(new Attribute("id", person.getId()
+						.toString()));
+			if (person.getFirstname() != null)
+				element.addAttribute(new Attribute("firstname", person
+						.getFirstname()));
+			if (person.getSurname() != null)
+				element.addAttribute(new Attribute("surname", person
+						.getSurname()));
+			if (person.getOrganization() != null)
+				element.addAttribute(new Attribute("organization", person
+						.getOrganization()));
+			if (person.getUsername() != null)
+				element.addAttribute(new Attribute("username", person
+						.getUsername()));
+			// TODO kgomes Password is not serialized out, but might be able to
+			// do it with some kind of encryption
+			if (person.getEmail() != null)
+				element.addAttribute(new Attribute("email", person.getEmail()));
+			if (person.getPhone() != null)
+				element.addAttribute(new Attribute("phone", person.getPhone()));
+			if (person.getAddress1() != null)
+				element.addAttribute(new Attribute("address1", person
+						.getAddress1()));
+			if (person.getAddress2() != null)
+				element.addAttribute(new Attribute("address2", person
+						.getAddress2()));
+			if (person.getCity() != null)
+				element.addAttribute(new Attribute("city", person.getCity()));
+			if (person.getState() != null)
+				element.addAttribute(new Attribute("state", person.getState()));
+			if (person.getZipcode() != null)
+				element.addAttribute(new Attribute("zipcode", person
+						.getZipcode()));
+			if (person.getStatus() != null)
+				element.addAttribute(new Attribute("status", person.getStatus()));
+
+			// Add the UserGroups
+			if (person.getUserGroups() != null
+					&& person.getUserGroups().size() > 0) {
+				Iterator<UserGroup> iterator = person.getUserGroups()
+						.iterator();
+				while (iterator.hasNext()) {
+					Element userGroupElement = userGroupToElement(iterator
+							.next());
+					if (userGroupElement != null
+							&& !isEmptyElement(userGroupElement))
+						element.appendChild(userGroupElement);
+				}
+			}
+		}
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code>RecordDescription</code> object and returns
+	 * an <code>Element</code> that represents that object
+	 * 
+	 * @param recordDescription
+	 * @return
+	 */
+	private Element recordDescriptionToElement(
+			RecordDescription recordDescription) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (recordDescription != null) {
+			// Create the element
+			element = new Element("RecordDescription");
+
+			// Add the attributes
+			if (recordDescription.getId() != null)
+				element.addAttribute(new Attribute("id", recordDescription
+						.getId().toString()));
+			if (recordDescription.getRecordType() != null)
+				element.addAttribute(new Attribute("recordType",
+						recordDescription.getRecordType().toString()));
+			if (recordDescription.getBufferStyle() != null)
+				element.addAttribute(new Attribute("bufferStyle",
+						recordDescription.getBufferStyle()));
+			if (recordDescription.getBufferParseType() != null)
+				element.addAttribute(new Attribute("bufferParseType",
+						recordDescription.getBufferParseType()));
+			if (recordDescription.getBufferItemSeparator() != null)
+				element.addAttribute(new Attribute("bufferItemSeparator",
+						recordDescription.getBufferItemSeparator()));
+			if (recordDescription.getBufferLengthType() != null)
+				element.addAttribute(new Attribute("bufferLengthType",
+						recordDescription.getBufferLengthType()));
+			if (recordDescription.getRecordTerminator() != null)
+				element.addAttribute(new Attribute("recordTerminator",
+						recordDescription.getRecordTerminator()));
+			if (recordDescription.isParseable() != null)
+				element.addAttribute(new Attribute("parseable",
+						recordDescription.isParseable().toString()));
+			if (recordDescription.getEndian() != null)
+				element.addAttribute(new Attribute("endian", recordDescription
+						.getEndian()));
+			if (recordDescription.getRecordParseRegExp() != null)
+				element.addAttribute(new Attribute("recordParseRegExp",
+						recordDescription.getRecordParseRegExp()));
+
+			// Add the RecordVariables
+
+			// Create a TreeMap to order the RVs by columnIndex if they are
+			// available
+			TreeMap<Long, Element> recordVariableElementSorted = new TreeMap<Long, Element>();
+			ArrayList<Element> recordVariableElements = new ArrayList<Element>();
+			if (recordDescription.getRecordVariables() != null
+					&& recordDescription.getRecordVariables().size() > 0) {
+				Iterator<RecordVariable> iterator = recordDescription
+						.getRecordVariables().iterator();
+				while (iterator.hasNext()) {
+					RecordVariable recordVariable = iterator.next();
+					Element recordVariableElement = recordVariableToElement(recordVariable);
+					if (recordVariableElement != null
+							&& !isEmptyElement(recordVariableElement)) {
+						// If the record variable has a column index put it in
+						// the treemap
+						if (recordVariable.getColumnIndex() >= 0
+								&& !recordVariableElementSorted
+										.containsKey(recordVariable
+												.getColumnIndex())) {
+							recordVariableElementSorted.put(
+									recordVariable.getColumnIndex(),
+									recordVariableElement);
+						} else {
+							// Put it in the ArrayList
+							recordVariableElements.add(recordVariableElement);
+						}
+
+					}
+				}
+				// Attach sorted elements first, then the rest in random order
+				Iterator<Long> columnIndexIterator = recordVariableElementSorted
+						.keySet().iterator();
+				while (columnIndexIterator.hasNext()) {
+					element.appendChild(recordVariableElementSorted
+							.get(columnIndexIterator.next()));
+				}
+				Iterator<Element> elementIterator = recordVariableElements
+						.iterator();
+				while (elementIterator.hasNext())
+					element.appendChild(elementIterator.next());
+			}
+		}
+		// Now return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code>RecordVariable</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param recordVariable
+	 * @return
+	 */
+	private Element recordVariableToElement(RecordVariable recordVariable) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (recordVariable != null) {
+			// Create the element
+			element = new Element("RecordVariable");
+
+			// Add the attributes
+			if (recordVariable.getId() != null)
+				element.addAttribute(new Attribute("id", recordVariable.getId()
+						.toString()));
+			if (recordVariable.getName() != null)
+				element.addAttribute(new Attribute("name", recordVariable
+						.getName()));
+			if (recordVariable.getColumnIndex() >= 0)
+				element.addAttribute(new Attribute("columnIndex",
+						recordVariable.getColumnIndex() + ""));
+			if (recordVariable.getFormat() != null)
+				element.addAttribute(new Attribute("format", recordVariable
+						.getFormat()));
+			if (recordVariable.getLongName() != null)
+				element.addAttribute(new Attribute("longName", recordVariable
+						.getLongName()));
+			if (recordVariable.getUnits() != null)
+				element.addAttribute(new Attribute("units", recordVariable
+						.getUnits()));
+			if (recordVariable.getMissingValue() != null)
+				element.addAttribute(new Attribute("missingValue",
+						recordVariable.getMissingValue()));
+			if (recordVariable.getAccuracy() != null)
+				element.addAttribute(new Attribute("accuracy", recordVariable
+						.getAccuracy()));
+			if (recordVariable.getValidMin() != null)
+				element.addAttribute(new Attribute("validMin", recordVariable
+						.getValidMin()));
+			if (recordVariable.getValidMax() != null)
+				element.addAttribute(new Attribute("validMax", recordVariable
+						.getValidMax()));
+			if (recordVariable.getDisplayMin() != null)
+				element.addAttribute(new Attribute("displayMin", recordVariable
+						.getDisplayMin().toString()));
+			if (recordVariable.getDisplayMax() != null)
+				element.addAttribute(new Attribute("displayMax", recordVariable
+						.getDisplayMax().toString()));
+			if (recordVariable.getParseRegExp() != null)
+				element.addAttribute(new Attribute("parseRegExp",
+						recordVariable.getParseRegExp()));
+			if (recordVariable.getReferenceScale() != null)
+				element.addAttribute(new Attribute("referenceScale",
+						recordVariable.getReferenceScale()));
+			if (recordVariable.getConversionScale() != null)
+				element.addAttribute(new Attribute("conversionScale",
+						recordVariable.getConversionScale().toString()));
+			if (recordVariable.getConversionOffset() != null)
+				element.addAttribute(new Attribute("conversionOffset",
+						recordVariable.getConversionOffset().toString()));
+			if (recordVariable.getConvertedUnits() != null)
+				element.addAttribute(new Attribute("convertedUnits",
+						recordVariable.getConvertedUnits()));
+			if (recordVariable.getSourceSensorID() != null)
+				element.addAttribute(new Attribute("sourceSensorID",
+						recordVariable.getSourceSensorID().toString()));
+
+			// Add the relationships
+
+			// Add description element if there is one
+			if (recordVariable.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(recordVariable.getDescription());
+				element.appendChild(descriptionElement);
+			}
+
+			// StandardDomain
+			if (recordVariable.getStandardDomain() != null) {
+				Element standardDomainElement = standardDomainToElement(recordVariable
+						.getStandardDomain());
+				if (standardDomainElement != null
+						&& !isEmptyElement(standardDomainElement))
+					element.appendChild(standardDomainToElement(recordVariable
+							.getStandardDomain()));
+			}
+
+			// StandardKeyword
+			if (recordVariable.getStandardKeyword() != null) {
+				Element standardKeywordElement = standardKeywordToElement(recordVariable
+						.getStandardKeyword());
+				if (standardKeywordElement != null
+						&& !isEmptyElement(standardKeywordElement))
+					element.appendChild(standardKeywordToElement(recordVariable
+							.getStandardKeyword()));
+			}
+
+			// StandardReferenceScale
+			if (recordVariable.getStandardReferenceScale() != null) {
+				Element standardReferenceScaleElement = standardReferenceScaleToElement(recordVariable
+						.getStandardReferenceScale());
+				if (standardReferenceScaleElement != null
+						&& !isEmptyElement(standardReferenceScaleElement))
+					element.appendChild(standardReferenceScaleToElement(recordVariable
+							.getStandardReferenceScale()));
+			}
+
+			// StandardUnit
+			if (recordVariable.getStandardUnit() != null) {
+				Element standardUnitElement = standardUnitToElement(recordVariable
+						.getStandardUnit());
+				if (standardUnitElement != null
+						&& !isEmptyElement(standardUnitElement))
+					element.appendChild(standardUnitToElement(recordVariable
+							.getStandardUnit()));
+			}
+
+			// StandardVariable
+			if (recordVariable.getStandardVariable() != null) {
+				Element standardVariableElement = standardVariableToElement(recordVariable
+						.getStandardVariable());
+				if (standardVariableElement != null
+						&& !isEmptyElement(standardVariableElement))
+					element.appendChild(standardVariableToElement(recordVariable
+							.getStandardVariable()));
+			}
+		}
+
+		// Now return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code>Resource</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param resource
+	 * @return
+	 */
+	private Element resourceToElement(Resource resource) {
+		// The Element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (resource != null) {
+			// Create the element
+			element = new Element("Resource");
+
+			// Add the attributes
+			if (resource.getId() != null)
+				element.addAttribute(new Attribute("id", resource.getId()
+						.toString()));
+			if (resource.getName() != null)
+				element.addAttribute(new Attribute("name", resource.getName()));
+			if (resource.getStartDate() != null)
+				element.addAttribute(new Attribute("startDate", dateFormat
+						.format(resource.getStartDate())));
+			if (resource.getEndDate() != null)
+				element.addAttribute(new Attribute("endDate", dateFormat
+						.format(resource.getEndDate())));
+			if (resource.getUriString() != null)
+				element.addAttribute(new Attribute("uri", resource
+						.getUriString()));
+			if (resource.getContentLength() != null)
+				element.addAttribute(new Attribute("contentLength", resource
+						.getContentLength().toString()));
+			if (resource.getMimeType() != null)
+				element.addAttribute(new Attribute("mimeType", resource
+						.getMimeType()));
+
+			// Add the relationships
+
+			// Add description element if there is one
+			if (resource.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(resource.getDescription());
+				element.appendChild(descriptionElement);
+			}
+
+			// Keywords
+			if (resource.getKeywords() != null
+					&& resource.getKeywords().size() > 0) {
+				Iterator<Keyword> iterator = resource.getKeywords().iterator();
+				while (iterator.hasNext()) {
+					Element keywordElement = keywordToElement(iterator.next());
+					if (keywordElement != null
+							&& !isEmptyElement(keywordElement))
+						element.appendChild(keywordElement);
+				}
+			}
+
+			// Person
+			if (resource.getPerson() != null) {
+				Element personElement = personToElement(resource.getPerson());
+				if (personElement != null && !isEmptyElement(personElement)) {
+					element.appendChild(personElement);
+				}
+			}
+
+			// ResourceBLOB
+			if (resource.getResourceBLOB() != null) {
+				Element resourceBLOBElement = resourceBLOBToElement(resource
+						.getResourceBLOB());
+				if (resourceBLOBElement != null
+						&& !isEmptyElement(resourceBLOBElement))
+					element.appendChild(resourceBLOBElement);
+			}
+
+			// ResourceType
+			if (resource.getResourceType() != null
+					&& resource.getResourceType().getName() != null) {
+				// Check for legacy
+				if (legacyFormat) {
+					element.addAttribute(new Attribute("resourceType", resource
+							.getResourceType().getName()));
+				} else {
+					Element resourceTypeElement = resourceTypeToElement(resource
+							.getResourceType());
+					if (resourceTypeElement != null
+							&& !isEmptyElement(resourceTypeElement))
+						element.appendChild(resourceTypeElement);
+				}
+			}
+		}
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code></code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param
+	 * @return
+	 */
+	private Element resourceBLOBToElement(ResourceBLOB resourceBLOB) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (resourceBLOB != null && resourceBLOB.getByteArray() != null) {
+
+			// Create the element
+			element = new Element("ResourceBLOB");
+
+			// Assign the attributes
+			if (resourceBLOB.getId() != null)
+				element.addAttribute(new Attribute("id", resourceBLOB.getId()
+						.toString()));
+			if (resourceBLOB.getName() != null)
+				element.addAttribute(new Attribute("name", resourceBLOB
+						.getName()));
+
+			// It is necessary to encode the payload before we construct the
+			// element
+			Base64 base64 = new Base64();
+			String payload = null;
+			try {
+				payload = base64.encode(resourceBLOB.getByteArray());
+			} catch (Exception e) {
+				logger.error("Something went wrong trying to encode ResourceBLOB parameter: "
+						+ e.getMessage());
+				logger.error("ResourceBLOB = "
+						+ resourceBLOB.toStringRepresentation("|"));
+				return null;
+			}
+			if (payload != null) {
+				element.addAttribute(new Attribute("byteArray", payload));
+			}
+
+			// Add description element if there is one
+			if (resourceBLOB.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(resourceBLOB.getDescription());
+				element.appendChild(descriptionElement);
+			}
+		}
+
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code>ResourceType</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param resourceType
+	 * @return
+	 */
+	private Element resourceTypeToElement(ResourceType resourceType) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (resourceType != null && resourceType.getName() != null) {
+			// Create the element
+			element = new Element("ResourceType");
+
+			// Add the attributes
+			if (resourceType.getId() != null)
+				element.addAttribute(new Attribute("id", resourceType.getId()
+						.toString()));
+			if (resourceType.getName() != null)
+				element.addAttribute(new Attribute("name", resourceType
+						.getName()));
+
+			// Add description element if there is one
+			if (resourceType.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(resourceType.getDescription());
+				element.appendChild(descriptionElement);
+			}
+		}
+
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code>Software</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param software
+	 * @return
+	 */
+	private Element softwareToElement(Software software) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (software != null) {
+			// Create the element
+			element = new Element("Software");
+
+			// Add the attributes
+			if (software.getId() != null)
+				element.addAttribute(new Attribute("id", software.getId()
+						.toString()));
+			if (software.getName() != null)
+				element.addAttribute(new Attribute("name", software.getName()));
+			if (software.getUriString() != null)
+				element.addAttribute(new Attribute("uri", software
+						.getUriString()));
+			if (software.getSoftwareVersion() != null)
+				element.addAttribute(new Attribute("softwareVersion", software
+						.getSoftwareVersion()));
+
+			// Add the relationships
+			// Add description element if there is one
+			if (software.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(software.getDescription());
+				element.appendChild(descriptionElement);
+			}
+
+			// Person
+			if (software.getPerson() != null) {
+				Element personElement = personToElement(software.getPerson());
+				if (personElement != null && !isEmptyElement(personElement)) {
+					element.appendChild(personElement);
+				}
+			}
+
+			// Resources
+			if (software.getResources() != null
+					&& software.getResources().size() > 0) {
+				Iterator<Resource> iterator = software.getResources()
+						.iterator();
+				while (iterator.hasNext()) {
+					Element resourceElement = resourceToElement(iterator.next());
+					if (resourceElement != null
+							&& !isEmptyElement(resourceElement))
+						element.appendChild(resourceElement);
+				}
+			}
+		}
+
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code>StandardDomain</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param standardDomain
+	 * @return
+	 */
+	private Element standardDomainToElement(StandardDomain standardDomain) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (standardDomain != null) {
+			// Create the element
+			element = new Element("StandardDomain");
+
+			// Add the attributes
+			if (standardDomain.getId() != null)
+				element.addAttribute(new Attribute("id", standardDomain.getId()
+						.toString()));
+			if (standardDomain.getName() != null)
+				element.addAttribute(new Attribute("name", standardDomain
+						.getName()));
+
+			// Add the relationships
+			// Add description element if there is one
+			if (standardDomain.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(standardDomain.getDescription());
+				element.appendChild(descriptionElement);
+			}
+
+		}
+
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code>StandardKeyword</code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param standardKeyword
+	 * @return
+	 */
+	private Element standardKeywordToElement(StandardKeyword standardKeyword) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (standardKeyword != null) {
+			// Create the element
+			element = new Element("StandardKeyword");
+
+			// Add the attributes
+			if (standardKeyword.getId() != null)
+				element.addAttribute(new Attribute("id", standardKeyword
+						.getId().toString()));
+			if (standardKeyword.getName() != null)
+				element.addAttribute(new Attribute("name", standardKeyword
+						.getName()));
+
+			// Add the relationships
+			// Add description element if there is one
+			if (standardKeyword.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement
+						.appendChild(standardKeyword.getDescription());
+				element.appendChild(descriptionElement);
+			}
+
+		}
+
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code></code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param
+	 * @return
+	 */
+	private Element standardReferenceScaleToElement(
+			StandardReferenceScale standardReferenceScale) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (standardReferenceScale != null) {
+			// Create the element
+			element = new Element("StandardReferenceScale");
+
+			// Add the attributes
+			if (standardReferenceScale.getId() != null)
+				element.addAttribute(new Attribute("id", standardReferenceScale
+						.getId().toString()));
+			if (standardReferenceScale.getName() != null)
+				element.addAttribute(new Attribute("name",
+						standardReferenceScale.getName()));
+
+			// Add the relationships
+			// Add description element if there is one
+			if (standardReferenceScale.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(standardReferenceScale
+						.getDescription());
+				element.appendChild(descriptionElement);
+			}
+
+		}
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code></code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param
+	 * @return
+	 */
+	private Element standardUnitToElement(StandardUnit standardUnit) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (standardUnit != null) {
+			// Create the element
+			element = new Element("StandardUnit");
+
+			// Add the attributes
+			if (standardUnit.getId() != null)
+				element.addAttribute(new Attribute("id", standardUnit.getId()
+						.toString()));
+			if (standardUnit.getName() != null)
+				element.addAttribute(new Attribute("name", standardUnit
+						.getName()));
+			if (standardUnit.getLongName() != null)
+				element.addAttribute(new Attribute("longName", standardUnit
+						.getLongName()));
+			if (standardUnit.getSymbol() != null)
+				element.addAttribute(new Attribute("symbol", standardUnit
+						.getSymbol()));
+
+			// Add the relationships
+			// Add description element if there is one
+			if (standardUnit.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(standardUnit.getDescription());
+				element.appendChild(descriptionElement);
+			}
+
+		}
+
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code></code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param
+	 * @return
+	 */
+	private Element standardVariableToElement(StandardVariable standardVariable) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (standardVariable != null) {
+			// Create the element
+			element = new Element("StandardVariable");
+
+			// Add the attributes
+			if (standardVariable.getId() != null)
+				element.addAttribute(new Attribute("id", standardVariable
+						.getId().toString()));
+			if (standardVariable.getName() != null)
+				element.addAttribute(new Attribute("name", standardVariable
+						.getName()));
+			if (standardVariable.getNamespaceUri() != null)
+				element.addAttribute(new Attribute("namespaceUriString",
+						standardVariable.getNamespaceUriString()));
+			if (standardVariable.getReferenceScale() != null)
+				element.addAttribute(new Attribute("referenceScale",
+						standardVariable.getReferenceScale()));
+
+			// Add the relationships
+			// Add description element if there is one
+			if (standardVariable.getDescription() != null) {
+				Element descriptionElement = new Element("description");
+				descriptionElement.appendChild(standardVariable
+						.getDescription());
+				element.appendChild(descriptionElement);
+			}
+
+			// StandardUnits
+			if (standardVariable.getStandardUnits() != null
+					&& standardVariable.getStandardUnits().size() > 0) {
+				Iterator<StandardUnit> iterator = standardVariable
+						.getStandardUnits().iterator();
+				while (iterator.hasNext()) {
+					Element standardUnitElement = standardUnitToElement(iterator
+							.next());
+					if (standardUnitElement != null
+							&& !isEmptyElement(standardUnitElement))
+						element.appendChild(standardUnitElement);
+				}
+			}
+		}
+
+		// Return the result
+		return element;
+	}
+
+	/**
+	 * This method takes in a <code></code> object and returns an
+	 * <code>Element</code> that represents that object
+	 * 
+	 * @param
+	 * @return
+	 */
+	private Element userGroupToElement(UserGroup userGroup) {
+		// The element to return
+		Element element = null;
+
+		// Do a sanity check
+		if (userGroup != null) {
+			// Create the element
+			element = new Element("UserGroup");
+
+			// Add the attributes
+			if (userGroup.getId() != null)
+				element.addAttribute(new Attribute("id", userGroup.getId()
+						.toString()));
+			if (userGroup.getGroupName() != null)
+				element.addAttribute(new Attribute("groupName", userGroup
+						.getGroupName()));
+		}
+
+		// Return the result
+		return element;
+	}
 }
