@@ -16,23 +16,20 @@
 package test.moos.ssds.metadata;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
-import moos.ssds.metadata.Metadata;
 import moos.ssds.metadata.StandardUnit;
 import moos.ssds.metadata.StandardVariable;
 import moos.ssds.metadata.util.MetadataException;
+import moos.ssds.metadata.util.ObjectBuilder;
+import moos.ssds.metadata.util.XmlBuilder;
 
 import org.apache.log4j.Logger;
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
 
 /**
  * This is the test class to test the StandardVariable class
@@ -72,8 +69,9 @@ public class TestStandardVariable extends TestCase {
 			standardVariable
 					.setReferenceScale("StandardVariable one reference scale");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Now read all of them back
@@ -98,8 +96,9 @@ public class TestStandardVariable extends TestCase {
 			standardVariable
 					.setReferenceScale("StandardVariable one reference scale");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Create a StandardUnit
@@ -127,8 +126,9 @@ public class TestStandardVariable extends TestCase {
 			standardUnitTwo.setLongName("Standard Unit two long name");
 			standardUnitTwo.setSymbol("SUTWO");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// OK, first check to see that the standardVariables units collection is
@@ -202,8 +202,9 @@ public class TestStandardVariable extends TestCase {
 			standardVariable
 					.setReferenceScale("StandardVariable one reference scale");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Check that the string representations are equal
@@ -272,93 +273,105 @@ public class TestStandardVariable extends TestCase {
 			standardVariableTwo.setValuesFromStringRepresentation(stringRepTwo,
 					",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two standardVariable objects");
+			logger.error("MetadataException caught trying to create two standardVariable objects");
 		}
 
 		assertTrue("The two standardVariables should be equal (part one).",
 				standardVariableOne.equals(standardVariableTwo));
 		assertEquals("The two standardVariables should be equal (part two).",
 				standardVariableOne, standardVariableTwo);
-		assertTrue("The two hashcodes should be equal", standardVariableOne
-				.hashCode() == standardVariableTwo.hashCode());
+		assertTrue("The two hashcodes should be equal",
+				standardVariableOne.hashCode() == standardVariableTwo
+						.hashCode());
 
 		// Now change the ID of the second one and they should be equal
 		standardVariableTwo.setId(new Long(2));
 		assertTrue("The two standardVariables should be equal",
 				standardVariableOne.equals(standardVariableTwo));
-		assertTrue("The two hashcodes should be equal", standardVariableOne
-				.hashCode() == standardVariableTwo.hashCode());
+		assertTrue("The two hashcodes should be equal",
+				standardVariableOne.hashCode() == standardVariableTwo
+						.hashCode());
 
 		// Now set the ID back, check equals again
 		standardVariableTwo.setId(new Long(1));
 		assertEquals(
 				"The two standardVariables should be equal after ID set back.",
 				standardVariableOne, standardVariableTwo);
-		assertTrue("The two hashcodes should be equal", standardVariableOne
-				.hashCode() == standardVariableTwo.hashCode());
+		assertTrue("The two hashcodes should be equal",
+				standardVariableOne.hashCode() == standardVariableTwo
+						.hashCode());
 
 		// Now set the name and they should be different
 		try {
 			standardVariableTwo.setName("StandardVariableTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue("The two standardVariable should not be equal",
 				!standardVariableOne.equals(standardVariableTwo));
-		assertTrue("The two hashcodes should NOT be equal", standardVariableOne
-				.hashCode() != standardVariableTwo.hashCode());
+		assertTrue("The two hashcodes should NOT be equal",
+				standardVariableOne.hashCode() != standardVariableTwo
+						.hashCode());
 
 		// Now set the name back and they should be the same
 		try {
 			standardVariableTwo.setName("StandardVariableOne");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue("The two standardVariable should be equal",
 				standardVariableOne.equals(standardVariableTwo));
-		assertTrue("The two hashcodes should be equal", standardVariableOne
-				.hashCode() == standardVariableTwo.hashCode());
+		assertTrue("The two hashcodes should be equal",
+				standardVariableOne.hashCode() == standardVariableTwo
+						.hashCode());
 
 		// Now set the ref scale and they should be different
 		try {
 			standardVariableTwo.setNamespaceUriString("nsTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue("The two standardVariable should not be equal",
 				!standardVariableOne.equals(standardVariableTwo));
-		assertTrue("The two hashcodes should NOT be equal", standardVariableOne
-				.hashCode() != standardVariableTwo.hashCode());
+		assertTrue("The two hashcodes should NOT be equal",
+				standardVariableOne.hashCode() != standardVariableTwo
+						.hashCode());
 
 		// Now set the ref of one to match and should be equal again
 		try {
 			standardVariableOne.setNamespaceUriString("nsTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue("The two standardVariables should be equal after "
-				+ "setting one refscale to match two's", standardVariableOne
-				.equals(standardVariableTwo));
-		assertTrue("The two hashcodes should be equal", standardVariableOne
-				.hashCode() == standardVariableTwo.hashCode());
+				+ "setting one refscale to match two's",
+				standardVariableOne.equals(standardVariableTwo));
+		assertTrue("The two hashcodes should be equal",
+				standardVariableOne.hashCode() == standardVariableTwo
+						.hashCode());
 
 		// Change the description and they should still be equal
 		try {
 			standardVariableTwo.setDescription("blah blah");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals(
 				"The two standardVariables should be equal after changing only description",
 				standardVariableOne, standardVariableTwo);
-		assertTrue("The two hashcodes should be equal", standardVariableOne
-				.hashCode() == standardVariableTwo.hashCode());
+		assertTrue("The two hashcodes should be equal",
+				standardVariableOne.hashCode() == standardVariableTwo
+						.hashCode());
 	}
 
 	/**
@@ -378,198 +391,161 @@ public class TestStandardVariable extends TestCase {
 		logger.debug("Will read standardVariable XML from "
 				+ standardVariableXMLFile.getAbsolutePath());
 
-		// Create a file reader
-		FileReader standardVariableXMLFileReader = null;
+		// Create the object builder
+		ObjectBuilder objectBuilder = null;
 		try {
-			standardVariableXMLFileReader = new FileReader(
-					standardVariableXMLFile);
-		} catch (FileNotFoundException e2) {
+			objectBuilder = new ObjectBuilder(standardVariableXMLFile.toURI()
+					.toURL());
+		} catch (MalformedURLException e) {
+			logger.error("MalformedURLException caught trying to create object builder: "
+					+ e.getMessage());
 			assertTrue(
-					"Error in creating file reader for standardVariable XML file: "
-							+ e2.getMessage(), false);
+					"MalformedURLException caught trying to create object builder: "
+							+ e.getMessage(), false);
 		}
 
-		// Grab the binding factory
-		IBindingFactory bfact = null;
+		// Unmarshal XML to objects
 		try {
-			bfact = BindingDirectory.getFactory(Metadata.class);
-		} catch (JiBXException e1) {
-			assertTrue("Error in getting Binding Factory: " + e1.getMessage(),
+			objectBuilder.unmarshal();
+		} catch (Exception e) {
+			logger.error("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage());
+			assertTrue("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage(), false);
+		}
+
+		// The top level object should be a Event
+		Object unmarshalledObject = objectBuilder.listAll().iterator().next();
+		assertNotNull("Unmarshalled object should not be null",
+				unmarshalledObject);
+		assertTrue("Unmarshalled object should be a StandardVariable",
+				unmarshalledObject instanceof StandardVariable);
+
+		// Cast it
+		StandardVariable testStandardVariable = (StandardVariable) unmarshalledObject;
+		assertEquals("ID should be 1",
+				testStandardVariable.getId().longValue(), Long.parseLong("1"));
+		assertEquals("StandardVariable name should match",
+				testStandardVariable.getName(), "Test StandardVariable");
+		assertEquals("Description should match",
+				testStandardVariable.getDescription(),
+				"Test StandardVariable Description");
+		assertEquals("ReferenceScale should match",
+				testStandardVariable.getReferenceScale(),
+				"Test StandardVariable ReferenceScale");
+		assertEquals("NamespaceUriString should match",
+				testStandardVariable.getNamespaceUriString(),
+				"http://www.test.standard.variable.namespace");
+		// Now iterate over the StandardUnits
+		for (Iterator<StandardUnit> iterator = testStandardVariable
+				.getStandardUnits().iterator(); iterator.hasNext();) {
+			StandardUnit standardUnit = iterator.next();
+			// Make sure it has an expected name
+			assertTrue(
+					"StandardUnit name is on of the expected ones",
+					(standardUnit.getName().equals("Test StandardUnit 1")
+							|| standardUnit.getName().equals(
+									"Test StandardUnit 2")
+							|| standardUnit.getName().equals(
+									"Test StandardUnit 3") || standardUnit
+							.getName().equals("Test StandardUnit 4")));
+			// Make sure it has an expected description
+			assertTrue(
+					"StandardUnit description is on of the expected ones",
+					(standardUnit.getDescription().equals(
+							"Test StandardUnit 1 Description")
+							|| standardUnit.getDescription().equals(
+									"Test StandardUnit 2 Description")
+							|| standardUnit.getDescription().equals(
+									"Test StandardUnit 3 Description") || standardUnit
+							.getDescription().equals(
+									"Test StandardUnit 4 Description")));
+			// Make sure it has an expected longName
+			assertTrue(
+					"StandardUnit longName is on of the expected ones",
+					(standardUnit.getLongName().equals(
+							"Test StandardUnit 1 LongName")
+							|| standardUnit.getLongName().equals(
+									"Test StandardUnit 2 LongName")
+							|| standardUnit.getLongName().equals(
+									"Test StandardUnit 3 LongName") || standardUnit
+							.getLongName().equals(
+									"Test StandardUnit 4 LongName")));
+			// Make sure it has an expected symbol
+			assertTrue(
+					"StandardUnit symbol is on of the expected ones",
+					(standardUnit.getSymbol().equals(
+							"Test StandardUnit 1 Symbol")
+							|| standardUnit.getSymbol().equals(
+									"Test StandardUnit 2 Symbol")
+							|| standardUnit.getSymbol().equals(
+									"Test StandardUnit 3 Symbol") || standardUnit
+							.getSymbol().equals("Test StandardUnit 4 Symbol")));
+			// And ID
+			assertTrue(
+					"StandardUnit ID is on of the expected ones",
+					(standardUnit.getId().equals(Long.parseLong("1"))
+							|| standardUnit.getId().equals(Long.parseLong("2"))
+							|| standardUnit.getId().equals(Long.parseLong("3")) || standardUnit
+							.getId().equals(Long.parseLong("4"))));
+		}
+
+		// Now let's change the attributes
+		try {
+			testStandardVariable.setName("Changed Test StandardVariable");
+			testStandardVariable
+					.setDescription("Changed Test StandardVariable Description");
+			testStandardVariable
+					.setReferenceScale("Changed Test StandardVariable ReferenceScale");
+			testStandardVariable
+					.setNamespaceUriString("http://www.test.standard.variable.namespace.new");
+			logger.debug("Changed attributes " + "and will marshall to XML");
+		} catch (MetadataException e) {
+			assertTrue("Error while changing attributes: " + e.getMessage(),
 					false);
 		}
 
-		// Grab a JiBX unmarshalling context
-		IUnmarshallingContext uctx = null;
-		if (bfact != null) {
-			try {
-				uctx = bfact.createUnmarshallingContext();
-			} catch (JiBXException e) {
-				assertTrue("Error in getting UnmarshallingContext: "
-						+ e.getMessage(), false);
-			}
-		}
+		// Create an XML builder to marshall back out the XML
+		XmlBuilder xmlBuilder = new XmlBuilder();
+		xmlBuilder.add(testStandardVariable);
+		xmlBuilder.marshal();
 
-		// Now unmarshall it
-		if (uctx != null) {
-			Metadata topMetadata = null;
-			StandardVariable testStandardVariable = null;
-			try {
-				topMetadata = (Metadata) uctx.unmarshalDocument(
-						standardVariableXMLFileReader, null);
-				testStandardVariable = topMetadata.getStandardVariables()
-						.iterator().next();
+		// Now test the xml
+		try {
+			StringWriter stringWriter = new StringWriter();
+			stringWriter.append(xmlBuilder.toFormattedXML());
 
-				logger.debug("TestStandardVariable after unmarshalling: "
-						+ testStandardVariable.toStringRepresentation("|"));
-			} catch (JiBXException e1) {
-				assertTrue("Error in unmarshalling: " + e1.getMessage(), false);
-			} catch (Throwable t) {
-				t.printStackTrace();
-				logger.error("Throwable caught: " + t.getMessage());
-			}
-
-			if (testStandardVariable != null) {
-				assertEquals("ID should be 1", testStandardVariable.getId()
-						.longValue(), Long.parseLong("1"));
-				assertEquals("StandardVariable name should match",
-						testStandardVariable.getName(), "Test StandardVariable");
-				assertEquals("Description should match", testStandardVariable
-						.getDescription(), "Test StandardVariable Description");
-				assertEquals("ReferenceScale should match",
-						testStandardVariable.getReferenceScale(),
-						"Test StandardVariable ReferenceScale");
-				assertEquals("NamespaceUriString should match",
-						testStandardVariable.getNamespaceUriString(),
-						"Test StandardVariable NamespaceUriString");
-				// Now iterate over the StandardUnits
-				for (Iterator<StandardUnit> iterator = testStandardVariable
-						.getStandardUnits().iterator(); iterator.hasNext();) {
-					StandardUnit standardUnit = iterator.next();
-					// Make sure it has an expected name
-					assertTrue(
-							"StandardUnit name is on of the expected ones",
-							(standardUnit.getName().equals(
-									"Test StandardUnit 1")
-									|| standardUnit.getName().equals(
-											"Test StandardUnit 2")
-									|| standardUnit.getName().equals(
-											"Test StandardUnit 3") || standardUnit
-									.getName().equals("Test StandardUnit 4")));
-					// Make sure it has an expected description
-					assertTrue(
-							"StandardUnit description is on of the expected ones",
-							(standardUnit.getDescription().equals(
-									"Test StandardUnit 1 Description")
-									|| standardUnit.getDescription().equals(
-											"Test StandardUnit 2 Description")
-									|| standardUnit.getDescription().equals(
-											"Test StandardUnit 3 Description") || standardUnit
-									.getDescription().equals(
-											"Test StandardUnit 4 Description")));
-					// Make sure it has an expected longName
-					assertTrue(
-							"StandardUnit longName is on of the expected ones",
-							(standardUnit.getLongName().equals(
-									"Test StandardUnit 1 LongName")
-									|| standardUnit.getLongName().equals(
-											"Test StandardUnit 2 LongName")
-									|| standardUnit.getLongName().equals(
-											"Test StandardUnit 3 LongName") || standardUnit
-									.getLongName().equals(
-											"Test StandardUnit 4 LongName")));
-					// Make sure it has an expected symbol
-					assertTrue(
-							"StandardUnit symbol is on of the expected ones",
-							(standardUnit.getSymbol().equals(
-									"Test StandardUnit 1 Symbol")
-									|| standardUnit.getSymbol().equals(
-											"Test StandardUnit 2 Symbol")
-									|| standardUnit.getSymbol().equals(
-											"Test StandardUnit 3 Symbol") || standardUnit
-									.getSymbol().equals(
-											"Test StandardUnit 4 Symbol")));
-					// And ID
-					assertTrue(
-							"StandardUnit ID is on of the expected ones",
-							(standardUnit.getId().equals(Long.parseLong("1"))
-									|| standardUnit.getId().equals(
-											Long.parseLong("2"))
-									|| standardUnit.getId().equals(
-											Long.parseLong("3")) || standardUnit
-									.getId().equals(Long.parseLong("4"))));
-				}
-
-				// Now let's change the attributes
-				try {
-					testStandardVariable
-							.setName("Changed Test StandardVariable");
-					testStandardVariable
-							.setDescription("Changed Test StandardVariable Description");
-					testStandardVariable
-							.setReferenceScale("Changed Test StandardVariable ReferenceScale");
-					testStandardVariable
-							.setNamespaceUriString("Changed Test StandardVariable NamespaceUriString");
-					logger.debug("Changed attributes "
-							+ "and will marshall to XML");
-				} catch (MetadataException e) {
-					assertTrue("Error while changing attributes: "
+			// Now make sure the resulting string contains all the
+			// updates I did
+			logger.debug("Marshalled XML after change: "
+					+ stringWriter.toString());
+			// Now test the string
+			assertTrue("Marshalled XML contain changed name", stringWriter
+					.toString().contains("Changed Test StandardVariable"));
+			assertTrue(
+					"Marshalled XML contain changed description",
+					stringWriter.toString().contains(
+							"Changed Test StandardVariable Description"));
+			assertTrue(
+					"Marshalled XML contain changed longname",
+					stringWriter.toString().contains(
+							"Changed Test StandardVariable ReferenceScale"));
+			assertTrue(
+					"Marshalled XML contain changed symbol",
+					stringWriter.toString().contains(
+							"http://www.test.standard.variable.namespace.new"));
+		} catch (UnsupportedEncodingException e) {
+			logger.error("UnsupportedEncodingException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"UnsupportedEncodingException caught while converting to XML: "
 							+ e.getMessage(), false);
-				}
-
-				// Create a string writer
-				StringWriter stringWriter = new StringWriter();
-
-				// Marshall out to XML
-				IMarshallingContext mctx = null;
-				try {
-					mctx = bfact.createMarshallingContext();
-				} catch (JiBXException e) {
-					assertTrue("Error while creating marshalling context: "
+		} catch (IOException e) {
+			logger.error("IOException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"IOException caught while converting to XML: "
 							+ e.getMessage(), false);
-				}
-
-				if (mctx != null) {
-					mctx.setIndent(2);
-					try {
-						mctx.marshalDocument(testStandardVariable, "UTF-8",
-								null, stringWriter);
-					} catch (JiBXException e) {
-						assertTrue("Error while marshalling "
-								+ "after attribute changes: " + e.getMessage(),
-								false);
-					}
-
-					logger.debug("Marshalled XML after change: "
-							+ stringWriter.toString());
-
-					// Now test the string
-					assertTrue("Marshalled XML contain changed name",
-							stringWriter.toString().contains(
-									"Changed Test StandardVariable"));
-					assertTrue(
-							"Marshalled XML contain changed description",
-							stringWriter
-									.toString()
-									.contains(
-											"Changed Test StandardVariable Description"));
-					assertTrue(
-							"Marshalled XML contain changed longname",
-							stringWriter
-									.toString()
-									.contains(
-											"Changed Test StandardVariable ReferenceScale"));
-					assertTrue(
-							"Marshalled XML contain changed symbol",
-							stringWriter
-									.toString()
-									.contains(
-											"Changed Test StandardVariable NamespaceUriString"));
-				}
-
-			} else {
-				assertTrue("metadata object came back null!", false);
-			}
 		}
-
 	}
 }

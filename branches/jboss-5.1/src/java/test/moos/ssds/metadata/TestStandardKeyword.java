@@ -16,21 +16,18 @@
 package test.moos.ssds.metadata;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 
 import junit.framework.TestCase;
-import moos.ssds.metadata.Metadata;
 import moos.ssds.metadata.StandardKeyword;
 import moos.ssds.metadata.util.MetadataException;
+import moos.ssds.metadata.util.ObjectBuilder;
+import moos.ssds.metadata.util.XmlBuilder;
 
 import org.apache.log4j.Logger;
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
 
 /**
  * This is the test class to test the StandardKeyword class
@@ -68,8 +65,9 @@ public class TestStandardKeyword extends TestCase {
 			standardKeyword.setName("StandardKeywordOne");
 			standardKeyword.setDescription("StandardKeyword one description");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Now read all of them back
@@ -93,8 +91,9 @@ public class TestStandardKeyword extends TestCase {
 			standardKeyword.setName("StandardKeywordOne");
 			standardKeyword.setDescription("StandardKeyword one description");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Check that the string representations are equal
@@ -157,8 +156,7 @@ public class TestStandardKeyword extends TestCase {
 			standardKeywordTwo.setValuesFromStringRepresentation(stringRepTwo,
 					",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two StandardKeyword objects");
+			logger.error("MetadataException caught trying to create two StandardKeyword objects");
 		}
 
 		assertTrue("The two StandardKeywords should be equal (part one).",
@@ -181,8 +179,9 @@ public class TestStandardKeyword extends TestCase {
 		try {
 			standardKeywordTwo.setName("StandardKeywordTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue("The two StandardKeyword should not be equal",
 				!standardKeywordOne.equals(standardKeywordTwo));
@@ -193,8 +192,9 @@ public class TestStandardKeyword extends TestCase {
 			standardKeywordTwo.setName("StandardKeywordOne");
 			standardKeywordTwo.setDescription("blah blah");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals(
 				"The two StandardKeywords should be equal after ID set back.",
@@ -222,9 +222,8 @@ public class TestStandardKeyword extends TestCase {
 			standardKeywordTwo.setValuesFromStringRepresentation(stringRepTwo,
 					",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two StandardKeyword objects: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to create two StandardKeyword objects: "
+					+ e.getMessage());
 		}
 
 		assertTrue("The two hashCodes should be equal (part one).",
@@ -234,8 +233,8 @@ public class TestStandardKeyword extends TestCase {
 
 		// Now change the ID of the second one and they should not be equal
 		standardKeywordTwo.setId(new Long(2));
-		assertTrue("The two hashCodes should be equal", standardKeywordOne
-				.hashCode() == standardKeywordTwo.hashCode());
+		assertTrue("The two hashCodes should be equal",
+				standardKeywordOne.hashCode() == standardKeywordTwo.hashCode());
 
 		// Now set the ID back, check equals again
 		standardKeywordTwo.setId(new Long(1));
@@ -246,8 +245,9 @@ public class TestStandardKeyword extends TestCase {
 		try {
 			standardKeywordTwo.setName("StandardKeywordTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue("The two hashCodes should not be equal after name change",
 				standardKeywordOne.hashCode() != standardKeywordTwo.hashCode());
@@ -258,12 +258,13 @@ public class TestStandardKeyword extends TestCase {
 			standardKeywordTwo.setName("StandardKeywordOne");
 			standardKeywordTwo.setDescription("blah blah");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals("The two hashCodes should be equal after ID and name same"
-				+ ", but different business keys.", standardKeywordOne
-				.hashCode(), standardKeywordTwo.hashCode());
+				+ ", but different business keys.",
+				standardKeywordOne.hashCode(), standardKeywordTwo.hashCode());
 	}
 
 	/**
@@ -283,116 +284,91 @@ public class TestStandardKeyword extends TestCase {
 		logger.debug("Will read StandardKeyword XML from "
 				+ standardKeywordXMLFile.getAbsolutePath());
 
-		// Create a file reader
-		FileReader standardKeywordXMLFileReader = null;
+		// Create the object builder
+		ObjectBuilder objectBuilder = null;
 		try {
-			standardKeywordXMLFileReader = new FileReader(
-					standardKeywordXMLFile);
-		} catch (FileNotFoundException e2) {
+			objectBuilder = new ObjectBuilder(standardKeywordXMLFile.toURI()
+					.toURL());
+		} catch (MalformedURLException e) {
+			logger.error("MalformedURLException caught trying to create object builder: "
+					+ e.getMessage());
 			assertTrue(
-					"Error in creating file reader for standardKeyword XML file: "
-							+ e2.getMessage(), false);
+					"MalformedURLException caught trying to create object builder: "
+							+ e.getMessage(), false);
 		}
 
-		// Grab the binding factory
-		IBindingFactory bfact = null;
+		// Unmarshal XML to objects
 		try {
-			bfact = BindingDirectory.getFactory(Metadata.class);
-		} catch (JiBXException e1) {
-			assertTrue("Error in getting Binding Factory: " + e1.getMessage(),
+			objectBuilder.unmarshal();
+		} catch (Exception e) {
+			logger.error("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage());
+			assertTrue("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage(), false);
+		}
+
+		// The top level object should be a Event
+		Object unmarshalledObject = objectBuilder.listAll().iterator().next();
+		assertNotNull("Unmarshalled object should not be null",
+				unmarshalledObject);
+		assertTrue("Unmarshalled object should be a StandardKeyword",
+				unmarshalledObject instanceof StandardKeyword);
+
+		// Cast it
+		StandardKeyword testStandardKeyword = (StandardKeyword) unmarshalledObject;
+		assertEquals("ID should be 1", testStandardKeyword.getId().longValue(),
+				Long.parseLong("1"));
+		assertEquals("StandardKeyword name should match",
+				testStandardKeyword.getName(), "Test StandardKeyword");
+		assertEquals("Descripton should match",
+				testStandardKeyword.getDescription(),
+				"Test StandardKeyword Description");
+
+		// Now let's change the attributes
+		try {
+			testStandardKeyword.setName("Changed Test StandardKeyword");
+			testStandardKeyword
+					.setDescription("Changed Test StandardKeyword Description");
+			logger.debug("Changed name and description "
+					+ "and will marshall to XML");
+		} catch (MetadataException e) {
+			assertTrue("Error while changing attributes: " + e.getMessage(),
 					false);
 		}
 
-		// Grab a JiBX unmarshalling context
-		IUnmarshallingContext uctx = null;
-		if (bfact != null) {
-			try {
-				uctx = bfact.createUnmarshallingContext();
-			} catch (JiBXException e) {
-				assertTrue("Error in getting UnmarshallingContext: "
-						+ e.getMessage(), false);
-			}
-		}
+		// Create an XML builder to marshall back out the XML
+		XmlBuilder xmlBuilder = new XmlBuilder();
+		xmlBuilder.add(testStandardKeyword);
+		xmlBuilder.marshal();
 
-		// Now unmarshall it
-		if (uctx != null) {
-			Metadata topMetadata = null;
-			StandardKeyword testStandardKeyword = null;
-			try {
-				topMetadata = (Metadata) uctx.unmarshalDocument(
-						standardKeywordXMLFileReader, null);
-				testStandardKeyword = topMetadata.getStandardKeywords()
-						.iterator().next();
+		// Now test the xml
+		try {
+			StringWriter stringWriter = new StringWriter();
+			stringWriter.append(xmlBuilder.toFormattedXML());
 
-				logger.debug("TestStandardKeyword after unmarshalling: "
-						+ testStandardKeyword.toStringRepresentation("|"));
-			} catch (JiBXException e1) {
-				assertTrue("Error in unmarshalling: " + e1.getMessage(), false);
-			} catch (Throwable t) {
-				t.printStackTrace();
-				logger.error("Throwable caught: " + t.getMessage());
-			}
-
-			if (testStandardKeyword != null) {
-				assertEquals("ID should be 1", testStandardKeyword.getId()
-						.longValue(), Long.parseLong("1"));
-				assertEquals("StandardKeyword name should match",
-						testStandardKeyword.getName(), "Test StandardKeyword");
-				assertEquals("Descripton should match", testStandardKeyword
-						.getDescription(), "Test StandardKeyword Description");
-
-				// Now let's change the attributes
-				try {
-					testStandardKeyword.setName("Changed Test StandardKeyword");
-					testStandardKeyword
-							.setDescription("Changed Test StandardKeyword Description");
-					logger.debug("Changed name and description "
-							+ "and will marshall to XML");
-				} catch (MetadataException e) {
-					assertTrue("Error while changing attributes: "
+			// Now make sure the resulting string contains all the
+			// updates I did
+			logger.debug("Marshalled XML after change: "
+					+ stringWriter.toString());
+			// Now test the string
+			assertTrue("Marshalled XML contain changed name", stringWriter
+					.toString().contains("Changed Test StandardKeyword"));
+			assertTrue(
+					"Marshalled XML contain changed description",
+					stringWriter.toString().contains(
+							"Changed Test StandardKeyword Description"));
+		} catch (UnsupportedEncodingException e) {
+			logger.error("UnsupportedEncodingException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"UnsupportedEncodingException caught while converting to XML: "
 							+ e.getMessage(), false);
-				}
-
-				// Create a string writer
-				StringWriter stringWriter = new StringWriter();
-
-				// Marshall out to XML
-				IMarshallingContext mctx = null;
-				try {
-					mctx = bfact.createMarshallingContext();
-				} catch (JiBXException e) {
-					assertTrue("Error while creating marshalling context: "
+		} catch (IOException e) {
+			logger.error("IOException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"IOException caught while converting to XML: "
 							+ e.getMessage(), false);
-				}
-
-				if (mctx != null) {
-					mctx.setIndent(2);
-					try {
-						mctx.marshalDocument(testStandardKeyword, "UTF-8",
-								null, stringWriter);
-					} catch (JiBXException e) {
-						assertTrue("Error while marshalling "
-								+ "after attribute changes: " + e.getMessage(),
-								false);
-					}
-
-					logger.debug("Marshalled XML after change: "
-							+ stringWriter.toString());
-
-					// Now test the string
-					assertTrue("Marshalled XML contain changed name",
-							stringWriter.toString().contains(
-									"Changed Test StandardKeyword"));
-					assertTrue("Marshalled XML contain changed description",
-							stringWriter.toString().contains(
-									"Changed Test StandardKeyword Description"));
-				}
-
-			} else {
-				assertTrue("metadata object came back null!", false);
-			}
 		}
-
 	}
-
 }

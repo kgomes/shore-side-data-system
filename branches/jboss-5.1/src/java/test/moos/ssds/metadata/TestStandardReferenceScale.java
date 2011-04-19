@@ -16,21 +16,18 @@
 package test.moos.ssds.metadata;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 
 import junit.framework.TestCase;
-import moos.ssds.metadata.Metadata;
 import moos.ssds.metadata.StandardReferenceScale;
 import moos.ssds.metadata.util.MetadataException;
+import moos.ssds.metadata.util.ObjectBuilder;
+import moos.ssds.metadata.util.XmlBuilder;
 
 import org.apache.log4j.Logger;
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
 
 /**
  * This is the test class to test the StandardKeyword class
@@ -70,8 +67,9 @@ public class TestStandardReferenceScale extends TestCase {
 			standardReferenceScale
 					.setDescription("StandardReferenceScale one description");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Now read all of them back
@@ -97,8 +95,9 @@ public class TestStandardReferenceScale extends TestCase {
 			standardReferenceScale
 					.setDescription("StandardReferenceScale one description");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 
 		// Check that the string representations are equal
@@ -163,8 +162,7 @@ public class TestStandardReferenceScale extends TestCase {
 			standardReferenceScaleTwo.setValuesFromStringRepresentation(
 					stringRepTwo, ",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two StandardReferenceScale objects");
+			logger.error("MetadataException caught trying to create two StandardReferenceScale objects");
 		}
 
 		assertTrue(
@@ -189,8 +187,9 @@ public class TestStandardReferenceScale extends TestCase {
 		try {
 			standardReferenceScaleTwo.setName("StandardReferenceScaleTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue("The two StandardReferenceScale should not be equal",
 				!standardReferenceScaleOne.equals(standardReferenceScaleTwo));
@@ -201,8 +200,9 @@ public class TestStandardReferenceScale extends TestCase {
 			standardReferenceScaleTwo.setName("StandardReferenceScaleOne");
 			standardReferenceScaleTwo.setDescription("blah blah");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals(
 				"The two StandardReferenceScales should be equal after ID set back.",
@@ -230,9 +230,8 @@ public class TestStandardReferenceScale extends TestCase {
 			standardReferenceScaleTwo.setValuesFromStringRepresentation(
 					stringRepTwo, ",");
 		} catch (MetadataException e) {
-			logger
-					.error("MetadataException caught trying to create two StandardReferenceScale objects: "
-							+ e.getMessage());
+			logger.error("MetadataException caught trying to create two StandardReferenceScale objects: "
+					+ e.getMessage());
 		}
 
 		assertTrue(
@@ -240,8 +239,8 @@ public class TestStandardReferenceScale extends TestCase {
 				standardReferenceScaleOne.hashCode() == standardReferenceScaleTwo
 						.hashCode());
 		assertEquals("The two hashCodes should be equal (part two).",
-				standardReferenceScaleOne.hashCode(), standardReferenceScaleTwo
-						.hashCode());
+				standardReferenceScaleOne.hashCode(),
+				standardReferenceScaleTwo.hashCode());
 
 		// Now change the ID of the second one and they should not be equal
 		standardReferenceScaleTwo.setId(new Long(2));
@@ -253,15 +252,16 @@ public class TestStandardReferenceScale extends TestCase {
 		// Now set the ID back, check equals again
 		standardReferenceScaleTwo.setId(new Long(1));
 		assertEquals("The two hashCodes should be equal after ID set back.",
-				standardReferenceScaleOne.hashCode(), standardReferenceScaleTwo
-						.hashCode());
+				standardReferenceScaleOne.hashCode(),
+				standardReferenceScaleTwo.hashCode());
 
 		// Now set the name and they should be different
 		try {
 			standardReferenceScaleTwo.setName("StandardReferenceScaleTwo");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertTrue(
 				"The two hashCodes should not be equal after name change",
@@ -274,12 +274,14 @@ public class TestStandardReferenceScale extends TestCase {
 			standardReferenceScaleTwo.setName("StandardReferenceScaleOne");
 			standardReferenceScaleTwo.setDescription("blah blah");
 		} catch (MetadataException e) {
-			assertTrue("MetadataException caught trying to set values: "
-					+ e.getMessage(), false);
+			assertTrue(
+					"MetadataException caught trying to set values: "
+							+ e.getMessage(), false);
 		}
 		assertEquals("The two hashCodes should be equal after ID and name same"
-				+ ", but different business keys.", standardReferenceScaleOne
-				.hashCode(), standardReferenceScaleTwo.hashCode());
+				+ ", but different business keys.",
+				standardReferenceScaleOne.hashCode(),
+				standardReferenceScaleTwo.hashCode());
 	}
 
 	/**
@@ -300,123 +302,93 @@ public class TestStandardReferenceScale extends TestCase {
 		logger.debug("Will read StandardReferenceScale XML from "
 				+ standardReferenceScaleXMLFile.getAbsolutePath());
 
-		// Create a file reader
-		FileReader standardReferenceScaleXMLFileReader = null;
+		// Create the object builder
+		ObjectBuilder objectBuilder = null;
 		try {
-			standardReferenceScaleXMLFileReader = new FileReader(
-					standardReferenceScaleXMLFile);
-		} catch (FileNotFoundException e2) {
+			objectBuilder = new ObjectBuilder(standardReferenceScaleXMLFile
+					.toURI().toURL());
+		} catch (MalformedURLException e) {
+			logger.error("MalformedURLException caught trying to create object builder: "
+					+ e.getMessage());
 			assertTrue(
-					"Error in creating file reader for standardReferenceScale XML file: "
-							+ e2.getMessage(), false);
+					"MalformedURLException caught trying to create object builder: "
+							+ e.getMessage(), false);
 		}
 
-		// Grab the binding factory
-		IBindingFactory bfact = null;
+		// Unmarshal XML to objects
 		try {
-			bfact = BindingDirectory.getFactory(Metadata.class);
-		} catch (JiBXException e1) {
-			assertTrue("Error in getting Binding Factory: " + e1.getMessage(),
+			objectBuilder.unmarshal();
+		} catch (Exception e) {
+			logger.error("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage());
+			assertTrue("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage(), false);
+		}
+
+		// The top level object should be a Event
+		Object unmarshalledObject = objectBuilder.listAll().iterator().next();
+		assertNotNull("Unmarshalled object should not be null",
+				unmarshalledObject);
+		assertTrue("Unmarshalled object should be a StandardReferenceScale",
+				unmarshalledObject instanceof StandardReferenceScale);
+
+		// Cast it
+		StandardReferenceScale testStandardReferenceScale = (StandardReferenceScale) unmarshalledObject;
+		assertEquals("ID should be 1", testStandardReferenceScale.getId()
+				.longValue(), Long.parseLong("1"));
+		assertEquals("StandardReferenceScale name should match",
+				testStandardReferenceScale.getName(),
+				"Test StandardReferenceScale");
+		assertEquals("Descripton should match",
+				testStandardReferenceScale.getDescription(),
+				"Test StandardReferenceScale Description");
+
+		// Now let's change the attributes
+		try {
+			testStandardReferenceScale
+					.setName("Changed Test StandardReferenceScale");
+			testStandardReferenceScale
+					.setDescription("Changed Test StandardReferenceScale Description");
+			logger.debug("Changed name and description "
+					+ "and will marshall to XML");
+		} catch (MetadataException e) {
+			assertTrue("Error while changing attributes: " + e.getMessage(),
 					false);
 		}
 
-		// Grab a JiBX unmarshalling context
-		IUnmarshallingContext uctx = null;
-		if (bfact != null) {
-			try {
-				uctx = bfact.createUnmarshallingContext();
-			} catch (JiBXException e) {
-				assertTrue("Error in getting UnmarshallingContext: "
-						+ e.getMessage(), false);
-			}
-		}
+		// Create an XML builder to marshall back out the XML
+		XmlBuilder xmlBuilder = new XmlBuilder();
+		xmlBuilder.add(testStandardReferenceScale);
+		xmlBuilder.marshal();
 
-		// Now unmarshall it
-		if (uctx != null) {
-			Metadata topMetadata = null;
-			StandardReferenceScale testStandardReferenceScale = null;
-			try {
-				topMetadata = (Metadata) uctx.unmarshalDocument(
-						standardReferenceScaleXMLFileReader, null);
-				testStandardReferenceScale = topMetadata
-						.getStandardReferenceScales().iterator().next();
+		// Now test the xml
+		try {
+			StringWriter stringWriter = new StringWriter();
+			stringWriter.append(xmlBuilder.toFormattedXML());
 
-				logger.debug("TestStandardReferenceScale after unmarshalling: "
-						+ testStandardReferenceScale
-								.toStringRepresentation("|"));
-			} catch (JiBXException e1) {
-				assertTrue("Error in unmarshalling: " + e1.getMessage(), false);
-			} catch (Throwable t) {
-				t.printStackTrace();
-				logger.error("Throwable caught: " + t.getMessage());
-			}
-
-			if (testStandardReferenceScale != null) {
-				assertEquals("ID should be 1", testStandardReferenceScale
-						.getId().longValue(), Long.parseLong("1"));
-				assertEquals("StandardReferenceScale name should match",
-						testStandardReferenceScale.getName(),
-						"Test StandardReferenceScale");
-				assertEquals("Descripton should match",
-						testStandardReferenceScale.getDescription(),
-						"Test StandardReferenceScale Description");
-
-				// Now let's change the attributes
-				try {
-					testStandardReferenceScale
-							.setName("Changed Test StandardReferenceScale");
-					testStandardReferenceScale
-							.setDescription("Changed Test StandardReferenceScale Description");
-					logger.debug("Changed name and description "
-							+ "and will marshall to XML");
-				} catch (MetadataException e) {
-					assertTrue("Error while changing attributes: "
+			// Now make sure the resulting string contains all the
+			// updates I did
+			logger.debug("Marshalled XML after change: "
+					+ stringWriter.toString());
+			// Now test the string
+			assertTrue("Marshalled XML contain changed name", stringWriter
+					.toString().contains("Changed Test StandardReferenceScale"));
+			assertTrue(
+					"Marshalled XML contain changed description",
+					stringWriter.toString().contains(
+							"Changed Test StandardReferenceScale Description"));
+		} catch (UnsupportedEncodingException e) {
+			logger.error("UnsupportedEncodingException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"UnsupportedEncodingException caught while converting to XML: "
 							+ e.getMessage(), false);
-				}
-
-				// Create a string writer
-				StringWriter stringWriter = new StringWriter();
-
-				// Marshall out to XML
-				IMarshallingContext mctx = null;
-				try {
-					mctx = bfact.createMarshallingContext();
-				} catch (JiBXException e) {
-					assertTrue("Error while creating marshalling context: "
+		} catch (IOException e) {
+			logger.error("IOException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"IOException caught while converting to XML: "
 							+ e.getMessage(), false);
-				}
-
-				if (mctx != null) {
-					mctx.setIndent(2);
-					try {
-						mctx.marshalDocument(testStandardReferenceScale,
-								"UTF-8", null, stringWriter);
-					} catch (JiBXException e) {
-						assertTrue("Error while marshalling "
-								+ "after attribute changes: " + e.getMessage(),
-								false);
-					}
-
-					logger.debug("Marshalled XML after change: "
-							+ stringWriter.toString());
-
-					// Now test the string
-					assertTrue("Marshalled XML contain changed name",
-							stringWriter.toString().contains(
-									"Changed Test StandardReferenceScale"));
-					assertTrue(
-							"Marshalled XML contain changed description",
-							stringWriter
-									.toString()
-									.contains(
-											"Changed Test StandardReferenceScale Description"));
-				}
-
-			} else {
-				assertTrue("metadata object came back null!", false);
-			}
 		}
-
 	}
-
 }

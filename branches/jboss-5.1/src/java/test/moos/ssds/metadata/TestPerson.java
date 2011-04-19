@@ -16,26 +16,21 @@
 package test.moos.ssds.metadata;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
-import moos.ssds.metadata.Metadata;
 import moos.ssds.metadata.Person;
 import moos.ssds.metadata.UserGroup;
 import moos.ssds.metadata.util.MetadataException;
 import moos.ssds.metadata.util.ObjectBuilder;
+import moos.ssds.metadata.util.XmlBuilder;
 
 import org.apache.log4j.Logger;
-import org.jibx.runtime.BindingDirectory;
-import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
-import org.jibx.runtime.IUnmarshallingContext;
-import org.jibx.runtime.JiBXException;
 
 /**
  * This is the test class to test the Person class
@@ -354,225 +349,187 @@ public class TestPerson extends TestCase {
 		logger.debug("Will read person XML from "
 				+ personXMLFile.getAbsolutePath());
 
-		// Create a file reader
-		FileReader personXMLFileReader = null;
+		// Create the object builder
+		ObjectBuilder objectBuilder = null;
 		try {
-			personXMLFileReader = new FileReader(personXMLFile);
-		} catch (FileNotFoundException e2) {
-			assertTrue("Error in creating file reader for person XML file: "
-					+ e2.getMessage(), false);
-		}
-
-		// Grab the binding factory for Persons
-		IBindingFactory bfact = null;
-		try {
-			bfact = BindingDirectory.getFactory(Metadata.class);
-		} catch (JiBXException e1) {
+			objectBuilder = new ObjectBuilder(personXMLFile.toURI().toURL());
+		} catch (MalformedURLException e) {
+			logger.error("MalformedURLException caught trying to create object builder: "
+					+ e.getMessage());
 			assertTrue(
-					"Error in getting Binding Factory for Metadata: "
+					"MalformedURLException caught trying to create object builder: "
+							+ e.getMessage(), false);
+		}
+
+		// Unmarshal XML to objects
+		try {
+			objectBuilder.unmarshal();
+		} catch (Exception e) {
+			logger.error("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage());
+			assertTrue("Exception caught trying to unmarshal XML to objects: "
+					+ e.getMessage(), false);
+		}
+
+		// The top level object should be a Event
+		Object unmarshalledObject = objectBuilder.listAll().iterator().next();
+		assertNotNull("Unmarshalled object should not be null",
+				unmarshalledObject);
+		assertTrue("Unmarshalled object should be a Person",
+				unmarshalledObject instanceof Person);
+
+		// Cast it
+		Person testPerson = (Person) unmarshalledObject;
+		assertEquals("Person id should match", testPerson.getId().longValue(),
+				Long.parseLong("10"));
+		assertEquals("Person first name should match",
+				testPerson.getFirstname(), "Test Firstname");
+		assertEquals("Person surname should match", testPerson.getSurname(),
+				"Test Surname");
+		assertEquals("Person organization should match",
+				testPerson.getOrganization(), "Test Organization");
+		assertEquals("Person username should match", testPerson.getUsername(),
+				"testUsername@org.com");
+		assertEquals("Person password should match", testPerson.getPassword(),
+				"Test password");
+		assertEquals("Person email should match", testPerson.getEmail(),
+				"test.email@org.com");
+		assertEquals("Person phone match", testPerson.getPhone(),
+				"123-456-7890");
+		assertEquals("Person address1 should match", testPerson.getAddress1(),
+				"Test Address 1");
+		assertEquals("Person address2 should match", testPerson.getAddress2(),
+				"Test Address 2");
+		assertEquals("Person city should match", testPerson.getCity(),
+				"Test City");
+		assertEquals("Person state should match", testPerson.getState(), "TS");
+		assertEquals("Person zipcode should match", testPerson.getZipcode(),
+				"12345");
+		assertEquals("Person status should match", testPerson.getStatus(),
+				"active");
+
+		// Now iterate over the UserGroups
+		for (Iterator<UserGroup> iterator = testPerson.getUserGroups()
+				.iterator(); iterator.hasNext();) {
+			UserGroup userGroup = iterator.next();
+			// Make sure it has an expected name
+			assertTrue(
+					"UserGroup name is on of the expected ones",
+					(userGroup.getGroupName().equals("Test UserGroup 1")
+							|| userGroup.getGroupName().equals(
+									"Test UserGroup 2")
+							|| userGroup.getGroupName().equals(
+									"Test UserGroup 3") || userGroup
+							.getGroupName().equals("Test UserGroup 4")));
+			// And ID
+			assertTrue(
+					"UserGroup ID is on of the expected ones",
+					(userGroup.getId().equals(Long.parseLong("1"))
+							|| userGroup.getId().equals(Long.parseLong("2"))
+							|| userGroup.getId().equals(Long.parseLong("3")) || userGroup
+							.getId().equals(Long.parseLong("4"))));
+		}
+
+		// Now let's change the attributes
+		try {
+			testPerson.setId(new Long("199"));
+			testPerson.setFirstname("NewFirstname");
+			testPerson.setSurname("NewSurname");
+			testPerson.setOrganization("NewOrganization");
+			testPerson.setUsername("NewUsername");
+			testPerson.setPassword("NewPassword");
+			testPerson.setEmail("NewEmail");
+			testPerson.setPhone("NewPhone");
+			testPerson.setAddress1("NewAddress1");
+			testPerson.setAddress2("NewAddress2");
+			testPerson.setCity("NewCity");
+			testPerson.setState("NewState");
+			testPerson.setZipcode("NewZipcode");
+			testPerson.setStatus("inactive");
+			for (Iterator<UserGroup> iterator = testPerson.getUserGroups()
+					.iterator(); iterator.hasNext();) {
+				UserGroup userGroup = iterator.next();
+				if (userGroup.getGroupName().contains("1"))
+					userGroup.setGroupName("NewUserGroupName1");
+				if (userGroup.getGroupName().contains("2"))
+					userGroup.setGroupName("NewUserGroupName2");
+				if (userGroup.getGroupName().contains("3"))
+					userGroup.setGroupName("NewUserGroupName3");
+				if (userGroup.getGroupName().contains("4"))
+					userGroup.setGroupName("NewUserGroupName4");
+			}
+		} catch (NumberFormatException e1) {
+			assertTrue(
+					"NumberFormatException in updating Person: "
 							+ e1.getMessage(), false);
+		} catch (MetadataException e1) {
+			assertTrue(
+					"MetadataException in updating Person: " + e1.getMessage(),
+					false);
 		}
+		logger.debug("Changed person attributes " + "and will marshall to XML");
 
-		// Grab a JiBX unmarshalling context
-		IUnmarshallingContext uctx = null;
-		if (bfact != null) {
-			try {
-				uctx = bfact.createUnmarshallingContext();
-			} catch (JiBXException e) {
-				assertTrue("Error in getting UnmarshallingContext for Person: "
-						+ e.getMessage(), false);
-			}
+		// Create an XML builder to marshall back out the XML
+		XmlBuilder xmlBuilder = new XmlBuilder();
+		xmlBuilder.add(testPerson);
+		xmlBuilder.marshal();
+
+		// Now test the xml
+		try {
+			StringWriter personStringWriter = new StringWriter();
+			personStringWriter.append(xmlBuilder.toFormattedXML());
+
+			// Now make sure the resulting string contains all the
+			// updates I did
+			logger.debug("Marshalled XML after change: "
+					+ personStringWriter.toString());
+			assertTrue("ID was updated", personStringWriter.toString()
+					.contains("id=\"199\""));
+			assertTrue("Firstname was updated", personStringWriter.toString()
+					.contains("NewFirstname"));
+			assertTrue("Surname was updated", personStringWriter.toString()
+					.contains("NewSurname"));
+			assertTrue("Organization was updated", personStringWriter
+					.toString().contains("NewOrganization"));
+			assertTrue("Username was updated", personStringWriter.toString()
+					.contains("NewUsername"));
+			assertTrue("Email was updated", personStringWriter.toString()
+					.contains("NewEmail"));
+			assertTrue("Phone was updated", personStringWriter.toString()
+					.contains("NewPhone"));
+			assertTrue("Address1 was updated", personStringWriter.toString()
+					.contains("NewAddress1"));
+			assertTrue("Address2 was updated", personStringWriter.toString()
+					.contains("NewAddress2"));
+			assertTrue("City was updated", personStringWriter.toString()
+					.contains("NewCity"));
+			assertTrue("State was updated", personStringWriter.toString()
+					.contains("NewState"));
+			assertTrue("Zipcode was updated", personStringWriter.toString()
+					.contains("NewZipcode"));
+			assertTrue("Status was updated", personStringWriter.toString()
+					.contains("inactive"));
+			assertTrue("UserGroup1 was updated", personStringWriter.toString()
+					.contains("NewUserGroupName1"));
+			assertTrue("UserGroup2 was updated", personStringWriter.toString()
+					.contains("NewUserGroupName2"));
+			assertTrue("UserGroup3 was updated", personStringWriter.toString()
+					.contains("NewUserGroupName3"));
+			assertTrue("UserGroup4 was updated", personStringWriter.toString()
+					.contains("NewUserGroupName4"));
+		} catch (UnsupportedEncodingException e) {
+			logger.error("UnsupportedEncodingException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"UnsupportedEncodingException caught while converting to XML: "
+							+ e.getMessage(), false);
+		} catch (IOException e) {
+			logger.error("IOException caught while converting to XML:"
+					+ e.getMessage());
+			assertTrue(
+					"IOException caught while converting to XML: "
+							+ e.getMessage(), false);
 		}
-		// Now unmarshall it
-		if (uctx != null) {
-			Metadata metadata = null;
-			Person testPerson = null;
-			try {
-
-				metadata = (Metadata) uctx.unmarshalDocument(
-						personXMLFileReader, null);
-				testPerson = metadata.getPersons().iterator().next();
-				logger.debug("TesPerson after unmarshalling: "
-						+ testPerson.toStringRepresentation("|"));
-				if (testPerson.getUserGroups() != null
-						&& testPerson.getUserGroups().size() > 0) {
-					for (Iterator<UserGroup> iterator = testPerson
-							.getUserGroups().iterator(); iterator.hasNext();) {
-						UserGroup userGroup = iterator.next();
-						logger.debug("User group: "
-								+ userGroup.toStringRepresentation("|"));
-					}
-				}
-			} catch (JiBXException e1) {
-				assertTrue("Error in unmarshalling Person: " + e1.getMessage(),
-						false);
-			}
-
-			if (testPerson != null) {
-				assertEquals("Person id should match", testPerson.getId()
-						.longValue(), Long.parseLong("10"));
-				assertEquals("Person first name should match",
-						testPerson.getFirstname(), "Test Firstname");
-				assertEquals("Person surname should match",
-						testPerson.getSurname(), "Test Surname");
-				assertEquals("Person organization should match",
-						testPerson.getOrganization(), "Test Organization");
-				assertEquals("Person username should match",
-						testPerson.getUsername(), "testUsername@org.com");
-				assertEquals("Person password should match",
-						testPerson.getPassword(), "Test password");
-				assertEquals("Person email should match",
-						testPerson.getEmail(), "test.email@org.com");
-				assertEquals("Person phone match", testPerson.getPhone(),
-						"123-456-7890");
-				assertEquals("Person address1 should match",
-						testPerson.getAddress1(), "Test Address 1");
-				assertEquals("Person address2 should match",
-						testPerson.getAddress2(), "Test Address 2");
-				assertEquals("Person city should match", testPerson.getCity(),
-						"Test City");
-				assertEquals("Person state should match",
-						testPerson.getState(), "TS");
-				assertEquals("Person zipcode should match",
-						testPerson.getZipcode(), "12345");
-				assertEquals("Person status should match",
-						testPerson.getStatus(), "active");
-
-				// Now iterate over the UserGroups
-				for (Iterator<UserGroup> iterator = testPerson.getUserGroups()
-						.iterator(); iterator.hasNext();) {
-					UserGroup userGroup = iterator.next();
-					// Make sure it has an expected name
-					assertTrue(
-							"UserGroup name is on of the expected ones",
-							(userGroup.getGroupName()
-									.equals("Test UserGroup 1")
-									|| userGroup.getGroupName().equals(
-											"Test UserGroup 2")
-									|| userGroup.getGroupName().equals(
-											"Test UserGroup 3") || userGroup
-									.getGroupName().equals("Test UserGroup 4")));
-					// And ID
-					assertTrue(
-							"UserGroup ID is on of the expected ones",
-							(userGroup.getId().equals(Long.parseLong("1"))
-									|| userGroup.getId().equals(
-											Long.parseLong("2"))
-									|| userGroup.getId().equals(
-											Long.parseLong("3")) || userGroup
-									.getId().equals(Long.parseLong("4"))));
-				}
-
-				// Now let's change the attributes
-				try {
-					testPerson.setId(new Long("199"));
-					testPerson.setFirstname("NewFirstname");
-					testPerson.setSurname("NewSurname");
-					testPerson.setOrganization("NewOrganization");
-					testPerson.setUsername("NewUsername");
-					testPerson.setPassword("NewPassword");
-					testPerson.setEmail("NewEmail");
-					testPerson.setPhone("NewPhone");
-					testPerson.setAddress1("NewAddress1");
-					testPerson.setAddress2("NewAddress2");
-					testPerson.setCity("NewCity");
-					testPerson.setState("NewState");
-					testPerson.setZipcode("NewZipcode");
-					testPerson.setStatus("inactive");
-					for (Iterator<UserGroup> iterator = testPerson
-							.getUserGroups().iterator(); iterator.hasNext();) {
-						UserGroup userGroup = iterator.next();
-						if (userGroup.getGroupName().contains("1"))
-							userGroup.setGroupName("NewUserGroupName1");
-						if (userGroup.getGroupName().contains("2"))
-							userGroup.setGroupName("NewUserGroupName2");
-						if (userGroup.getGroupName().contains("3"))
-							userGroup.setGroupName("NewUserGroupName3");
-						if (userGroup.getGroupName().contains("4"))
-							userGroup.setGroupName("NewUserGroupName4");
-					}
-				} catch (NumberFormatException e1) {
-					assertTrue("NumberFormatException in updating Person: "
-							+ e1.getMessage(), false);
-				} catch (MetadataException e1) {
-					assertTrue(
-							"MetadataException in updating Person: "
-									+ e1.getMessage(), false);
-				}
-				logger.debug("Changed person attributes "
-						+ "and will marshall to XML");
-
-				// Create a string writer
-				StringWriter personStringWriter = new StringWriter();
-
-				// Marshall out to XML
-				IMarshallingContext mctx = null;
-				try {
-					mctx = bfact.createMarshallingContext();
-				} catch (JiBXException e) {
-					assertTrue(
-							"Error while creating marshalling context: "
-									+ e.getMessage(), false);
-				}
-
-				if (mctx != null) {
-					mctx.setIndent(2);
-					try {
-						mctx.marshalDocument(testPerson, "UTF-8", null,
-								personStringWriter);
-					} catch (JiBXException e) {
-						assertTrue("Error while marshalling testPerson "
-								+ "after attribute changes: " + e.getMessage(),
-								false);
-					}
-
-					// Now make sure the resulting string contains all the
-					// updates I did
-					logger.debug("Marshalled XML after change: "
-							+ personStringWriter.toString());
-					assertTrue("ID was updated", personStringWriter.toString()
-							.contains("id=\"199\""));
-					assertTrue("Firstname was updated", personStringWriter
-							.toString().contains("NewFirstname"));
-					assertTrue("Surname was updated", personStringWriter
-							.toString().contains("NewSurname"));
-					assertTrue("Organization was updated", personStringWriter
-							.toString().contains("NewOrganization"));
-					assertTrue("Username was updated", personStringWriter
-							.toString().contains("NewUsername"));
-					assertTrue("Password was updated", personStringWriter
-							.toString().contains("NewPassword"));
-					assertTrue("Email was updated", personStringWriter
-							.toString().contains("NewEmail"));
-					assertTrue("Phone was updated", personStringWriter
-							.toString().contains("NewPhone"));
-					assertTrue("Address1 was updated", personStringWriter
-							.toString().contains("NewAddress1"));
-					assertTrue("Address2 was updated", personStringWriter
-							.toString().contains("NewAddress2"));
-					assertTrue("City was updated", personStringWriter
-							.toString().contains("NewCity"));
-					assertTrue("State was updated", personStringWriter
-							.toString().contains("NewState"));
-					assertTrue("Zipcode was updated", personStringWriter
-							.toString().contains("NewZipcode"));
-					assertTrue("Status was updated", personStringWriter
-							.toString().contains("inactive"));
-					assertTrue("UserGroup1 was updated", personStringWriter
-							.toString().contains("NewUserGroupName1"));
-					assertTrue("UserGroup2 was updated", personStringWriter
-							.toString().contains("NewUserGroupName2"));
-					assertTrue("UserGroup3 was updated", personStringWriter
-							.toString().contains("NewUserGroupName3"));
-					assertTrue("UserGroup4 was updated", personStringWriter
-							.toString().contains("NewUserGroupName4"));
-				}
-
-			} else {
-				assertTrue("testKeyword came back null!", false);
-			}
-		}
-
 	}
 
 	public void testPersonObjectBuilder() {

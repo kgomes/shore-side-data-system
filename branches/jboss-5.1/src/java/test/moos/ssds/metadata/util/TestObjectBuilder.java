@@ -1,12 +1,13 @@
 package test.moos.ssds.metadata.util;
 
-import java.io.File;
-import java.net.MalformedURLException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.Collection;
 
 import moos.ssds.metadata.DataProducer;
 import moos.ssds.metadata.util.ObjectBuilder;
+import moos.ssds.metadata.util.XmlBuilder;
 
 import org.apache.log4j.Logger;
 import org.custommonkey.xmlunit.XMLTestCase;
@@ -17,15 +18,6 @@ public class TestObjectBuilder extends XMLTestCase {
 	 * A log4j logger
 	 */
 	static Logger logger = Logger.getLogger(TestObjectBuilder.class);
-
-	// The local objectBuilder object
-	private ObjectBuilder objectBuilder = null;
-
-	// The URL of the file to use to test
-	private URL url = null;
-
-	// A Collection of all objects in the object builder
-	private Collection<Object> allObjects = null;
 
 	/**
 	 * Constructs a test case with the given name.
@@ -42,7 +34,15 @@ public class TestObjectBuilder extends XMLTestCase {
 		// Configure the logger
 		logger.debug("Setting up the test");
 
+	}
+
+	/**
+	 * Test all the XML that should have been bound
+	 */
+	public void testXMLBinding() {
+
 		// Get the XML file
+		URL url = null;
 		try {
 			url = ObjectBuilder.class.getResource("TestObjectBuilder.xml");
 		} catch (RuntimeException e1) {
@@ -54,6 +54,8 @@ public class TestObjectBuilder extends XMLTestCase {
 		logger.debug("The url to the XML file is : " + url);
 
 		// Go ahead and unmarshall it to objects
+		ObjectBuilder objectBuilder = null;
+		Collection<Object> allObjects = null;
 		try {
 			objectBuilder = new ObjectBuilder(url);
 			objectBuilder.unmarshal(false);
@@ -66,13 +68,6 @@ public class TestObjectBuilder extends XMLTestCase {
 					"Failure in object builder somewhere: " + e.getMessage(),
 					false);
 		}
-		logger.debug("Setup complete...");
-	}
-
-	/**
-	 * Test all the XML that should have been bound
-	 */
-	public void testXMLBinding() {
 
 		// Make sure ObjectBuilder exists
 		assertNotNull("ObjectBuilder should not be null", objectBuilder);
@@ -119,6 +114,63 @@ public class TestObjectBuilder extends XMLTestCase {
 		// Check the device
 		assertNotNull("Deployment should have a device",
 				auvDeployment.getDevice());
+
+	}
+
+	public void testBriansXML() {
+		// Get the XML file
+		URL url = null;
+		try {
+			url = ObjectBuilder.class.getResource("TestObjectBuilder2.xml");
+		} catch (RuntimeException e1) {
+			logger.error("Could not get the xml file to read: "
+					+ e1.getMessage());
+			e1.printStackTrace();
+			assertTrue("Could not get XML file to read:", false);
+		}
+		logger.debug("The url to the XML file is : " + url);
+
+		// Go ahead and unmarshall it to objects
+		ObjectBuilder objectBuilder = null;
+		Collection<Object> allObjects = null;
+		try {
+			objectBuilder = new ObjectBuilder(url);
+			objectBuilder.unmarshal(false);
+			allObjects = objectBuilder.listAll();
+
+		} catch (Throwable e) {
+			logger.error("Failure in object builder somewhere: "
+					+ e.getMessage());
+			assertTrue(
+					"Failure in object builder somewhere: " + e.getMessage(),
+					false);
+		}
+		logger.debug("Setup complete...");
+
+		// Grab the top DataProducer and serialize to XML
+		XmlBuilder xmlBuilder = new XmlBuilder();
+		// Set for legacy
+		xmlBuilder.setLegacyFormat(true);
+		xmlBuilder.add(allObjects.iterator().next());
+		xmlBuilder.marshal();
+		try {
+			logger.debug("XML: \n" + xmlBuilder.toFormattedXML());
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			xmlBuilder.print();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
