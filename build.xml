@@ -95,12 +95,6 @@
 			<classpath refid="compile-classpath" />
 		</javac>
 
-		<!-- Run the JiBX compiler
-		<echo message="Running JiBX binding compiler" />
-		<bind binding="${project.src}/xml/binding.xml">
-			<classpath refid="jibx-classpath" />
-		</bind> -->
-
 		<!-- Check the build property to see if the Flex or GWT app is to be deployed -->
 		<if>
 			<equals arg1="${web.application.type.to.deploy}" arg2="FLASH" />
@@ -636,7 +630,6 @@
 			<fileset dir="${project.dist}" includes="ssds-client.jar" />
 			<fileset refid="jboss-client-jar-fileset" />
 			<fileset refid="jboss-lib-jar-fileset" />
-			<fileset refid="jboss-server-hibernate-jar-fileset" />
 			<fileset refid="all-project-lib-flattened-jar-fileset" />
 			<fileset dir="${project.lib}" includes="${client.graphing.device.qc.plot.jdbc.jar}" />
 		</zip>
