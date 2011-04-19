@@ -118,12 +118,12 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 
 	/**
 	 * The default constructor for the Device object. NOTE: This constructor
-	 * will automatically generate a UUID. If you know the UUID, please use the
-	 * constructor that takes in the UUID.
+	 * does NOT generate a UUID. If you know the UUID, please use the
+	 * constructor that takes in the UUID. If you use this construct, please
+	 * either assign a UUID or call the method to generate one for you.
 	 */
 	public Device() {
 		description = "";
-		this.generateOwnUuid();
 	}
 
 	/**
@@ -694,8 +694,8 @@ public class Device implements IMetadataObject, IDescription, IResourceOwner {
 		// Check to make sure it matches this class and if not, throw an
 		// Exception
 		if ((!this.getClass().getName().equals(firstToken))
-				&& (!this.getClass().getName().equals(
-						"moos.ssds.metadata." + firstToken)))
+				&& (!this.getClass().getName()
+						.equals("moos.ssds.metadata." + firstToken)))
 			throw new MetadataException(
 					"The class specified by the first token (" + firstToken
 							+ " does not match this class "
