@@ -166,7 +166,18 @@ public class StandardVariable implements IMetadataObject, IDescription {
 			throws MetadataException {
 		MetadataValidator.isStringShorterThan(namespaceUriString,
 				MetadataValidator.URI_STRING_LENGTH);
-		this.namespaceUriString = namespaceUriString;
+		// Try to build a valid URI for QA purposes
+		URI testUri = null;
+		try {
+			testUri = URI.create(namespaceUriString);
+		} catch (Exception e) {
+			throw new MetadataException(
+					"Exception trying to create URI with given namespaceUriString of "
+							+ namespaceUriString + ": " + e.getMessage());
+		}
+		// Use the URI to record the string
+		if (testUri != null)
+			this.namespaceUriString = testUri.toASCIIString();
 	}
 
 	/**
@@ -451,8 +462,8 @@ public class StandardVariable implements IMetadataObject, IDescription {
 		// Check to make sure it matches this class and if not, throw an
 		// Exception
 		if ((!this.getClass().getName().equals(firstToken))
-				&& (!this.getClass().getName().equals(
-						"moos.ssds.metadata." + firstToken)))
+				&& (!this.getClass().getName()
+						.equals("moos.ssds.metadata." + firstToken)))
 			throw new MetadataException(
 					"The class specified by the first token (" + firstToken
 							+ " does not match this class "
@@ -591,8 +602,7 @@ public class StandardVariable implements IMetadataObject, IDescription {
 			while (suIter.hasNext()) {
 				StandardUnit clonedStandardUnit = (StandardUnit) ((StandardUnit) suIter
 						.next()).deepCopy();
-				logger
-						.debug("The following cloned StandardUnit will be added:");
+				logger.debug("The following cloned StandardUnit will be added:");
 				logger.debug(clonedStandardUnit.toStringRepresentation("|"));
 				deepClone.addStandardUnit(clonedStandardUnit);
 			}

@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="http://localhost:8080/ssds-docs/xml/schema/SSDS_Metadata.xsd">
-    <StandardVariable id="1" namespaceUriString="Test StandardVariable NamespaceUriString"
-        name="Test StandardVariable" referenceScale="Test StandardVariable ReferenceScale">
-        <description>Test StandardVariable Description</description>
-        <StandardUnit id="1" name="Test StandardUnit 1" longName="Test StandardUnit 1 LongName"
-            symbol="Test StandardUnit 1 Symbol">
-            <description>Test StandardUnit 1 Description</description>
-        </StandardUnit>
-        <StandardUnit id="2" name="Test StandardUnit 2" longName="Test StandardUnit 2 LongName"
-            symbol="Test StandardUnit 2 Symbol">
-            <description>Test StandardUnit 2 Description</description>
-        </StandardUnit>
-        <StandardUnit id="3" name="Test StandardUnit 3" longName="Test StandardUnit 3 LongName"
-            symbol="Test StandardUnit 3 Symbol">
-            <description>Test StandardUnit 3 Description</description>
-        </StandardUnit>
-        <StandardUnit id="4" name="Test StandardUnit 4" longName="Test StandardUnit 4 LongName"
-            symbol="Test StandardUnit 4 Symbol">
-            <description>Test StandardUnit 4 Description</description>
-        </StandardUnit>
-    </StandardVariable>
+	xsi:noNamespaceSchemaLocation="http://localhost:8080/ssds-docs/xml/schema/SSDS_Metadata.xsd">
+	<StandardVariable id="1"
+		namespaceUriString="http://www.test.standard.variable.namespace" name="Test StandardVariable"
+		referenceScale="Test StandardVariable ReferenceScale">
+		<description>Test StandardVariable Description</description>
+		<StandardUnit id="1" name="Test StandardUnit 1" longName="Test StandardUnit 1 LongName"
+			symbol="Test StandardUnit 1 Symbol">
+			<description>Test StandardUnit 1 Description</description>
+		</StandardUnit>
+		<StandardUnit id="2" name="Test StandardUnit 2" longName="Test StandardUnit 2 LongName"
+			symbol="Test StandardUnit 2 Symbol">
+			<description>Test StandardUnit 2 Description</description>
+		</StandardUnit>
+		<StandardUnit id="3" name="Test StandardUnit 3" longName="Test StandardUnit 3 LongName"
+			symbol="Test StandardUnit 3 Symbol">
+			<description>Test StandardUnit 3 Description</description>
+		</StandardUnit>
+		<StandardUnit id="4" name="Test StandardUnit 4" longName="Test StandardUnit 4 LongName"
+			symbol="Test StandardUnit 4 Symbol">
+			<description>Test StandardUnit 4 Description</description>
+		</StandardUnit>
+	</StandardVariable>
 </Metadata>
