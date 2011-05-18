@@ -4,6 +4,7 @@
     * [Design]
       * [TransmogrifyAndIngest Transmogrify and Ingest Architecture]
       * [RuminateArchitecture Ruminate Architecture]
+      * [DataServices Data Services]
     * [Development]
     * [Deployment]
     * [Use]
