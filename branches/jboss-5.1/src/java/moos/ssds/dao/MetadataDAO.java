@@ -158,11 +158,11 @@ public abstract class MetadataDAO implements IMetadataDAO {
 		this.persistentClass = persistentClass;
 		this.session = session;
 
+		// Load the properties
+		this.loadProperties();
+
 		// If the ThreadLocal is not instantiated yet, create a new TreeMap
 		if (messageTreeMap == null) {
-
-			// Load the properties
-			this.loadProperties();
 
 			superLogger.debug("The ThreadLocal to hold the message TreeMap "
 					+ "was not instantiated yet, will do "
@@ -1232,7 +1232,7 @@ public abstract class MetadataDAO implements IMetadataDAO {
 
 		// Make sure the properties were read from the JAR OK
 		if (daoProperties != null) {
-			superLogger.debug("Loaded props OK");
+			superLogger.debug("Loaded props OK: " + daoProperties);
 			// Grab the email address of the SSDS administrator
 			ssdsAdminEmailToAddress = daoProperties
 					.getProperty("metadata.dao.ssds.admin.to.email.address");
