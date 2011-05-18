@@ -34,6 +34,7 @@
 		<delete dir="${project.build}/properties" />
 		<delete dir="${project.build}/metadata" />
 		<delete dir="${project.build}/clients" />
+		<delete dir="${project.build}/blazeds" />
 		<delete dir="${project.build}/webapp" />
 	</target>
 
@@ -46,7 +47,13 @@
 		<mkdir dir="${project.build}/properties" />
 		<mkdir dir="${project.build}/metadata" />
 		<mkdir dir="${project.build}/clients" />
+		<mkdir dir="${project.build}/blazeds" />
+		<mkdir dir="${project.build}/blazeds/WEB-INF" />
+		<mkdir dir="${project.build}/blazeds/WEB-INF/classes" />
+		<mkdir dir="${project.build}/blazeds/WEB-INF/flex" />
 		<mkdir dir="${project.build}/webapp" />
+		<mkdir dir="${project.build}/webapp/WEB-INF" />
+		<mkdir dir="${project.build}/webapp/WEB-INF/lib" />
 		<mkdir dir="${project.build}/properties/moos/ssds/dao" />
 		<mkdir dir="${project.build}/properties/moos/ssds/ingest" />
 		<mkdir dir="${project.build}/properties/moos/ssds/io" />
@@ -104,11 +111,9 @@
 				<gas3 outputdir="${src.web}/src">
 					<classpath>
 						<pathelement location="${build.classes}" />
-						<path refid="jibx-classpath" />
 					</classpath>
 					<fileset dir="${build.classes}">
 						<include name="moos/ssds/metadata/*.class" />
-						<exclude name="moos/ssds/metadata/JiBX*.class" />
 					</fileset>
 				</gas3>
 
@@ -119,7 +124,7 @@
 				</compc> -->
 
 				<!-- Run the flex compiler on the explorer MXML file -->
-				<mxmlc file="${src.web}/src/explorer.mxml" output="${project.build}/webapp/explorer.swf" context-root="/ssds" services="${resources.build}/flex/blazeds/WEB-INF/flex/services-config.xml">
+				<mxmlc file="${src.web}/src/explorer.mxml" output="${project.build}/webapp/explorer.swf" context-root="/ssds" services="${resources.build}/flex/WEB-INF/flex/services-config.xml">
 					<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
 					<source-path path-element="${FLEX_HOME}/frameworks" />
 					<!-- List of SWC files or directories that contain SWC files. -->
@@ -135,7 +140,7 @@
 				</mxmlc>
 
 				<!-- Compile the server side java components for the blaze service -->
-				<javac destdir="${src.resources}/build/flex/blazeds/WEB-INF/classes" debug="${debug}" fork="yes">
+				<javac destdir="${project.build}/blazeds/WEB-INF/classes" debug="${debug}" fork="yes">
 					<src path="${src.java}" />
 					<include name="moos/ssds/services/blazeds/**/*.java" />
 					<classpath refid="compile-classpath" />
@@ -358,17 +363,54 @@
 		<!-- Check the build property to see if the Flex or GWT app is to be deployed -->
 		<if>
 			<equals arg1="${web.application.type.to.deploy}" arg2="FLASH" />
-			<!-- Simply call the targets to clean and compile the flash application -->
 			<then>
-				<antcall inheritall="true" target="build" />
-				<!-- Now build the blazeds war file -->
-				<jar jarfile="${project.dist}/blazeds.war">
-					<!-- Include the class -->
-					<fileset dir="${src.resources}/build/flex/blazeds">
+				<!-- Delete the old blazeds war file -->
+				<delete file="${project.dist}/blazeds.war" />
+
+				<!-- Copy over some configuration files -->
+				<copy file="${resources.build}/servlet/blazeds-servlet-web.xml" tofile="${project.build}/blazeds/WEB-INF/web.xml" overwrite="true" />
+				<copy file="${resources.build}/flex/WEB-INF/flex/messaging-config.xml" tofile="${project.build}/blazeds/WEB-INF/flex/messaging-config.xml" overwrite="true" />
+				<copy file="${resources.build}/flex/WEB-INF/flex/proxy-config.xml" tofile="${project.build}/blazeds/WEB-INF/flex/proxy-config.xml" overwrite="true" />
+				<copy file="${resources.build}/flex/WEB-INF/flex/remoting-config.xml" tofile="${project.build}/blazeds/WEB-INF/flex/remoting-config.xml" overwrite="true" />
+				<copy file="${resources.build}/flex/WEB-INF/flex/services-config.xml" tofile="${project.build}/blazeds/WEB-INF/flex/services-config.xml" overwrite="true" />
+
+				<!-- Build a new blazeds war file -->
+				<war destfile="${project.dist}/blazeds.war" webxml="${project.build}/blazeds/WEB-INF/web.xml">
+					<classes dir="${project.build}/blazeds/WEB-INF/classes">
+						<include name="**/*.class" />
+					</classes>
+					<webinf dir="${project.build}/blazeds/WEB-INF">
+						<include name="flex/*.xml" />
+					</webinf>
+				</war>
+
+				<!-- Now build the SSDS war file -->
+
+				<!-- Create the HTML wrapper assets -->
+				<html-wrapper title="SSDS Web Application" file="gen-index.html" swf="explorer" output="${project.build}/webapp" />
+
+				<!-- Copy over other assets -->
+				<copy todir="${project.build}/webapp" overwrite="true">
+					<fileset dir="${src.web}/src">
 						<include name="**/*" />
+						<exclude name="**/*.mxml" />
+						<exclude name="**/*.as" />
+					</fileset>
+				</copy>
+
+				<!-- Copy over the client jar -->
+				<copy file="${project.dist}/ssds-client.jar" tofile="${project.build}/webapp/WEB-INF/lib/ssds-client.jar" overwrite="true" />
+				<!-- And other supporting libs -->
+				<copy file="${project.lib}/${apache.commons.lang.jar}" tofile="${project.build}/webapp/WEB-INF/lib/${apache.commons.lang.jar}" />
+				<copy file="${project.lib}/${jfreechart.jar}" tofile="${project.build}/webapp/WEB-INF/lib/${jfreechart.jar}" />
+				<copy file="${project.lib}/${jcommon.jar}" tofile="${project.build}/webapp/WEB-INF/lib/${jcommon.jar}" />
+
+				<!-- Now create the war file -->
+				<jar jarfile="${project.dist}/ssds.war">
+					<fileset dir="${project.build}/webapp">
+						<include name="**.*" />
 					</fileset>
 				</jar>
-
 			</then>
 
 			<!-- Simply call the target to build the GWT war file -->
@@ -405,6 +447,7 @@
 			<fileset file="${project.dist}/transmogrify.war" />
 			<fileset file="${project.dist}/ingest.war" />
 			<fileset file="${project.dist}/servlet.war" />
+			<fileset file="${project.dist}/blazeds.war" />
 			<fileset file="${project.dist}/ssds.war" />
 			<!-- Include dependent jar files as well -->
 			<fileset refid="core-deploy-jar-fileset" />
@@ -739,10 +782,10 @@
 			</filterset>
 		</copy>
 		<!-- Deploy the JDBC driver jar -->
-		<copy file="${project.lib}/${metadata.datasource.jdbc.jar}" todir="${jboss.home}/server/${jboss.server.type}/lib" />
+		<copy file="${project.lib}/${metadata.datasource.jdbc.jar}" todir="${jboss.home}/common/lib" />
 		<!-- Deploy the Flex Tomcat Security jars -->
-		<copy file="${project.lib}/${blazeds.flex.tomcat.common.jar}" todir="${jboss.home}/server/${jboss.server.type}/lib" />
-		<copy file="${project.lib}/${blazeds.flex.tomcat.server.jar}" todir="${jboss.home}/server/${jboss.server.type}/lib" />
+		<copy file="${project.lib}/${blazeds.flex.tomcat.common.jar}" todir="${jboss.home}/common/lib" />
+		<copy file="${project.lib}/${blazeds.flex.tomcat.server.jar}" todir="${jboss.home}/common/lib" />
 		<!-- Copy data DataSource xml configurations over -->
 		<copy file="${resources.build}/jboss/ssds-ds_template.xml" tofile="${ingest.deployment.location}/ssds-data-ds.xml" overwrite="true">
 			<filterset>
@@ -815,9 +858,9 @@
 		<!-- Remove the mail configuration -->
 		<delete file="${core.mail.deployment.location}/mail-service.xml" />
 		<!-- Remove the metadata jars and xml files -->
-		<delete file="${jboss.home}/server/${jboss.server.type}/lib/${metadata.datasource.jdbc.jar}" />
-		<delete file="${jboss.home}/server/${jboss.server.type}/lib/${blazeds.flex.tomcat.common.jar}" />
-		<delete file="${jboss.home}/server/${jboss.server.type}/lib/${blazeds.flex.tomcat.server.jar}" />
+		<delete file="${jboss.home}/common/lib/${metadata.datasource.jdbc.jar}" />
+		<delete file="${jboss.home}/common/lib/${blazeds.flex.tomcat.common.jar}" />
+		<delete file="${jboss.home}/common/lib/${blazeds.flex.tomcat.server.jar}" />
 		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/ssds-transmogrify-service.xml" />
 		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/ssds-ingest-service.xml" />
 		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/ssds-ingest-proto-service.xml" />
