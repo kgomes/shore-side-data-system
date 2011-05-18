@@ -379,6 +379,18 @@
 					<classes dir="${project.build}/blazeds/WEB-INF/classes">
 						<include name="**/*.class" />
 					</classes>
+					<lib dir="${project.lib}" includes="${blazeds.cfgatewayadapter.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.commons.codec.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.commons.httpclient.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.commons.logging.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.flex.messaging.common.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.flex.messaging.core.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.flex.messaging.opt.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.flex.messaging.proxy.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.flex.messaging.remoting.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.flex.rds.server.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.flex.tomcat.common.jar}" />
+					<lib dir="${project.lib}" includes="${blazeds.flex.tomcat.server.jar}" />
 					<webinf dir="${project.build}/blazeds/WEB-INF">
 						<include name="flex/*.xml" />
 					</webinf>
@@ -398,8 +410,8 @@
 					</fileset>
 				</copy>
 
-				<!-- Copy over the client jar -->
-				<copy file="${project.dist}/ssds-client.jar" tofile="${project.build}/webapp/WEB-INF/lib/ssds-client.jar" overwrite="true" />
+				<!-- Copy over the client jar
+				<copy file="${project.dist}/ssds-client.jar" tofile="${project.build}/webapp/WEB-INF/lib/ssds-client.jar" overwrite="true" /> -->
 				<!-- And other supporting libs -->
 				<copy file="${project.lib}/${apache.commons.lang.jar}" tofile="${project.build}/webapp/WEB-INF/lib/${apache.commons.lang.jar}" />
 				<copy file="${project.lib}/${jfreechart.jar}" tofile="${project.build}/webapp/WEB-INF/lib/${jfreechart.jar}" />
@@ -408,7 +420,7 @@
 				<!-- Now create the war file -->
 				<jar jarfile="${project.dist}/ssds.war">
 					<fileset dir="${project.build}/webapp">
-						<include name="**.*" />
+						<include name="**/*" />
 					</fileset>
 				</jar>
 			</then>
@@ -750,6 +762,8 @@
 	<!-- This target deploys the configuration files to enable the various needed services on the Jboss server -->
 	<target name="deploy-jboss-services">
 		<!-- Copy the security deployment files over -->
+		<copy file="${resources.build}/jboss/ssds-users.properties" todir="${security.config.deployment.location}/props" overwrite="true" />
+		<copy file="${resources.build}/jboss/ssds-roles.properties" todir="${security.config.deployment.location}/props" overwrite="true" />
 		<copy file="${resources.build}/jboss/ssds-login-config.xml" todir="${security.config.deployment.location}" overwrite="true">
 			<filterset>
 				<filter token="JAVA_NAMING_FACTORY_INITIAL" value="${java.naming.factory.initial}" />
@@ -854,6 +868,8 @@
 	<target name="undeploy" depends="init">
 		<!-- Remove the security configuration files -->
 		<delete file="${security.config.deployment.location}/ssds-login-config.xml" />
+		<delete file="${security.config.deployment.location}/props/ssds-users.properties" />
+		<delete file="${security.config.deployment.location}/props/ssds-roles.properties" />
 		<delete file="${security.config.service.deployment.location}/ssds-login-config-service.xml" />
 		<!-- Remove the mail configuration -->
 		<delete file="${core.mail.deployment.location}/mail-service.xml" />
