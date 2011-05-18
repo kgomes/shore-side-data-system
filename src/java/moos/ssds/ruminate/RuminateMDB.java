@@ -180,14 +180,16 @@ public class RuminateMDB implements MessageListener {
 	/**
 	 * The SSDS Services
 	 */
-	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DataProducerGroupAccessLocal")
-	private DataProducerGroupAccessLocal dataProducerGroupAccessLocal;
+	// @javax.annotation.Resource(mappedName =
+	// "moos/ssds/services/metadata/DataProducerGroupAccessLocal")
+	// private DataProducerGroupAccessLocal dataProducerGroupAccessLocal;
 	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DataProducerAccessLocal")
 	private DataProducerAccessLocal dataProducerAccessLocal;
 	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DeviceAccessLocal")
 	private DeviceAccessLocal deviceAccessLocal;
-	@javax.annotation.Resource(mappedName = "moos/ssds/services/metadata/DataContainerAccessLocal")
-	private DataContainerAccessLocal dataContainerAccessLocal;
+	// @javax.annotation.Resource(mappedName =
+	// "moos/ssds/services/metadata/DataContainerAccessLocal")
+	// private DataContainerAccessLocal dataContainerAccessLocal;
 
 	/**
 	 * This is the base URL of the data stream access
@@ -214,7 +216,7 @@ public class RuminateMDB implements MessageListener {
 	/**
 	 * This is the MessageDrivenContext that is from the container
 	 */
-	private javax.ejb.MessageDrivenContext ctx;
+	// private javax.ejb.MessageDrivenContext ctx;
 
 	/**
 	 * A log4j logger
