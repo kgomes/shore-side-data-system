@@ -1,0 +1,13 @@
+#summary Design details regarding the Ruminate component of the SSDS
+
+= Introduction =
+
+The Ruminate component of the SSDS was designed to be the handler for incoming metadata messages from SSDS clients.  When metadata arrives, Ruminate is tasked to examine everything in the message and performa a sequence of steps to ensure that the metadata is recorded (persisted) in the SSDS.  The incoming metadata packets should have an XML payload that conforms to the SSDS Metadata Schema in order for it to be handled correctly (otherwise it will be ignored).
+
+= Details =
+
+After transmogrify and ingest deal with the incoming stream of packets and record them in the data database, the message, if metadata, gets forwarded on to the JMS topic where the Ruminate Message Driven Bean is listening.
+
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
