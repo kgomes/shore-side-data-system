@@ -237,6 +237,9 @@ public class SQLDataStreamRawDataAccessEJB implements
 		} catch (Exception e) {
 			logger.error("Exception caught: " + e.getClass().getName() + ": "
 					+ e.getMessage());
+		} catch (Throwable t) {
+			logger.error("Throwable caught trying to get data source connection: "
+					+ t.getMessage());
 		}
 
 		// Try to query for all tables in the database
@@ -352,6 +355,8 @@ public class SQLDataStreamRawDataAccessEJB implements
 			logger.error("Exception caught: " + e.getClass().getName() + ": "
 					+ e.getMessage());
 		}
+		if (connection != null && !connection.isClosed())
+			connection.close();
 		// Return the list
 		return parentChildMap;
 	}
