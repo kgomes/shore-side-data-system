@@ -1458,6 +1458,8 @@ public class DeviceDAO extends MetadataDAO {
 		UUIDGenerator uuidg = UUIDGenerator.getInstance();
 
 		// Try to see if the ethernet address is in the properties file
+		superLogger.debug("In generate UUID, metadata properties are: "
+				+ daoProperties);
 		String ethernetAddress = this.daoProperties
 				.getProperty("metadata.dao.host.ethernet.address");
 
