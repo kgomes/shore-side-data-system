@@ -36,6 +36,13 @@
 			<context-root>ingest</context-root>
 		</web>
 	</module>
+	<!-- The BlazeDS servlet -->
+	<module>
+		<web>
+			<web-uri>blazeds.war</web-uri>
+			<context-root>messagebroker</context-root>
+		</web>
+	</module>
 	<!-- The web application -->
 	<module>
 		<web>
