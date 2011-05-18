@@ -3,6 +3,7 @@
       * [UseCases Use Cases]
     * [Design]
       * [TransmogrifyAndIngest Transmogrify and Ingest Architecture]
+      * [RuminateArchitecture Ruminate Architecture]
     * [Development]
     * [Deployment]
     * [Use]
