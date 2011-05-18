@@ -1,4 +1,5 @@
 #summary Design details regarding the Ruminate component of the SSDS
+#sidebar TableOfContents
 
 = Introduction =
 
