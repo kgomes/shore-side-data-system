@@ -1,4 +1,5 @@
-#summary This page details out the design and function of various SSDS services that are geared towards working with data.
+#summary Details about the design and function of various SSDS data-centric services
+#sidebar TableOfContents
 
 = Introduction =
 
