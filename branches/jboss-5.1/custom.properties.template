@@ -205,9 +205,9 @@ debug=on
 # between for deployment in SSDS.  A Flash type or a GWT type.
 # This property defines which type will be deployed.
 # Options: 'FLASH' for flash type and 'GWT' for GWT type.
-# GWT is the more mature and probably the one you want.  The
-# flash on is a technology exploration more than anything. 
-web.application.type.to.deploy=GWT
+# FLASH is the more mature and probably the one you want.  The
+# GWT on is a technology exploration more than anything. 
+web.application.type.to.deploy=FLASH
 web.application.google.maps.api.key=
 
 ################################################################
