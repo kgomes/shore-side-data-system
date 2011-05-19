@@ -168,7 +168,7 @@
 					</mx:HBox>
 					<maps:Map xmlns:maps="com.google.maps.*" id="ssdsMap" mapevent_mappreinitialize="onMapPreInit(event)" 
 						mapevent_mapready="onMapReady(event)" width="100%" height="50%" 
-						key="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAbpLh8fM7nHiIzQAWH2GowRT_DWIyulZ4MpcR0nASrHLf47xRSBSAQAca7XHGhdqDXb7uziq2fKEufg" />
+						key="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAbpLh8fM7nHiIzQAWH2GowRT_DWIyulZ4MpcR0nASrHLf47xRSBSAQAca7XHGhdqDXb7uziq2fKEufg" sensor="false" />
 				</mx:VBox>
 			</mx:HBox>
 			<local:DeviceExplorer label="Devices"/>
