@@ -40,7 +40,7 @@
 	<module>
 		<web>
 			<web-uri>blazeds.war</web-uri>
-			<context-root>messagebroker</context-root>
+			<context-root>blazeds</context-root>
 		</web>
 	</module>
 	<!-- The web application -->
