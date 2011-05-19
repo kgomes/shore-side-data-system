@@ -102,6 +102,11 @@
 		<include name="*.jar" />
 	</fileset>
 
+	<!-- Define the fileset for all the jars for the blazeds services -->
+	<fileset id="blazeds-lib-jar-fileset" dir="${project.src}/blazeds/WEB-INF/lib">
+		<include name="*.jar" />
+	</fileset>
+
 	<!-- These are the jars that need to be deployed with the core EAR -->
 	<fileset id="core-deploy-jar-fileset" dir="${project.dir}">
 		<include name="lib/${apache.commons.lang.jar}" />
@@ -240,6 +245,14 @@
 		<fileset refid="jboss-common-lib-jar-fileset" />
 		<fileset refid="jboss-lib-jar-fileset" />
 		<fileset refid="project-lib-jar-fileset" />
+	</path>
+	<!-- For compiling blazeds services -->
+	<path id="blazeds-compile-classpath">
+		<fileset refid="jboss-client-jar-fileset" />
+		<fileset refid="jboss-common-lib-jar-fileset" />
+		<fileset refid="jboss-lib-jar-fileset" />
+		<fileset refid="project-lib-jar-fileset" />
+		<fileset refid="blazeds-lib-jar-fileset" />
 	</path>
 
 	<!-- Create a patternset for later use -->

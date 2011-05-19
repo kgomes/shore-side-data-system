@@ -208,6 +208,7 @@ debug=on
 # GWT is the more mature and probably the one you want.  The
 # flash on is a technology exploration more than anything. 
 web.application.type.to.deploy=GWT
+web.application.google.maps.api.key=
 
 ################################################################
 #                  Other SSDS Properties                       #
