@@ -19,6 +19,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
+<html>
 <head>
 <title>Device Creation Results</title>
 <!-- Include the mbari stylesheets -->
@@ -183,9 +184,6 @@
 			}
 		}
 	%>
-	<center></center>
-	</div>
-	</tr>
 	<!-- Include the MBARI specific footer -->
 	<%@ include file="WEB-INF/fragments/mbari_footer.jspf"%>
 
