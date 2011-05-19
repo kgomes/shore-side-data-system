@@ -61,20 +61,27 @@
 						results = deviceAccessLocal.findAll("id", "asc", true);
 					} catch (Exception e) {
 					}
+
 					// Now build the pick list
 					if (results != null) {
-						Iterator i = results.iterator();
-						while (i.hasNext()) {
-							Device device = (Device) i.next();
+						// Create a treemap for sorting by ID in case they did not come back that way
+						TreeMap<Long, Device> sortedDevices = new TreeMap<Long, Device>();
+						Iterator<Device> deviceIterator = (Iterator<Device>) results
+								.iterator();
+						while (deviceIterator.hasNext()) {
+							Device deviceToAdd = deviceIterator.next();
+							sortedDevices.put(deviceToAdd.getId(), deviceToAdd);
+						}
+
+						// Now print them out
+						Iterator<Long> idIterator = sortedDevices.keySet()
+								.iterator();
+						while (idIterator.hasNext()) {
+							Device device = sortedDevices.get(idIterator.next());
 							DeviceType deviceType = device.getDeviceType();
 							Person person = device.getPerson();
 							out.println("<tr nowrap>");
-							out.println("<td><a href=\"javascript:openDeviceDetails('"
-									+ device.getId()
-									+ "')\" title=\""
-									+ device.getDescription()
-									+ "\">"
-									+ device.getId() + "</a></td>");
+							out.println("<td>" + device.getId() + "</td>");
 							out.println("<td>" + device.getName() + "</td>");
 							out.println("<td>" + device.getMfgModel() + "</td>");
 							out.println("<td>" + device.getMfgSerialNumber()
