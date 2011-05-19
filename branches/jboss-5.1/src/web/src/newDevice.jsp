@@ -1,6 +1,5 @@
 <%@ page
 	import="java.io.*,java.util.*,moos.ssds.metadata.*,moos.ssds.services.metadata.*,javax.naming.*,javax.ejb.*"%>
-<!-- Include JSP Setup code common to all pages -->
 <%@ include file="WEB-INF/fragments/setup.jspf"%>
 <?xml version="1.0"?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -174,11 +173,9 @@
 				</tr>
 			</table>
 
-			<input type="submit" name="Submit" value="Create Device">
+			<input type="submit" name="Submit" value="Create Device"></input>
 		</form>
 	</center>
-	</div>
-	</tr>
 	<!-- Include the MBARI specific footer -->
 	<%@ include file="WEB-INF/fragments/mbari_footer.jspf"%>
 
