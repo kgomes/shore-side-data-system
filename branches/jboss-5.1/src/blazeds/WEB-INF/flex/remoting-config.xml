@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!--
+		Copyright 2009 MBARI Licensed under the GNU LESSER GENERAL PUBLIC
+		LICENSE, Version 2.1 (the "License"); you may not use this file except
+		in compliance with the License. You may obtain a copy of the License
+		at http://www.gnu.org/copyleft/lesser.html Unless required by
+		applicable law or agreed to in writing, software distributed under the
+		License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+		CONDITIONS OF ANY KIND, either express or implied. See the License for
+		the specific language governing permissions and limitations under the
+		License.
+	-->
+<service id="remoting-service" class="flex.messaging.services.RemotingService">
+
+	<!-- Define the Java Adapter for use with the EJB destinations -->
+	<adapters>
+		<adapter-definition id="java-object"
+			class="flex.messaging.services.remoting.adapters.JavaAdapter"
+			default="true" />
+	</adapters>
+
+	<!--
+		Define the default channel that is used with the EJB destinations
+	-->
+	<default-channels>
+		<channel ref="ssds-amf" />
+	</default-channels>
+
+	<!-- Create the Destinations -->
+
+	<!-- The DeviceAccess EJB -->
+	<destination id="device-access-ejb">
+		<properties>
+			<factory>ejb</factory>
+			<source>moos/ssds/services/metadata/DeviceAccessLocal</source>
+			<include-methods>
+				<method name="findByName" />
+				<method name="findBySearchingFields" />
+				<method name="makePersistent" security-constraint="admin-users" />
+			</include-methods>
+		</properties>
+	</destination>
+
+	<!-- The DataProducerAccess EJB -->
+	<destination id="data-producer-access-ejb">
+		<properties>
+			<factory>ejb</factory>
+			<source>moos/ssds/services/metadata/DataProducerAccessLocal</source>
+			<include-methods>
+				<method name="findByName" />
+				<method name="findCurrentParentlessDeployments" />
+				<method name="findByDevice" />
+				<method name="findByDeviceId" />
+				<method name="findParentDataProducer" />
+				<method name="findClosestParentDataProducerLatitude" />
+			</include-methods>
+		</properties>
+	</destination>
+
+	<!-- The SSDS Session Remote Object -->
+	<destination id="ssds-session">
+		<properties>
+			<source>moos.ssds.services.blazeds.SessionRO</source>
+			<include-methods>
+				<method name="isUserInRoleSSDSAdmin" />
+				<method name="getCurrentUsername" />
+			</include-methods>
+		</properties>
+	</destination>
+
+</service>
