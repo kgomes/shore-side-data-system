@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://shore-side-data-system.googlecode.com/svn/trunk/src/xml/SSDS_Metadata.xsd">
+	<Deployment name="2003.30.01" role="platform" startDate="2001-12-17T09:30:47-05:00"
+		endDate="2001-12-17T09:30:47-05:00">
+		<Device id="9873" name="Dorado No. 3" type="Dorado" mfgName="MBARI" mfgModel="Dorado"
+			mfgSerialNumber="3">
+			<description>AUV used for CTD missions</description>
+			<Person firstname="Brian" surname="Schlining" organization="MBARI"
+				email="brian@mbari.org"/>
+		</Device>
+		<Deployment role="instrument" startDate="2001-12-17T09:30:47-05:00"
+			endDate="2001-12-17T09:30:47-05:00">
+			<Device id="101" name="Seabird CTD" type="CTD" mfgName="Seabird" mfgModel="SBE37"
+				mfgSerialNumber="934THX29Z">
+				<Person firstname="Brian" surname="Schlining" organization="MBARI"
+					email="brian@mbari.org"/>
+			</Device>
+			<Deployment role="sensor">
+				<Device id="102">
+					<description>Humidity sensor</description>
+				</Device>
+			</Deployment>
+			<Deployment role="sensor">
+				<Device id="103">
+					<description>Flow rate sensor</description>
+				</Device>
+				<Resource uri="http://dods.mbari.org/brian/pub/auv/conf/humid_20010231.cfg"
+					name="Calibration File" startDate="2001-12-17T09:30:47-05:00"/>
+			</Deployment>
+			<output>
+				<DataContainer dataContainerType="File"
+					uri="http://dods.mbari.org/brian/pub/auv/data/2003.030.01/ctdDriver.log"
+					startDate="2001-12-17T09:30:47-05:00" endDate="2001-12-17T09:30:47-05:00"
+					name="ctd log" original="true" dodsAccessible="false">
+					<description>CTD data log for an AUV-CTD mission</description>
+					<DataContainerGroup name="AUV"/>
+					<DataContainerGroup name="AUVCTD"/>
+					<HeaderDescription>
+						<CommentTag tagString="#"/>
+					</HeaderDescription>
+					<RecordDescription recordType="1" bufferStyle="binary" bufferLengthType="fixed"
+						parseable="true" endian="little">
+						<RecordVariable name="time" columnIndex="1" format="double"
+							longName="Time(GMT)" units="milliseconds since Jan 01, 1970"
+							missingValue="-999" referenceScale="String" validMin="0"/>
+						<RecordVariable name="conductivity" columnIndex="2" format="double"
+							longName="Seawater conductivity" units="microsiemens"
+							missingValue="-999" referenceScale="String" validMin="0" validMax="4"/>
+						<RecordVariable name="temperature" columnIndex="3" format="double"
+							longName="Seawater temperature" units="degrees C" missingValue="-999"
+							referenceScale="String" validMin="3" validMax="25"/>
+						<RecordVariable name="cond_frequency" columnIndex="4" format="double"
+							longName="Conductivity frequency" units="Hz" missingValue="-999"
+							referenceScale="String"/>
+						<RecordVariable name="temp_frequency" columnIndex="5" format="double"
+							longName="Temperture frequency" units="hz" missingValue="-999"
+							referenceScale="String"/>
+						<RecordVariable name="spare1" columnIndex="6" format="double"
+							longName="Spare channel" units="none" missingValue="-999"
+							referenceScale="String"/>
+						<RecordVariable name="spare2" columnIndex="7" format="double"
+							longName="Spare channel" units="none" missingValue="-999"
+							referenceScale="String"/>
+						<RecordVariable name="humidity" columnIndex="8" format="double"
+							longName="Internal humidity of AUV" units="percent" missingValue="-999"
+							referenceScale="String"/>
+						<RecordVariable name="flow1" columnIndex="9" format="double"
+							longName="Flow rate through CTD" units="litres per minute"
+							missingValue="-999" referenceScale="String"/>
+						<RecordVariable name="OBS" columnIndex="10" format="double"
+							longName="Optical back scatter" units="counts" missingValue="-999"
+							referenceScale="String"/>
+						<RecordVariable name="dissolvedO2" columnIndex="11" format="double"
+							longName="Dissolved Oxygen" units="micrograms per litre"
+							missingValue="-999" referenceScale="String" validMin="0" validMax="1000"
+						/>
+					</RecordDescription>
+					<Resource
+						uri="http://dods.mbari.org/brian/pub/auv/data/2003.030.01/ctdDriver.hdr"
+						startDate="2001-12-17T09:30:47-05:00" endDate="2001-12-17T09:30:47-05:00"
+						name="ctd header">
+						<description>This is the header corresponding tot he ctdDriver.log. This is
+							jsut used as an example</description>
+					</Resource>
+				</DataContainer>
+			</output>
+		</Deployment>
+		<description>Example AUV CTD mission</description>
+		<Resource uri="http://dods.mbari.org/brian/pub/auv/conf/ctd968_20010101.cfg"
+			name="Caligration File" startDate="2001-12-17T09:30:47-05:00">
+			<description>Calibration file for a SBE37 microcat</description>
+		</Resource>
+	</Deployment>
+</Metadata>
