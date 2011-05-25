@@ -8,7 +8,3 @@ The Ruminate component of the SSDS was designed to be the handler for incoming m
 = Details =
 
 After transmogrify and ingest deal with the incoming stream of packets and record them in the data database, the message, if metadata, gets forwarded on to the JMS topic where the Ruminate Message Driven Bean is listening.
-
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
