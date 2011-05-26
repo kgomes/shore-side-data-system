@@ -3,8 +3,12 @@
 
 = Introduction =
 
-The Ruminate component of the SSDS was designed to be the handler for incoming metadata messages from SSDS clients.  When metadata arrives, Ruminate is tasked to examine everything in the message and performa a sequence of steps to ensure that the metadata is recorded (persisted) in the SSDS.  The incoming metadata packets should have an XML payload that conforms to the SSDS Metadata Schema in order for it to be handled correctly (otherwise it will be ignored).
+The Ruminate component of the SSDS was designed to be the handler for incoming metadata messages from SSDS clients.  When metadata arrives, Ruminate is tasked to examine everything in the message and performa a sequence of steps to ensure that the metadata is recorded (persisted) in the SSDS appropriately.  The incoming metadata packets should have an XML payload that conforms to the SSDS Metadata Schema in order for it to be handled correctly (otherwise it will be ignored).
 
 = Details =
 
-After transmogrify and ingest deal with the incoming stream of packets and record them in the data database, the message, if metadata, gets forwarded on to the JMS topic where the Ruminate Message Driven Bean is listening.
+After transmogrify and ingest deal with the incoming stream of packets and record them in the database, the message, if metadata, gets forwarded on to the JMS topic where the Ruminate Message Driven Bean (MDB) is listening.  The MDB is responsible for a sequence of steps in order to make sure the incoming metadata is understood and is accurately reflect in the persistent store of the SSDS database.
+
+A fundamental thing to understand when thinking about metadata coming in through XML embedded in messages, is that it MUST be assumed that the incoming XML could be an incomplete picture of the current state of the objects represented in the XML.  For example, often times in XML coming from streaming instruments, they will not include all attributes about the device in the XML.  This lack of information does not mean that the information has gone away, it is just that it is not included.  This is confusing, so let's illustrate.
+
+Let's say a message comes in about the deployment of a certain device:
