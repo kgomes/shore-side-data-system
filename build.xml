@@ -30,6 +30,7 @@
 	<target name="remove-working-dirs" depends="init">
 		<!-- Delete directories where classes are compiled to -->
 		<delete dir="${project.build}/classes" />
+		<delete dir="${project.build}/classes_1_5" />
 		<!-- Now delete the configuration directories -->
 		<delete dir="${project.build}/properties" />
 		<delete dir="${project.build}/metadata" />
@@ -43,6 +44,7 @@
 		<!-- Base project directories -->
 		<mkdir dir="${project.build}" />
 		<mkdir dir="${project.build}/classes" />
+		<mkdir dir="${project.build}/classes_1_5" />
 		<mkdir dir="${project.build}/properties" />
 		<mkdir dir="${project.build}/metadata" />
 		<mkdir dir="${project.build}/clients" />
@@ -100,6 +102,28 @@
 			<exclude name="test/**/*.java" />
 			<classpath refid="compile-classpath" />
 		</javac>
+
+		<!-- Compile some classes for clients that run in Java 1.5 -->
+		<javac destdir="${project.build}/classes_1_5" target="1.5" debug="${debug}" fork="yes" includeantruntime="false">
+			<src path="${src.java}" />
+			<include name="moos/ssds/clients/**/*.java" />
+			<include name="moos/ssds/dao/util/*Exception.java" />
+			<include name="moos/ssds/data/**/*.java" />
+			<include name="moos/ssds/io/SSDS*.java" />
+			<include name="moos/ssds/io/util/PacketUtility.java" />
+			<include name="moos/ssds/jms/PublisherComponent.java" />
+			<include name="moos/ssds/jms/PacketGenerator.java" />
+			<include name="moos/ssds/jms/Subscriber*.java" />
+			<include name="moos/ssds/metadata/**/*.java" />
+			<include name="moos/ssds/services/data/**/*Access.java" />
+			<include name="moos/ssds/services/data/**/*Exception.java" />
+			<include name="moos/ssds/services/metadata/I*.java" />
+			<include name="moos/ssds/services/metadata/*Access.java" />
+			<include name="moos/ssds/util/**/*.java" />
+			<include name="moos/ssds/wrapper/**/*.java" />
+			<classpath refid="compile-classpath" />
+		</javac>
+
 
 		<!-- Now compile the blaze classes and place them in the blazeds WEB-INF/classes folder -->
 		<javac destdir="${project.src}/blazeds/WEB-INF/classes" debug="${debug}" fork="yes" includeantruntime="false">
@@ -573,6 +597,49 @@
 		<delete dir="${project.dist}/tempzip" />
 	</target>
 
+	<!-- This target creates the jar file that publishers to the ingest topic will use and that are using Java 1.5 -->
+	<target name="ingest-client-1-5-pub-jar-create" depends="ingest-client-pub-properties-create">
+		<!-- Delete the old ones -->
+		<delete file="${project.dist}/ssds-ingest-1-5-pub.jar" />
+		<delete file="${project.dist}/ssds-ingest-1-5-pub.zip" />
+
+		<!-- Build up the jar file that will allow people to publish to the topic ingest is listening to -->
+		<jar jarfile="${project.dist}/ssds-ingest-1-5-pub.jar">
+			<fileset dir="${project.build}/classes_1_5">
+				<include name="moos/ssds/io/SSDSDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacketProto.class" />
+				<include name="moos/ssds/io/util/PacketUtility.class" />
+				<include name="moos/ssds/jms/PublisherComponent.class" />
+				<include name="moos/ssds/jms/PacketGenerator.class" />
+				<include name="moos/ssds/util/*.class" />
+			</fileset>
+			<fileset dir="${project.build}/clients" includes="log4j.properties" />
+			<fileset dir="${project.build}/clients" includes="jndi.properties" />
+			<fileset dir="${project.build}/clients" includes="moos/ssds/jms/jms.properties" />
+		</jar>
+		<!-- Create a zip file version with docs -->
+		<delete dir="${project.dist}/tempzip" />
+		<mkdir dir="${project.dist}/tempzip" />
+		<copy file="${resources.build}/doc/client/README_ingest_pub.html" tofile="${project.dist}/tempzip/README.html" overwrite="true">
+			<filterset>
+				<filter token="INGEST_CLASSPATH" value="${ingest.publisher.classpath}" />
+			</filterset>
+		</copy>
+		<copy file="${resources.build}/doc/client/packet-generator-ingest-template.properties" tofile="${project.dist}/tempzip/packet-generator-ingest-template.properties" overwrite="true" />
+		<copy file="${resources.build}/doc/client/ExampleSSDSIngestClientPublisher.java" tofile="${project.dist}/tempzip/ExampleSSDSIngestClientPublisher.java" overwrite="true" />
+		<zip destfile="${project.dist}/ssds-ingest-1-5-pub.zip">
+			<fileset dir="${project.dist}/tempzip" includes="README.html" />
+			<fileset dir="${project.dist}/tempzip" includes="packet-generator-ingest-template.properties" />
+			<fileset dir="${project.dist}/tempzip" includes="ExampleSSDSIngestClientPublisher.java" />
+			<fileset dir="${project.dist}" includes="ssds-ingest-1-5-pub.jar" />
+			<fileset dir="${project.lib}" includes="${siam.jar}" />
+			<fileset dir="${project.lib}" includes="${protocol-buffers.jar}" />
+			<fileset refid="jboss-client-jar-fileset" />
+		</zip>
+		<delete dir="${project.dist}/tempzip" />
+	</target>
+
 	<!-- This target creates the jar file that publishers to the transmogrify topic will use -->
 	<target name="transmogrify-client-pub-jar-create" depends="transmogrify-client-pub-properties-create">
 		<!-- Delete the old ones -->
@@ -608,6 +675,48 @@
 			<fileset dir="${project.dist}/tempzip" includes="packet-generator-transmogrify-template.properties" />
 			<fileset dir="${project.dist}/tempzip" includes="ExampleSSDSClientPublisher.java" />
 			<fileset dir="${project.dist}" includes="ssds-transmogrify-pub.jar" />
+			<fileset dir="${project.lib}" includes="${siam.jar}" />
+			<fileset dir="${project.lib}" includes="${protocol-buffers.jar}" />
+			<fileset refid="jboss-client-jar-fileset" />
+		</zip>
+		<delete dir="${project.dist}/tempzip" />
+	</target>
+
+	<!-- This target creates the jar file that publishers to the transmogrify topic will use and that are using Java 1.5 -->
+	<target name="transmogrify-client-1-5-pub-jar-create" depends="transmogrify-client-pub-properties-create">
+		<!-- Delete the old ones -->
+		<delete file="${project.dist}/ssds-transmogrify-1-5-pub.jar" />
+		<delete file="${project.dist}/ssds-transmogrify-1-5-pub.zip" />
+		<!-- Now jar it up -->
+		<jar jarfile="${project.dist}/ssds-transmogrify-1-5-pub.jar">
+			<fileset dir="${project.build}/classes_1_5">
+				<include name="moos/ssds/io/SSDSDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacket.class" />
+				<include name="moos/ssds/io/SSDSGeoLocatedDevicePacketProto.class" />
+				<include name="moos/ssds/io/util/PacketUtility.class" />
+				<include name="moos/ssds/jms/PublisherComponent.class" />
+				<include name="moos/ssds/jms/PacketGenerator.class" />
+				<include name="moos/ssds/util/*.class" />
+			</fileset>
+			<fileset dir="${project.build}/clients" includes="log4j.properties" />
+			<fileset dir="${project.build}/clients" includes="jndi.properties" />
+			<fileset dir="${project.build}/clients" includes="moos/ssds/jms/jms.properties" />
+		</jar>
+		<!-- Create a zip file version with docs -->
+		<delete dir="${project.dist}/tempzip" />
+		<mkdir dir="${project.dist}/tempzip" />
+		<copy file="${resources.build}/doc/client/README_transmogrify_pub.html" tofile="${project.dist}/tempzip/README.html" overwrite="true">
+			<filterset>
+				<filter token="TRANSMOGRIFY_CLASSPATH" value="${transmogrify.publisher.classpath}" />
+			</filterset>
+		</copy>
+		<copy file="${resources.build}/doc/client/ExampleSSDSClientPublisher.java" tofile="${project.dist}/tempzip/ExampleSSDSClientPublisher.java" overwrite="true" />
+		<copy file="${resources.build}/doc/client/packet-generator-transmogrify-template.properties" tofile="${project.dist}/tempzip/packet-generator-transmogrify-template.properties" overwrite="true" />
+		<zip destfile="${project.dist}/ssds-transmogrify-1-5-pub.zip">
+			<fileset dir="${project.dist}/tempzip" includes="README.html" />
+			<fileset dir="${project.dist}/tempzip" includes="packet-generator-transmogrify-template.properties" />
+			<fileset dir="${project.dist}/tempzip" includes="ExampleSSDSClientPublisher.java" />
+			<fileset dir="${project.dist}" includes="ssds-transmogrify-1-5-pub.jar" />
 			<fileset dir="${project.lib}" includes="${siam.jar}" />
 			<fileset dir="${project.lib}" includes="${protocol-buffers.jar}" />
 			<fileset refid="jboss-client-jar-fileset" />
@@ -676,8 +785,69 @@
 		<delete dir="${project.dist}/tempzip" />
 	</target>
 
+	<!-- This target creates the generic library for clients that will be interacting with SSDS that are running Java 1.5 -->
+	<target name="client-1-5-jar-create" depends="client-properties-create">
+		<!-- Delete the old ones -->
+		<delete file="${project.dist}/ssds-client-1-5.jar" />
+		<delete file="${project.dist}/ssds-client-1-5.zip" />
+
+		<!-- Create the new one -->
+		<jar jarfile="${project.dist}/ssds-client-1-5.jar">
+			<!-- Include the class -->
+			<fileset dir="${project.build}/classes_1_5">
+				<include name="moos/ssds/clients/**/*.class" />
+				<include name="moos/ssds/dao/util/*Exception.class" />
+				<include name="moos/ssds/data/**/*.class" />
+				<include name="moos/ssds/io/SSDS*.class" />
+				<include name="moos/ssds/jms/Subscriber*.class" />
+				<include name="moos/ssds/metadata/**/*.class" />
+				<include name="moos/ssds/services/data/**/*Access.class" />
+				<include name="moos/ssds/services/data/**/*Exception.class" />
+				<include name="moos/ssds/services/metadata/I*.class" />
+				<include name="moos/ssds/services/metadata/*Access.class" />
+				<include name="moos/ssds/util/**/*.class" />
+				<include name="moos/ssds/wrapper/**/*.class" />
+			</fileset>
+			<!-- The JNDI properties file -->
+			<fileset dir="${project.build}/clients" includes="jndi.properties" />
+			<!-- The log4j properties file -->
+			<fileset dir="${project.build}/clients" includes="log4j.properties" />
+			<!-- The JMS properties file -->
+			<fileset dir="${project.build}/clients" includes="moos/ssds/jms/jms.properties" />
+			<!-- The graphing properites -->
+			<fileset dir="${project.build}/clients" includes="moos/ssds/clients/graphing/graphing.properties" />
+			<!-- The updatebot properites -->
+			<fileset dir="${project.build}/clients" includes="moos/ssds/clients/updateBot/updateBot.properties" />
+			<!-- The source code (if needed) -->
+			<fileset dir="${project.src}/java">
+				<patternset refid="java.source.patternset" />
+			</fileset>
+		</jar>
+		<!-- Now zip up and deploy the client file -->
+		<delete dir="${project.dist}/tempzip" />
+		<mkdir dir="${project.dist}/tempzip" />
+		<copy file="${resources.build}/doc/client/README.html" tofile="${project.dist}/tempzip/README.html" overwrite="true">
+			<filterset>
+				<filter token="CLIENT_CLASSPATH" value="${client.classpath}" />
+				<filter token="UPDATEBOT_CLASSPATH" value="${client.updatebot.classpath}" />
+				<filter token="UPDATEBOT_MAIN_CLASS_STATEMENT" value="${client.updatebot.main.class}" />
+				<filter token="GRAPHING_CLASSPATH" value="${client.graphing.classpath}" />
+				<filter token="GRAPHING_MAIN_CLASS_STATEMENT" value="${client.graphing.main.class}" />
+			</filterset>
+		</copy>
+		<zip destfile="${project.dist}/ssds-client-1-5.zip">
+			<fileset dir="${project.dist}/tempzip" includes="README.html" />
+			<fileset dir="${project.dist}" includes="ssds-client-1-5.jar" />
+			<fileset refid="jboss-client-jar-fileset" />
+			<fileset refid="jboss-lib-jar-fileset" />
+			<fileset refid="all-project-lib-flattened-jar-fileset" />
+			<fileset dir="${project.lib}" includes="${client.graphing.device.qc.plot.jdbc.jar}" />
+		</zip>
+		<delete dir="${project.dist}/tempzip" />
+	</target>
+
 	<!-- This is the target to generate all client libraries -->
-	<target name="client-libraries-create" depends="ingest-client-pub-jar-create,transmogrify-client-pub-jar-create,client-jar-create" />
+	<target name="client-libraries-create" depends="ingest-client-pub-jar-create,ingest-client-1-5-pub-jar-create,transmogrify-client-1-5-pub-jar-create,client-jar-create,client-1-5-jar-create" />
 
 	<!-- The distribution target -->
 	<target name="dist" depends="ear-create,client-libraries-create" description="This target runs the clean, compile and then builds the distributions" />
@@ -843,10 +1013,13 @@
 		<mkdir dir="${project.documentation.deploy.location}/client" />
 		<!-- Deploy the client zip file -->
 		<copy file="${project.dist}/ssds-client.zip" todir="${project.documentation.deploy.location}/client" />
+		<copy file="${project.dist}/ssds-client-1-5.zip" todir="${project.documentation.deploy.location}/client" />
 		<!-- Deploy the Ingest pub client zip -->
 		<copy file="${project.dist}/ssds-ingest-pub.zip" todir="${project.documentation.deploy.location}/client" />
+		<copy file="${project.dist}/ssds-ingest-1-5-pub.zip" todir="${project.documentation.deploy.location}/client" />
 		<!-- Deploy the transmogrify client zip -->
 		<copy file="${project.dist}/ssds-transmogrify-pub.zip" todir="${project.documentation.deploy.location}/client" />
+		<copy file="${project.dist}/ssds-transmogrify-1-5-pub.zip" todir="${project.documentation.deploy.location}/client" />
 	</target>
 
 	<!-- This target removes the services application from the deployed configuration -->
@@ -871,8 +1044,11 @@
 		<delete file="${jboss.home}/server/${jboss.server.type}/deploy/ssds.ear" />
 		<!-- Remove the client libraries -->
 		<delete file="${project.documentation.deploy.location}/client/ssds-client.zip" />
+		<delete file="${project.documentation.deploy.location}/client/ssds-client-1-5.zip" />
 		<delete file="${project.documentation.deploy.location}/client/ssds-ingest-pub.zip" />
+		<delete file="${project.documentation.deploy.location}/client/ssds-ingest-1-5-pub.zip" />
 		<delete file="${project.documentation.deploy.location}/client/ssds-transmogrify-pub.zip" />
+		<delete file="${project.documentation.deploy.location}/client/ssds-transmogrify-1-5-pub.zip" />
 		<!-- Remove the static doc page -->
 		<delete file="${project.documentation.deploy.location}/index.html" />
 		<!-- Remove the doc directory -->
