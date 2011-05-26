@@ -12,3 +12,11 @@ After transmogrify and ingest deal with the incoming stream of packets and recor
 A fundamental thing to understand when thinking about metadata coming in through XML embedded in messages, is that it MUST be assumed that the incoming XML could be an incomplete picture of the current state of the objects represented in the XML.  For example, often times in XML coming from streaming instruments, they will not include all attributes about the device in the XML.  This lack of information does not mean that the information has gone away, it is just that it is not included.  This is confusing, so let's illustrate.
 
 Let's say a message comes in about the deployment of a certain device:
+
+{{{
+<DataProducer type="Deployment">
+    <Device id="100" name="Widget" mfgSerialNumber="004X567"/>
+</DataProducer>
+}}}
+
+In the case of devices, they should already be identified in the SSDS persistent metadata 
