@@ -26,4 +26,4 @@ The bottom line is that SSDS will have to use some rules to decide how it wants 
 ===Ruminate Rules===
 
   # Extract XML payload from the JMS message
-  
+  # Create the corresponding Object graph using ObjectBuilder.
