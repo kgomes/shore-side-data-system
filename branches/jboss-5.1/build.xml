@@ -847,7 +847,7 @@
 	</target>
 
 	<!-- This is the target to generate all client libraries -->
-	<target name="client-libraries-create" depends="ingest-client-pub-jar-create,ingest-client-1-5-pub-jar-create,transmogrify-client-1-5-pub-jar-create,client-jar-create,client-1-5-jar-create" />
+	<target name="client-libraries-create" depends="ingest-client-pub-jar-create,ingest-client-1-5-pub-jar-create,transmogrify-client-pub-jar-create,transmogrify-client-1-5-pub-jar-create,client-jar-create,client-1-5-jar-create" />
 
 	<!-- The distribution target -->
 	<target name="dist" depends="ear-create,client-libraries-create" description="This target runs the clean, compile and then builds the distributions" />
