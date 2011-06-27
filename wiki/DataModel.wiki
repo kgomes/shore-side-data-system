@@ -1,0 +1,7 @@
+#summary Describes the object model used to track all information in the SSDS
+
+= Introduction =
+
+In order for the SSDS to track all relative information about the data in an observatory, a data model was created to hold all the information and relevant concepts to manage the data for storage and access of information in the observatory.  This documents that data model for the SSDS.
+
+= Details =
