@@ -1,4 +1,5 @@
 #summary Describes the object model used to track all information in the SSDS
+#sidebar TableOfContents
 
 = Introduction =
 
