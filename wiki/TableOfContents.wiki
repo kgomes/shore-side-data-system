@@ -3,7 +3,7 @@
       * [UseCases Use Cases]
     * [Design]
       * [TransmogrifyAndIngest Transmogrify and Ingest Architecture]
-      * [Data Model]
+      * [DataModel  Data Model]
       * [RuminateArchitecture Ruminate Architecture]
       * [DataServices Data Services]
     * [Development]
