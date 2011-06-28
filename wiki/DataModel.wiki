@@ -5,4 +5,6 @@
 
 In order for the SSDS to track all relative information about the data in an observatory, a data model was created to hold all the information and relevant concepts to manage the data for storage and access of information in the observatory.  This documents that data model for the SSDS.
 
-= Details =
+= Data Producers =
+
+The first main concept in the data model is the !DataProducer class.  !DataProducers are just that, they represent any entity that can produce data.  When we first started SSDS development, we were focused on ocean observatories and so the concept of a Deployment was created in the class model.  It was to capture the contextual information about the deployment of an asset that was producing data.  In oceanography, we often think of !DataProducers as windows of time where some asset was producing data 
