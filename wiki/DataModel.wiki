@@ -40,16 +40,16 @@ Keywords are not heavily used in the SSDS to date, but were included in the data
 == Person ==
 A class that simply represents contact information for various information in the SSDS.  It have many associations as you can imagine.  One thing we would probably change moving forward is that most of these associations are one-to-one and we have many, many cases where more than one person could, and should, be associated with a concept.
 
-== RecordDescription ==
+== !RecordDescription ==
 
-== RecordVariable ==
+== !RecordVariable ==
 
 == Resource ==
 The Resource class is the grab bag class. It was created as a place to attach things that were necessary to track, but did not fall into the category of !DataContainer. Originally thought of as a place to capture information about things like calibration files, it has exploded in it's usage because of its grab bag nature.  Often times it is because developers and users don't know where else to put things and they become Resources.  This is great in some ways, because we finally have a way to capture things and information that used to be lost, but on the flip side, it is left to the application to interpret what that Resource is.  We included information about mime type so there was an extensible way for application to assign and interpret information that empowers usage of Resources.  There is much power here, but also much work to do to harness that power.  As is said, "with great power, comes great responsibility".
 
 == ResourceBLOB ==
 
-== ResourceType==
+== !ResourceType==
 
 == Software ==
 This class is an analog to the Device class but is meant to capture information about software processes.  It contains concepts of URIs for accessing the source code in some repository, version numbers to track what version of the software was utilized by the associated DataProducer.  As time has moved on, there has been a thought convergence on the class Device and Software as it is really software on the device that produces data in most instances.  There is more thought and work to be done here, but there is definitely a structure that would align the concepts of Device and Software and should be done on the future.
