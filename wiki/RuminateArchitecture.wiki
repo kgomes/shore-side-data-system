@@ -26,6 +26,7 @@ The bottom line is that SSDS will have to use some rules to decide how it wants 
 ===Ruminate Rules===
 
   # Extract XML payload from the JMS message
+  # Store the XML to disk (which is then available over HTTP)
   # Create the corresponding Object graph using ObjectBuilder.
   # When a packet arrives, it can be checked against data packets that have already been received. However, thins a cannot be done by just looking in the data store as the packet will have already been stored by ingest. How do we do this? I used to use XML tracker,but that was kludgy and not very robust.
   # The ideal situation is one in which the object graph that is handed to ruminate should be handled the same regardless of how it got to ruminate.  Again, it should be thought of as an instance of objects from a graph, or portion of, that may or may not exist in SSDS already.
