@@ -3,7 +3,7 @@
 
 = Introduction =
 
-The Ruminate component of the SSDS was designed to be the handler for incoming metadata messages from SSDS clients.  When metadata arrives, Ruminate is tasked to examine everything in the message and performa a sequence of steps to ensure that the metadata is recorded (persisted) in the SSDS appropriately.  The incoming metadata packets should have an XML payload that conforms to the SSDS Metadata Schema in order for it to be handled correctly (otherwise it will be ignored).
+The Ruminate component of the SSDS was designed to be the handler for incoming metadata messages from SSDS clients.  When metadata arrives, Ruminate is tasked to examine everything in the message and perform a sequence of steps to ensure that the metadata is recorded (persisted) in the SSDS appropriately.  The incoming metadata packets should have an XML payload that conforms to the SSDS Metadata Schema in order for it to be handled correctly (otherwise it will be ignored).
 
 = Details =
 
