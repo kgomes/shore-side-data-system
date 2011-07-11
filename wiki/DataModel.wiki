@@ -43,15 +43,19 @@ Keywords are not heavily used in the SSDS to date, but were included in the data
 A class that simply represents contact information for various information in the SSDS.  It have many associations as you can imagine.  One thing we would probably change moving forward is that most of these associations are one-to-one and we have many, many cases where more than one person could, and should, be associated with a concept.
 
 == !RecordDescription ==
+The !RecordDescription class in combination with !RecordVariable is key to describing what the data in a !DataContainer looks like.  It contains information about records in a !DataContainer that are helpful in parsing the information therein.  Things like record terminators, ASCII/binary, endianess, regular expressions, and something called recordType.  !RecordType is a key attribute as it shows up in the packet structure that is streamed to the SSDS.  A large number of the instruments in oceanography output many different records.  For example, a GPS can output records that detail the location of the GPS unit, but can also output records of satellite status and error status.  Without the concept of recordType, there is no way to tag the various data packets to distinguish them from each other.  This means that a device driver will have to tag the outgoing packets with the correct recordType so that a parser will know which corresponding !RecordDescription to use in parsing.
 
 == !RecordVariable ==
+This class represents a single variable that has data associated with it in a !DataContainer.  It contains information about the variable such as which column in the record it is located, what the regular expression is that can be used to parse the data from the column, what valid mins and maxs are, units, etc.  In conjunction with !RecordDescription, it is key in allowing agents to parse data from the !DataContainer.
 
 == Resource ==
 The Resource class is the grab bag class. It was created as a place to attach things that were necessary to track, but did not fall into the category of !DataContainer. Originally thought of as a place to capture information about things like calibration files, it has exploded in it's usage because of its grab bag nature.  Often times it is because developers and users don't know where else to put things and they become Resources.  This is great in some ways, because we finally have a way to capture things and information that used to be lost, but on the flip side, it is left to the application to interpret what that Resource is.  We included information about mime type so there was an extensible way for application to assign and interpret information that empowers usage of Resources.  There is much power here, but also much work to do to harness that power.  As is said, "with great power, comes great responsibility".
 
 == ResourceBLOB ==
+This class has not been used to date (as far as we know) but the idea behind it was the an agent could actually store the bytes of a Resource (like an image) in the database itself instead of having it hosted elsewhere and referenced by URI.  Not sure about the future of this class.
 
 == !ResourceType==
+This is analogous to the !DeviceType class in being able to created loose associations and groupings of Resources.
 
 == Software ==
 This class is an analog to the Device class but is meant to capture information about software processes.  It contains concepts of URIs for accessing the source code in some repository, version numbers to track what version of the software was utilized by the associated !DataProducer.  As time has moved on, there has been a thought convergence on the class Device and Software as it is really software on the device that produces data in most instances.  There is more thought and work to be done here, but there is definitely a structure that would align the concepts of Device and Software and should be done on the future.
