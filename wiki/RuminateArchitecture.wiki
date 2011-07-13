@@ -24,6 +24,67 @@ In the case of devices, they should already be identified in the SSDS persistent
 The bottom line is that SSDS will have to use some rules to decide how it wants to deal with the incoming metadata, it cannot just store it blindly.  Another thing to note is that very often we SSDS will receive messages out of order, from the past, or duplicates and it must be able to deal with all of them correctly.  To fulfill it's role, here are the steps that Ruminate goes through to deal with incoming metadata.
 
 ===Ruminate Rules===
+  # Extracts the XML metadata from the payload
+  # Checks to see if this metadata has arrived before for the instrument-parent combination (just compares the text blobs)
+  # If it looks to be new, it keeps going, otherwise it stops processing
+  # Marshalls the XML into SSDS Metadata Objects
+  # Creates a new Resource that represents the XML file that was just saved.
+  # Sets the start and end date on the new Resource to match the timestamp of the packet that the metadata arrived in
+  # Creates a new ResourceType object named &quot;application/xhtml+xml&quot; and sets it to the new Resource's resource type
+  # Sets the new Resource's mime type to &quot;application/xhtml+xml&quot;
+  # Reads the length of the new XML file and sets the contentLength to that size
+  # Creates a new Keyword object named &quot;XML&quot; and adds it to the new Resource
+  # Creates a new Keyword object named &quot;Metadata&quot; and adds it to the new Resource
+  # Rescursively adds the new Resource to the DataProducer and any child DataProducers as well.
+  # The DataProducer is then examined to see if there are any outputs (from children also) that are DataContainers of type DATA_STREAM. If that is the case then some special processing happens as follows:
+ * <ul>
+ * <li>Ruminate searches SSDS for all <code>DataProducer</code>s that are
+ * associated with the <code>Device</code> that is associated with the data
+ * streams found here.</li>
+ * <li>If the top level <code>DataProducer</code> does not have a name, ruminate
+ * will do it's best to create some name that makes sense</li>
+ * <li>If the top level <code>DataProducer</code> does not have a description, a
+ * &quot;No description&quot; is added</li>
+ * <li>If the top level <code>DataProducer</code> does not have a role assigned
+ * to it, since it is a <code>DataProducer</code> with a stream, the role of
+ * ROLE_INSTRUMENT is set</li>
+ * <li>If the top level <code>DataProducer</code> does not have a start date,
+ * the date of the packet the metadata arrived in is used as the start date</li>
+ * <li>If the top level <code>DataProducer</code> does not have a
+ * &quot;Type&quot; set, one of TYPE_DEPLOYMENT will be set since this is a
+ * <code>DataProducer</code> with a stream of data</li>
+ * <li>The output of the <code>DataProducer</code> is examined and if it has no
+ * name, one is created from the date and <code>Device</code> UUID.</li>
+ * <li>The output of the <code>DataProducer</code> is examined and if the URL is
+ * empty, one is constructed using the <code>GetOriginalDataServlet</code> so
+ * that the URL will return the last 10 packets</li>
+ * <li>The output of the <code>DataProducer</code> is examined and if there is
+ * no start date, the date of the packet in which the metadata arrived is used
+ * to set the start date of the output</li>
+ * <li>The output of the <code>DataProducer</code> is examine and if there is no
+ * description, one is generated that talks about which instrument this stream
+ * comes from</li>
+ * </ul>
+ * <li>The above set of steps is then repeated recursively on all the child
+ * <code>DataProducer</code>s.</li>
+ * </li>
+ * <li>If the incoming metadata packet had a parent ID specified, ruminate will
+ * attempt to add the newly created <code>DataProducer</code> to the most recent
+ * parent <code>DataProducer</code> associated with the parent device using the
+ * following steps:
+ * <ul>
+ * <li>Query for all <code>DataProducer</code>s that are associated with the
+ * parent <code>Device</code> sorting by start dates</li>
+ * <li>Grab the <code>DataProducer</code> with the most recent start date</li>
+ * <li>If there are no parent <code>DataProducer</code>s or the most recent one
+ * has an end date already, create new parent <code>DataProducer</code></li>
+ * <li>Add the newly created <code>DataProducer</code> to the most recent parent
+ * <code>DataProducer</code> or the newly created <code>DataProducer</code></li>
+ * </ul>
+ * <li>Lastly, if the newly created <code>DataProducer</code> does not have a
+ * start date, use the date from the metadata packet that was received as the
+ * start date of the <code>DataProducer</code>.</li>
+ * </ol>
 
   # Extract XML payload from the JMS message
   # Store the XML to disk (which is then available over HTTP)
