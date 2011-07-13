@@ -37,41 +37,18 @@ The bottom line is that SSDS will have to use some rules to decide how it wants 
   # Creates a new Keyword object named &quot;Metadata&quot; and adds it to the new Resource
   # Rescursively adds the new Resource to the DataProducer and any child DataProducers as well.
   # The DataProducer is then examined to see if there are any outputs (from children also) that are DataContainers of type DATA_STREAM. If that is the case then some special processing happens as follows:
- * <ul>
- * <li>Ruminate searches SSDS for all <code>DataProducer</code>s that are
- * associated with the <code>Device</code> that is associated with the data
- * streams found here.</li>
- * <li>If the top level <code>DataProducer</code> does not have a name, ruminate
- * will do it's best to create some name that makes sense</li>
- * <li>If the top level <code>DataProducer</code> does not have a description, a
- * &quot;No description&quot; is added</li>
- * <li>If the top level <code>DataProducer</code> does not have a role assigned
- * to it, since it is a <code>DataProducer</code> with a stream, the role of
- * ROLE_INSTRUMENT is set</li>
- * <li>If the top level <code>DataProducer</code> does not have a start date,
- * the date of the packet the metadata arrived in is used as the start date</li>
- * <li>If the top level <code>DataProducer</code> does not have a
- * &quot;Type&quot; set, one of TYPE_DEPLOYMENT will be set since this is a
- * <code>DataProducer</code> with a stream of data</li>
- * <li>The output of the <code>DataProducer</code> is examined and if it has no
- * name, one is created from the date and <code>Device</code> UUID.</li>
- * <li>The output of the <code>DataProducer</code> is examined and if the URL is
- * empty, one is constructed using the <code>GetOriginalDataServlet</code> so
- * that the URL will return the last 10 packets</li>
- * <li>The output of the <code>DataProducer</code> is examined and if there is
- * no start date, the date of the packet in which the metadata arrived is used
- * to set the start date of the output</li>
- * <li>The output of the <code>DataProducer</code> is examine and if there is no
- * description, one is generated that talks about which instrument this stream
- * comes from</li>
- * </ul>
- * <li>The above set of steps is then repeated recursively on all the child
- * <code>DataProducer</code>s.</li>
- * </li>
- * <li>If the incoming metadata packet had a parent ID specified, ruminate will
- * attempt to add the newly created <code>DataProducer</code> to the most recent
- * parent <code>DataProducer</code> associated with the parent device using the
- * following steps:
+  ## Ruminate searches SSDS for all DataProducers that are associated with the Device that is associated with the data streams found here.
+  ## If the top level DataProducer does not have a name, ruminate will do it's best to create some name that makes sense
+  ## If the top level DataProducer does not have a description, a &quot;No description&quot; is added
+  ## If the top level DataProducer does not have a role assigned to it, since it is a DataProducer with a stream, the role of ROLE_INSTRUMENT is set
+  ## If the top level DataProducer does not have a start date, the date of the packet the metadata arrived in is used as the start date
+  ## If the top level DataProducer does not have a &quot;Type&quot; set, one of TYPE_DEPLOYMENT will be set since this is a DataProducer with a stream of data
+  ## The output of the DataProducer is examined and if it has no name, one is created from the date and Device UUID.
+  ## The output of the DataProducer is examined and if the URL is empty, one is constructed using the GetOriginalDataServlet so that the URL will return the last 10 packets
+  ## The output of the DataProducer is examined and if there is no start date, the date of the packet in which the metadata arrived is used to set the start date of the output
+  ## The output of the DataProducer is examine and if there is no description, one is generated that talks about which instrument this stream comes from
+  # The above set of steps is then repeated recursively on all the child DataProducers.
+  # If the incoming metadata packet had a parent ID specified, ruminate will attempt to add the newly created DataProducer to the most recent parent DataProducer associated with the parent device using the following steps:
  * <ul>
  * <li>Query for all <code>DataProducer</code>s that are associated with the
  * parent <code>Device</code> sorting by start dates</li>
