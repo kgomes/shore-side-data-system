@@ -49,19 +49,11 @@ The bottom line is that SSDS will have to use some rules to decide how it wants 
   ## The output of the DataProducer is examine and if there is no description, one is generated that talks about which instrument this stream comes from
   # The above set of steps is then repeated recursively on all the child DataProducers.
   # If the incoming metadata packet had a parent ID specified, ruminate will attempt to add the newly created DataProducer to the most recent parent DataProducer associated with the parent device using the following steps:
- * <ul>
- * <li>Query for all <code>DataProducer</code>s that are associated with the
- * parent <code>Device</code> sorting by start dates</li>
- * <li>Grab the <code>DataProducer</code> with the most recent start date</li>
- * <li>If there are no parent <code>DataProducer</code>s or the most recent one
- * has an end date already, create new parent <code>DataProducer</code></li>
- * <li>Add the newly created <code>DataProducer</code> to the most recent parent
- * <code>DataProducer</code> or the newly created <code>DataProducer</code></li>
- * </ul>
- * <li>Lastly, if the newly created <code>DataProducer</code> does not have a
- * start date, use the date from the metadata packet that was received as the
- * start date of the <code>DataProducer</code>.</li>
- * </ol>
+  ## Query for all DataProducers that are associated with the parent Device sorting by start dates
+  ## Grab the DataProducer with the most recent start date
+  ## If there are no parent DataProducers or the most recent one has an end date already, create new parent DataProducer
+  ## Add the newly created DataProducer to the most recent parent DataProducer or the newly created DataProducer
+  # Lastly, if the newly created DataProducer does not have a start date, use the date from the metadata packet that was received as the start date of the DataProducer.
 
   # Extract XML payload from the JMS message
   # Store the XML to disk (which is then available over HTTP)
