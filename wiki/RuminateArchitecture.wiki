@@ -3,6 +3,8 @@
 
 = Introduction =
 
+*UNDER CONSTUCTION* - This documentation is currently in flux (7/15/2011)
+
 The Ruminate component of the SSDS was designed to be the handler for incoming metadata messages from SSDS clients.  When metadata arrives, Ruminate is tasked to examine everything in the message and perform a sequence of steps to ensure that the metadata is recorded (persisted) in the SSDS appropriately.  The incoming metadata packets should have an XML payload that conforms to the SSDS Metadata Schema in order for it to be handled correctly (otherwise it will be ignored).
 
 = Details =
@@ -21,10 +23,20 @@ Let's say a message comes in about the deployment of a certain device:
 
 In the case of devices, they should already be identified in the SSDS persistent metadata so there may be more metadata defined for that device already.  Just because the 'mfgModel' attribute is not specified in the XML, does not mean it should be removed from the existing entry in the SSDS persistent store.
 
-The bottom line is that SSDS will have to use some rules to decide how it wants to deal with the incoming metadata, it cannot just store it blindly.  Another thing to note is that very often we SSDS will receive messages out of order, from the past, or duplicates and it must be able to deal with all of them correctly.  To fulfill it's role, here are the steps that Ruminate goes through to deal with incoming metadata.
+The bottom line is that SSDS will have to use some rules to decide how it wants to deal with the incoming metadata, it cannot just store it blindly.  Another thing to note is that very often with the SSDS will receive messages out of order, from the past, or duplicates and it must be able to deal with all of them correctly.  To fulfill it's role, here are the steps that Ruminate goes through to deal with incoming metadata.
 
 ===Ruminate Rules===
   # Extracts the XML metadata from the payload
+  # Store the XML to disk (which is then made available over HTTP)
+  # Create the corresponding SSDS object graph using ObjectBuilder (direct translation from XML to objects).
+  # When a packet arrives, it can be checked against data packets that have already been received. However, this cannot be done by just looking in the data store as the packet will have already been stored by ingest. How do we do this? I used to use XML tracker,but that was kludgy and not very robust.
+  # The ideal situation is one in which the object graph that is handed to ruminate should be handled the same regardless of how it got to ruminate.  Again, it should be thought of as an instance of objects from a graph, or portion of, that may or may not exist in SSDS already.
+  # The very first thing that ruminate does is take the incoming XML and attempts to convert it straight to an SSDS object graph.
+  # Next, depending on what the head object is, it should run through a set of steps to ensure the graph is "grafted" onto the information in the metadata database.
+  # Let's start with DataProducer since that is the most common head object
+  # We can think about the metric for equality for objects (I.e. The overridden equals method) to look for the object in the database.  This can be done using the "findEquivalentPersistantObject" method in the DAOs.
+
+
   # Checks to see if this metadata has arrived before for the instrument-parent combination (just compares the text blobs)
   # If it looks to be new, it keeps going, otherwise it stops processing
   # Marshalls the XML into SSDS Metadata Objects
@@ -54,13 +66,3 @@ The bottom line is that SSDS will have to use some rules to decide how it wants 
   ## If there are no parent DataProducers or the most recent one has an end date already, create new parent DataProducer
   ## Add the newly created DataProducer to the most recent parent DataProducer or the newly created DataProducer
   # Lastly, if the newly created DataProducer does not have a start date, use the date from the metadata packet that was received as the start date of the DataProducer.
-
-  # Extract XML payload from the JMS message
-  # Store the XML to disk (which is then available over HTTP)
-  # Create the corresponding Object graph using ObjectBuilder.
-  # When a packet arrives, it can be checked against data packets that have already been received. However, thins a cannot be done by just looking in the data store as the packet will have already been stored by ingest. How do we do this? I used to use XML tracker,but that was kludgy and not very robust.
-  # The ideal situation is one in which the object graph that is handed to ruminate should be handled the same regardless of how it got to ruminate.  Again, it should be thought of as an instance of objects from a graph, or portion of, that may or may not exist in SSDS already.
-  # The very first thing that ruminate does is take the incoming XML and attempts to convert it straight to an SSDS object graph.
-  # Next, depending on what the head object is, it should run through a set of steps to ensure the graph is "grafted" onto the information in the metadata database.
-  # Let's start with DataProducer since that is the most common head object
-  # We can think about the metric for equality for objects (I.e. The overridden equals method) to look for the object in the database.  This can be done using the "findEquivalentPersistantObject" method in the DAOs.
