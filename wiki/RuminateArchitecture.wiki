@@ -28,7 +28,7 @@ The bottom line is that SSDS will have to use some rules to decide how it wants 
 ===Ruminate Steps===
   # Extracts the XML metadata from the JMS payload
   # Stores the XML to disk (which is then made available over HTTP)
-  # Creates the corresponding SSDS object graph using ObjectBuilder (direct translation from XML to objects).
+  # Creates the corresponding SSDS object graph using !ObjectBuilder (direct translation from XML to objects).
   # It then iterates over the list of top levels metadata objects (almost always just one) and takes the following steps:
   ## Creates a new Resource object that represents the XML file that was just saved to disk and made available over HTTP and does the following:
   ### Creates a name
@@ -37,10 +37,10 @@ The bottom line is that SSDS will have to use some rules to decide how it wants 
   ### Assigns the URL to the URI attribute
   ### Sets the MIME type to "application/xhtml+xml"
   ### Sets the content length to the size of the XML file
-  ### Creates a new ResourceType object named "application/xhtml+xml" and sets it as the ResourceType
+  ### Creates a new !ResourceType object named "application/xhtml+xml" and sets it as the !ResourceType
   ### Creates a new Keyword object named "XML" and adds it to the new Resource
   ### Creates a new Keyword object named "Metadata" and adds it to the new Resource
-  ## Rescursively adds the new Resource to the DataProducer and any child DataProducers as well.
+  ## Rescursively adds the new XML Resource to the !DataProducer and any child !DataProducers as well.
 
 
   # When a packet arrives, it can be checked against data packets that have already been received. However, this cannot be done by just looking in the data store as the packet will have already been stored by ingest. How do we do this? I used to use XML tracker,but that was kludgy and not very robust.
