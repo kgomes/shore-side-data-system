@@ -7,6 +7,8 @@
       * [DataModel  Data Model]
       * [RuminateArchitecture Ruminate Architecture]
       * [MetadataAccessObjects Metadata Access Objects (DAOs)]
+      * [MetadataEJBServices Metadata Service EJBs]
+      * [HTTPServices HTTP Services]
     * [Development]
     * [Deployment]
     * [Use]
