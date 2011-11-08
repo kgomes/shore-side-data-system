@@ -56,13 +56,9 @@ The URL for this service is located on the SSDS host at the relative URL /servle
 || recordType || _same as startPacketSubType above_ ||
 || platformID || _same as startParentID above_ ||
 || startDateTime || optional || query || Date/Time || This is the string representation of the date and time of the start of the time window over which you are requesting data.  It can be in one of two formats: *YYYYMMDD.hhmmss* or *YYYY-MM-DDTHH:MM:SSZ* ||
-
-{{{
-<tr><td>endDateTime</td><td>optional</td><td>query</td><td>Date/Time</td><td>This is the string representation of the date and time of the end of the time 
-                                                    window over which you are requesting data.  It can be in one of two formats:
-                                                    <ol><li>YYYYMMDD.hhmmss</li><li>YYYY-MM-DDTHH:MM:SSZ</li></ol></td></tr><tr><td>isi</td><td>optional</td><td>return<br/>format</td><td>1|0|true|false</td><td>This is the flag that turns on the printout of the SIAM packet header 
-                                                information before each packet.</td></tr><tr><td>numHoursBack</td><td colspan="4"><center><i>same as numHoursOffset above</i></center></td></tr></table>
-}}}
+|| endDateTime || optional || query || Date/Time || This is the string representation of the date and time of the end of the time window over which you are requesting data.  It can be in one of two formats: *YYYYMMDD.hhmmss* or *YYYY-MM-DDTHH:MM:SSZ ||
+|| isi || optional || return format || 1|0|true|false || This is the flag that turns on the printout of the SIAM packet header information before each packet. ||
+|| numHoursBack || _same as numHoursOffset above_ ||
 
 ===Example:===
 
