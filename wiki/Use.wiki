@@ -1,12 +1,6 @@
 #summary Information about client use of the SSDS Software
 #sidebar TableOfContents
 
-Under construction
+This page provides information about the use of the various services of the SSDS.  Each service is documented on a separate wiki page that is linked below:
 
-
-[http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg]
-
-
-http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg
-
-<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/Device%20Packet%20Classes.jpg" width="800"/></a>
+  # GetOriginalDataServlet documentation
