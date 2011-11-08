@@ -43,15 +43,12 @@ The URL for this service is located on the SSDS host at the relative URL /servle
 || lastNumberOfPackets || optional || query || Any Number || This is the number of packets back in time (from the most recent packet) to retrieve.  This option over-rides the timestamp specifications and the nice thing about it is that if the source has sent data, you will always get a return. Sometimes when you specify a time window, and the source has not sent data in that time, you will get nothing back. ||
 || numHoursOffset || optional || query || Any Number || This is the number of hours wide that the time query window should be.  This is only applicable when one of either start or end times have been specified. If the start time is specified, this offset is added to the start time to get the end time.  If the end time is specified, it is subtracted from the end time to get the start time. ||
 || outputAs || optional || return format || *binary* || This is a flag that indicates if the data should be returned in binary format.  In order for this to happen, it must be set to *binary*.  Otherwise, the return will be in ASCII ||
+|| displayPacketHeaderInfo || optional || return format || true|false || This is the flag that turns on the printout of the packet header information before each packet. ||
+|| noHTMLHeader || optional || return format || 1|0|true|false || If this value is set to *true* or *1*, the return from this URL call will not be wrapped with HTML tags and no content-type will be specified.  Otherwise the content-type will be text/html and there will be HTML tags around the results. ||
+|| delimiter || optional || return format || any text || This is the text that will be used to separate the packet header and data columns of the return.  If this is not specified a comma will be used as a default. ||
 
 {{{
-<tr><td>displayPacketHeaderInfo</td><td>optional</td><td>return<br/>format</td><td>true|false</td><td>This is the flag that turns on the printout of the packet header 
-                                                information before each packet.</td></tr><tr><td>noHTMLHeader</td><td>optional</td><td>return<br/>format</td><td>1|0|true|false</td><td>If this value is set to <b>true</b> or <b>1</b>, the return from 
-                                                this URL call will not be wrapped with HTML tags and no content-type 
-                                                will be specified.  Otherwise the content-type will be text/html 
-                                                and there will be HTML tags around the results.</td></tr><tr><td>delimiter</td><td>optional</td><td>return<br/>format</td><td>any text</td><td>This is the text that will be used to separate the packet header 
-                                                and data columns of the return.  If this is not specified a comma 
-                                                will be used as a default.</td></tr><tr><td>recordDelimiter</td><td>optional</td><td>return<br/>format</td><td>any text</td><td>This is the text that will be used to separate the packet records 
+<tr><td>recordDelimiter</td><td>optional</td><td>return<br/>format</td><td>any text</td><td>This is the text that will be used to separate the packet records 
                                                 of the return.  This is useful if the payload contents contain normal 
                                                 line feed characters.  If this is not specified then nothing is added 
                                                 to the return to separate the records.</td></tr><tr><td>prependWith</td><td>optional</td><td>return<br/>format</td><td><b>oasis</b></td><td>This is a flag that indicates what is to prepend each returned packet.  
