@@ -1,0 +1,125 @@
+#summary Documentation of the servlet GetOriginalDataServlet
+
+= Introduction =
+
+One method of extracting data from the SSDS is to use an HTTP service called "GetOriginalDataServlet".  Behind the scenes it is a java servlet, but the interface to the clients is through standard HTTP.  This document gives the user some information on how to use this service. 
+
+= Usage =
+
+The URL for this service is located on the SSDS host at the relative URL /servlet/GetOriginalDataServlet and contains the following parameters (example here is shown for MBARI's SSDS server): 
+{{{
+  http://new-ssds.mbari.org/servlet/GetOriginalDataServlet
+    ?deviceID=<DVID>
+    &startDataDescriptionVersion=<SDDV>
+    &endDataDescriptionVersion=<EDDV>
+    &startPacketSubType=<SPST>
+    &endPacketSubType=<EPST>
+    &startParentID=<SPID>
+    &endParentID=<EPID>
+    &startTimestampSeconds=<STS>
+    &endTimestampSeconds=<ETS>
+    &lastNumberOfPackets=<LNP>
+    &numHoursOffset=<NHO>
+    &outputAs=<binary>
+    &displayPacketHeaderInfo=<true|false>
+    &noHTMLHeader=<1|0|true|false>
+    &delimiter=<DELIM>
+    &recordDelimiter=<RECDEL>
+    &prependWith=<oasis>
+    &convertTo=<hex>
+}}}
+
+===Parameters:===
+|| *Parameter Name* || *Opt/Required* || *Query or Return Format* || *Available Options* || *Description* ||
+|| deviceID || *required* || query || any number || This is the SSDS ID of the device that you would like the data for ||
+|| startDataDescriptionVersion || optional || query || any number || This is the number that will be used as the starting query number for the dataDescriptionVersion number to search for.  This is also known as the metadata version (or reference) number. ||
+|| endDataDescriptionVersion || optional || query || any number || This is the number that will be used as the ending query number for the dataDescriptionVersion number to search for.  If this is not specified, but the startDataDescriptionVersion is, only the startDataDescriptionVersion will be searched for.  This is also    known as the metadata version (or reference) number. ||
+{{{
+<tr><td>startPacketSubType</td><td>optional</td><td>query</td><td>any number</td><td>This is the starting number for the "type" of packet to 
+                                                retrieve from the device.  If a device generates multiple streams 
+                                                of data, these are usually broken up and uniquely identified by a 
+                                                packet sub type (also known as record type).  This is the starting 
+                                                record type.</td></tr><tr><td>endPacketSubType</td><td>optional</td><td>query</td><td>any number</td><td>This is the ending number for the "type" of packet to 
+                                                retrieve from the device.  If a device generates multiple streams 
+                                                of data, these are usually broken up and uniquely identified by a 
+                                                packet sub type (also known as record type).  This is the end 
+                                                record type.  If this is not specified, but the startPacketSubType 
+                                                is, only the startPacketSubType will be queried for.</td></tr><tr><td>startParentID</td><td>optional</td><td>query</td><td>any number</td><td>This is the SSDS ID of the starting parent to search for.  In 
+                                                otherwords, the query will look for all packets from the device 
+                                                specified while it was deployed on parents starting at ID of 
+                                                startingParentID. This was also known as platform ID.</td></tr><tr><td>endParentID</td><td>optional</td><td>query</td><td>any number</td><td>This is the SSDS ID of the ending parent to search for.  In 
+                                                otherwords, the query will look for all packets from the device 
+                                                specified while it was deployed on parents starting at ID of 
+                                                startingParentID and ending with parent with endParentID.  If 
+                                                this is not specified and the startParentID is, only the 
+                                                startParentID will be searched for. ParentID is also known as 
+                                                platform ID.</td></tr><tr><td>startTimestampSeconds</td><td>optional</td><td>query</td><td>Any Number</td><td>These are epoch seconds (number of seconds since January 1, 1970) 
+                                                of the start of the time window of data you are looking for</td></tr><tr><td>endTimestampSeconds</td><td>optional</td><td>query</td><td>Any Number</td><td>These are epoch seconds (number of seconds since January 1, 1970) 
+                                                of the end of the time window of data you are looking for</td></tr><tr><td>lastNumberOfPackets</td><td>optional</td><td>query</td><td>Any Number</td><td>This is the number of packets back in time (from the most recent
+                                                packet) to retrieve.  This option over-rides the timestamp specifications
+                                                and the nice thing about it is that if the source has sent data, you will
+                                                always get a return. Sometimes when you specify a time window, and the source
+                                                has not sent data in that time, you will get nothing back.</td></tr><tr><td>numHoursOffset</td><td>optional</td><td>query</td><td>Any Number</td><td>This is the number of hours wide that the time query window should 
+                                                be.  This is only applicable when one of either start or end times 
+                                                have been specified. If the start time is specified, this offset 
+                                                is added to the start time to get the end time.  If the end time 
+                                                is specified, it is subtracted from the end time to get the start 
+                                                time.</td></tr><tr><td>outputAs</td><td>optional</td><td>return<br/>format</td><td><b>binary</b></td><td>This is a flag that indicates if the data should be returned in 
+                                                binary format.  In order for this to happen, it must be set to 
+                                                <b>binary</b>.  Otherwise, the return will be in ASCII</td></tr><tr><td>displayPacketHeaderInfo</td><td>optional</td><td>return<br/>format</td><td>true|false</td><td>This is the flag that turns on the printout of the packet header 
+                                                information before each packet.</td></tr><tr><td>noHTMLHeader</td><td>optional</td><td>return<br/>format</td><td>1|0|true|false</td><td>If this value is set to <b>true</b> or <b>1</b>, the return from 
+                                                this URL call will not be wrapped with HTML tags and no content-type 
+                                                will be specified.  Otherwise the content-type will be text/html 
+                                                and there will be HTML tags around the results.</td></tr><tr><td>delimiter</td><td>optional</td><td>return<br/>format</td><td>any text</td><td>This is the text that will be used to separate the packet header 
+                                                and data columns of the return.  If this is not specified a comma 
+                                                will be used as a default.</td></tr><tr><td>recordDelimiter</td><td>optional</td><td>return<br/>format</td><td>any text</td><td>This is the text that will be used to separate the packet records 
+                                                of the return.  This is useful if the payload contents contain normal 
+                                                line feed characters.  If this is not specified then nothing is added 
+                                                to the return to separate the records.</td></tr><tr><td>prependWith</td><td>optional</td><td>return<br/>format</td><td><b>oasis</b></td><td>This is a flag that indicates what is to prepend each returned packet.  
+                                                There is currently only one option, which is <b>oasis</b> which 
+                                                prepends each record with an OASIS style timestamp</td></tr><tr><td>convertTo</td><td>optional</td><td>return<br/>format</td><td><b>hex</b></td><td>This is a flag that indicates what the data buffer is to be converted 
+                                                to (if any).  Currently only the <b>hex</b> option does any conversions.</td></tr><tr><td colspan="5"><b><i>For legacy reasons, the following are also supported</i></b></td></tr><tr><td>dsURL</td><td>see description</td><td>query</td><td>String form of URL</td><td>This parameter is the URL that points to a file of serialized packets.  This would 
+                                                only be used if the deviceID parameterwas not used (see above).  So this is required 
+                                                if there is nodeviceID, but will be ignored if deviceID is specified</td></tr><tr><td>metadataID</td><td colspan="4"><center><i>same as startDataDescriptionVersion above</i></center></td></tr><tr><td>recordType</td><td colspan="4"><center><i>same as startPacketSubType above</i></center></td></tr><tr><td>platformID</td><td colspan="4"><center><i>same as startParentID above</i></center></td></tr><tr><td>startDateTime</td><td>optional</td><td>query</td><td>Date/Time</td><td>This is the string representation of the date and time of the start of 
+                                                    the time window over which you are requesting data.  It can be in one of two formats:
+                                                    <ol><li>YYYYMMDD.hhmmss</li><li>YYYY-MM-DDTHH:MM:SSZ</li></ol></td></tr><tr><td>endDateTime</td><td>optional</td><td>query</td><td>Date/Time</td><td>This is the string representation of the date and time of the end of the time 
+                                                    window over which you are requesting data.  It can be in one of two formats:
+                                                    <ol><li>YYYYMMDD.hhmmss</li><li>YYYY-MM-DDTHH:MM:SSZ</li></ol></td></tr><tr><td>isi</td><td>optional</td><td>return<br/>format</td><td>1|0|true|false</td><td>This is the flag that turns on the printout of the SIAM packet header 
+                                                information before each packet.</td></tr><tr><td>numHoursBack</td><td colspan="4"><center><i>same as numHoursOffset above</i></center></td></tr></table>
+}}}
+
+===Example:===
+
+{{{
+  http://new-ssds.mbari.org/servlet/GetOriginalDataServlet
+    ?deviceID=1267
+    &metadataID=0
+    &recordTypeID=1
+    &platformID=1299
+    &isi=0
+    &numHoursBack=24
+    &convertTo=hex
+    &noHTMLHeader=1
+    &prependWith=oasis
+}}}
+
+===Example in a Perl program===
+
+{{{
+  use LWP::Simple;
+
+  $url = "http://new-ssds.mbari.org/servlet/GetOriginalDataServlet
+    ?deviceID=1294
+    &metadataID=0
+    &recordTypeID=1
+    &platformID=1295
+    &isi=0
+    &numHoursBack=24
+    &convertTo=hex
+    &noHTMLHeader=1
+    &prependWith=oasis";
+
+    $data = get($url);
+
+    print $data;
+}}}
