@@ -41,14 +41,10 @@ The URL for this service is located on the SSDS host at the relative URL /servle
 || startTimestampSeconds || optional || query || Any Number || These are epoch seconds (number of seconds since January 1, 1970) of the start of the time window of data you are looking for ||
 || endTimestampSeconds || optional || query || Any Number || These are epoch seconds (number of seconds since January 1, 1970) of the end of the time window of data you are looking for ||
 || lastNumberOfPackets || optional || query || Any Number || This is the number of packets back in time (from the most recent packet) to retrieve.  This option over-rides the timestamp specifications and the nice thing about it is that if the source has sent data, you will always get a return. Sometimes when you specify a time window, and the source has not sent data in that time, you will get nothing back. ||
+|| numHoursOffset || optional || query || Any Number || This is the number of hours wide that the time query window should be.  This is only applicable when one of either start or end times have been specified. If the start time is specified, this offset is added to the start time to get the end time.  If the end time is specified, it is subtracted from the end time to get the start time. ||
 
 {{{
-<tr><td>numHoursOffset</td><td>optional</td><td>query</td><td>Any Number</td><td>This is the number of hours wide that the time query window should 
-                                                be.  This is only applicable when one of either start or end times 
-                                                have been specified. If the start time is specified, this offset 
-                                                is added to the start time to get the end time.  If the end time 
-                                                is specified, it is subtracted from the end time to get the start 
-                                                time.</td></tr><tr><td>outputAs</td><td>optional</td><td>return<br/>format</td><td><b>binary</b></td><td>This is a flag that indicates if the data should be returned in 
+<tr><td>outputAs</td><td>optional</td><td>return<br/>format</td><td><b>binary</b></td><td>This is a flag that indicates if the data should be returned in 
                                                 binary format.  In order for this to happen, it must be set to 
                                                 <b>binary</b>.  Otherwise, the return will be in ASCII</td></tr><tr><td>displayPacketHeaderInfo</td><td>optional</td><td>return<br/>format</td><td>true|false</td><td>This is the flag that turns on the printout of the packet header 
                                                 information before each packet.</td></tr><tr><td>noHTMLHeader</td><td>optional</td><td>return<br/>format</td><td>1|0|true|false</td><td>If this value is set to <b>true</b> or <b>1</b>, the return from 
