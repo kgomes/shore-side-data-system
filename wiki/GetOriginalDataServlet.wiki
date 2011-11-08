@@ -49,14 +49,13 @@ The URL for this service is located on the SSDS host at the relative URL /servle
 || recordDelimiter || optional || return format || any text || This is the text that will be used to separate the packet records of the return.  This is useful if the payload contents contain normal line feed characters.  If this is not specified then nothing is added to the return to separate the records. ||
 || prependWith || optional || return format || *oasis* || This is a flag that indicates what is to prepend each returned packet. There is currently only one option, which is *oasis* which prepends each record with an OASIS style timestamp ||
 || convertTo || optional || return format || *hex* || This is a flag that indicates what the data buffer is to be converted to (if any).  Currently only the *hex* option does any conversions. ||
-|| *For legacy reasons, the following are also supported* ||
+----
+*For legacy reasons, the following are also supported*
 || dsURL || see description || query || String form of URL || This parameter is the URL that points to a file of serialized packets.  This would only be used if the deviceID parameter was not used (see above).  So this is required if there is no deviceID, but will be ignored if deviceID is specified ||
 || metadataID || _same as startDataDescriptionVersion above_ ||
 || recordType || _same as startPacketSubType above_ ||
 || platformID || _same as startParentID above_ ||
-|| startDateTime || optional || query || Date/Time || This is the string representation of the date and time of the start of the time window over which you are requesting data.  It can be in one of two formats:
-  # YYYYMMDD.hhmmss
-  # YYYY-MM-DDTHH:MM:SSZ ||
+|| startDateTime || optional || query || Date/Time || This is the string representation of the date and time of the start of the time window over which you are requesting data.  It can be in one of two formats: *YYYYMMDD.hhmmss* or *YYYY-MM-DDTHH:MM:SSZ* ||
 
 {{{
 <tr><td>endDateTime</td><td>optional</td><td>query</td><td>Date/Time</td><td>This is the string representation of the date and time of the end of the time 
