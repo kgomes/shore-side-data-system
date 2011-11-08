@@ -2,11 +2,11 @@
 
 = Introduction =
 
-One method of extracting data from the SSDS is to use an HTTP service called "GetOriginalDataServlet".  Behind the scenes it is a java servlet, but the interface to the clients is through standard HTTP.  This document gives the user some information on how to use this service. 
+One method of extracting data from the SSDS is to use an HTTP service called "!GetOriginalDataServlet".  Behind the scenes it is a java servlet, but the interface to the clients is through standard HTTP.  This document gives the user some information on how to use this service. 
 
 = Usage =
 
-The URL for this service is located on the SSDS host at the relative URL /servlet/GetOriginalDataServlet and contains the following parameters (example here is shown for MBARI's SSDS server): 
+The URL for this service is located on the SSDS host at the relative URL /servlet/!GetOriginalDataServlet and contains the following parameters (example here is shown for MBARI's SSDS server): 
 {{{
   http://new-ssds.mbari.org/servlet/GetOriginalDataServlet
     ?deviceID=<DVID>
@@ -38,15 +38,12 @@ The URL for this service is located on the SSDS host at the relative URL /servle
 || endPacketSubType || optional || query || any number || This is the ending number for the "type" of packet to retrieve from the device.  If a device generates multiple streams of data, these are usually broken up and uniquely identified by a packet sub type (also known as record type).  This is the end record type.  If this is not specified, but the startPacketSubType is, only the startPacketSubType will be queried for. ||
 || startParentID || optional || query || any number || This is the SSDS ID of the starting parent to search for.  In other words, the query will look for all packets from the device specified while it was deployed on parents starting at ID of startingParentID. This was also known as platform ID. ||
 || endParentID || optional || query || any number || This is the SSDS ID of the ending parent to search for.  In other words, the query will look for all packets from the device specified while it was deployed on parents starting at ID of startingParentID and ending with parent with endParentID.  If this is not specified and the startParentID is, only the startParentID will be searched for. ParentID is also known as platform ID. ||
+|| startTimestampSeconds || optional || query || Any Number || These are epoch seconds (number of seconds since January 1, 1970) of the start of the time window of data you are looking for ||
+|| endTimestampSeconds || optional || query || Any Number || These are epoch seconds (number of seconds since January 1, 1970) of the end of the time window of data you are looking for ||
+|| lastNumberOfPackets || optional || query || Any Number || This is the number of packets back in time (from the most recent packet) to retrieve.  This option over-rides the timestamp specifications and the nice thing about it is that if the source has sent data, you will always get a return. Sometimes when you specify a time window, and the source has not sent data in that time, you will get nothing back. ||
 
 {{{
-<tr><td>startTimestampSeconds</td><td>optional</td><td>query</td><td>Any Number</td><td>These are epoch seconds (number of seconds since January 1, 1970) 
-                                                of the start of the time window of data you are looking for</td></tr><tr><td>endTimestampSeconds</td><td>optional</td><td>query</td><td>Any Number</td><td>These are epoch seconds (number of seconds since January 1, 1970) 
-                                                of the end of the time window of data you are looking for</td></tr><tr><td>lastNumberOfPackets</td><td>optional</td><td>query</td><td>Any Number</td><td>This is the number of packets back in time (from the most recent
-                                                packet) to retrieve.  This option over-rides the timestamp specifications
-                                                and the nice thing about it is that if the source has sent data, you will
-                                                always get a return. Sometimes when you specify a time window, and the source
-                                                has not sent data in that time, you will get nothing back.</td></tr><tr><td>numHoursOffset</td><td>optional</td><td>query</td><td>Any Number</td><td>This is the number of hours wide that the time query window should 
+<tr><td>numHoursOffset</td><td>optional</td><td>query</td><td>Any Number</td><td>This is the number of hours wide that the time query window should 
                                                 be.  This is only applicable when one of either start or end times 
                                                 have been specified. If the start time is specified, this offset 
                                                 is added to the start time to get the end time.  If the end time 
