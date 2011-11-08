@@ -65,16 +65,7 @@ The URL for this service is located on the SSDS host at the relative URL /servle
 ===Example:===
 
 {{{
-  http://new-ssds.mbari.org/servlet/GetOriginalDataServlet
-    ?deviceID=1267
-    &metadataID=0
-    &recordTypeID=1
-    &platformID=1299
-    &isi=0
-    &numHoursBack=24
-    &convertTo=hex
-    &noHTMLHeader=1
-    &prependWith=oasis
+  http://new-ssds.mbari.org/servlet/GetOriginalDataServlet?deviceID=1267&metadataID=0&recordTypeID=1&platformID=1299&isi=0&numHoursBack=24&convertTo=hex&noHTMLHeader=1&prependWith=oasis
 }}}
 
 ===Example in a Perl program===
