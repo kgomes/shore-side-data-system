@@ -34,26 +34,13 @@ The URL for this service is located on the SSDS host at the relative URL /servle
 || deviceID || *required* || query || any number || This is the SSDS ID of the device that you would like the data for ||
 || startDataDescriptionVersion || optional || query || any number || This is the number that will be used as the starting query number for the dataDescriptionVersion number to search for.  This is also known as the metadata version (or reference) number. ||
 || endDataDescriptionVersion || optional || query || any number || This is the number that will be used as the ending query number for the dataDescriptionVersion number to search for.  If this is not specified, but the startDataDescriptionVersion is, only the startDataDescriptionVersion will be searched for.  This is also    known as the metadata version (or reference) number. ||
+|| startPacketSubType || optional || query || any number || This is the starting number for the "type" of packet to retrieve from the device.  If a device generates multiple streams of data, these are usually broken up and uniquely identified by a packet sub type (also known as record type).  This is the starting record type. ||
+|| endPacketSubType || optional || query || any number || This is the ending number for the "type" of packet to retrieve from the device.  If a device generates multiple streams of data, these are usually broken up and uniquely identified by a packet sub type (also known as record type).  This is the end record type.  If this is not specified, but the startPacketSubType is, only the startPacketSubType will be queried for. ||
+|| startParentID || optional || query || any number || This is the SSDS ID of the starting parent to search for.  In other words, the query will look for all packets from the device specified while it was deployed on parents starting at ID of startingParentID. This was also known as platform ID. ||
+|| endParentID || optional || query || any number || This is the SSDS ID of the ending parent to search for.  In other words, the query will look for all packets from the device specified while it was deployed on parents starting at ID of startingParentID and ending with parent with endParentID.  If this is not specified and the startParentID is, only the startParentID will be searched for. ParentID is also known as platform ID. ||
+
 {{{
-<tr><td>startPacketSubType</td><td>optional</td><td>query</td><td>any number</td><td>This is the starting number for the "type" of packet to 
-                                                retrieve from the device.  If a device generates multiple streams 
-                                                of data, these are usually broken up and uniquely identified by a 
-                                                packet sub type (also known as record type).  This is the starting 
-                                                record type.</td></tr><tr><td>endPacketSubType</td><td>optional</td><td>query</td><td>any number</td><td>This is the ending number for the "type" of packet to 
-                                                retrieve from the device.  If a device generates multiple streams 
-                                                of data, these are usually broken up and uniquely identified by a 
-                                                packet sub type (also known as record type).  This is the end 
-                                                record type.  If this is not specified, but the startPacketSubType 
-                                                is, only the startPacketSubType will be queried for.</td></tr><tr><td>startParentID</td><td>optional</td><td>query</td><td>any number</td><td>This is the SSDS ID of the starting parent to search for.  In 
-                                                otherwords, the query will look for all packets from the device 
-                                                specified while it was deployed on parents starting at ID of 
-                                                startingParentID. This was also known as platform ID.</td></tr><tr><td>endParentID</td><td>optional</td><td>query</td><td>any number</td><td>This is the SSDS ID of the ending parent to search for.  In 
-                                                otherwords, the query will look for all packets from the device 
-                                                specified while it was deployed on parents starting at ID of 
-                                                startingParentID and ending with parent with endParentID.  If 
-                                                this is not specified and the startParentID is, only the 
-                                                startParentID will be searched for. ParentID is also known as 
-                                                platform ID.</td></tr><tr><td>startTimestampSeconds</td><td>optional</td><td>query</td><td>Any Number</td><td>These are epoch seconds (number of seconds since January 1, 1970) 
+<tr><td>startTimestampSeconds</td><td>optional</td><td>query</td><td>Any Number</td><td>These are epoch seconds (number of seconds since January 1, 1970) 
                                                 of the start of the time window of data you are looking for</td></tr><tr><td>endTimestampSeconds</td><td>optional</td><td>query</td><td>Any Number</td><td>These are epoch seconds (number of seconds since January 1, 1970) 
                                                 of the end of the time window of data you are looking for</td></tr><tr><td>lastNumberOfPackets</td><td>optional</td><td>query</td><td>Any Number</td><td>This is the number of packets back in time (from the most recent
                                                 packet) to retrieve.  This option over-rides the timestamp specifications
