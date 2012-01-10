@@ -10,3 +10,5 @@ These classes provide utilities for working with object that are represented by 
   * Custom String Representation:  This is mostly for logging and does not serialize relationships.  It simply serializes an object to and from a custom form that is more easily readable in a log file.
 
 = Details =
+
+Here is a class diagram of the various classes used in the translation of forms of metadata.
