@@ -5,7 +5,9 @@
 
 In order for the SSDS to track all relative information about the data in an observatory, a data model was created to hold all the information and relevant concepts to manage the data for storage and access of information in the observatory.  This documents that data model for the SSDS.  Here are a couple of UML diagrams to show the complete and detailed view of the core data model classes.  Below the images are some notes about each class.
 
-<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/DataProducers.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/DataProducers.jpg" width="400"/></a><a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/DataContainers.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/DataContainers.jpg" width="400"/></a>
+<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/DataProducers.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/DataProducers.jpg" width="400"/></a>
+
+<a href="http://shore-side-data-system.googlecode.com/svn/wiki/images/DataContainers.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/DataContainers.jpg" width="400"/></a>
 
 == !CommentTag ==
 This class is used to represent symbols/characters that identify entries in !DataContainers as comments. This allows parsing routines to skip things in files (or streams) that are not data.  This is heavily used when dealing with !DataContainers that are files and have headers.  This came from MBARI's AUV data files which are binary files that have ASCII headers. Without the concept of !CommentTag, these files would be un-parseable.
