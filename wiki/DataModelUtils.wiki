@@ -1,4 +1,5 @@
-#Utilities related to the Data Model classes
+#summary Utilities related to the Data Model classes
+#sidebar TableOfContents
 
 = Introduction =
 
