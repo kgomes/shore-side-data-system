@@ -12,3 +12,6 @@ These classes provide utilities for working with object that are represented by 
 = Details =
 
 Here is a class diagram of the various classes used in the translation of forms of metadata.
+
+
+<a target="_blank" href="http://shore-side-data-system.googlecode.com/svn/wiki/images/MetadataUtilities.jpg"><img src="http://shore-side-data-system.googlecode.com/svn/wiki/images/MetadataUtilities.jpg" width="800"/></a>
