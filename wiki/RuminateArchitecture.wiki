@@ -26,6 +26,15 @@ In the case of devices, they should already be identified in the SSDS persistent
 The bottom line is that SSDS will have to use some rules to decide how it wants to deal with the incoming metadata, it cannot just store it blindly.  Also, the SSDS takes a conservative approach with attributes in that if the attribute is not specified in the XML, the field is left untouched in the persistent store.  The drawback to that is that if you want to clear an attribute using XML, you still have to specify it, but you have to leave it empty, then SSDS will persist an empty field.  Another thing to note is that very often with the SSDS, it will receive messages out of order, from the past, or duplicates and it must be able to deal with all of them correctly.  To fulfill it's role, here are the steps that Ruminate goes through to deal with incoming metadata.
 
 ===Ruminate Steps===
+  # Extracts the payload and converts the bytes to ASCII
+  # Figures out if the ASCII is a JSON, XML, or String representation of the metadata
+  # Uses the appropriate translator to convert the payload into SSDS metadata objects.
+  # If: Top of Object tree is !DataProducer
+    # If: !DataProducer is of type Deployment
+      # If: !DataProducer has an output
+        # If: The output is of type Stream
+    # elif: !DataProducer is of type ProcessRun
+
   # Extracts the XML metadata from the JMS payload
   # Stores the XML to disk (which is then made available over HTTP)
   # Creates the corresponding SSDS object graph using !ObjectBuilder (direct translation from XML to objects).
