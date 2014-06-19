@@ -7,4 +7,5 @@ First the stuff you need:
 
   * Java 7+ SDK (http://www.oracle.com/technetwork/java/javase/downloads/index.html)
   * Wildfly 8+ (http://www.wildfly.org)
+  * Apache Tomcat 7+ (http://tomcat.apache.org/download-70.cgi)
   * Apache Ant (http://ant.apache.org)
