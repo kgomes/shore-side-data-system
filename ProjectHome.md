@@ -1,0 +1,1 @@
+The Shore-Side Data System (SSDS) was developed by the [Monterey Bay Aquarium Research Institute](http://www.mbari.org) to manage data and data processing for ocean observatories.  Please see the [Welcome Page](http://code.google.com/p/shore-side-data-system/wiki/WelcomeToTheSSDSWiki) in the Wiki for more documentation.
